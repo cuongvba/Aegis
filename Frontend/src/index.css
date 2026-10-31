@@ -153,10 +153,10 @@
 
 /* Đảm bảo dấu vectơ \overrightarrow & \overleftarrow luôn hiển thị đầy đủ, sắc nét mũi tên trên mọi trình duyệt */
 .katex .hide-tail {
-  overflow: hidden !important;
+  overflow: visible !important; /* Đảm bảo chóp mũi tên không bị cắt subpixel ở mép phải */
   position: relative !important;
   width: 100% !important;
-  min-width: 0.9em !important; /* Đảm bảo đủ chiều rộng tối thiểu cho các chữ cái hẹp không bị cụt mũi tên */
+  min-width: 0.9em !important;
 }
 
 .katex .hide-tail svg {
@@ -164,23 +164,12 @@
   min-height: 0 !important;
   position: absolute !important;
   top: 0 !important;
-  fill: currentColor !important;
-  display: block !important;
-}
-
-/* \overrightarrow (mũi tên sang phải): đầu mũi tên nằm ở tận cùng bên phải (xMax), neo sát mép phải để giấu phần đuôi thừa bên trái */
-.katex .hide-tail svg[preserveAspectRatio*="xMax"],
-.katex .svg-align .hide-tail svg {
-  width: 400em !important;
-  right: 0 !important;
-  left: auto !important;
-}
-
-/* \overleftarrow (mũi tên sang trái): đầu mũi tên nằm ở bên trái (xMin), neo sát mép trái để giấu phần đuôi thừa bên phải */
-.katex .hide-tail svg[preserveAspectRatio*="xMin"] {
-  width: 400em !important;
   left: 0 !important;
-  right: auto !important;
+  width: 100% !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  stroke-width: 0.6px !important; /* Gia cố đường nét cánh mũi tên sắc sảo, chống mất nét trên mọi màn hình/DPI */
+  display: block !important;
 }
 
 .katex .hide-tail svg path {

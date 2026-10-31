@@ -5,6 +5,7 @@ import 'katex/dist/katex.min.css';
 import 'katex/dist/contrib/mhchem';
 import { sanitizeWmfInText, convertWmfDataUriToSvg, cleanSvgDataUri } from '@/shared/lib/quiz/wmfDecoder';
 import { useMathConfig } from '@/shared/context/MathConfigContext';
+import { parseAndTokenizeTables } from '@/shared/lib/quiz/markdownTableParser';
 
 interface MathRendererProps {
   content: string;
@@ -184,6 +185,9 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
       }
     });
 
+    // Trường hợp 4b: Tự động phân tích và chuyển đổi Bảng số liệu thống kê Markdown
+    processed = parseAndTokenizeTables(processed, mediaTokens);
+
     // Trường hợp 5: Hỗ trợ gạch chân cho Đề thi Ngoại ngữ (Phát âm, Trọng âm, Tìm lỗi sai)
     processed = processed.replace(/<u[\s\S]*?>([\s\S]+?)<\/u>/gi, (_match, text) => {
       return `<u class="underline decoration-2 decoration-sky-400 underline-offset-4 font-bold text-sky-300">${text}</u>`;
@@ -195,7 +199,11 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     // Chuyển ký tự xuống dòng thành thẻ <br/> nếu không nằm trong thẻ block
     processed = processed.replace(/\n/g, '<br/>');
 
-    // Phục hồi nguyên vẹn các Media Token (ảnh, audio)
+    // Dọn dẹp thẻ <br/> thừa bao bọc trước và sau Token khối bảng/ảnh
+    processed = processed.replace(/(?:<br\/>)+(?=(?:__AEGIS_TABLE_TOKEN_))/g, '');
+    processed = processed.replace(/(?<=__AEGIS_TABLE_TOKEN_\d+__)(?:<br\/>)+/g, '');
+
+    // Phục hồi nguyên vẹn các Media Token (ảnh, audio, bảng)
     for (const [token, html] of Object.entries(mediaTokens)) {
       processed = processed.split(token).join(html);
     }
