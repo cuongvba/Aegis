@@ -434,7 +434,8 @@ function DocxQuestionCardRowComponent({
         const hasVisualFormatting = Boolean(
           item.content?.includes('data:image/') ||
           item.content?.includes('$') ||
-          /<u[\s>]/i.test(item.content || '')
+          /<u[\s>]/i.test(item.content || '') ||
+          (item.content?.includes('|') && /\|[ \t]*:?[-]+:?[ \t]*\|/.test(item.content || ''))
         );
 
         return (
@@ -446,7 +447,7 @@ function DocxQuestionCardRowComponent({
                 </label>
                 {hasVisualFormatting && (
                   <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40">
-                    ⚡ Có chữ gạch dưới / công thức / ảnh
+                    ⚡ Có bảng / công thức / ảnh
                   </span>
                 )}
               </div>

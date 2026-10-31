@@ -95,7 +95,8 @@ namespace AegisQuiz.Infrastructure.Services
                               $"{string.Join(" ", (sampleContents ?? Enumerable.Empty<string>()).Take(15).Select(SanitizeSample))} " +
                               $"{string.Join(" ", (sampleReferences ?? Enumerable.Empty<string>()).Take(15).Select(SanitizeSample))}";
 
-            result.BenchmarkYear = DetectYear(bannerList, fileName, sheetName);
+            result.BenchmarkYear = DetectYear(bannerList, fileName, sheetName, dynamicContext);
+            result.CognitiveCrosswalk = CognitiveCrosswalkEngine.MapFromDifficulty(3);
 
             // 1. [SSoT Precedence] Nhận diện Môn thi / Chủ đề chính từ Header Đề thi (Exam Envelope) TRƯỚC TIÊN
             result.TopicCode = DetectTopicFromHeader(bannerList, fileName, sheetName, dynamicContext);
@@ -122,7 +123,7 @@ namespace AegisQuiz.Infrastructure.Services
             result.IssuingOrg = DetectIssuingOrg(bannerList, fileName, combinedAll, dynamicContext, result.DomainCode);
 
             result.BenchmarkStandard = DetectStandard(combinedAll, result.DomainCode, result.AssessmentPurpose, result.BenchmarkYear, dynamicContext);
-            result.Tags = GenerateSmartTags(result, fileName, sheetName, dynamicContext);
+            result.Tags = GenerateSmartTags(result, fileName, sheetName, dynamicContext, bannerList);
             if (!string.IsNullOrWhiteSpace(result.TopicCode) && result.TopicCode != "GENERAL")
             {
                 AddTagIfNotExists(result.Tags, CleanToTag(result.TopicCode));
@@ -219,18 +220,52 @@ namespace AegisQuiz.Infrastructure.Services
         // Trục 1: Năm chuẩn mực
         // ─────────────────────────────────────────────────────────────────────
 
-        private static int? DetectYear(List<string> banners, string? fileName, string? sheetName)
+        private static int? DetectYear(List<string> banners, string? fileName, string? sheetName, DynamicDomainContext? dynamicContext = null)
         {
             var text = $"{string.Join(" ", banners)} {fileName} {sheetName}";
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
 
-            var labeled = Regex.Match(text, @"(?:năm|nam|đợt\s*\d+\s*năm|niên\s*khóa|khoá|year)\s*[:\-–—]?\s*(20\d{2})", RegexOptions.IgnoreCase);
-            if (labeled.Success && int.TryParse(labeled.Groups[1].Value, out var year) && year >= 2000 && year <= 2050)
+            if (reconPatterns.YearLabeledPatterns != null)
             {
-                return year;
+                foreach (var pattern in reconPatterns.YearLabeledPatterns)
+                {
+                    try
+                    {
+                        var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            for (int i = 1; i < match.Groups.Count; i++)
+                            {
+                                if (int.TryParse(match.Groups[i].Value, out var y) &&
+                                    y >= reconPatterns.MinBenchmarkYear && y <= reconPatterns.MaxBenchmarkYear)
+                                {
+                                    return y;
+                                }
+                            }
+                        }
+                    }
+                    catch (RegexParseException) { }
+                }
             }
 
-            var bare = Regex.Match(text, @"\b(202[0-9]|201[8-9])\b");
-            return bare.Success && int.TryParse(bare.Groups[1].Value, out var bareYear) ? bareYear : null;
+            if (reconPatterns.YearBarePatterns != null)
+            {
+                foreach (var pattern in reconPatterns.YearBarePatterns)
+                {
+                    try
+                    {
+                        var match = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
+                        if (match.Success && int.TryParse(match.Groups[1].Value, out var bareYear) &&
+                            bareYear >= reconPatterns.MinBenchmarkYear && bareYear <= reconPatterns.MaxBenchmarkYear)
+                        {
+                            return bareYear;
+                        }
+                    }
+                    catch (RegexParseException) { }
+                }
+            }
+
+            return null;
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -429,17 +464,32 @@ namespace AegisQuiz.Infrastructure.Services
             return null;
         }
 
-        private static string ExtractDotNumber(string text)
+        private static string ExtractDotNumber(string text, DynamicDomainContext? dynamicContext = null)
         {
-            var m = Regex.Match(text, @"đợt\s*(\d+)", RegexOptions.IgnoreCase);
-            return m.Success ? m.Groups[1].Value : "2";
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
+            if (reconPatterns.AssessmentIterationPatterns != null)
+            {
+                foreach (var pattern in reconPatterns.AssessmentIterationPatterns)
+                {
+                    try
+                    {
+                        var m = Regex.Match(text, pattern, RegexOptions.IgnoreCase);
+                        if (m.Success && m.Groups.Count > 1 && !string.IsNullOrWhiteSpace(m.Groups[1].Value))
+                        {
+                            return m.Groups[1].Value;
+                        }
+                    }
+                    catch (RegexParseException) { }
+                }
+            }
+            return reconPatterns.DefaultIterationFallback ?? "1";
         }
 
         // ─────────────────────────────────────────────────────────────────────
         // Smart Tags
         // ─────────────────────────────────────────────────────────────────────
 
-        private static List<string> GenerateSmartTags(CognitiveCoordinateTaxonomyResult res, string? fileName, string? sheetName, DynamicDomainContext? dynamicContext)
+        private static List<string> GenerateSmartTags(CognitiveCoordinateTaxonomyResult res, string? fileName, string? sheetName, DynamicDomainContext? dynamicContext, List<string>? banners = null)
         {
             var tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -491,10 +541,10 @@ namespace AegisQuiz.Infrastructure.Services
 
                 if (!string.IsNullOrWhiteSpace(res.AssessmentPurpose))
                 {
-                    var dotMatch = Regex.Match(res.AssessmentPurpose, @"đợt\s*(\d+)", RegexOptions.IgnoreCase);
-                    if (dotMatch.Success)
+                    var dotNum = ExtractDotNumber(res.AssessmentPurpose, dynamicContext);
+                    if (!string.IsNullOrWhiteSpace(dotNum))
                     {
-                        tags.Add($"dot-{dotMatch.Groups[1].Value}-{res.BenchmarkYear}");
+                        tags.Add($"dot-{dotNum}-{res.BenchmarkYear}");
                     }
                 }
             }
@@ -509,7 +559,6 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 var org = CleanToTag(res.IssuingOrg);
                 if (IsValidSmartTag(org)) tags.Add(org);
-                if (res.IssuingOrg.Contains("Chi nhánh", StringComparison.OrdinalIgnoreCase)) tags.Add("chi-nhanh");
             }
 
             if (!string.IsNullOrWhiteSpace(res.BenchmarkStandard))
@@ -518,10 +567,27 @@ namespace AegisQuiz.Infrastructure.Services
                 if (IsValidSmartTag(std)) tags.Add(std);
             }
 
-            if (!string.IsNullOrWhiteSpace(fileName))
+            // Zero-Hardcode: Quét các quy tắc gắn thẻ theo miền nghiệp vụ cấu hình động (DomainTagRules)
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
+            var bannerText = banners != null ? string.Join(" ", banners) : string.Empty;
+            var combinedReconText = $"{res.IssuingOrg} {res.AssessmentPurpose} {fileName} {sheetName} {bannerText}";
+
+            if (reconPatterns.DomainTagRules != null)
             {
-                var lowerFile = fileName.ToLowerInvariant();
-                if (lowerFile.Contains("tin dung") || lowerFile.Contains("tín dụng")) tags.Add("tin-dung");
+                foreach (var rule in reconPatterns.DomainTagRules)
+                {
+                    if (!string.IsNullOrWhiteSpace(rule.Pattern) && !string.IsNullOrWhiteSpace(rule.Tag))
+                    {
+                        try
+                        {
+                            if (Regex.IsMatch(combinedReconText, rule.Pattern, RegexOptions.IgnoreCase))
+                            {
+                                tags.Add(rule.Tag);
+                            }
+                        }
+                        catch (RegexParseException) { }
+                    }
+                }
             }
 
             return tags.Where(IsValidSmartTag).Take(12).ToList();
@@ -1061,6 +1127,10 @@ namespace AegisQuiz.Infrastructure.Services
                         AssessmentPurpose = q.AssessmentPurpose
                     };
                     SynthesizeCanonicalTaxonomy(envelopeResult, $"{q.SourceFileName} {q.ContextTitle} {q.SubCategory} {q.SourceExamName}", q.SourceFileName, ctx);
+                    q.TopicCode = envelopeResult.TopicCode ?? q.TopicCode;
+                    q.TopicName = envelopeResult.TopicName ?? q.TopicName;
+                    q.ParentTopicCode = envelopeResult.ParentTopicCode ?? q.ParentTopicCode;
+                    q.ParentTopicName = envelopeResult.ParentTopicName ?? q.ParentTopicName;
                     q.CanonicalTopicCode ??= envelopeResult.CanonicalTopicCode;
                     q.TreePath ??= envelopeResult.TreePath;
                     q.FriendlyTopicName ??= envelopeResult.FriendlyTopicName;
@@ -1069,6 +1139,7 @@ namespace AegisQuiz.Infrastructure.Services
                 }
 
                 EnrichItemDeltaTags(q);
+                q.CognitiveCrosswalk ??= CognitiveCrosswalkEngine.InferFromQuestionContent(q.Content, q.Difficulty > 0 ? q.Difficulty : 2);
                 return;
             }
 
@@ -1095,6 +1166,10 @@ namespace AegisQuiz.Infrastructure.Services
             q.IssuingOrg = sniffed.IssuingOrg ?? q.IssuingOrg ?? "GDDT";
             q.BenchmarkYear = sniffed.BenchmarkYear ?? q.BenchmarkYear ?? 2026;
             q.BenchmarkStandard = sniffed.BenchmarkStandard ?? q.BenchmarkStandard ?? "CIG V3";
+            q.TopicCode = sniffed.TopicCode ?? q.TopicCode;
+            q.TopicName = sniffed.TopicName ?? q.TopicName;
+            q.ParentTopicCode = sniffed.ParentTopicCode ?? q.ParentTopicCode;
+            q.ParentTopicName = sniffed.ParentTopicName ?? q.ParentTopicName;
             q.CanonicalTopicCode ??= sniffed.CanonicalTopicCode;
             q.TreePath ??= sniffed.TreePath;
             q.FriendlyTopicName ??= sniffed.FriendlyTopicName;
@@ -1112,6 +1187,7 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             EnrichItemDeltaTags(q);
+            q.CognitiveCrosswalk ??= CognitiveCrosswalkEngine.InferFromQuestionContent(q.Content, q.Difficulty > 0 ? q.Difficulty : 2);
         }
 
         /// <summary>
@@ -1530,6 +1606,238 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             result.FriendlyTopicName = sbFriendly.ToString().Trim();
+
+            // 7. [Hierarchical Knowledge Graph 3.0] Tự động chi tiết hóa sang Node Lá (Leaf Node)
+            SpecializeHierarchicalTopic(result, domainPrefix, topic, topicDisplay, gradeNum, text, effectiveCtx);
+        }
+
+        /// <summary>
+        /// [Hierarchical Knowledge Graph 3.0] Tự động ánh xạ và chi tiết hóa chủ đề phẳng sang Node Lá phân cấp (Leaf Node)
+        /// cho cả mảng Giáo dục (K-12 & Higher Ed) và các Miền nghiệp vụ (Banking, Driving, Healthcare...).
+        /// </summary>
+        private static void SpecializeHierarchicalTopic(
+            CognitiveCoordinateTaxonomyResult result,
+            string domainPrefix,
+            string topic,
+            string topicDisplay,
+            int gradeNum,
+            string combinedText,
+            DynamicDomainContext ctx)
+        {
+            var lowerText = combinedText.ToLowerInvariant();
+
+            // ==========================================
+            // Nhánh 1: EDUCATION (Tiểu học, THCS, THPT, Đại học)
+            // ==========================================
+            if (domainPrefix.Equals("EDU", StringComparison.OrdinalIgnoreCase) || domainPrefix.Equals("EDUCATION", StringComparison.OrdinalIgnoreCase))
+            {
+                // 1a. Kiểm tra Đại học / Cao đẳng / Sau đại học
+                bool isHigherEd = lowerText.Contains("đại học") || lowerText.Contains("cao đẳng") || lowerText.Contains("học viện")
+                                  || lowerText.Contains("university") || lowerText.Contains("college") || lowerText.Contains("khoa toán")
+                                  || lowerText.Contains("giảng viên") || lowerText.Contains("tín chỉ") || lowerText.Contains("học phần");
+
+                if (isHigherEd && (gradeNum == 0 || gradeNum > 12))
+                {
+                    if (topic == "MATH")
+                    {
+                        if (lowerText.Contains("giải tích") || lowerText.Contains("calculus") || lowerText.Contains("vi tích phân"))
+                        {
+                            result.TopicCode = "MATH_CALCULUS";
+                            result.TopicName = "Giải tích (Calculus)";
+                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicName = "Toán Cao cấp & Đại học";
+                        }
+                        else if (lowerText.Contains("đại số tuyến tính") || lowerText.Contains("linear algebra") || lowerText.Contains("ma trận") || lowerText.Contains("không gian vector"))
+                        {
+                            result.TopicCode = "MATH_LINEAR_ALGEBRA";
+                            result.TopicName = "Đại số tuyến tính (Linear Algebra)";
+                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicName = "Toán Cao cấp & Đại học";
+                        }
+                        else if (lowerText.Contains("xác suất") || lowerText.Contains("thống kê") || lowerText.Contains("probability"))
+                        {
+                            result.TopicCode = "MATH_PROB_STAT";
+                            result.TopicName = "Xác suất & Thống kê toán (Đại học)";
+                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicName = "Toán Cao cấp & Đại học";
+                        }
+                        else
+                        {
+                            result.TopicCode = "MATH_HIGHER_ED";
+                            result.TopicName = "Toán học Cao cấp (Đại học)";
+                            result.ParentTopicCode = "MATH";
+                            result.ParentTopicName = topicDisplay;
+                        }
+                    }
+                    else
+                    {
+                        result.TopicCode = $"{topic}_HIGHER_ED";
+                        result.TopicName = $"{topicDisplay} (Đại học)";
+                        result.ParentTopicCode = topic;
+                        result.ParentTopicName = topicDisplay;
+                    }
+                    result.TreePath = $"/EDU/{topic}/{result.ParentTopicCode}/{result.TopicCode}/";
+                    return;
+                }
+
+                // 1b. Khối lớp Phổ thông (K01..K12)
+                if (gradeNum >= 1 && gradeNum <= 12)
+                {
+                    var gradeSlug = $"K{gradeNum:D2}";
+                    result.TopicCode = $"{topic}_{gradeSlug}";
+
+                    if (gradeNum <= 5)
+                    {
+                        result.ParentTopicCode = $"{topic}_PRIMARY";
+                        result.ParentTopicName = $"{topicDisplay} Tiểu học";
+                        result.TopicName = $"{topicDisplay} {gradeNum} (Tiểu học)";
+                    }
+                    else if (gradeNum <= 9)
+                    {
+                        result.ParentTopicCode = $"{topic}_LOWER_SEC";
+                        result.ParentTopicName = $"{topicDisplay} THCS";
+                        result.TopicName = $"{topicDisplay} {gradeNum} (THCS)";
+                    }
+                    else
+                    {
+                        result.ParentTopicCode = $"{topic}_UPPER_SEC";
+                        result.ParentTopicName = $"{topicDisplay} THPT";
+                        result.TopicName = $"{topicDisplay} {gradeNum} (THPT)";
+                    }
+
+                    result.TreePath = $"/EDU/{topic}/{result.ParentTopicCode}/{result.TopicCode}/";
+                    return;
+                }
+            }
+
+            // ==========================================
+            // Nhánh 2: BANKING (Tài chính - Ngân hàng)
+            // ==========================================
+            else if (domainPrefix.Equals("BANKING", StringComparison.OrdinalIgnoreCase))
+            {
+                if (lowerText.Contains("khách hàng cá nhân") || lowerText.Contains("khcn") || lowerText.Contains("tiêu dùng") || lowerText.Contains("thấu chi"))
+                {
+                    result.TopicCode = "CREDIT_RETAIL";
+                    result.TopicName = "Tín dụng Khách hàng Cá nhân (KHCN)";
+                    result.ParentTopicCode = "BANKING_CREDIT";
+                    result.ParentTopicName = "Nghiệp vụ Tín dụng";
+                }
+                else if (lowerText.Contains("khách hàng doanh nghiệp") || lowerText.Contains("khdn") || lowerText.Contains("sme") || lowerText.Contains("bảo lãnh"))
+                {
+                    result.TopicCode = "CREDIT_SME";
+                    result.TopicName = "Tín dụng Khách hàng Doanh nghiệp (KHDN)";
+                    result.ParentTopicCode = "BANKING_CREDIT";
+                    result.ParentTopicName = "Nghiệp vụ Tín dụng";
+                }
+                else if (lowerText.Contains("thẩm định") || lowerText.Contains("tài sản bảo đảm") || lowerText.Contains("định giá") || lowerText.Contains("tsđb"))
+                {
+                    result.TopicCode = "CREDIT_APPRAISAL";
+                    result.TopicName = "Thẩm định giá & Tài sản Bảo đảm";
+                    result.ParentTopicCode = "BANKING_CREDIT";
+                    result.ParentTopicName = "Nghiệp vụ Tín dụng";
+                }
+                else if (lowerText.Contains("kho quỹ") || lowerText.Contains("ngân quỹ") || lowerText.Contains("tiền mặt") || lowerText.Contains("atm"))
+                {
+                    result.TopicCode = "TREASURY_OPS";
+                    result.TopicName = "Nghiệp vụ Kho quỹ & Quản lý Tiền mặt";
+                    result.ParentTopicCode = "BANKING_TREASURY";
+                    result.ParentTopicName = "Kế toán & Ngân quỹ";
+                }
+                else if (lowerText.Contains("kế toán") || lowerText.Contains("hạch toán") || lowerText.Contains("bảng cân đối"))
+                {
+                    result.TopicCode = "BANK_ACCOUNTING";
+                    result.TopicName = "Kế toán Ngân hàng Thương mại";
+                    result.ParentTopicCode = "BANKING_TREASURY";
+                    result.ParentTopicName = "Kế toán & Ngân quỹ";
+                }
+                else if (lowerText.Contains("thanh toán quốc tế") || lowerText.Contains("trade finance") || lowerText.Contains("lc") || lowerText.Contains("swift"))
+                {
+                    result.TopicCode = "BANKING_SETTLEMENT";
+                    result.TopicName = "Thanh toán Quốc tế & Tài trợ Thương mại";
+                    result.ParentTopicCode = "BANKING";
+                    result.ParentTopicName = "Tài chính - Ngân hàng";
+                }
+                else if (lowerText.Contains("aml") || lowerText.Contains("rửa tiền") || lowerText.Contains("tuân thủ") || lowerText.Contains("phòng chống rửa tiền"))
+                {
+                    result.TopicCode = "BANKING_COMPLIANCE";
+                    result.TopicName = "Tuân thủ & Phòng chống Rửa tiền (AML)";
+                    result.ParentTopicCode = "BANKING";
+                    result.ParentTopicName = "Tài chính - Ngân hàng";
+                }
+                result.TreePath = $"/BANKING/{result.ParentTopicCode ?? "GENERAL"}/{result.TopicCode}/";
+            }
+
+            // ==========================================
+            // Nhánh 3: GOV_DRIVING (Sát hạch Lái xe)
+            // ==========================================
+            else if (domainPrefix.Equals("GOV_DRIVING", StringComparison.OrdinalIgnoreCase))
+            {
+                if (lowerText.Contains("điểm liệt"))
+                {
+                    result.TopicCode = "DRIVING_CRITICAL";
+                    result.TopicName = "Sát hạch Lái xe - Câu hỏi Điểm liệt";
+                    result.ParentTopicCode = "GOV_DRIVING";
+                    result.ParentTopicName = "Sát hạch Lái xe";
+                }
+                else if (lowerText.Contains("sa hình") || lowerText.Contains("mô phỏng") || lowerText.Contains("tình huống"))
+                {
+                    result.TopicCode = "DRIVING_SIMULATION";
+                    result.TopicName = "Sát hạch Lái xe - Sa hình & Mô phỏng Tình huống";
+                    result.ParentTopicCode = "GOV_DRIVING";
+                    result.ParentTopicName = "Sát hạch Lái xe";
+                }
+                else if (lowerText.Contains("biển báo") || lowerText.Contains("hiệu lệnh") || lowerText.Contains("cấm"))
+                {
+                    result.TopicCode = "DRIVING_SIGNS";
+                    result.TopicName = "Sát hạch Lái xe - Hệ thống Biển báo Đường bộ";
+                    result.ParentTopicCode = "GOV_DRIVING";
+                    result.ParentTopicName = "Sát hạch Lái xe";
+                }
+                else
+                {
+                    result.TopicCode = "DRIVING_THEORY";
+                    result.TopicName = "Sát hạch Lái xe - Luật Giao thông Đường bộ";
+                    result.ParentTopicCode = "GOV_DRIVING";
+                    result.ParentTopicName = "Sát hạch Lái xe";
+                }
+                result.TreePath = $"/GOV_DRIVING/{result.ParentTopicCode}/{result.TopicCode}/";
+            }
+
+            // ==========================================
+            // Nhánh 4: HEALTHCARE (Y tế & Dược phẩm)
+            // ==========================================
+            else if (domainPrefix.Equals("HEALTHCARE", StringComparison.OrdinalIgnoreCase))
+            {
+                if (lowerText.Contains("dược") || lowerText.Contains("thuốc") || lowerText.Contains("kháng sinh") || lowerText.Contains("dược lý") || lowerText.Contains("pharmacy"))
+                {
+                    result.TopicCode = "HEALTHCARE_PHARMACY";
+                    result.TopicName = "Dược lý & Dược lâm sàng";
+                    result.ParentTopicCode = "HEALTHCARE";
+                    result.ParentTopicName = "Y tế & Chăm sóc Sức khỏe";
+                }
+                else if (lowerText.Contains("lâm sàng") || lowerText.Contains("bệnh án") || lowerText.Contains("nội khoa") || lowerText.Contains("ngoại khoa") || lowerText.Contains("chẩn đoán"))
+                {
+                    result.TopicCode = "HEALTHCARE_CLINICAL";
+                    result.TopicName = "Y học Lâm sàng & Phác đồ Điều trị";
+                    result.ParentTopicCode = "HEALTHCARE";
+                    result.ParentTopicName = "Y tế & Chăm sóc Sức khỏe";
+                }
+                else if (lowerText.Contains("điều dưỡng") || lowerText.Contains("chăm sóc") || lowerText.Contains("tiêm truyền"))
+                {
+                    result.TopicCode = "HEALTHCARE_NURSING";
+                    result.TopicName = "Nghiệp vụ Điều dưỡng & Kiểm soát Nhiễm khuẩn";
+                    result.ParentTopicCode = "HEALTHCARE";
+                    result.ParentTopicName = "Y tế & Chăm sóc Sức khỏe";
+                }
+                else if (lowerText.Contains("y đức") || lowerText.Contains("đạo đức") || lowerText.Contains("luật khám chữa bệnh"))
+                {
+                    result.TopicCode = "HEALTHCARE_ETHICS";
+                    result.TopicName = "Pháp luật Y tế & Đạo đức Hành nghề";
+                    result.ParentTopicCode = "HEALTHCARE";
+                    result.ParentTopicName = "Y tế & Chăm sóc Sức khỏe";
+                }
+                result.TreePath = $"/HEALTHCARE/{result.ParentTopicCode ?? "GENERAL"}/{result.TopicCode}/";
+            }
         }
 
         private static void AddTagIfNotExists(List<string> tags, string tag)

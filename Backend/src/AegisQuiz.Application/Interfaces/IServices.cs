@@ -218,6 +218,10 @@ namespace AegisQuiz.Application.Interfaces
         public string? CurriculumSeries { get; set; }
         public string? SemesterPhase { get; set; }
 
+        // [Global Cognitive Multi-Framework & Extensible Coordinates]
+        public CognitiveCrosswalkDto? CognitiveCrosswalk { get; set; }
+        public Dictionary<string, string> ExtensibleCoordinates { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
         // [Universal Extended Fields: Sư phạm, Khảo thí & Đa phương tiện]
         public string? GradingRubric { get; set; } // Tiêu chí chấm điểm / Barem điểm
         public int DurationSeconds { get; set; } = 60; // Thời gian chuẩn làm bài

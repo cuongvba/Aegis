@@ -195,12 +195,65 @@ namespace AegisQuiz.Application.DTOs
             @"(?i)(tiêu\s*chuẩn|quy\s*chuẩn|standard|specification|directive|iso\s*\d+|iec\s*\d+|rfc\s*\d+|tcvn\s*\d+|qcvn\s*\d+)"
         };
 
+        public List<string> YearLabeledPatterns { get; set; } = new()
+        {
+            @"(?i)(?:năm|nam|đợt\s*\d+\s*năm|niên\s*khóa|khoá|year|academic\s*year|school\s*year|ann[ée]e|año|年度|学年)\s*[:\-–—]?\s*(20\d{2})",
+            @"(?i)(?:năm\s*học|niên\s*học|học\s*kỳ|năm)\s*(20\d{2})\s*[-–—/]\s*(20\d{2})"
+        };
+
+        public List<string> YearBarePatterns { get; set; } = new()
+        {
+            @"\b(202[0-9]|201[8-9])\b"
+        };
+
+        public int MinBenchmarkYear { get; set; } = 1990;
+        public int MaxBenchmarkYear { get; set; } = 2050;
+
+        public List<string> AssessmentIterationPatterns { get; set; } = new()
+        {
+            @"(?i)(?:đợt|round|phase|kỳ|session|stage|批次)\s*(\d+)"
+        };
+
+        public string DefaultIterationFallback { get; set; } = "1";
+
+        public List<DomainTagRuleDto> DomainTagRules { get; set; } = new()
+        {
+            new() { Pattern = @"(?i)\b(?:chi\s*nhánh|branch)\b", Tag = "chi-nhanh" },
+            new() { Pattern = @"(?i)\b(?:tín\s*dụng|tin\s*dung|credit|loan)\b", Tag = "tin-dung" },
+            new() { Pattern = @"(?i)\b(?:kế\s*toán|ke\s*toan|accounting)\b", Tag = "ke-toan" },
+            new() { Pattern = @"(?i)\b(?:ngân\s*quỹ|ngan\s*quy|treasury)\b", Tag = "ngan-quy" },
+            new() { Pattern = @"(?i)\b(?:thanh\s*toán\s*quốc\s*tế|international\s*settlement)\b", Tag = "ttqt" }
+        };
+
         public List<string> GradeDetectionPatterns { get; set; } = new()
         {
             @"(?i)\b(?:LỚP|KHOÍ|KHỐI|GRADE|CLASS|YEAR|年级)\s*(\d{1,2})\b",
             @"(?i)\b[KG](\d{1,2})\b",
             @"(?i)(?:^|[^\d])([1-9]|1[0-2])[\-_ ]*(?:KNTT|CD|CTST|CKP|GDPT|CAMBRIDGE|IB|AP)\b"
         };
+    }
+
+    /// <summary>Quy tắc gắn Smart Tag theo miền nghiệp vụ / từ khóa (Zero-Hardcode).</summary>
+    public class DomainTagRuleDto
+    {
+        public string Pattern { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// [Global Standard] Ma trận ánh xạ Đa Chuẩn Khảo thí Quốc tế (Bloom 2001, Webb DOK, QTI 3.0, GDPT 2018).
+    /// </summary>
+    public class CognitiveCrosswalkDto
+    {
+        public int BloomLevel { get; set; } = 1; // 1..6
+        public string BloomCode { get; set; } = "REMEMBER";
+        public string BloomName { get; set; } = "Nhớ / Remember";
+        public int WebbDOKLevel { get; set; } = 1; // 1..4
+        public string WebbDOKCode { get; set; } = "DOK_1";
+        public string WebbDOKName { get; set; } = "DOK 1 - Nhận biết / Recall";
+        public string QtiCategory { get; set; } = "Recall";
+        public string StandardFramework { get; set; } = "BLOOM_REVISED_2001";
+        public string LocalDifficultyLevel { get; set; } = "Mức 1";
     }
 
     /// <summary>Cấu hình đặc tả bảng đáp án động đa ngôn ngữ (Zero-Hardcode / MultiLang / OCP)</summary>
@@ -388,6 +441,8 @@ namespace AegisQuiz.Application.DTOs
         public string DomainCode { get; set; } = "GENERAL";
         public string? TopicCode { get; set; }
         public string? TopicName { get; set; }
+        public string? ParentTopicCode { get; set; }
+        public string? ParentTopicName { get; set; }
         public string? TargetLevel { get; set; }
         public string? AssessmentPurpose { get; set; }
         public string? IssuingOrg { get; set; }
@@ -409,6 +464,12 @@ namespace AegisQuiz.Application.DTOs
 
         /// <summary>Học kỳ & Giai đoạn khảo thí (ví dụ: HK1_MID, HK1_FIN, HK2_MID, HK2_FIN)</summary>
         public string? SemesterPhase { get; set; }
+
+        /// <summary>[Global Standard] Ma trận ánh xạ Đa Chuẩn Khảo thí Quốc tế (Bloom, Webb DOK, QTI 3.0)</summary>
+        public CognitiveCrosswalkDto? CognitiveCrosswalk { get; set; }
+
+        /// <summary>[Dynamic N-Orthogonal Space] Tọa độ nhận thức mở rộng dành cho doanh nghiệp / quốc tế</summary>
+        public Dictionary<string, string> ExtensibleCoordinates { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>

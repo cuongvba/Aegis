@@ -45,6 +45,11 @@ namespace AegisQuiz.Application.DTOs
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
         public string? DomainCode { get; set; }
+        public string? ParentTopicCode { get; set; }
+        public int DepthLevel { get; set; } = 0;
+        public string? Stage { get; set; }
+        public string? StandardIscedCode { get; set; }
+        public string? MaterializedPath { get; set; }
         public List<string> Keywords { get; set; } = new();
     }
 

@@ -20,3 +20,4 @@ describe('MathRenderer Vector Normalization', () => {
     expect(normalized).toContain('h3891');
   });
 });
+
