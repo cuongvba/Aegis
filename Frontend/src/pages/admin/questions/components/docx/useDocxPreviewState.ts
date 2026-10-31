@@ -41,6 +41,8 @@ export function useDocxPreviewState({
   const [bulkTopic, setBulkTopic] = useState<string>(topics.length > 0 ? topics[0].code : 'PARTY_BUILDING');
   const [bulkDifficulty, setBulkDifficulty] = useState<number>(3);
   const [showRawOptions, setShowRawOptions] = useState<Record<number, boolean>>({});
+  const [showRawContent, setShowRawContent] = useState<Record<number, boolean>>({});
+  const [showRawExplanation, setShowRawExplanation] = useState<Record<number, boolean>>({});
   const [selectedExamFilter, setSelectedExamFilter] = useState<string>('ALL');
 
   const [bulkDomain, setBulkDomain] = useState<string>('GENERAL');
@@ -733,6 +735,14 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     setShowRawOptions(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  const toggleShowRawContent = (idx: number) => {
+    setShowRawContent(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const toggleShowRawExplanation = (idx: number) => {
+    setShowRawExplanation(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
   const handleExportExcel = async (templateCode: string) => {
     try {
       setIsExportingExcel(true);
@@ -833,6 +843,8 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     isCorrectingVN,
     rawOriginalList,
     showRawOptions,
+    showRawContent,
+    showRawExplanation,
     selectedExamFilter,
     setSelectedExamFilter,
     expandedCoords,
@@ -865,6 +877,8 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     handleRemoveTagFromQuestion,
     toggleExpandCoords,
     toggleShowRawOptions,
+    toggleShowRawContent,
+    toggleShowRawExplanation,
     handleExportExcel,
     handleExportCustomTemplate,
     sniffCoordinatesFromDocxList,

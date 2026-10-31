@@ -220,11 +220,15 @@ function DocxPreviewModalContent({
                 localTopics={state.localTopics}
                 expandedCoords={state.expandedCoords}
                 showRawOptions={state.showRawOptions}
+                showRawContent={state.showRawContent}
+                showRawExplanation={state.showRawExplanation}
                 tagInputPerQ={state.tagInputPerQ}
                 onUpdateItem={state.updateItem}
                 onDeleteItem={state.handleDeleteItem}
                 onToggleExpandCoords={state.toggleExpandCoords}
                 onToggleShowRawOptions={state.toggleShowRawOptions}
+                onToggleShowRawContent={state.toggleShowRawContent}
+                onToggleShowRawExplanation={state.toggleShowRawExplanation}
                 onAddTagToQuestion={state.handleAddTagToQuestion}
                 onRemoveTagFromQuestion={state.handleRemoveTagFromQuestion}
                 onSetTagInputPerQ={(qIdx, val) => state.setTagInputPerQ(prev => ({ ...prev, [qIdx]: val }))}

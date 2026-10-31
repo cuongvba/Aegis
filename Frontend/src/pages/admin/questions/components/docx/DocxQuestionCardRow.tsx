@@ -20,11 +20,15 @@ interface DocxQuestionCardRowProps {
   localTopics: BankTopic[];
   expandedCoords: Record<number, boolean>;
   showRawOptions: Record<number, boolean>;
+  showRawContent?: Record<number, boolean>;
+  showRawExplanation?: Record<number, boolean>;
   tagInputPerQ: Record<number, string>;
   onUpdateItem: (idx: number, field: string, value: any) => void;
   onDeleteItem: (idx: number) => void;
   onToggleExpandCoords: (idx: number) => void;
   onToggleShowRawOptions: (idx: number) => void;
+  onToggleShowRawContent?: (idx: number) => void;
+  onToggleShowRawExplanation?: (idx: number) => void;
   onAddTagToQuestion: (idx: number, tag: string) => void;
   onRemoveTagFromQuestion: (idx: number, tag: string) => void;
   onSetTagInputPerQ: (idx: number, val: string) => void;
@@ -115,11 +119,15 @@ function DocxQuestionCardRowComponent({
   localTopics,
   expandedCoords,
   showRawOptions,
+  showRawContent,
+  showRawExplanation,
   tagInputPerQ,
   onUpdateItem,
   onDeleteItem,
   onToggleExpandCoords,
   onToggleShowRawOptions,
+  onToggleShowRawContent,
+  onToggleShowRawExplanation,
   onAddTagToQuestion,
   onRemoveTagFromQuestion,
   onSetTagInputPerQ,
@@ -432,14 +440,23 @@ function DocxQuestionCardRowComponent({
         return (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-wide">
-                {item.questionType === 'ESSAY' ? 'Nội dung tình huống / Đề bài tự luận' : 'Nội dung câu hỏi'}
-              </label>
-              {hasVisualFormatting && (
-                <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40">
-                  ⚡ Có chữ gạch dưới / công thức / ảnh
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wide">
+                  {item.questionType === 'ESSAY' ? 'Nội dung tình huống / Đề bài tự luận' : 'Nội dung câu hỏi'}
+                </label>
+                {hasVisualFormatting && (
+                  <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40">
+                    ⚡ Có chữ gạch dưới / công thức / ảnh
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onToggleShowRawContent?.(idx)}
+                className="text-[10px] text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer"
+              >
+                <Eye size={11} /> {showRawContent?.[idx] ? 'Thu gọn mã nguồn' : 'Xem / Sửa chuỗi mã'}
+              </button>
             </div>
 
             {/* Hiển thị trực quan (Visual Rendered View) cho chữ gạch dưới, công thức toán học và ảnh */}
@@ -455,13 +472,15 @@ function DocxQuestionCardRowComponent({
               </div>
             )}
 
-            <textarea
-              value={item.content}
-              onChange={e => onUpdateItem(idx, 'content', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors"
-              rows={item.questionType === 'ESSAY' ? 4 : (hasVisualFormatting ? 2 : 2)}
-              placeholder="Nhập nội dung câu hỏi..."
-            />
+            {(showRawContent?.[idx] || !hasVisualFormatting) && (
+              <textarea
+                value={item.content}
+                onChange={e => onUpdateItem(idx, 'content', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors font-mono"
+                rows={item.questionType === 'ESSAY' ? 4 : (hasVisualFormatting ? 3 : 2)}
+                placeholder="Nhập nội dung câu hỏi..."
+              />
+            )}
           </div>
         );
       })()}
@@ -658,6 +677,13 @@ function DocxQuestionCardRowComponent({
                 </span>
               )}
             </label>
+            <button
+              type="button"
+              onClick={() => onToggleShowRawExplanation?.(idx)}
+              className="text-[10px] text-slate-400 hover:text-slate-200 flex items-center gap-1 cursor-pointer"
+            >
+              <Eye size={11} /> {showRawExplanation?.[idx] ? 'Thu gọn mã nguồn' : 'Xem / Sửa chuỗi mã'}
+            </button>
           </div>
 
           {item.aiExplanation && (
@@ -667,13 +693,15 @@ function DocxQuestionCardRowComponent({
             </div>
           )}
 
-          <textarea
-            value={item.aiExplanation}
-            onChange={e => onUpdateItem(idx, 'aiExplanation', e.target.value)}
-            placeholder="Trích dẫn các bước giải toán, bảng biến thiên, đạo hàm hoặc căn cứ quy định..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
-            rows={item.aiExplanation ? 2 : 3}
-          />
+          {(showRawExplanation?.[idx] || !item.aiExplanation) && (
+            <textarea
+              value={item.aiExplanation || ''}
+              onChange={e => onUpdateItem(idx, 'aiExplanation', e.target.value)}
+              placeholder="Trích dẫn các bước giải toán, bảng biến thiên, đạo hàm hoặc căn cứ quy định..."
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-blue-500 font-mono"
+              rows={item.aiExplanation ? 3 : 2}
+            />
+          )}
         </div>
       </div>
     </div>
