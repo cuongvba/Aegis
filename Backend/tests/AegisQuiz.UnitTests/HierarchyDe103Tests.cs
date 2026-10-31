@@ -52,6 +52,11 @@ namespace AegisQuiz.UnitTests
             var p3 = results.Where(q => q.HierarchyIndex.Contains("_3_0_0") || q.QuestionType == "SHORT_ANSWER").ToList();
 
             _output.WriteLine($"Phần I count: {p1.Count}");
+            _output.WriteLine($"  Q2 Content: '{p1[1].Content}'");
+            for (int i = 0; i < p1[1].Options.Count; i++)
+            {
+                _output.WriteLine($"  Q2 Opt {i}: '{p1[1].Options[i]}'");
+            }
             foreach (var q in p1)
             {
                 _output.WriteLine($"  Q{q.SourceQuestionNo} | H={q.HierarchyIndex} | Type={q.QuestionType} | Ans={q.SuggestedAnswer}");
@@ -74,6 +79,10 @@ namespace AegisQuiz.UnitTests
             Assert.Equal(12, p1.Count);
             Assert.Equal(4, p2.Count);
             Assert.Equal(6, p3.Count);
+
+            // Kiểm tra bảo toàn ký hiệu vector chuẩn \overrightarrow{AB}
+            Assert.Contains(@"\overrightarrow{AB}", p1[1].Content);
+            Assert.Contains(@"\overrightarrow{CD}", p1[1].Options[0]);
 
             foreach (var q in p1)
             {
