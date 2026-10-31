@@ -152,7 +152,7 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
 
                 // Cột 8: Hướng dẫn giải chi tiết
                 var cellExpl = row.CreateCell(8);
-                cellExpl.SetCellValue(options.IncludeExplanation ? ExcelCellSanitizer.Sanitize(q.AiExplanation) : string.Empty);
+                cellExpl.SetCellValue(ExcelCellSanitizer.Sanitize(FormatExplanation(q, options.IncludeExplanation)));
                 cellExpl.CellStyle = styles.WrapStyle;
 
                 // Cột 9 & 10: Bài đọc hiểu & Tiêu đề bài đọc (Hỗ trợ merge dòng, chỉ xuất 1 lần ở ô đầu)
@@ -235,6 +235,45 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 {
                     cellMedia.SetCellValue(string.Empty);
                 }
+
+                // Cột 16: Tọa độ phân cấp H(e, p, s, d)
+                var cellHierarchy = row.CreateCell(16);
+                cellHierarchy.SetCellValue(!string.IsNullOrWhiteSpace(q.HierarchyIndex) ? q.HierarchyIndex : "0_0_0_0");
+                cellHierarchy.CellStyle = styles.CenterStyle;
+
+                // Cột 17: Số hiệu gốc
+                var cellSourceNo = row.CreateCell(17);
+                cellSourceNo.SetCellValue(!string.IsNullOrWhiteSpace(q.SourceQuestionNo) ? q.SourceQuestionNo : (i + 1).ToString());
+                cellSourceNo.CellStyle = styles.CenterStyle;
+
+                // Cột 18: Lĩnh vực / Môn học
+                var cellDomain = row.CreateCell(18);
+                cellDomain.SetCellValue(!string.IsNullOrWhiteSpace(q.DomainCode) ? q.DomainCode : (options.DomainCode ?? "GENERAL"));
+                cellDomain.CellStyle = styles.CenterStyle;
+
+                // Cột 19: Năm & Chuẩn mực
+                var cellBenchmark = row.CreateCell(19);
+                string bmYear = (q.BenchmarkYear ?? options.BenchmarkYear)?.ToString() ?? "";
+                string bmStd = !string.IsNullOrWhiteSpace(q.BenchmarkStandard) ? q.BenchmarkStandard : (options.BenchmarkStandard ?? "");
+                string bmFull = !string.IsNullOrWhiteSpace(bmYear) && !string.IsNullOrWhiteSpace(bmStd)
+                    ? $"{bmYear} | {bmStd}"
+                    : (!string.IsNullOrWhiteSpace(bmYear) ? bmYear : bmStd);
+                cellBenchmark.SetCellValue(bmFull);
+                cellBenchmark.CellStyle = styles.CenterStyle;
+
+                // Cột 20: Chùm ý con (Sub-items)
+                var cellSubItems = row.CreateCell(20);
+                if (q.SubItems != null && q.SubItems.Count > 0)
+                {
+                    var formattedSub = string.Join("\r\n", q.SubItems.Select(s => 
+                        $"{s.Key}) [{(string.IsNullOrWhiteSpace(s.ExpectedAnswer) ? " " : s.ExpectedAnswer)}] {s.Content}{(!string.IsNullOrWhiteSpace(s.Explanation) ? $" (Giải thích: {s.Explanation})" : "")}"));
+                    cellSubItems.SetCellValue(ExcelCellSanitizer.Sanitize(formattedSub));
+                }
+                else
+                {
+                    cellSubItems.SetCellValue(string.Empty);
+                }
+                cellSubItems.CellStyle = styles.WrapStyle;
 
                 currentRow++;
             }
@@ -324,7 +363,12 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 "Mã chủ đề",                // 12
                 "Thẻ thông minh (Tags)",    // 13
                 "Điểm liệt",                // 14
-                "Hình ảnh minh họa"         // 15
+                "Hình ảnh minh họa",        // 15
+                "Tọa độ phân cấp",          // 16 [MỚI] HierarchyIndex H(e, p, s, d)
+                "Số hiệu gốc",              // 17 [MỚI] SourceQuestionNo
+                "Lĩnh vực / Môn học",       // 18 [MỚI] DomainCode
+                "Năm & Chuẩn mực",          // 19 [MỚI] BenchmarkStandard / Year
+                "Chùm ý con (Sub-items)"    // 20 [MỚI] Granular Propositions
             };
 
             for (int col = 0; col < headers.Length; col++)
@@ -337,17 +381,34 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
 
         private static string GetOptionText(DocxImportPreviewDto q, int index)
         {
-            if (q.Options == null || index >= q.Options.Count) return string.Empty;
-            var raw = q.Options[index];
-            return Regex.Replace(raw, @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            if (q.Options != null && index < q.Options.Count && !string.IsNullOrWhiteSpace(q.Options[index]))
+            {
+                var raw = q.Options[index];
+                return Regex.Replace(raw, @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            }
+
+            if (q.SubItems != null && index < q.SubItems.Count)
+            {
+                return q.SubItems[index].Content?.Trim() ?? string.Empty;
+            }
+
+            return string.Empty;
         }
 
         private static string FormatAnswer(DocxImportPreviewDto q)
         {
+            var qType = (q.QuestionType ?? "SINGLE").ToUpperInvariant();
+            if ((qType == "TRUE_FALSE" || qType == "MULTI_TRUE_FALSE") && q.SubItems != null && q.SubItems.Count > 0)
+            {
+                if (q.SubItems.Any(s => !string.IsNullOrWhiteSpace(s.ExpectedAnswer)))
+                {
+                    return string.Join("; ", q.SubItems.Select(s => $"{s.Key}) {(s.ExpectedAnswer?.Trim().StartsWith("Đ", StringComparison.OrdinalIgnoreCase) == true || s.ExpectedAnswer?.Trim().Equals("True", StringComparison.OrdinalIgnoreCase) == true ? "Đúng" : "Sai")}"));
+                }
+            }
+
             var raw = q.SuggestedAnswer?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
 
-            var qType = (q.QuestionType ?? "SINGLE").ToUpperInvariant();
             if (qType == "SINGLE")
             {
                 if (raw == "1") return "A";
@@ -358,6 +419,25 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
             }
 
             return raw;
+        }
+
+        private static string FormatExplanation(DocxImportPreviewDto q, bool includeExplanation)
+        {
+            if (!includeExplanation) return string.Empty;
+            var main = q.AiExplanation?.Trim() ?? string.Empty;
+            if (q.SubItems != null && q.SubItems.Any(s => !string.IsNullOrWhiteSpace(s.Explanation)))
+            {
+                var granular = string.Join("\r\n", q.SubItems
+                    .Where(s => !string.IsNullOrWhiteSpace(s.Explanation))
+                    .Select(s => $"• Ý {s.Key}): {s.Explanation.Trim()}"));
+
+                if (!string.IsNullOrWhiteSpace(main))
+                {
+                    return $"{main}\r\n\r\n[Chi tiết từng mệnh đề]:\r\n{granular}";
+                }
+                return $"[Chi tiết từng mệnh đề]:\r\n{granular}";
+            }
+            return main;
         }
 
         private static void ApplyColumnWidths(ISheet sheet)
@@ -378,6 +458,11 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
             sheet.SetColumnWidth(13, 22 * 256); // Tags
             sheet.SetColumnWidth(14, 10 * 256); // Điểm liệt
             sheet.SetColumnWidth(15, 32 * 256); // Hình ảnh minh họa
+            sheet.SetColumnWidth(16, 16 * 256); // Tọa độ phân cấp
+            sheet.SetColumnWidth(17, 12 * 256); // Số hiệu gốc
+            sheet.SetColumnWidth(18, 16 * 256); // Lĩnh vực / Môn học
+            sheet.SetColumnWidth(19, 20 * 256); // Năm & Chuẩn mực
+            sheet.SetColumnWidth(20, 36 * 256); // Chùm ý con (Sub-items)
         }
 
         private class StylePalette

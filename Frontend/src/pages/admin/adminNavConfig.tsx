@@ -11,7 +11,8 @@ import {
   Zap,
   Network,
   Building2,
-  Palette
+  Palette,
+  Cpu
 } from 'lucide-react';
 import { FeatureKey, type FeatureKeyType } from '@/types/entitlement';
 
@@ -27,6 +28,7 @@ export interface AdminNavDef {
 export const ADMIN_NAV_ITEMS: AdminNavDef[] = [
   { href: '/admin', i18nKey: 'nav.overview', defaultLabel: 'Tổng quan', icon: <LayoutDashboard size={18} /> },
   { href: '/admin/questions', i18nKey: 'nav.questionBank', defaultLabel: 'Ngân hàng Câu hỏi', icon: <FileQuestion size={18} /> },
+  { href: '/admin/parsing-rules', i18nKey: 'nav.parsingRules', defaultLabel: 'Quy Tắc Bóc Tách CIG', icon: <Cpu size={18} />, adminOnly: true },
   { href: '/admin/exams', i18nKey: 'nav.exams', defaultLabel: 'Đề thi', icon: <FileText size={18} /> },
   { href: '/admin/tenants', i18nKey: 'nav.tenants', defaultLabel: 'Khách thuê & Nhãn trắng', icon: <Building2 size={18} />, adminOnly: true },
   { href: '/admin/white-label', i18nKey: 'nav.whiteLabel', defaultLabel: 'Bản sắc Thương hiệu (Theming)', icon: <Palette size={18} />, adminOnly: true, feature: FeatureKey.WhiteLabelTheming },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Edit, Eye, Sparkles, Star, Tag, ToggleLeft, ToggleRight, Trash2, UploadCloud, Users, User, ShieldCheck } from 'lucide-react';
+import { BookOpen, Edit, Eye, Sparkles, Star, Tag, ToggleLeft, ToggleRight, Trash2, UploadCloud, Users, User, ShieldCheck, Network, Grid, X, Filter, FileText, Clock, ListOrdered } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import type { LearnerQuestion } from '@/types/quiz';
@@ -34,6 +34,20 @@ interface QuestionTableSectionProps {
   setShowMissingOnly: (v: boolean) => void;
   qTagFilter: string | null;
   setQTagFilter: (v: string | null) => void;
+  // Multi-dimensional Facets
+  qGradeFilter?: string;
+  setQGradeFilter?: (v: string) => void;
+  qTreePathFilter?: string;
+  setQTreePathFilter?: (v: string) => void;
+  qCanonicalTopicFilter?: string;
+  setQCanonicalTopicFilter?: (v: string) => void;
+  qExamFilter?: string;
+  setQExamFilter?: (v: string) => void;
+  availableExams?: string[];
+  qViewMode?: 'HIERARCHY' | 'TIMELINE';
+  setQViewMode?: (m: 'HIERARCHY' | 'TIMELINE') => void;
+  onOpenPivotDrawer?: () => void;
+  onOpenMatrixModal?: () => void;
   qPage: number;
   setQPage: (p: number) => void;
   qPageSize: number;
@@ -81,6 +95,19 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
   setShowMissingOnly,
   qTagFilter,
   setQTagFilter,
+  qGradeFilter = '',
+  setQGradeFilter,
+  qTreePathFilter = '',
+  setQTreePathFilter,
+  qCanonicalTopicFilter = '',
+  setQCanonicalTopicFilter,
+  qExamFilter = '',
+  setQExamFilter,
+  availableExams = [],
+  qViewMode = 'HIERARCHY',
+  setQViewMode,
+  onOpenPivotDrawer,
+  onOpenMatrixModal,
   qPage,
   setQPage,
   qPageSize,
@@ -131,8 +158,8 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
     <div>
       {/* Filter bar */}
       <div className="p-6 border-b border-slate-850 bg-slate-900/10 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-          <div className="space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-3">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">
               {t('filters.searchQuestion')}
             </label>
@@ -143,6 +170,25 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
               onChange={e => setQSearch(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
             />
+          </div>
+          {/* Bộ lọc Mã đề thi gốc */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-black uppercase text-indigo-400 tracking-wider flex items-center justify-between">
+              <span>MÃ ĐỀ THI</span>
+              {availableExams.length > 0 && (
+                <span className="text-[9px] text-indigo-300 font-mono">({availableExams.length})</span>
+              )}
+            </label>
+            <select
+              value={qExamFilter}
+              onChange={e => setQExamFilter && setQExamFilter(e.target.value)}
+              className="w-full bg-slate-950 border border-indigo-500/40 rounded-xl px-3 py-2 text-xs text-indigo-300 focus:outline-none focus:border-indigo-400 cursor-pointer font-bold"
+            >
+              <option value="">Tất cả các đề</option>
+              {availableExams.map(ex => (
+                <option key={ex} value={ex}>Đề: {ex}</option>
+              ))}
+            </select>
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
@@ -246,22 +292,154 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
           </div>
         </div>
 
-        {qTagFilter && (
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-xs text-slate-400">{t('filters.filteringByTag')}</span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-sm">
-              #{qTagFilter}
+        {/* Multi-Perspective & Coordinate Facets Bar */}
+        <div className="pt-2 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Lọc nhanh Khối lớp */}
+            {setQGradeFilter && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase text-slate-400">Khối:</span>
+                <select
+                  value={qGradeFilter}
+                  onChange={e => setQGradeFilter(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer"
+                >
+                  <option value="">Tất cả khối</option>
+                  <option value="K06">Lớp 6 (K06)</option>
+                  <option value="K07">Lớp 7 (K07)</option>
+                  <option value="K08">Lớp 8 (K08)</option>
+                  <option value="K09">Lớp 9 (K09)</option>
+                  <option value="K10">Lớp 10 (K10)</option>
+                  <option value="K11">Lớp 11 (K11)</option>
+                  <option value="K12">Lớp 12 (K12)</option>
+                </select>
+              </div>
+            )}
+
+            {/* Nút Cây Phả Hệ Xoay Trục (Pivot Tree) */}
+            {onOpenPivotDrawer && (
               <button
                 type="button"
-                onClick={() => setQTagFilter(null)}
-                className="hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer"
-                title={t('filters.removeTagFilter')}
+                onClick={onOpenPivotDrawer}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-950/50 hover:bg-indigo-900/60 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition-all shadow-sm"
+                title="Mở cây phả hệ với 3 lăng kính xoay trục (Theo Môn học / Theo Khối lớp / Theo Học kỳ)"
               >
-                &times;
+                <Network size={13} className="text-indigo-400" />
+                <span>Cây phả hệ (Pivot Tree)</span>
               </button>
-            </span>
+            )}
+
+            {/* Nút Ma Trận Tri Thức (Matrix Summary) */}
+            {onOpenMatrixModal && (
+              <button
+                type="button"
+                onClick={onOpenMatrixModal}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950/50 hover:bg-sky-900/60 text-sky-300 border border-sky-500/30 text-xs font-bold transition-all shadow-sm"
+                title="Mở bảng ma trận độ phủ 2 chiều giữa Môn học và Khối lớp"
+              >
+                <Grid size={13} className="text-sky-400" />
+                <span>Ma trận tri thức</span>
+              </button>
+            )}
+
+            {/* Chế độ xem kép: Theo Cấu trúc Đề vs Dòng Thời Gian */}
+            <div className="inline-flex p-0.5 rounded-xl bg-slate-950 border border-slate-800 shadow-inner ml-auto sm:ml-0">
+              <button
+                type="button"
+                onClick={() => setQViewMode && setQViewMode('HIERARCHY')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  qViewMode === 'HIERARCHY'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Sắp xếp câu hỏi tuần tự theo cấu trúc Đề thi -> Phần -> Chỉ thị -> Số câu gốc (1..40)"
+              >
+                <FileText size={12} />
+                <span>Theo cấu trúc đề</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setQViewMode && setQViewMode('TIMELINE')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  qViewMode === 'TIMELINE'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Sắp xếp câu hỏi theo thời gian mới nhất (CreatedAt)"
+              >
+                <Clock size={12} />
+                <span>Mới nhất trước</span>
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Active Coordinate Badges */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {qTreePathFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">
+                <span className="text-[10px] text-indigo-400">Path:</span>
+                <span className="font-mono text-[11px] max-w-[140px] truncate" title={qTreePathFilter}>
+                  {qTreePathFilter}
+                </span>
+                {setQTreePathFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setQTreePathFilter('')}
+                    className="hover:text-white p-0.5"
+                  >
+                    <X size={11} />
+                  </button>
+                )}
+              </span>
+            )}
+
+            {qGradeFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-sky-950/80 text-sky-300 border border-sky-700/50">
+                <span className="text-[10px] text-sky-400">Khối:</span>
+                <span>{qGradeFilter}</span>
+                {setQGradeFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setQGradeFilter('')}
+                    className="hover:text-white p-0.5"
+                  >
+                    <X size={11} />
+                  </button>
+                )}
+              </span>
+            )}
+
+            {qCanonicalTopicFilter && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-700/50">
+                <span className="text-[10px] text-emerald-400">Mã chuẩn:</span>
+                <span className="font-mono text-[11px]">{qCanonicalTopicFilter}</span>
+                {setQCanonicalTopicFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setQCanonicalTopicFilter('')}
+                    className="hover:text-white p-0.5"
+                  >
+                    <X size={11} />
+                  </button>
+                )}
+              </span>
+            )}
+
+            {qTagFilter && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-indigo-600 text-white shadow-sm">
+                #{qTagFilter}
+                <button
+                  type="button"
+                  onClick={() => setQTagFilter(null)}
+                  className="hover:bg-white/20 rounded-full p-0.5 transition-colors cursor-pointer"
+                  title={t('filters.removeTagFilter')}
+                >
+                  &times;
+                </button>
+              </span>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="w-full overflow-x-auto">
@@ -302,8 +480,11 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
                   className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-750 cursor-pointer"
                 />
               </th>
-              <th className="p-4 w-16 text-center cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('stt')}>
-                <div className="flex items-center justify-center">{t('table.stt')} {renderSortIcon('stt', qSortField, qSortAsc)}</div>
+              <th className="p-4 w-28 text-center cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('stt')}>
+                <div className="flex items-center justify-center gap-1">
+                  <span>{qViewMode === 'HIERARCHY' ? 'STT ĐỀ GỐC' : t('table.stt')}</span>
+                  {renderSortIcon('stt', qSortField, qSortAsc)}
+                </div>
               </th>
               <th className="p-4 cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('content')}>
                 <div className="flex items-center">{t('table.content')} {renderSortIcon('content', qSortField, qSortAsc)}</div>
@@ -339,8 +520,21 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
                       className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-900 border-slate-750 cursor-pointer"
                     />
                   </td>
-                  <td className="p-4 text-center text-xs text-slate-450 font-bold" title={`ID: ${q.id}`}>
-                    {(qPage - 1) * qPageSize + idx + 1}
+                  <td className="p-4 text-center select-none" title={`ID: ${q.id}`}>
+                    {q.sourceQuestionNo ? (
+                      <div className="inline-flex flex-col items-center justify-center">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono shadow-sm">
+                          Câu {q.sourceQuestionNo}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-mono mt-0.5">
+                          #{(qPage - 1) * qPageSize + idx + 1}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-450 font-bold">
+                        {(qPage - 1) * qPageSize + idx + 1}
+                      </span>
+                    )}
                   </td>
                   <td className="p-4 font-bold text-slate-200 text-sm leading-relaxed">
                     {q.contextContent && (

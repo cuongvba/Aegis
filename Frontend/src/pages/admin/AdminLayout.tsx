@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import {
   ArrowLeft,
   Bot,
@@ -183,8 +184,19 @@ export function AdminLayout() {
 
         {/* Page Content */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto">
-            <Outlet />
+          <div key={location.pathname} className="w-full max-w-7xl mx-auto">
+            <ErrorBoundary>
+              <Suspense
+                fallback={
+                  <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 text-slate-400">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs font-medium">Đang tải phân hệ...</span>
+                  </div>
+                }
+              >
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </main>
       </div>

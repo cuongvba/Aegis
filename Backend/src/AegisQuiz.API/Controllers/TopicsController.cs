@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -722,6 +722,319 @@ namespace AegisQuiz.API.Controllers
             finally
             {
                 if (transaction != null) await transaction.DisposeAsync();
+            }
+        }
+
+        // ── GET api/quiz/topics/pivot-tree ─────────────────────────────────────
+        /// <summary>
+        /// [Universal Multi-Perspective Taxonomy Engine]
+        /// Cung cấp cây phân cấp đa lăng kính xoay trục:
+        /// - by-subject: Môn học ➔ Khối lớp ➔ Kỳ thi/Bộ sách (Dành cho Giáo viên bộ môn)
+        /// - by-grade: Khối lớp ➔ Môn học ➔ Kỳ thi/Bộ sách (Dành cho Khối trưởng / Ban giám hiệu)
+        /// - by-term: Kỳ thi / Học kỳ ➔ Khối lớp ➔ Môn học (Dành cho Ban khảo thí)
+        /// </summary>
+        [HttpGet("pivot-tree")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTaxonomyPivotTree(
+            [FromQuery] string pivot = "by-subject",
+            [FromQuery] string? domainCode = null,
+            [FromQuery] string? grade = null,
+            [FromQuery] string? topicCode = null)
+        {
+            try
+            {
+                var q = _db.Questions.AsNoTracking().AsQueryable();
+                if (!_tenant.IsSystemAdmin && _tenant.CurrentTenantId != Guid.Empty)
+                {
+                    q = q.Where(x => x.TenantId == Guid.Empty || x.TenantId == _tenant.CurrentTenantId);
+                }
+                if (!string.IsNullOrWhiteSpace(domainCode) && domainCode != "ALL")
+                {
+                    q = q.Where(x => x.DomainCode == domainCode);
+                }
+
+                // Thu nạp và phân tích câu hỏi theo hệ tọa độ chuẩn UCTE (SSoT)
+                var allQuestions = await q.ToListAsync();
+                var topicSeeds = AegisQuiz.Application.Services.TaxonomyResourceSeedLoader.GetDefaultTopics();
+                var topicLookup = topicSeeds.ToDictionary(t => t.TopicCode, StringComparer.OrdinalIgnoreCase);
+                var bankTopics = await _db.BankTopics.AsNoTracking().ToListAsync();
+                var topicMap = bankTopics.ToDictionary(t => t.Code, StringComparer.OrdinalIgnoreCase);
+                string GradeExtractor(QuestionBase qb) => UniversalCoordinateTaxonomyEngine.ExtractGrade(qb, topicMap);
+                string TopicExtractor(QuestionBase qb) => UniversalCoordinateTaxonomyEngine.ExtractTopic(qb);
+
+                // Lọc thêm theo tham số yêu cầu
+                if (!string.IsNullOrWhiteSpace(topicCode))
+                {
+                    var resolved = UniversalCoordinateTaxonomyEngine.ResolveTopicCode(topicCode);
+                    allQuestions = allQuestions.Where(x => TopicExtractor(x).Equals(resolved, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+                if (!string.IsNullOrWhiteSpace(grade))
+                {
+                    var cleanG = grade.Trim().ToUpperInvariant();
+                    if (!cleanG.StartsWith("K") && int.TryParse(cleanG, out var gn)) cleanG = $"K{gn:D2}";
+                    allQuestions = allQuestions.Where(x => GradeExtractor(x).Equals(cleanG, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+
+                var rootNodes = new List<TaxonomyPivotTreeNodeDto>();
+
+                if (string.Equals(pivot, "by-grade", StringComparison.OrdinalIgnoreCase))
+                {
+                    // LĂNG KÍNH 2: KHỐI LỚP ➔ MÔN HỌC ➔ KỲ THI/BỘ SÁCH
+                    var gradeGroups = allQuestions.GroupBy(GradeExtractor).OrderBy(g => g.Key);
+                    foreach (var gg in gradeGroups)
+                    {
+                        var gradeNode = new TaxonomyPivotTreeNodeDto
+                        {
+                            Id = $"GRADE_{gg.Key}",
+                            Code = gg.Key,
+                            Label = gg.Key.StartsWith("K") && int.TryParse(gg.Key.Substring(1), out var gn) ? $"Lớp {gn}" : gg.Key,
+                            NodeType = "GRADE",
+                            MaterializedPath = $"/EDU/GRADE/{gg.Key}/",
+                            QuestionCount = gg.Count()
+                        };
+
+                        var subjectSubGroups = gg.GroupBy(TopicExtractor).OrderBy(s => s.Key);
+                        foreach (var sg in subjectSubGroups)
+                        {
+                            var topicInfo = topicLookup.TryGetValue(sg.Key, out var ti) ? ti : null;
+                            var subjectNode = new TaxonomyPivotTreeNodeDto
+                            {
+                                Id = $"GRADE_{gg.Key}_TOPIC_{sg.Key}",
+                                Code = sg.Key,
+                                Label = topicInfo?.TopicName ?? sg.Key,
+                                NodeType = "TOPIC",
+                                MaterializedPath = $"/EDU/GRADE/{gg.Key}/{sg.Key}/",
+                                QuestionCount = sg.Count()
+                            };
+
+                            var leafGroups = sg.GroupBy(x => !string.IsNullOrEmpty(x.FriendlyTopicName) ? x.FriendlyTopicName : (x.CanonicalTopicCode ?? "Chung"));
+                            foreach (var lg in leafGroups)
+                            {
+                                subjectNode.Children.Add(new TaxonomyPivotTreeNodeDto
+                                {
+                                    Id = $"LEAF_{Guid.NewGuid():N}",
+                                    Code = lg.First().CanonicalTopicCode ?? lg.Key,
+                                    Label = lg.Key,
+                                    NodeType = "LEAF",
+                                    MaterializedPath = lg.First().TreePath,
+                                    QuestionCount = lg.Count()
+                                });
+                            }
+
+                            gradeNode.Children.Add(subjectNode);
+                        }
+
+                        rootNodes.Add(gradeNode);
+                    }
+                }
+                else if (string.Equals(pivot, "by-term", StringComparison.OrdinalIgnoreCase))
+                {
+                    // LĂNG KÍNH 3: KỲ THI / HỌC KỲ ➔ KHỐI LỚP ➔ MÔN HỌC
+                    var termGroups = allQuestions.GroupBy(x => !string.IsNullOrEmpty(x.SemesterPhase) ? x.SemesterPhase : "REGULAR").OrderBy(t => t.Key);
+                    foreach (var tg in termGroups)
+                    {
+                        var termNode = new TaxonomyPivotTreeNodeDto
+                        {
+                            Id = $"TERM_{tg.Key}",
+                            Code = tg.Key,
+                            Label = tg.Key,
+                            NodeType = "TERM",
+                            MaterializedPath = $"/EDU/TERM/{tg.Key}/",
+                            QuestionCount = tg.Count()
+                        };
+
+                        var gradeSubGroups = tg.GroupBy(GradeExtractor).OrderBy(g => g.Key);
+                        foreach (var gg in gradeSubGroups)
+                        {
+                            var gradeSubNode = new TaxonomyPivotTreeNodeDto
+                            {
+                                Id = $"TERM_{tg.Key}_GRADE_{gg.Key}",
+                                Code = gg.Key,
+                                Label = gg.Key.StartsWith("K") && int.TryParse(gg.Key.Substring(1), out var gn) ? $"Lớp {gn}" : gg.Key,
+                                NodeType = "GRADE",
+                                MaterializedPath = $"/EDU/TERM/{tg.Key}/{gg.Key}/",
+                                QuestionCount = gg.Count()
+                            };
+
+                            var topicSubGroups = gg.GroupBy(TopicExtractor).OrderBy(s => s.Key);
+                            foreach (var sg in topicSubGroups)
+                            {
+                                var topicInfo = topicLookup.TryGetValue(sg.Key, out var ti) ? ti : null;
+                                gradeSubNode.Children.Add(new TaxonomyPivotTreeNodeDto
+                                {
+                                    Id = $"TERM_{tg.Key}_GRADE_{gg.Key}_TOPIC_{sg.Key}",
+                                    Code = sg.Key,
+                                    Label = topicInfo?.TopicName ?? sg.Key,
+                                    NodeType = "TOPIC",
+                                    MaterializedPath = $"/EDU/TERM/{tg.Key}/{gg.Key}/{sg.Key}/",
+                                    QuestionCount = sg.Count()
+                                });
+                            }
+
+                            termNode.Children.Add(gradeSubNode);
+                        }
+
+                        rootNodes.Add(termNode);
+                    }
+                }
+                else
+                {
+                    // LĂNG KÍNH 1 (MẶC ĐỊNH): MÔN HỌC ➔ KHỐI LỚP ➔ KỲ THI/BỘ SÁCH (Cho Giáo viên bộ môn)
+                    var subjectGroups = allQuestions.GroupBy(TopicExtractor).OrderBy(s => s.Key);
+                    foreach (var sg in subjectGroups)
+                    {
+                        var topicInfo = topicLookup.TryGetValue(sg.Key, out var ti) ? ti : null;
+                        var subjectNode = new TaxonomyPivotTreeNodeDto
+                        {
+                            Id = $"TOPIC_{sg.Key}",
+                            Code = sg.Key,
+                            Label = topicInfo?.TopicName ?? sg.Key,
+                            NodeType = "TOPIC",
+                            MaterializedPath = $"/EDU/SUBJECT/{sg.Key}/",
+                            QuestionCount = sg.Count()
+                        };
+
+                        var gradeSubGroups = sg.GroupBy(GradeExtractor).OrderBy(g => g.Key);
+                        foreach (var gg in gradeSubGroups)
+                        {
+                            var gradeNode = new TaxonomyPivotTreeNodeDto
+                            {
+                                Id = $"TOPIC_{sg.Key}_GRADE_{gg.Key}",
+                                Code = gg.Key,
+                                Label = gg.Key.StartsWith("K") && int.TryParse(gg.Key.Substring(1), out var gn) ? $"Lớp {gn}" : gg.Key,
+                                NodeType = "GRADE",
+                                MaterializedPath = $"/EDU/SUBJECT/{sg.Key}/{gg.Key}/",
+                                QuestionCount = gg.Count()
+                            };
+
+                            var leafGroups = gg.GroupBy(x => !string.IsNullOrEmpty(x.FriendlyTopicName) ? x.FriendlyTopicName : (x.CanonicalTopicCode ?? "Chung"));
+                            foreach (var lg in leafGroups)
+                            {
+                                gradeNode.Children.Add(new TaxonomyPivotTreeNodeDto
+                                {
+                                    Id = $"LEAF_{Guid.NewGuid():N}",
+                                    Code = lg.First().CanonicalTopicCode ?? lg.Key,
+                                    Label = lg.Key,
+                                    NodeType = "LEAF",
+                                    MaterializedPath = lg.First().TreePath,
+                                    QuestionCount = lg.Count()
+                                });
+                            }
+
+                            gradeNode.Children.Add(gradeNode);
+                        }
+
+                        rootNodes.Add(subjectNode);
+                    }
+                }
+
+                return Ok(rootNodes);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi phân phối cây tri thức xoay trục: {ex.Message}" });
+            }
+        }
+
+        // ── GET api/quiz/topics/matrix-summary ──────────────────────────────────
+        /// <summary>
+        /// [Executive Overview] Bảng ma trận 2 chiều tổng hợp tri thức: Môn học (Rows) x Khối lớp (Columns)
+        /// Cho phép Giáo viên & Quản trị viên nắm bắt tức thì độ phủ câu hỏi toàn trường.
+        /// </summary>
+        [HttpGet("matrix-summary")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTaxonomyMatrixSummary([FromQuery] string domainCode = "EDUCATION")
+        {
+            try
+            {
+                var q = _db.Questions.AsNoTracking().AsQueryable();
+                if (!_tenant.IsSystemAdmin && _tenant.CurrentTenantId != Guid.Empty)
+                {
+                    q = q.Where(x => x.TenantId == Guid.Empty || x.TenantId == _tenant.CurrentTenantId);
+                }
+                if (!string.IsNullOrWhiteSpace(domainCode) && domainCode != "ALL")
+                {
+                    q = q.Where(x => x.DomainCode == domainCode);
+                }
+
+                var questions = await q.ToListAsync();
+
+                var topicSeeds = AegisQuiz.Application.Services.TaxonomyResourceSeedLoader.GetDefaultTopics();
+                var topicLookup = topicSeeds.ToDictionary(t => t.TopicCode, StringComparer.OrdinalIgnoreCase);
+                var bankTopics = await _db.BankTopics.AsNoTracking().ToListAsync();
+                var topicMap = bankTopics.ToDictionary(t => t.Code, StringComparer.OrdinalIgnoreCase);
+
+                string GradeExtractor(QuestionBase qb) => UniversalCoordinateTaxonomyEngine.ExtractGrade(qb, topicMap);
+                string TopicExtractor(QuestionBase qb) => UniversalCoordinateTaxonomyEngine.ExtractTopic(qb);
+
+                // Xác định danh sách khối lớp hiển thị (Columns)
+                var standardGrades = (domainCode == "EDUCATION")
+                    ? new List<string> { "K06", "K07", "K08", "K09", "K10", "K11", "K12" }
+                    : Enumerable.Range(1, 12).Select(i => $"K{i:D2}").ToList();
+
+                var extractedGrades = questions
+                    .Select(GradeExtractor)
+                    .Where(g => !string.IsNullOrWhiteSpace(g) && g != "K_GEN")
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var allGrades = standardGrades
+                    .Union(extractedGrades, StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(g => g)
+                    .ToList();
+
+                // Tổng hợp theo Môn học (Rows)
+                var topicGroups = questions.GroupBy(TopicExtractor).OrderBy(g => g.Key);
+                var rows = new List<TaxonomyMatrixRowDto>();
+
+                foreach (var tg in topicGroups)
+                {
+                    var topicCode = tg.Key;
+                    var topicInfo = topicLookup.TryGetValue(topicCode, out var ti) ? ti : null;
+                    var topicName = topicInfo?.TopicName 
+                                    ?? (topicMap.TryGetValue(topicCode, out var bt) ? bt.Name : topicCode);
+
+                    var countsByGrade = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var g in allGrades)
+                    {
+                        countsByGrade[g] = 0;
+                    }
+
+                    foreach (var qItem in tg)
+                    {
+                        var grade = GradeExtractor(qItem);
+                        if (countsByGrade.ContainsKey(grade))
+                        {
+                            countsByGrade[grade]++;
+                        }
+                        else
+                        {
+                            countsByGrade[grade] = 1;
+                        }
+                    }
+
+                    rows.Add(new TaxonomyMatrixRowDto
+                    {
+                        TopicCode = topicCode,
+                        TopicName = topicName,
+                        CountsByGrade = countsByGrade,
+                        TotalQuestions = tg.Count()
+                    });
+                }
+
+                var summary = new TaxonomyMatrixSummaryDto
+                {
+                    DomainCode = domainCode ?? "EDUCATION",
+                    Grades = allGrades,
+                    Rows = rows,
+                    GrandTotalQuestions = questions.Count
+                };
+
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi tổng hợp ma trận tri thức: {ex.Message}" });
             }
         }
 

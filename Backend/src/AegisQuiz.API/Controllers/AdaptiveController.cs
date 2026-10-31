@@ -9,6 +9,7 @@ using AegisQuiz.Application.DTOs;
 using AegisQuiz.Application.Interfaces;
 using AegisQuiz.Domain.Entities;
 using AegisQuiz.Infrastructure.Data;
+using AegisQuiz.Infrastructure.Services;
 
 namespace AegisQuiz.API.Controllers
 {
@@ -342,16 +343,32 @@ namespace AegisQuiz.API.Controllers
                     else
                     {
                         var descendants = await GetDescendantCodesAsync(topicConf.TopicKey);
+                        var key = topicConf.TopicKey.Trim();
+
                         all = await _db.Questions
-                            .Where(q => descendants.Contains(q.CategoryCode) || q.CategoryCode == topicConf.TopicKey || (q.DomainCode != null && q.DomainCode == topicConf.TopicKey))
+                            .Where(q => descendants.Contains(q.CategoryCode) || q.CategoryCode == key || (q.DomainCode != null && q.DomainCode == key))
                             .ToListAsync();
 
                         if (all.Count == 0)
                         {
-                            all = await _db.Questions
-                                .Where(q => EF.Functions.ILike(q.CategoryCode, $"%{topicConf.TopicKey}%") || 
-                                            (q.DomainCode != null && EF.Functions.ILike(q.DomainCode, $"%{topicConf.TopicKey}%")))
-                                .ToListAsync();
+                            var pool = await _db.Questions.ToListAsync();
+                            var resolvedKey = UniversalCoordinateTaxonomyEngine.ResolveTopicCode(key);
+                            all = pool.Where(q =>
+                                (q.CategoryCode != null && (
+                                    q.CategoryCode.Equals(key, StringComparison.OrdinalIgnoreCase) ||
+                                    q.CategoryCode.Equals(resolvedKey, StringComparison.OrdinalIgnoreCase) ||
+                                    UniversalCoordinateTaxonomyEngine.ResolveTopicCode(q.CategoryCode).Equals(resolvedKey, StringComparison.OrdinalIgnoreCase)
+                                )) ||
+                                (q.DomainCode != null && q.DomainCode.Equals(key, StringComparison.OrdinalIgnoreCase)) ||
+                                (q.TreePath != null && (q.TreePath.Equals(key, StringComparison.OrdinalIgnoreCase)
+                                                       || q.TreePath.Contains("/" + key + "/")
+                                                       || q.TreePath.StartsWith(key + "/")
+                                                       || q.TreePath.EndsWith("/" + key))) ||
+                                (q.CanonicalTopicCode != null && (q.CanonicalTopicCode.Equals(key, StringComparison.OrdinalIgnoreCase)
+                                                               || q.CanonicalTopicCode.Contains(key, StringComparison.OrdinalIgnoreCase))) ||
+                                (q.Grade != null && q.Grade.Equals(key, StringComparison.OrdinalIgnoreCase)) ||
+                                (q.TargetLevel != null && q.TargetLevel.Contains(key, StringComparison.OrdinalIgnoreCase))
+                            ).ToList();
                         }
 
                         // Nếu vẫn không có câu hỏi nào và database có câu hỏi, fallback lấy pool câu hỏi để học viên không bị màn hình trắng

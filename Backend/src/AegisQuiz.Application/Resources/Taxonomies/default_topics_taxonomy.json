@@ -1,0 +1,409 @@
+[
+  {
+    "TopicCode": "MATH",
+    "StandardIscedCode": "MATH",
+    "TopicName": "Toán học",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Toán học",
+      "en": "Mathematics",
+      "fr": "Mathématiques",
+      "zh": "数学",
+      "ja": "数学"
+    },
+    "Aliases": ["MATH", "TOAN", "TOAN_HOC", "MATHEMATICS"],
+    "LocalizedKeywords": {
+      "vi": ["toán", "toan", "toán học", "toan hoc", "môn toán", "mon toan", "giải tích", "hình học", "hàm số", "đồ thị", "tích phân", "đạo hàm", "nguyên hàm", "xác suất", "tiệm cận", "vectơ", "vector", "phương trình", "bất phương trình", "tọa độ", "oxyz", "bảng biến thiên", "cực trị"],
+      "en": ["math", "mathematics", "calculus", "algebra", "geometry", "derivative", "integral", "matrix", "vector", "probability"]
+    },
+    "OntologicalTerms": ["đạo hàm", "tích phân", "nguyên hàm", "tiệm cận", "\\frac", "\\sqrt", "\\int", "\\lim", "\\log", "\\ln", "\\vec", "\\delta", "f(x)", "y =", "x =", "dx", "dy"]
+  },
+  {
+    "TopicCode": "HOA_HOC",
+    "StandardIscedCode": "CHEM",
+    "TopicName": "Hóa học",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Hóa học",
+      "en": "Chemistry",
+      "fr": "Chimie",
+      "zh": "化学",
+      "ja": "化学"
+    },
+    "Aliases": ["CHEM", "HOA_HOC", "HOA", "CHEMISTRY", "CHIMIE"],
+    "LocalizedKeywords": {
+      "vi": ["hoá học", "hóa học", "hoá", "hóa", "hoa hoc", "hoa", "môn hoá học", "môn hóa học", "môn hoá", "môn hóa", "axit", "acid", "bazo", "bazơ", "muối", "ancol", "alcohol", "este", "ester", "amino acid", "polime", "polymer", "dung dịch", "kết tủa", "kim loại", "chất khử", "chất oxi hóa"],
+      "en": ["chemistry", "chemical", "reaction", "acid", "base", "solution", "precipitate", "polymer", "ester", "alcohol", "mole", "catalyst"],
+      "fr": ["chimie", "acide", "solution", "réaction"]
+    },
+    "OntologicalTerms": ["mol", "axit", "acid", "bazơ", "bazo", "muối", "ancol", "este", "glycine", "glucose", "fructose", "dung dịch", "kết tủa", "hcl", "h2so4", "naoh", "fe", "cu", "al"]
+  },
+  {
+    "TopicCode": "VAT_LY",
+    "StandardIscedCode": "PHYS",
+    "TopicName": "Vật lý",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Vật lý",
+      "en": "Physics",
+      "fr": "Physique",
+      "zh": "物理",
+      "ja": "物理"
+    },
+    "Aliases": ["PHYS", "VAT_LY", "VAT_LI", "PHYSICS", "PHYSIQUE"],
+    "LocalizedKeywords": {
+      "vi": ["vật lí", "vật lý", "vat li", "vat ly", "môn vật lí", "môn vật lý", "nhiệt lượng", "nhiệt dung", "chuyển thể", "khí lí tưởng", "đẳng nhiệt", "đẳng tích", "đẳng áp", "phóng xạ", "hạt nhân", "tia alpha", "tia beta", "tia gamma", "quang điện", "lực từ", "cảm ứng từ", "suất điện động", "từ trường", "bước sóng", "tần số", "dao động", "dòng điện"],
+      "en": ["physics", "quantum", "thermodynamics", "optics", "magnetic", "electric", "wavelength", "frequency", "oscillation", "mechanics"]
+    },
+    "OntologicalTerms": ["dao động điều hòa", "bước sóng", "tần số", "suất điện động", "từ trường", "quang điện", "phóng xạ", "hạt nhân", "đẳng nhiệt", "đẳng áp"]
+  },
+  {
+    "TopicCode": "SINH_HOC",
+    "StandardIscedCode": "BIO",
+    "TopicName": "Sinh học",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Sinh học",
+      "en": "Biology",
+      "fr": "Biologie",
+      "zh": "生物",
+      "ja": "生物学"
+    },
+    "Aliases": ["BIO", "SINH_HOC", "SINH", "BIOLOGY"],
+    "LocalizedKeywords": {
+      "vi": ["sinh học", "sinh", "môn sinh học", "môn sinh", "gen", "adn", "arn", "nhiễm sắc thể", "đột biến", "quần thể", "hệ sinh thái", "tiêu hóa", "tuần hoàn", "alen", "thế hệ f1", "thế hệ f2", "di truyền", "tế bào"],
+      "en": ["biology", "genetics", "chromosome", "mutation", "ecosystem", "dna", "rna", "allele", "cell", "organism"]
+    },
+    "OntologicalTerms": ["nhiễm sắc thể", "đột biến gen", "thế hệ f1", "thế hệ f2", "alen", "adn", "arn", "quần thể", "hệ sinh thái"]
+  },
+  {
+    "TopicCode": "KHTN",
+    "StandardIscedCode": "NAT_SCI",
+    "TopicName": "Khoa học tự nhiên",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Khoa học tự nhiên",
+      "en": "Natural Sciences",
+      "fr": "Sciences Naturelles",
+      "zh": "自然科学"
+    },
+    "Aliases": ["NAT_SCI", "KHTN", "NATURAL_SCIENCE", "KHOA_HOC_TU_NHIEN"],
+    "LocalizedKeywords": {
+      "vi": ["khoa học tự nhiên", "khoa hoc tu nhien", "khtn", "môn khtn", "khtn 7", "khtn 6", "khtn 8", "khtn 9", "bài thi khtn", "môn khoa học tự nhiên", "quang hợp", "hô hấp tế bào", "nguyên tử", "phân tử", "bảng tuần hoàn", "tốc độ", "âm thanh", "ánh sáng", "nam châm"],
+      "en": ["natural science", "integrated science", "general science"]
+    },
+    "OntologicalTerms": ["quang hợp", "hô hấp tế bào", "bảng tuần hoàn", "nguyên tử", "phân tử", "nam châm", "tốc độ chuyển động"]
+  },
+  {
+    "TopicCode": "TIENG_ANH",
+    "StandardIscedCode": "LANG_EN",
+    "TopicName": "Tiếng Anh",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Anh",
+      "en": "English",
+      "fr": "Anglais",
+      "zh": "英语",
+      "ja": "英語"
+    },
+    "Aliases": ["LANG_EN", "TIENG_ANH", "ENGLISH", "ENG"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng anh", "tieng anh", "môn tiếng anh", "bài thi tiếng anh", "ngoại ngữ 1", "ngoại ngữ", "ngoaingu"],
+      "en": ["english", "foreign language", "reading comprehension", "pronunciation", "primary stress", "closest in meaning", "opposite in meaning", "underlined part", "synonym", "antonym", "read the following passage", "toeic", "ielts"]
+    },
+    "OntologicalTerms": ["primary stress", "closest in meaning", "opposite in meaning", "reading passage", "pronunciation", "grammar"]
+  },
+  {
+    "TopicCode": "TIENG_PHAP",
+    "StandardIscedCode": "LANG_FR",
+    "TopicName": "Tiếng Pháp",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Pháp",
+      "en": "French",
+      "fr": "Français"
+    },
+    "Aliases": ["LANG_FR", "TIENG_PHAP", "FRENCH", "FRANCAIS", "FRA"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng pháp", "tieng phap", "môn tiếng pháp"],
+      "fr": ["français", "langue française", "exercice", "conjuguez", "grammaire", "vocabulaire"]
+    },
+    "OntologicalTerms": ["conjuguez", "langue française", "grammaire"]
+  },
+  {
+    "TopicCode": "TIENG_TRUNG",
+    "StandardIscedCode": "LANG_ZH",
+    "TopicName": "Tiếng Trung Quốc",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Trung Quốc",
+      "en": "Chinese",
+      "zh": "中文"
+    },
+    "Aliases": ["LANG_ZH", "TIENG_TRUNG", "CHINESE", "ZHONGWEN", "ZHO"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng trung", "tiếng hoa", "tieng trung", "môn tiếng trung", "hán ngữ", "chữ hán"],
+      "zh": ["chinese", "hsk", "pinyin", "汉语", "中文"]
+    },
+    "OntologicalTerms": ["hsk", "pinyin", "chữ hán", "汉语", "中文"]
+  },
+  {
+    "TopicCode": "TIENG_NHAT",
+    "StandardIscedCode": "LANG_JA",
+    "TopicName": "Tiếng Nhật Bản",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Nhật Bản",
+      "en": "Japanese",
+      "ja": "日本語"
+    },
+    "Aliases": ["LANG_JA", "TIENG_NHAT", "JAPANESE", "NIHONGO", "JPN"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng nhật", "tieng nhat", "môn tiếng nhật"],
+      "ja": ["japanese", "jlpt", "nihongo", "kanji", "hiragana", "katakana", "日本語"]
+    },
+    "OntologicalTerms": ["jlpt", "kanji", "hiragana", "katakana", "日本語"]
+  },
+  {
+    "TopicCode": "TIENG_HAN",
+    "StandardIscedCode": "LANG_KO",
+    "TopicName": "Tiếng Hàn Quốc",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Hàn Quốc",
+      "en": "Korean",
+      "ko": "한국어"
+    },
+    "Aliases": ["LANG_KO", "TIENG_HAN", "KOREAN", "HANGUL", "KOR"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng hàn", "tieng han", "môn tiếng hàn"],
+      "ko": ["korean", "topik", "hangul", "한국어"]
+    },
+    "OntologicalTerms": ["topik", "hangul", "한국어"]
+  },
+  {
+    "TopicCode": "TIENG_DUC",
+    "StandardIscedCode": "LANG_DE",
+    "TopicName": "Tiếng Đức",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Đức",
+      "en": "German",
+      "de": "Deutsch"
+    },
+    "Aliases": ["LANG_DE", "TIENG_DUC", "GERMAN", "DEUTSCH", "DEU"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng đức", "tieng duc", "môn tiếng đức"],
+      "de": ["german", "deutsch", "goethe"]
+    },
+    "OntologicalTerms": ["goethe", "deutsch"]
+  },
+  {
+    "TopicCode": "TIENG_NGA",
+    "StandardIscedCode": "LANG_RU",
+    "TopicName": "Tiếng Nga",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tiếng Nga",
+      "en": "Russian",
+      "ru": "Русский"
+    },
+    "Aliases": ["LANG_RU", "TIENG_NGA", "RUSSIAN", "RUS"],
+    "LocalizedKeywords": {
+      "vi": ["tiếng nga", "tieng nga", "môn tiếng nga"],
+      "ru": ["russian", "русский"]
+    },
+    "OntologicalTerms": ["русский"]
+  },
+  {
+    "TopicCode": "NGU_VAN",
+    "StandardIscedCode": "LIT",
+    "TopicName": "Ngữ văn",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Ngữ văn",
+      "en": "Literature",
+      "fr": "Littérature"
+    },
+    "Aliases": ["LIT", "NGU_VAN", "VAN", "LITERATURE"],
+    "LocalizedKeywords": {
+      "vi": ["ngữ văn", "văn học", "văn", "môn văn", "môn ngữ văn", "tác phẩm", "nhà thơ", "nhà văn", "đoạn trích", "nghị luận xã hội", "nghị luận văn học", "truyện ngắn"],
+      "en": ["literature", "poem", "novel", "prose", "essay"]
+    },
+    "OntologicalTerms": ["nghị luận xã hội", "nghị luận văn học", "đoạn trích", "nhà thơ", "nhà văn", "tác phẩm"]
+  },
+  {
+    "TopicCode": "LICH_SU",
+    "StandardIscedCode": "HIST",
+    "TopicName": "Lịch sử",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Lịch sử",
+      "en": "History",
+      "fr": "Histoire"
+    },
+    "Aliases": ["HIST", "LICH_SU", "SU", "HISTORY"],
+    "LocalizedKeywords": {
+      "vi": ["lịch sử", "sử", "môn lịch sử", "môn sử", "chiến dịch", "khởi nghĩa", "hiệp định", "cách mạng", "chiến tranh", "kháng chiến"],
+      "en": ["history", "revolution", "treaty", "campaign", "uprising"]
+    },
+    "OntologicalTerms": ["chiến dịch", "khởi nghĩa", "hiệp định", "cách mạng", "kháng chiến"]
+  },
+  {
+    "TopicCode": "DIA_LY",
+    "StandardIscedCode": "GEOG",
+    "TopicName": "Địa lý",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Địa lý",
+      "en": "Geography",
+      "fr": "Géographie"
+    },
+    "Aliases": ["GEOG", "DIA_LY", "DIA_LI", "GEOGRAPHY"],
+    "LocalizedKeywords": {
+      "vi": ["địa lý", "địa lí", "địa", "dia", "môn địa", "môn địa lý", "môn địa lí", "khí hậu", "địa hình", "dân số", "đồng bằng", "sông ngòi", "vùng kinh tế", "biển đảo"],
+      "en": ["geography", "climate", "topography", "population", "economic zone"]
+    },
+    "OntologicalTerms": ["khí hậu", "địa hình", "vùng kinh tế", "đồng bằng", "sông ngòi"]
+  },
+  {
+    "TopicCode": "LS_DL",
+    "StandardIscedCode": "HIST_GEOG",
+    "TopicName": "Lịch sử và Địa lý",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Lịch sử và Địa lý",
+      "en": "History and Geography"
+    },
+    "Aliases": ["HIST_GEOG", "LS_DL", "LS&DL", "SU_DIA", "LICH_SU_DIA_LY"],
+    "LocalizedKeywords": {
+      "vi": ["lịch sử và địa lý", "lịch sử và địa lí", "ls&dl", "ls_dl", "ls và dl", "môn lịch sử và địa lý", "sử địa", "đại cồ việt", "nhà lý", "nhà trần", "châu á", "châu âu"],
+      "en": ["history and geography", "social studies"]
+    },
+    "OntologicalTerms": ["đại cồ việt", "nhà lý", "nhà trần", "châu á", "châu âu"]
+  },
+  {
+    "TopicCode": "GDKT_PL",
+    "StandardIscedCode": "CIVIC_LAW",
+    "TopicName": "Giáo dục Kinh tế & Pháp luật",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Giáo dục Kinh tế & Pháp luật",
+      "en": "Economics & Law Education"
+    },
+    "Aliases": ["CIVIC_LAW", "GDKT_PL", "GDKT&PL", "GDKT"],
+    "LocalizedKeywords": {
+      "vi": ["giáo dục kinh tế và pháp luật", "gdkt&pl", "gdkt", "kinh tế pháp luật", "pháp luật", "kinh tế", "thị trường", "lạm phát", "ngân sách", "quyền công dân"],
+      "en": ["economics and law", "civic law"]
+    },
+    "OntologicalTerms": ["lạm phát", "ngân sách", "quyền công dân", "thị trường", "pháp luật"]
+  },
+  {
+    "TopicCode": "GDCD",
+    "StandardIscedCode": "CIVICS",
+    "TopicName": "Giáo dục công dân",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Giáo dục công dân",
+      "en": "Civic Education"
+    },
+    "Aliases": ["CIVICS", "GDCD", "DAO_DUC", "CONG_DAN"],
+    "LocalizedKeywords": {
+      "vi": ["giáo dục công dân", "gdcd", "môn gdcd", "đạo đức", "kỹ năng sống", "chuẩn mực đạo đức"],
+      "en": ["civic education", "citizenship", "ethics"]
+    },
+    "OntologicalTerms": ["đạo đức", "kỹ năng sống", "chuẩn mực"]
+  },
+  {
+    "TopicCode": "TIN_HOC",
+    "StandardIscedCode": "CS",
+    "TopicName": "Tin học",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Tin học",
+      "en": "Informatics & Computer Science"
+    },
+    "Aliases": ["CS", "TIN_HOC", "CNTT", "INFORMATICS", "COMPUTER_SCIENCE"],
+    "LocalizedKeywords": {
+      "vi": ["tin học", "tin hoc", "môn tin học", "mon tin hoc", "môn tin", "mon tin", "bài thi tin học", "tin", "công nghệ thông tin", "cntt", "lập trình", "thuật toán", "python", "máy tính", "mạng máy tính", "cơ sở dữ liệu", "sql"],
+      "en": ["informatics", "computer science", "programming", "algorithm", "database", "python", "coding"]
+    },
+    "OntologicalTerms": ["thuật toán", "lập trình", "python", "sql", "mạng máy tính", "cơ sở dữ liệu"]
+  },
+  {
+    "TopicCode": "CONG_NGHE",
+    "StandardIscedCode": "TECH_ENG",
+    "TopicName": "Công nghệ",
+    "DomainCode": "EDUCATION",
+    "LocalizedNames": {
+      "vi": "Công nghệ",
+      "en": "Technology & Engineering"
+    },
+    "Aliases": ["TECH_ENG", "CONG_NGHE", "TECHNOLOGY"],
+    "LocalizedKeywords": {
+      "vi": ["công nghệ", "môn công nghệ", "kĩ thuật", "kỹ thuật", "trồng trọt", "chăn nuôi", "cơ khí", "điện gia dụng", "mạch điện", "vẽ kỹ thuật"],
+      "en": ["technology", "engineering", "technical design"]
+    },
+    "OntologicalTerms": ["mạch điện", "vẽ kỹ thuật", "cơ khí", "chăn nuôi", "trồng trọt"]
+  },
+  {
+    "TopicCode": "382",
+    "StandardIscedCode": "BANK_CREDIT",
+    "TopicName": "Nghiệp vụ Tín dụng",
+    "DomainCode": "BANKING",
+    "LocalizedNames": {
+      "vi": "Nghiệp vụ Tín dụng",
+      "en": "Credit Banking Operations"
+    },
+    "Aliases": ["382", "TIN_DUNG", "CREDIT_BANKING"],
+    "LocalizedKeywords": {
+      "vi": ["tín dụng", "cho vay", "thế chấp", "nợ xấu", "tài sản bảo đảm", "giải ngân", "hạn mức", "cic", "thẩm định"]
+    },
+    "OntologicalTerms": ["tín dụng", "thế chấp", "nợ xấu", "giải ngân", "hạn mức", "cic"]
+  },
+  {
+    "TopicCode": "381",
+    "StandardIscedCode": "BANK_TREASURY",
+    "TopicName": "Nghiệp vụ Ngân quỹ - Kế toán",
+    "DomainCode": "BANKING",
+    "LocalizedNames": {
+      "vi": "Nghiệp vụ Ngân quỹ - Kế toán",
+      "en": "Treasury & Accounting Operations"
+    },
+    "Aliases": ["381", "NGAN_QUY", "KE_TOAN_NGAN_HANG"],
+    "LocalizedKeywords": {
+      "vi": ["ngân quỹ", "kế toán", "kho tiền", "chìa khóa", "niêm phong", "kiểm quỹ", "chứng từ"]
+    },
+    "OntologicalTerms": ["kho tiền", "niêm phong", "kiểm quỹ", "ngân quỹ", "chứng từ"]
+  },
+  {
+    "TopicCode": "PARTY_BUILDING",
+    "StandardIscedCode": "PARTY_BUILDING",
+    "TopicName": "Công tác Xây dựng Đảng",
+    "DomainCode": "GENERAL",
+    "LocalizedNames": {
+      "vi": "Công tác Xây dựng Đảng",
+      "en": "Party Building Affairs"
+    },
+    "Aliases": ["PARTY_BUILDING", "XAY_DUNG_DANG", "DANG_BO"],
+    "LocalizedKeywords": {
+      "vi": ["đảng", "chi bộ", "đảng viên", "nghị quyết", "ban chấp hành", "điều lệ đảng"]
+    },
+    "OntologicalTerms": ["chi bộ", "đảng viên", "điều lệ đảng", "nghị quyết"]
+  },
+  {
+    "TopicCode": "LAW",
+    "StandardIscedCode": "LEGAL_COMPLIANCE",
+    "TopicName": "Pháp chế & Tuân thủ",
+    "DomainCode": "GENERAL",
+    "LocalizedNames": {
+      "vi": "Pháp chế & Tuân thủ",
+      "en": "Legal & Compliance"
+    },
+    "Aliases": ["LAW", "PHAP_CHE", "TUAN_THU", "LEGAL"],
+    "LocalizedKeywords": {
+      "vi": ["pháp chế", "luật", "nghị định", "thông tư", "xử phạt", "quy chuẩn"]
+    },
+    "OntologicalTerms": ["nghị định", "thông tư", "pháp chế", "quy chuẩn"]
+  }
+]

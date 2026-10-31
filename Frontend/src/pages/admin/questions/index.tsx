@@ -19,7 +19,6 @@ import { QuestionModal } from './components/QuestionModal';
 import { TopicModal } from './components/TopicModal';
 import { DocxPreviewModal } from './components/DocxPreviewModal';
 import { AiGenerateModal } from './components/AiGenerateModal';
-import { RuleStudioTab } from './components/RuleStudioTab';
 import { BatchContextModal } from './components/BatchContextModal';
 import { BatchTagModal } from './components/BatchTagModal';
 import { TenantGovernanceModal } from './components/TenantGovernanceModal';
@@ -30,6 +29,8 @@ import { ExcelPreviewModal } from './components/ExcelPreviewModal';
 import { BatchActionBar } from './components/BatchActionBar';
 import { QuestionTableSection } from './components/QuestionTableSection';
 import { TopicTableSection } from './components/TopicTableSection';
+import { TaxonomyPivotDrawer } from './components/TaxonomyPivotDrawer';
+import { TaxonomyMatrixModal } from './components/TaxonomyMatrixModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -54,7 +55,7 @@ export function AdminQuestionsPage() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isTeamLeader = user?.role === 'TeamLeader';
-  const [activeTab, setActiveTab] = useState<'questions' | 'topics' | 'rules'>('questions');
+  const [activeTab, setActiveTab] = useState<'questions' | 'topics'>('questions');
   const [questions, setQuestions] = useState<LearnerQuestion[]>([]);
   const [topics, setTopics] = useState<BankTopic[]>([]);
   const [loading, setLoading] = useState(false);
@@ -119,6 +120,8 @@ export function AdminQuestionsPage() {
   const [showGovernanceModal, setShowGovernanceModal] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isCleaningOrphans, setIsCleaningOrphans] = useState(false);
+  const [showPivotDrawer, setShowPivotDrawer] = useState(false);
+  const [showMatrixModal, setShowMatrixModal] = useState(false);
 
   // Custom Hooks
   const qFilters = useQuestionFilters(questions, topics, user);
@@ -339,14 +342,25 @@ export function AdminQuestionsPage() {
         </div>
       )}
 
-      <div className="flex border-b border-slate-800 gap-6">
-        <button onClick={() => setActiveTab('questions')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'questions' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.questions')} ({questions.length})</button>
-        <button onClick={() => setActiveTab('topics')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'topics' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.topics')} ({topics.length})</button>
-        <button onClick={() => setActiveTab('rules')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase flex items-center gap-1.5 ${activeTab === 'rules' ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-500'}`}><Cpu size={15} /> {t('tabs.rules')}</button>
+      <div className="flex items-center justify-between border-b border-slate-800 pb-0">
+        <div className="flex gap-6">
+          <button onClick={() => setActiveTab('questions')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'questions' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.questions')} ({questions.length})</button>
+          <button onClick={() => setActiveTab('topics')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'topics' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.topics')} ({topics.length})</button>
+        </div>
+        {user?.role !== 'Learner' && user?.role !== 'GuestViewer' && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/parsing-rules')}
+            className="mb-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-950/40 text-purple-300 border border-purple-500/30 font-bold text-xs hover:bg-purple-900/50 hover:text-white transition-all cursor-pointer shadow-sm"
+            title="Chỉ Admin mới có quyền cấu hình ParsingRules"
+          >
+            <Cpu size={13} className="text-purple-400" />
+            Quản Lý Quy Tắc CIG &rarr;
+          </button>
+        )}
       </div>
 
-      {activeTab === 'rules' ? <RuleStudioTab /> : (
-        <div className="bg-slate-900/60 rounded-3xl border border-slate-800 overflow-hidden backdrop-blur-xl">
+      <div className="bg-slate-900/60 rounded-3xl border border-slate-800 overflow-hidden backdrop-blur-xl">
           <div className="p-6 border-b border-slate-850 bg-slate-900/30 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">{activeTab === 'questions' ? <><HelpCircle size={20} className="text-purple-400" /> {t('tabs.questionsCardTitle')}</> : <><Layers size={20} className="text-blue-400" /> {t('tabs.topicsCardTitle')}</>}</h2>
             <button onClick={fetchData} className="text-xs text-slate-400 hover:text-white font-bold tracking-wider uppercase bg-slate-950/60 border border-slate-850 px-3.5 py-1.5 rounded-full cursor-pointer">{t('actions.refresh')}</button>
@@ -361,6 +375,14 @@ export function AdminQuestionsPage() {
               qSearch={qFilters.qSearch} setQSearch={qFilters.setQSearch} qDomainFilter={qFilters.qDomainFilter} setQDomainFilter={qFilters.setQDomainFilter}
               qTopicFilter={qFilters.qTopicFilter} setQTopicFilter={qFilters.setQTopicFilter} qTypeFilter={qFilters.qTypeFilter} setQTypeFilter={qFilters.setQTypeFilter}
               showMissingOnly={qFilters.showMissingOnly} setShowMissingOnly={qFilters.setShowMissingOnly} qTagFilter={qFilters.qTagFilter} setQTagFilter={qFilters.setQTagFilter}
+              qGradeFilter={qFilters.qGradeFilter} setQGradeFilter={qFilters.setQGradeFilter}
+              qTreePathFilter={qFilters.qTreePathFilter} setQTreePathFilter={qFilters.setQTreePathFilter}
+              qCanonicalTopicFilter={qFilters.qCanonicalTopicFilter} setQCanonicalTopicFilter={qFilters.setQCanonicalTopicFilter}
+              qExamFilter={qFilters.qExamFilter} setQExamFilter={qFilters.setQExamFilter}
+              availableExams={qFilters.availableExams}
+              qViewMode={qFilters.qViewMode} setQViewMode={qFilters.setQViewMode}
+              onOpenPivotDrawer={() => setShowPivotDrawer(true)}
+              onOpenMatrixModal={() => setShowMatrixModal(true)}
               qPage={qFilters.qPage} setQPage={qFilters.setQPage} qPageSize={qFilters.qPageSize} qTotalPages={qFilters.qTotalPages}
               qSortField={qFilters.qSortField} setQSortField={qFilters.setQSortField} qSortAsc={qFilters.qSortAsc} setQSortAsc={qFilters.setQSortAsc}
               renderSortIcon={renderSortIcon} setSelectedContext={setSelectedContext} openEditModal={openEditModal} setIsEditing={setIsEditing}
@@ -380,7 +402,6 @@ export function AdminQuestionsPage() {
             />
           )}
         </div>
-      )}
 
       {/* Modals */}
       <QuestionModal isOpen={isModalOpen} isEditing={isEditing} editingId={editingId} hasWritePermission={hasWritePermission} currentUser={user} scope={formScope} setScope={setFormScope} questions={questions} topics={topics} content={content} questionType={questionType} difficulty={difficulty} categoryCode={categoryCode} durationSeconds={durationSeconds} options={options} citation={citation} correctAnswer={correctAnswer} contentType={contentType} optionType={optionType} setContent={setContent} setQuestionType={setQuestionType} setDifficulty={setDifficulty} setCategoryCode={setCategoryCode} setDurationSeconds={setDurationSeconds} setOptions={setOptions} setCitation={setCitation} setCorrectAnswer={setCorrectAnswer} setContentType={setContentType} setOptionType={setOptionType} setIsEditing={setIsEditing} contexts={availableContexts} contextId={currentContextId} contextTitle={currentContextTitle} contextContent={currentContextContent} setContextId={setCurrentContextId} setContextTitle={setCurrentContextTitle} setContextContent={setCurrentContextContent} isStickyContext={isStickyContext} setIsStickyContext={setIsStickyContext} stickyCount={stickyCount} setStickyCount={setStickyCount} onSaveAndContinue={handleSaveAndContinue} domainCode={formDomainCode} setDomainCode={setFormDomainCode} tags={formTags} setTags={setFormTags} targetLevel={formTargetLevel} setTargetLevel={setFormTargetLevel} assessmentPurpose={formAssessmentPurpose} setAssessmentPurpose={setFormAssessmentPurpose} issuingOrg={formIssuingOrg} setIssuingOrg={setFormIssuingOrg} benchmarkYear={formBenchmarkYear} setBenchmarkYear={setFormBenchmarkYear} onClose={() => setIsModalOpen(false)} onSave={handleSave} onOpenAdd={openAddModal} onOpenEdit={openEditModal} onDelete={handleDelete} onToggleActive={handleToggleActive} />
@@ -395,6 +416,28 @@ export function AdminQuestionsPage() {
       <BatchContextModal isOpen={showBatchContextModal} onClose={() => setShowBatchContextModal(false)} selectedCount={selectedQuestionIds.length} contexts={availableContexts} onConfirm={async data => { setIsBatchAssigning(true); try { await learnerQuizService.batchAssignContext({ questionIds: selectedQuestionIds, ...data }); setSelectedQuestionIds([]); setShowBatchContextModal(false); fetchData(); } catch { alert('Assign failed'); } finally { setIsBatchAssigning(false); } }} isAssigning={isBatchAssigning} />
       <BatchTagModal isOpen={showBatchTagModal} onClose={() => setShowBatchTagModal(false)} selectedCount={selectedQuestionIds.length} selectedQuestionIds={selectedQuestionIds} onApply={async data => { setIsBatchTagging(true); try { await learnerQuizService.batchAssignTags({ questionIds: selectedQuestionIds, ...data }); setSelectedQuestionIds([]); setShowBatchTagModal(false); fetchData(); } catch { alert('Tagging failed'); } finally { setIsBatchTagging(false); } }} isSubmitting={isBatchTagging} />
       <TenantGovernanceModal isOpen={showGovernanceModal} onClose={() => setShowGovernanceModal(false)} />
+      <TaxonomyPivotDrawer
+        isOpen={showPivotDrawer}
+        onClose={() => setShowPivotDrawer(false)}
+        domainCode={qFilters.qDomainFilter === 'ALL' ? 'EDUCATION' : qFilters.qDomainFilter}
+        onApplyFilter={(facet: { topicCode?: string; grade?: string; series?: string; term?: string; termPhase?: string; treePath?: string }) => {
+          if (facet.treePath) qFilters.setQTreePathFilter(facet.treePath);
+          if (facet.topicCode) qFilters.setQTopicFilter(facet.topicCode);
+          if (facet.grade) qFilters.setQGradeFilter(facet.grade);
+          if (facet.series) qFilters.setQCurriculumSeriesFilter(facet.series);
+          const termVal = facet.term || facet.termPhase;
+          if (termVal) qFilters.setQSemesterPhaseFilter(termVal);
+        }}
+      />
+      <TaxonomyMatrixModal
+        isOpen={showMatrixModal}
+        onClose={() => setShowMatrixModal(false)}
+        domainCode={qFilters.qDomainFilter === 'ALL' ? 'EDUCATION' : qFilters.qDomainFilter}
+        onSelectCell={facet => {
+          if (facet.topicCode) qFilters.setQTopicFilter(facet.topicCode);
+          if (facet.grade) qFilters.setQGradeFilter(facet.grade);
+        }}
+      />
     </div>
   );
 }

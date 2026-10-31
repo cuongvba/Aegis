@@ -96,6 +96,9 @@ namespace AegisQuiz.Infrastructure.Services
             topicName = string.Empty;
             if (string.IsNullOrWhiteSpace(line)) return false;
 
+            // [ANTI-OPTION GUARD]: Dòng phương án trắc nghiệm không bao giờ là Topic Heading
+            if (Regex.IsMatch(line.Trim(), @"^(?:<[^>]+>)?\s*[A-Ga-g][\.\:\)]\s+")) return false;
+
             var captured = FirstCapture(line, _structureDictionary.TopicHeadingPatterns);
             if (captured == null)
             {
@@ -110,6 +113,35 @@ namespace AegisQuiz.Infrastructure.Services
             if (string.IsNullOrWhiteSpace(captured)) return false;
             topicName = captured;
             return true;
+        }
+
+        /// <summary>Nhận diện tiêu đề phân mục con (SubPart/Tiểu mục/Chủ đề con) theo HierarchyConfig.</summary>
+        public bool TryMatchSubPartHeading(string line, out string subPartTitle)
+        {
+            subPartTitle = string.Empty;
+            if (string.IsNullOrWhiteSpace(line)) return false;
+
+            var patterns = _structureDictionary?.HierarchyConfig?.UniversalCore?.UniversalSubPartKeywords;
+
+            if (patterns != null && patterns.Count > 0)
+            {
+                var captured = FirstCapture(line, patterns);
+                if (!string.IsNullOrWhiteSpace(captured))
+                {
+                    subPartTitle = captured.Trim();
+                    return true;
+                }
+            }
+
+            var defaultPattern = @"^(?:MỤC|TIỂU\s*MỤC|SUBPART|SECTION|CHƯƠNG|BÀI)\s+([A-Z\d]+[\.\:\s\-]+.*)$";
+            var m = GetOrAddRegex(defaultPattern).Match(line.Trim());
+            if (m.Success)
+            {
+                subPartTitle = m.Groups[1].Value.Trim();
+                return true;
+            }
+
+            return false;
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -132,11 +164,34 @@ namespace AegisQuiz.Infrastructure.Services
                 return false;
             }
 
+            // [ANTI-OPTION GUARD]: Tuyệt đối không nhận diện dòng phương án trắc nghiệm làm Section Header
+            // VD: "A. read ... B. reads ...", "A. like ... B. to ...", "C. Reading comic books"
+            // Lưu ý: Nếu dòng đã bắt đầu rõ ràng bằng từ khóa Phần/Part/Section (ví dụ: "PHẦN II: ... Trong mỗi ý a), b), c), d)...") thì không áp dụng Anti-Option Guard
+            bool isExplicitSectionStart = Regex.IsMatch(text, @"^\[?\s*(?:PHẦN|PHAN|PART|SECTION|CHƯƠNG|CHUONG|BÀI|BAI|SESSION|ĐỀ|DE)\b", RegexOptions.IgnoreCase);
+            if (!isExplicitSectionStart)
+            {
+                if (Regex.IsMatch(text, @"^(?:<[^>]+>)?\s*[A-Ga-g][\.\:\)]\s+")) return false;
+                if (Regex.IsMatch(text, @"\s+[B-Gb-g][\.\:\)]\s+")) return false;
+            }
+
+            var rules = SnapshotRules();
+
+            // 0. Nếu dòng tiêu đề Phần (PHẦN I / PART I / SECTION A) chứa trực tiếp Chỉ thị làm bài đặc thù trong DirectiveQuestionTypeMap của R_Gen
+            if (GetOrAddRegex(@"^\[?\s*(?:PHẦN|PHAN|PART|SECTION|CHƯƠNG|CHUONG)\b").IsMatch(text))
+            {
+                var directiveType = MatchScopeDirectiveMarkerType(text, null, rules);
+                if (!string.IsNullOrEmpty(directiveType) && directiveType != "SINGLE")
+                {
+                    sectionKey = directiveType == "MULTI_TRUE_FALSE" ? "TRUE_FALSE" : directiveType;
+                    return true;
+                }
+            }
+
             // 1. Khớp theo từ điển cấu trúc của tài liệu (Ưu tiên số 1 - cấu hình nạp từ registry JSON hoặc CSDL)
             if (TryMatchSectionMapping(text, _structureDictionary.SectionMarkers, out sectionKey)) return true;
 
             // 2. Khớp theo LifecycleSpec của từng quy tắc CIG đang kích hoạt
-            foreach (var rule in SnapshotRules())
+            foreach (var rule in rules)
             {
                 if (TryMatchSectionMapping(line, rule.LifecycleSpec?.SectionHeaderMapping, out sectionKey)) return true;
             }
@@ -188,11 +243,26 @@ namespace AegisQuiz.Infrastructure.Services
 
         /// <summary>Nhận diện dòng chuyển sang pha "Lời giải tham khảo / Hướng dẫn chấm" (sau pha này các "Câu N" là tham chiếu lời giải).</summary>
         public bool TryMatchSolutionPhase(string line)
+            => TryMatchSolutionPhase(line, out _);
+
+        /// <summary>[PISA v7.0] Nhận diện dòng chuyển sang pha Lời giải tham khảo kèm bóc tách mã/số đề mục tiêu (ví dụ: "[Hướng dẫn giải Đề1]" -> "1").</summary>
+        public bool TryMatchSolutionPhase(string line, out string? targetExamNumber)
         {
+            targetExamNumber = null;
             if (string.IsNullOrWhiteSpace(line)) return false;
-            if (MatchesAny(line, _structureDictionary.SolutionPhaseMarkers)) return true;
-            if (SnapshotRules().Any(rule => MatchesAny(line, rule.LifecycleSpec?.SolutionPhasePatterns))) return true;
-            return GetOrAddRegex(BuiltInSolutionPhasePattern).IsMatch(line);
+
+            bool matched = MatchesAny(line, _structureDictionary.SolutionPhaseMarkers)
+                           || SnapshotRules().Any(rule => MatchesAny(line, rule.LifecycleSpec?.SolutionPhasePatterns))
+                           || GetOrAddRegex(BuiltInSolutionPhasePattern).IsMatch(line);
+
+            if (!matched) return false;
+
+            var examMatch = GetOrAddRegex(@"(?i)\b(?:ĐỀ|DE|EXAM|TEST|PAPER)(?:\s*(?:SỐ|THI|NO\.?))?\s*(\d{1,3})\b").Match(line);
+            if (examMatch.Success && examMatch.Groups.Count > 1)
+            {
+                targetExamNumber = examMatch.Groups[1].Value.Trim();
+            }
+            return true;
         }
 
         /// <summary>Nhận diện tiêu đề "Bảng đáp án" / "Answer Key".</summary>
@@ -366,7 +436,7 @@ namespace AegisQuiz.Infrastructure.Services
                     var answer = row[aCol].Trim();
                     if (string.IsNullOrEmpty(answer)) continue;
 
-                    string type = Regex.IsMatch(answer, "^[A-D]$", RegexOptions.IgnoreCase) ? "SINGLE" : "SHORT_ANSWER";
+                    string type = Regex.IsMatch(answer, "^[A-H]$", RegexOptions.IgnoreCase) ? "SINGLE" : "SHORT_ANSWER";
                     if (!map[currentExam].ContainsKey(type))
                     {
                         map[currentExam][type] = new Dictionary<int, string>();
@@ -391,7 +461,7 @@ namespace AegisQuiz.Infrastructure.Services
             QuestionPrefixes = new() { "CÂU", "BÀI", "QUESTION", "ITEM", "TASK", "EXERCISE", "AUFGABE", "EXERCICE", "FRAGE" },
             QuestionAnchorChars = new() { "第", "問", "문", "제", "【", "〔" },
             OptionDelimiters = new() { ".", ")", ":", " ", "、", "．" },
-            OptionCharRanges = new() { new CharRangeDto { Start = "A", End = "D" }, new CharRangeDto { Start = "a", End = "d" }, new CharRangeDto { Start = "1", End = "4" } },
+            OptionCharRanges = new() { new CharRangeDto { Start = "A", End = "H" }, new CharRangeDto { Start = "a", End = "h" }, new CharRangeDto { Start = "1", End = "8" } },
             EvaluationPrefixes = new() { "ĐÁP ÁN", "ANSWER", "KEY", "LỜI GIẢI", "HƯỚNG DẪN", "ĐÁP SỐ", "KẾT QUẢ", "SOLUTION", "EXPLANATION" }
         };
 
@@ -496,18 +566,41 @@ namespace AegisQuiz.Infrastructure.Services
         /// Phân tích dòng văn bản để trích xuất chỉ thị dải câu (Scope Directive) 100% từ dữ liệu cấu hình.
         /// </summary>
         public bool TryParseScopeDirective(string line, out DirectiveScopeWindow? window)
+            => TryParseScopeDirective(line, out window, 0, null);
+
+        /// <summary>
+        /// [PISA v7.0] Phân tích dòng văn bản để trích xuất chỉ thị phạm vi (cả phạm vi đóng [StartQ..EndQ] lẫn phạm vi mở [StartQ..∞))
+        /// dẫn xuất 100% từ <c>QuestionParsingRule</c> và <c>DocumentStructureDictionary</c> đa ngôn ngữ.
+        /// </summary>
+        public bool TryParseScopeDirective(string line, out DirectiveScopeWindow? window, int currentQuestionNumber, IEnumerable<QuestionParsingRuleDto>? activeRules = null)
         {
             window = null;
             if (string.IsNullOrWhiteSpace(line)) return false;
 
+            var trimmed = line.Trim();
+            // Không nhận diện nhầm dòng câu hỏi hoặc dòng thẻ đóng làm chỉ thị phạm vi
+            if (TryMatchQuestionAnchor(trimmed, out _, out _, activeRules)) return false;
+            if (TryMatchScopeClosingSentinel(trimmed, out _, activeRules)) return false;
+
             int startQ = 0, endQ = 0;
             bool foundRange = false;
+            bool isOpenEnded = false;
 
-            // 1. Quét dải số câu từ cấu hình ScopeRangePatterns
-            var rangePatterns = _structureDictionary.ScopeRangePatterns ?? new List<string>();
-            foreach (var pat in rangePatterns)
+            // 1. Quét dải số câu từ cấu hình ScopeRangePatterns và StimulusSpec.PassageRangePatterns của ActiveRules
+            var rules = activeRules?.ToList() ?? SnapshotRules();
+            var rangePatterns = new List<string>(_structureDictionary.ScopeRangePatterns ?? new List<string>());
+            foreach (var r in rules)
             {
-                var match = GetOrAddRegex(pat).Match(line);
+                if (r.StimulusSpec?.PassageRangePatterns != null)
+                {
+                    rangePatterns.AddRange(r.StimulusSpec.PassageRangePatterns);
+                }
+            }
+            rangePatterns.Add(BuiltInPassageRangePattern);
+
+            foreach (var pat in rangePatterns.Distinct())
+            {
+                var match = GetOrAddRegex(pat).Match(trimmed);
                 if (match.Success)
                 {
                     if (match.Groups.Count >= 3 && int.TryParse(match.Groups[1].Value, out var s) && int.TryParse(match.Groups[2].Value, out var e))
@@ -520,33 +613,85 @@ namespace AegisQuiz.Infrastructure.Services
                     else if (match.Groups.Count >= 2 && int.TryParse(match.Groups[1].Value, out var sSingle))
                     {
                         startQ = sSingle;
-                        endQ = 9999;
+                        endQ = int.MaxValue;
                         foundRange = true;
+                        isOpenEnded = true;
                         break;
                     }
                 }
             }
 
-            if (!foundRange || startQ <= 0) return false;
-            if (endQ < startQ) endQ = startQ;
-
-            // 2. Nhận diện hành vi khảo thí từ cấu hình ScopeDirectiveMarkers
+            // 2. Xác định cấp phân cấp đàn hồi (SubSection vs GroupDirective) và loại câu hỏi từ QuestionParsingRule + StructureDictionary
+            var level = ScopeHierarchyLevel.GroupDirective;
             string? detectedType = null;
-            var directiveMarkers = _structureDictionary.ScopeDirectiveMarkers;
-            if (directiveMarkers != null)
+            string? matchedRuleCode = null;
+            bool hasExplicitDirectiveHeader = false;
+
+            foreach (var rule in rules)
             {
-                // Duyệt theo thứ tự ưu tiên: MULTI_TRUE_FALSE -> SHORT_ANSWER -> ORDERING -> MATCHING -> MULTI -> SINGLE -> ESSAY
-                var priorityOrder = new[] { "MULTI_TRUE_FALSE", "SHORT_ANSWER", "ORDERING", "MATCHING", "MULTI", "SINGLE", "ESSAY" };
-                foreach (var type in priorityOrder)
+                if (!HasLanguageEvidenceForAnchor(rule.Language, trimmed)) continue;
+                var stim = rule.StimulusSpec;
+                if (stim == null) continue;
+
+                if (MatchesAny(trimmed, stim.SubSectionDirectivePatterns))
                 {
-                    if (directiveMarkers.TryGetValue(type, out var patterns) && patterns != null)
-                    {
-                        if (patterns.Any(p => GetOrAddRegex(p).IsMatch(line)))
-                        {
-                            detectedType = type;
-                            break;
-                        }
-                    }
+                    level = ScopeHierarchyLevel.SubSection;
+                    hasExplicitDirectiveHeader = true;
+                    // Ưu tiên suy luận từ DirectiveQuestionTypeMap của chính Rule (QPRD), tiếp theo từ ActiveRules/ScopeDirectiveMarkers, cuối cùng là DefaultQuestionType
+                    detectedType = MatchScopeDirectiveMarkerType(trimmed, rule, rules) ?? MapRuleTypeToDirectiveType(rule.InteractionSpec?.DefaultQuestionType);
+                    matchedRuleCode = rule.RuleCode;
+                    break;
+                }
+
+                if (MatchesAny(trimmed, stim.InstructionDirectivePatterns))
+                {
+                    hasExplicitDirectiveHeader = true;
+                    var markerType = MatchScopeDirectiveMarkerType(trimmed, rule, rules);
+                    var ruleType = MapRuleTypeToDirectiveType(rule.InteractionSpec?.DefaultQuestionType);
+                    // Nếu rule là dạng đặc thù (khác SINGLE) thì ưu tiên ruleType; nếu rule là SINGLE thì cho phép DirectiveQuestionTypeMap chuyên biệt hóa
+                    detectedType = (ruleType != "SINGLE") ? ruleType : (markerType ?? ruleType);
+                    matchedRuleCode = rule.RuleCode;
+                    break;
+                }
+            }
+
+            if (detectedType == null)
+            {
+                detectedType = MatchScopeDirectiveMarkerType(trimmed, null, rules);
+                if (GetOrAddRegex(@"^\[?\s*(?:Tiểu\s*phần|Sub[\-\s]*section|Sub[\-\s]*part|Sous[\-\s]*partie|小节)\b").IsMatch(trimmed))
+                {
+                    level = ScopeHierarchyLevel.SubSection;
+                    hasExplicitDirectiveHeader = true;
+                    detectedType ??= "SINGLE";
+                }
+                else if (GetOrAddRegex(@"^\[?\s*(?:Chỉ\s*thị(?:\s*làm\s*bài)?|Directive|Instructions?|Consigne|指令)\b").IsMatch(trimmed))
+                {
+                    hasExplicitDirectiveHeader = true;
+                    detectedType ??= "SINGLE";
+                }
+            }
+
+            // Nếu không có dải [StartQ..EndQ] tường minh: chỉ kích hoạt Phạm vi Mở (Open-Ended Scope - Law 2)
+            // khi dòng thực sự là một tiêu đề Tiểu phần / Chỉ thị làm bài hoặc chứa mệnh lệnh khảo thí rõ ràng
+            if (!foundRange)
+            {
+                bool isStandaloneDirective = hasExplicitDirectiveHeader
+                    || (detectedType != null && trimmed.Length <= 260 && GetOrAddRegex(
+                        @"(?i)^\[?\s*(?:Tiểu\s*phần|Chỉ\s*thị|Hướng\s*dẫn\s*làm\s*bài|Đọc\s+(?:đoạn|bài)\s*văn|Sử\s*dụng\s+thông\s*tin|Dựa\s+vào\s+thông\s*tin|Trong\s+mỗi\s+ý|Ở\s+mỗi\s+câu|Mỗi\s+câu\s+hỏi|Chọn\s+(?:tất\s+cả|các|nhiều|một|01|từ|đáp\s*án)|Sắp\s+xếp\s+các|Ghép\s+nội\s+dung|Điền\s+đáp\s+số|Trả\s+lời\s+ngắn|Read\s+(?:the\s+following|and\s+complete)|Mark\s+the\s+letter|Choose\s+(?:all|the|one|each|a\b)|Select\s+(?:all|the|one)|Odd\s+one\s+out|Circle\s+(?:the\s+)?odd|Find\s+(?:the\s+)?(?:mistake|error|word)|Indicate\s+whether|Arrange\s+the|Match\s+each|Fill\s+in\s+the\s+blank|Questions?\s+below|For\s+the\s+following\s+questions|阅读下列|请回答|多项选择|单项选择|判断题|填空题|排序题|配对题)").IsMatch(trimmed));
+
+                if (!isStandaloneDirective || detectedType == null) return false;
+
+                startQ = Math.Max(1, currentQuestionNumber + 1);
+                endQ = int.MaxValue;
+                isOpenEnded = true;
+            }
+            else
+            {
+                if (startQ <= 0) return false;
+                if (endQ < startQ) endQ = startQ;
+                if (detectedType == null && hasExplicitDirectiveHeader)
+                {
+                    detectedType = "SINGLE";
                 }
             }
 
@@ -557,10 +702,165 @@ namespace AegisQuiz.Infrastructure.Services
                 StartQuestion = startQ,
                 EndQuestion = endQ,
                 QuestionType = detectedType,
-                RawDirective = line.Trim(),
-                Confidence = 0.95
+                RawDirective = trimmed,
+                MatchedRuleCode = matchedRuleCode,
+                Confidence = foundRange ? 0.98 : 0.90,
+                Level = level,
+                IsOpenEnded = isOpenEnded
             };
             return true;
+        }
+
+        private string? MatchScopeDirectiveMarkerType(string line, QuestionParsingRuleDto? primaryRule = null, IEnumerable<QuestionParsingRuleDto>? activeRules = null)
+        {
+            var priorityOrder = new[] { "MULTI_TRUE_FALSE", "SHORT_ANSWER", "ORDERING", "MATCHING", "MULTI", "FILL_BLANK", "ESSAY", "SINGLE" };
+
+            // 1. Ưu tiên đọc từ DirectiveQuestionTypeMap của primaryRule (QPRD hiện hành)
+            if (primaryRule?.StimulusSpec?.DirectiveQuestionTypeMap is { Count: > 0 } primaryMap)
+            {
+                foreach (var type in priorityOrder)
+                {
+                    if (primaryMap.TryGetValue(type, out var patterns) && patterns != null && patterns.Any(p => GetOrAddRegex(p).IsMatch(line)))
+                    {
+                        return type;
+                    }
+                }
+            }
+
+            // 2. Đọc từ DirectiveQuestionTypeMap của các ActiveRules đã lọc theo ngôn ngữ
+            if (activeRules != null)
+            {
+                foreach (var type in priorityOrder)
+                {
+                    foreach (var rule in activeRules)
+                    {
+                        var ruleMap = rule.StimulusSpec?.DirectiveQuestionTypeMap;
+                        if (ruleMap != null && ruleMap.TryGetValue(type, out var patterns) && patterns != null && patterns.Any(p => GetOrAddRegex(p).IsMatch(line)))
+                        {
+                            return type;
+                        }
+                    }
+                }
+            }
+
+            // 3. Fallback về ScopeDirectiveMarkers trong DocumentStructureDictionary
+            var directiveMarkers = _structureDictionary.ScopeDirectiveMarkers;
+            if (directiveMarkers == null) return null;
+
+            foreach (var type in priorityOrder)
+            {
+                if (directiveMarkers.TryGetValue(type, out var patterns) && patterns != null)
+                {
+                    if (patterns.Any(p => GetOrAddRegex(p).IsMatch(line)))
+                    {
+                        return type;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static string MapRuleTypeToDirectiveType(string? ruleDefaultType)
+        {
+            if (string.IsNullOrWhiteSpace(ruleDefaultType)) return "SINGLE";
+            var upper = ruleDefaultType.Trim().ToUpperInvariant();
+            return upper == "TRUE_FALSE" ? "MULTI_TRUE_FALSE" : upper;
+        }
+
+        /// <summary>
+        /// [PISA v7.0 Law 5] Nhận diện các thẻ đóng phạm vi tường minh:
+        /// [Hết đoạn chỉ thị làm bài], [Hết tiểu phần 1], [Hết phần I], [Hết đề 1] và tương đương đa ngôn ngữ.
+        /// </summary>
+        public bool TryMatchScopeClosingSentinel(string line, out ScopeHierarchyLevel closedLevel, IEnumerable<QuestionParsingRuleDto>? activeRules = null)
+        {
+            closedLevel = ScopeHierarchyLevel.None;
+            if (string.IsNullOrWhiteSpace(line)) return false;
+
+            var clean = line.Trim();
+            var rules = activeRules?.ToList() ?? SnapshotRules();
+
+            foreach (var rule in rules)
+            {
+                var map = rule.LifecycleSpec?.ScopeClosingPatterns;
+                if (map == null) continue;
+
+                if (map.TryGetValue("Directive", out var dirPats) && MatchesAny(clean, dirPats))
+                {
+                    closedLevel = ScopeHierarchyLevel.GroupDirective;
+                    return true;
+                }
+                if (map.TryGetValue("SubSection", out var subPats) && MatchesAny(clean, subPats))
+                {
+                    closedLevel = ScopeHierarchyLevel.SubSection;
+                    return true;
+                }
+                if (map.TryGetValue("Section", out var secPats) && MatchesAny(clean, secPats))
+                {
+                    closedLevel = ScopeHierarchyLevel.Section;
+                    return true;
+                }
+                if (map.TryGetValue("Exam", out var examPats) && MatchesAny(clean, examPats))
+                {
+                    closedLevel = ScopeHierarchyLevel.Exam;
+                    return true;
+                }
+            }
+
+            // Fallback resilience đa ngôn ngữ
+            if (GetOrAddRegex(@"^\[?\s*(?:Hết\s*(?:đoạn\s*)?chỉ\s*thị(?:\s*làm\s*bài)?(?:\s*\d+)?|End\s*of\s*(?:directive|instruction|group|passage)(?:\s*\d+)?|指令结束|题组结束)\s*\]?[.\-\s]*$").IsMatch(clean))
+            {
+                closedLevel = ScopeHierarchyLevel.GroupDirective;
+                return true;
+            }
+            if (GetOrAddRegex(@"^\[?\s*(?:Hết\s*(?:tiểu\s*phần|mục)(?:\s*[\dIVX]+)?|End\s*of\s*(?:sub[\-\s]*section|sub[\-\s]*part)(?:\s*[\dIVX]+)?|小节结束)\s*\]?[.\-\s]*$").IsMatch(clean))
+            {
+                closedLevel = ScopeHierarchyLevel.SubSection;
+                return true;
+            }
+            if (GetOrAddRegex(@"^\[?\s*(?:Hết\s*phần(?:\s*[\dIVX]+)?|End\s*of\s*(?:part|section)(?:\s*[\dIVX]+)?|部分结束)\s*\]?[.\-\s]*$").IsMatch(clean))
+            {
+                closedLevel = ScopeHierarchyLevel.Section;
+                return true;
+            }
+            if (GetOrAddRegex(@"^\[?\s*(?:Hết\s*đề(?:\s*(?:thi|số))?(?:\s*\d+)?|End\s*of\s*(?:exam|test|paper)(?:\s*\d+)?|试卷结束)\s*\]?[.\-\s]*$").IsMatch(clean))
+            {
+                closedLevel = ScopeHierarchyLevel.Exam;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// [PISA v7.0] Suy luận loại câu hỏi trực tiếp từ chỉ thị nội dòng ngay trong thân câu hỏi ([Chỉ thị làm bài cho câu x])
+        /// dựa trên <c>StimulusSpec.StemDirectivePatterns</c> của <c>QuestionParsingRule</c> và <c>ScopeDirectiveMarkers</c>.
+        /// </summary>
+        public string InferQuestionTypeFromStemDirective(string stemText, string fallbackType, IEnumerable<QuestionParsingRuleDto>? activeRules = null)
+        {
+            if (string.IsNullOrWhiteSpace(stemText)) return fallbackType;
+
+            var rules = activeRules?.ToList() ?? SnapshotRules();
+            // 1. Duyệt các rule đặc thù (khác SINGLE) có StemDirectivePatterns hoặc InstructionDirectivePatterns khớp với thân câu hỏi
+            foreach (var rule in rules.Where(r => !string.Equals(r.InteractionSpec?.DefaultQuestionType, "SINGLE", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (!HasLanguageEvidenceForAnchor(rule.Language, stemText)) continue;
+                var stim = rule.StimulusSpec;
+                if (stim == null) continue;
+
+                if (MatchesAny(stemText, stim.StemDirectivePatterns) || MatchesAny(stemText, stim.InstructionDirectivePatterns))
+                {
+                    return rule.InteractionSpec?.DefaultQuestionType ?? fallbackType;
+                }
+            }
+
+            // 2. Kiểm tra DirectiveQuestionTypeMap của QPRD (ActiveRules) và ScopeDirectiveMarkers cho các dạng đặc thù (MULTI, ORDERING, MATCHING, SHORT_ANSWER, MULTI_TRUE_FALSE, FILL_BLANK, ESSAY)
+            var markerType = MatchScopeDirectiveMarkerType(stemText, null, rules);
+            if (!string.IsNullOrWhiteSpace(markerType) && markerType != "SINGLE")
+            {
+                return markerType == "MULTI_TRUE_FALSE" ? "TRUE_FALSE" : markerType;
+            }
+
+            return fallbackType;
         }
 
         /// <summary>
@@ -575,7 +875,7 @@ namespace AegisQuiz.Infrastructure.Services
 
             var rules = SnapshotRules();
             bool isPassagePrompt = MatchesAny(line, _structureDictionary.PassageStartPatterns)
-                                  || rules.Any(rule => MatchesAny(line, rule.StimulusSpec?.PassageStartPatterns))
+                                  || rules.Any(rule => MatchesAny(line, rule.StimulusSpec?.PassageStartPatterns) || MatchesAny(line, rule.StimulusSpec?.SubSectionDirectivePatterns))
                                   || GetOrAddRegex(BuiltInPassageStartPattern).IsMatch(line);
 
             if (!isPassagePrompt) return false;
@@ -614,7 +914,7 @@ namespace AegisQuiz.Infrastructure.Services
         public List<string> FlattenDocument(IEnumerable<string> paragraphs, DocumentLanguageProfileDto? languageProfile = null)
         {
             var flattenedLines = new List<string>();
-            const string questionBoundaryLookahead = @"(?=(?:Câu|Question|Item|Task|Exercise|Bài|Bai)\s*\d+(?:[\.\:\)\–—\-]|[\s\t]*[\.\:\)\–—\-])\s*)";
+            const string questionBoundaryLookahead = @"(?=\[?\s*(?:(?:Câu(?:\s+hỏi)?|Question|Item|Task|Exercise|Bài|Bai)(?:\s+(?:số|no\.?|number))?)\s*\d+(?:[\.\:\)\–—\-]|[\s\t]*[\.\:\)\–—\-])\s*)";
 
             foreach (var p in paragraphs)
             {
@@ -719,13 +1019,51 @@ namespace AegisQuiz.Infrastructure.Services
         }
 
         /// <summary>
-        /// Trích xuất mã đề thi ("DE_01", "DE_02"...) từ dòng văn bản.
+        /// Trích xuất mã đề thi ("DE_01", "DE_02", "DE_0323", "DE_103"...) từ dòng văn bản.
         /// </summary>
         public bool TryExtractExamCode(string line, out string? examCode)
         {
             examCode = null;
             if (string.IsNullOrWhiteSpace(line)) return false;
-            var match = Regex.Match(line, @"(?i)(?:Mã\s*đề(?:\s*thi)?|Đề(?:\s*thi)?\s*số|Exam\s*Code|Test\s*Code)[\:\s\-]*([A-Za-z0-9_\-]+)", RegexOptions.IgnoreCase);
+            var match = Regex.Match(line, @"(?i)(?:Mã\s*đề(?:\s*thi)?|Đề(?:\s*thi)?\s*số|Exam\s*Code|Test\s*Code)[\:\s\-]*([0-9]{2,4}|[A-Za-z0-9_\-]+(?=\b|\s|Mã|Họ|SBD|$))", RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                var rawCode = match.Groups[1].Value.Trim().Trim('_');
+                if (!string.IsNullOrEmpty(rawCode))
+                {
+                    if (rawCode.StartsWith("DE_", StringComparison.OrdinalIgnoreCase))
+                    {
+                        examCode = rawCode.ToUpperInvariant();
+                        return true;
+                    }
+                    if (int.TryParse(rawCode, out int cNum) && rawCode.Length <= 2)
+                    {
+                        examCode = $"DE_{cNum:D2}";
+                        return true;
+                    }
+                    examCode = $"DE_{rawCode}";
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Trích xuất mã đề thi từ tên file (ví dụ "thuvienhoclieu.com-...-ma-de-0323.docx", "De-thi-ma-de-103.docx")
+        /// </summary>
+        public bool TryExtractExamCodeFromFileName(string? fileName, out string? examCode)
+        {
+            examCode = null;
+            if (string.IsNullOrWhiteSpace(fileName)) return false;
+
+            // 1. Ưu tiên từ khóa mã đề: ma-de-0323, made103, exam-code-01, test-code-A12
+            var match = Regex.Match(fileName, @"(?i)(?:ma[-_\s]?de|made|exam[-_\s]?code|test[-_\s]?code)[-_\s]*([A-Za-z0-9]+)", RegexOptions.IgnoreCase);
+            if (!match.Success)
+            {
+                // 2. Dự phòng: de-thi-so-01, de-02 (chỉ nhận số 1..4 chữ số để tránh bắt chữ tiếng Việt như 'de_thi_thu')
+                match = Regex.Match(fileName, @"(?i)(?:de[-_\s]?thi(?:[-_\s]?so)?|de[-_\s]?so|exam|test)[-_\s]*(\d{1,4})\b", RegexOptions.IgnoreCase);
+            }
+
             if (match.Success)
             {
                 var rawCode = match.Groups[1].Value.Trim().Trim('_');
@@ -801,6 +1139,101 @@ namespace AegisQuiz.Infrastructure.Services
             return startQ == endQ
                 ? $"Bài đọc hiểu (Câu {startQ})"
                 : (endQ >= 9999 ? $"Bài đọc hiểu (Từ câu {startQ})" : $"Bài đọc hiểu (Câu {startQ} - {endQ})");
+        }
+
+        public AnswerTableDictionaryDto GetEffectiveAnswerTableSpecs(QuestionParsingRuleDto? activeRule = null)
+        {
+            var baseSpecs = _structureDictionary.AnswerTableSpecs ?? new AnswerTableDictionaryDto();
+            var t = activeRule?.TableMatrixSpec ?? activeRule?.EvaluationSpec?.TableMatrixSpec;
+            if (t == null) return baseSpecs;
+            return new AnswerTableDictionaryDto
+            {
+                QuestionHeaderPattern = t.QuestionHeaderPattern ?? baseSpecs.QuestionHeaderPattern,
+                AnswerHeaderPattern = t.AnswerHeaderPattern ?? baseSpecs.AnswerHeaderPattern,
+                TrueFalseColumnLabels = baseSpecs.TrueFalseColumnLabels,
+                StudentAnswerSheetPattern = t.StudentAnswerSheetPattern ?? baseSpecs.StudentAnswerSheetPattern,
+                QuestionContentColumnPattern = t.QuestionContentColumnPattern ?? baseSpecs.QuestionContentColumnPattern,
+                CompositeCellPattern = t.CompositeCellPattern ?? baseSpecs.CompositeCellPattern,
+                TrueValuePattern = t.TrueValuePattern ?? baseSpecs.TrueValuePattern,
+                FalseValuePattern = t.FalseValuePattern ?? baseSpecs.FalseValuePattern,
+                AnswerLetterGridCellPattern = t.AnswerLetterGridCellPattern ?? baseSpecs.AnswerLetterGridCellPattern,
+                TrueFalseSeriesPattern = t.TrueFalseSeriesPattern ?? baseSpecs.TrueFalseSeriesPattern,
+                AnswerPhaseHeaderPattern = t.AnswerPhaseHeaderPattern ?? baseSpecs.AnswerPhaseHeaderPattern,
+                MultiExamCrossMatrixPattern = t.MultiExamCrossMatrixPattern ?? baseSpecs.MultiExamCrossMatrixPattern,
+                MaxQuestionTextLengthInGrid = t.MaxQuestionTextLengthInGrid ?? baseSpecs.MaxQuestionTextLengthInGrid,
+                MaxAnswerTextLengthInGrid = t.MaxAnswerTextLengthInGrid ?? baseSpecs.MaxAnswerTextLengthInGrid
+            };
+        }
+
+        public bool IsMatchQuestionHeader(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.QuestionHeaderPattern).IsMatch(text.Trim());
+        }
+
+        public bool IsMatchAnswerHeader(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.AnswerHeaderPattern).IsMatch(text.Trim());
+        }
+
+        public bool IsMatchStudentAnswerSheet(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.StudentAnswerSheetPattern).IsMatch(text.Trim());
+        }
+
+        public bool IsMatchQuestionContentColumn(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.QuestionContentColumnPattern).IsMatch(text.Trim());
+        }
+
+        public bool IsMatchTrueValue(string val, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return false;
+            return GetOrAddRegex(specs.TrueValuePattern).IsMatch(val.Trim());
+        }
+
+        public bool IsMatchFalseValue(string val, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return false;
+            return GetOrAddRegex(specs.FalseValuePattern).IsMatch(val.Trim());
+        }
+
+        public bool IsMatchAnswerLetter(string val, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return false;
+            return GetOrAddRegex(specs.AnswerLetterGridCellPattern).IsMatch(val.Trim());
+        }
+
+        public bool IsMatchTrueFalseSeries(string val, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return false;
+            return GetOrAddRegex(specs.TrueFalseSeriesPattern).IsMatch(val.Trim());
+        }
+
+        public bool IsMatchAnswerPhaseHeader(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.AnswerPhaseHeaderPattern).IsMatch(text.Trim());
+        }
+
+        public bool IsMatchMultiExamCrossMatrix(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return GetOrAddRegex(specs.MultiExamCrossMatrixPattern).IsMatch(text.Trim());
+        }
+
+        public MatchCollection MatchCompositeCells(string text, AnswerTableDictionaryDto specs)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return Regex.Matches(string.Empty, "$");
+            return GetOrAddRegex(specs.CompositeCellPattern).Matches(text);
+        }
+
+        public Regex GetCachedRegex(string pattern)
+        {
+            return GetOrAddRegex(pattern);
         }
     }
 }

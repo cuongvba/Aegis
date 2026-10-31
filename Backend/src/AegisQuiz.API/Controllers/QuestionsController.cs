@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -164,6 +164,69 @@ namespace AegisQuiz.API.Controllers
                     enabledItems = enabledItems.Where(x => string.Equals(x.AssessmentPurpose, query.AssessmentPurpose, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (!string.IsNullOrWhiteSpace(query.IssuingOrg))
                     enabledItems = enabledItems.Where(x => string.Equals(x.IssuingOrg, query.IssuingOrg, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                // [Multi-Dimensional Canonical Taxonomy & Materialized Path Facets]
+                // 1. Lọc theo Môn học (hỗ trợ cả Code chuẩn và Aliases qua UniversalCoordinateTaxonomyEngine)
+                if (!string.IsNullOrWhiteSpace(query.TopicCode))
+                {
+                    var resolvedQueryTopic = UniversalCoordinateTaxonomyEngine.ResolveTopicCode(query.TopicCode);
+                    enabledItems = enabledItems.Where(x =>
+                        string.Equals(x.CategoryCode, query.TopicCode, StringComparison.OrdinalIgnoreCase) ||
+                        (!string.IsNullOrEmpty(x.CategoryCode) && UniversalCoordinateTaxonomyEngine.ResolveTopicCode(x.CategoryCode) == resolvedQueryTopic) ||
+                        (!string.IsNullOrEmpty(x.TreePath) && x.TreePath.IndexOf("/" + query.TopicCode + "/", StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
+                }
+
+                // 2. Lọc theo Khối lớp (hỗ trợ nhập "7", "K07", "Lớp 7")
+                if (!string.IsNullOrWhiteSpace(query.Grade))
+                {
+                    var cleanGrade = query.Grade.Trim();
+                    int.TryParse(cleanGrade.Replace("K", "").Replace("k", "").Replace("Lớp", "").Replace("lop", "").Trim(), out var gradeNum);
+                    var gradeSlug = gradeNum > 0 ? $"K{gradeNum:D2}" : cleanGrade;
+
+                    enabledItems = enabledItems.Where(x =>
+                        (!string.IsNullOrEmpty(x.TargetLevel) && (x.TargetLevel.Contains(cleanGrade, StringComparison.OrdinalIgnoreCase) || (gradeNum > 0 && x.TargetLevel.Contains(gradeNum.ToString())))) ||
+                        (!string.IsNullOrEmpty(x.TreePath) && x.TreePath.IndexOf("/" + gradeSlug + "/", StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
+                }
+
+                // 3. Lọc theo Mã chủ đề chuẩn tắc duy nhất
+                if (!string.IsNullOrWhiteSpace(query.CanonicalTopicCode))
+                {
+                    var canonicalTarget = query.CanonicalTopicCode.Trim();
+                    enabledItems = enabledItems.Where(x =>
+                        string.Equals(x.CanonicalTopicCode, canonicalTarget, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                }
+
+                // 4. Lọc theo Tiền tố Phả hệ O(1) Materialized Path (e.g. "/EDU/KHTN/K07/" lấy toàn bộ câu hỏi Lớp 7 môn KHTN)
+                if (!string.IsNullOrWhiteSpace(query.TreePath))
+                {
+                    var pathPrefix = query.TreePath.Trim();
+                    enabledItems = enabledItems.Where(x =>
+                        !string.IsNullOrEmpty(x.TreePath) && x.TreePath.StartsWith(pathPrefix, StringComparison.OrdinalIgnoreCase)
+                    ).ToList();
+                }
+
+                // 5. Lọc theo Bộ sách giáo khoa quy chuẩn
+                if (!string.IsNullOrWhiteSpace(query.CurriculumSeries))
+                {
+                    var seriesTarget = query.CurriculumSeries.Trim();
+                    enabledItems = enabledItems.Where(x =>
+                        (!string.IsNullOrEmpty(x.CurriculumSeries) && x.CurriculumSeries.Contains(seriesTarget, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(x.TreePath) && x.TreePath.IndexOf("/" + seriesTarget, StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
+                }
+
+                // 6. Lọc theo Giai đoạn khảo thí / Kỳ thi
+                if (!string.IsNullOrWhiteSpace(query.SemesterPhase))
+                {
+                    var termTarget = query.SemesterPhase.Trim();
+                    enabledItems = enabledItems.Where(x =>
+                        (!string.IsNullOrEmpty(x.SemesterPhase) && x.SemesterPhase.Equals(termTarget, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(x.TreePath) && x.TreePath.IndexOf("/" + termTarget + "/", StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
+                }
 
                 // Count AFTER enabled filter — chính xác
                 var total = enabledItems.Count;
@@ -568,6 +631,7 @@ namespace AegisQuiz.API.Controllers
 
                 var tenantId = _tenantContext.CurrentTenantId;
                 var dynamicContext = await _domainContextService.BuildContextAsync(tenantId);
+                dynamicContext.FileName = file.FileName;
 
                 using var stream = file.OpenReadStream();
                 var rawQuestions = _docxParser.ParseDocxFile(stream, dynamicContext);
@@ -1086,6 +1150,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName    = item.SourceFileName,
                             sourceExamName    = item.SourceExamName,
                             sourceSectionName = item.SourceSectionName,
+                            hierarchyIndex    = item.HierarchyIndex,
+                            fullQuestionIndex = item.FullQuestionIndex,
                             sourceQuestionNo  = item.SourceQuestionNo,
                             sourceRowIndex    = item.SourceRowIndex,
                             occurrenceCount   = 1,
@@ -1131,6 +1197,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName    = item.SourceFileName,
                             sourceExamName    = item.SourceExamName,
                             sourceSectionName = item.SourceSectionName,
+                            hierarchyIndex    = item.HierarchyIndex,
+                            fullQuestionIndex = item.FullQuestionIndex,
                             sourceQuestionNo  = item.SourceQuestionNo,
                             sourceRowIndex    = item.SourceRowIndex,
                             occurrenceCount   = 1,
@@ -1185,6 +1253,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName    = item.SourceFileName,
                             sourceExamName    = item.SourceExamName,
                             sourceSectionName = item.SourceSectionName,
+                            hierarchyIndex    = item.HierarchyIndex,
+                            fullQuestionIndex = item.FullQuestionIndex,
                             sourceQuestionNo  = item.SourceQuestionNo,
                             sourceRowIndex    = item.SourceRowIndex,
                             occurrenceCount   = 1,
@@ -1235,6 +1305,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName    = item.SourceFileName,
                             sourceExamName    = item.SourceExamName,
                             sourceSectionName = item.SourceSectionName,
+                            hierarchyIndex    = item.HierarchyIndex,
+                            fullQuestionIndex = item.FullQuestionIndex,
                             sourceQuestionNo  = item.SourceQuestionNo,
                             sourceRowIndex    = item.SourceRowIndex,
                             occurrenceCount   = 1,
@@ -1280,6 +1352,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName    = item.SourceFileName,
                             sourceExamName    = item.SourceExamName,
                             sourceSectionName = item.SourceSectionName,
+                            hierarchyIndex    = item.HierarchyIndex,
+                            fullQuestionIndex = item.FullQuestionIndex,
                             sourceQuestionNo  = item.SourceQuestionNo,
                             sourceRowIndex    = item.SourceRowIndex,
                             occurrenceCount   = 1,
@@ -1338,6 +1412,8 @@ namespace AegisQuiz.API.Controllers
                             sourceFileName       = item.SourceFileName,
                             sourceExamName       = item.SourceExamName,
                             sourceSectionName    = item.SourceSectionName,
+                            hierarchyIndex       = item.HierarchyIndex,
+                            fullQuestionIndex    = item.FullQuestionIndex,
                             sourceQuestionNo     = item.SourceQuestionNo,
                             sourceRowIndex       = item.SourceRowIndex,
                             occurrenceCount      = 1,

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -94,6 +94,7 @@ namespace AegisQuiz.API.Controllers
             {
                 var tenantId = _tenantContext.CurrentTenantId;
                 var dynamicContext = await _domainContextService.BuildContextAsync(tenantId);
+                dynamicContext.FileName = file.FileName;
 
                 List<DocxImportPreviewDto> questions;
                 using (var stream = file.OpenReadStream())
@@ -411,6 +412,7 @@ namespace AegisQuiz.API.Controllers
             {
                 var tenantId = _tenantContext.CurrentTenantId;
                 var dynamicContext = await _domainContextService.BuildContextAsync(tenantId);
+                dynamicContext.FileName = file.FileName;
 
                 List<DocxImportPreviewDto> questions;
                 using (var stream = file.OpenReadStream())

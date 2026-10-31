@@ -796,18 +796,25 @@ export function QuestionModal({
                 </div>
 
                 {/* 🔖 DẤU VẾT XUẤT XỨ ĐỀ THI GỐC (PROVENANCE STAMP) */}
-                {(activeQuestion?.sourceExamName || activeQuestion?.sourceSectionName || activeQuestion?.sourceQuestionNo || activeQuestion?.sourceFileName) && (
+                {(activeQuestion?.sourceExamName || activeQuestion?.sourceSectionName || activeQuestion?.sourceQuestionNo || activeQuestion?.sourceFileName || activeQuestion?.hierarchyIndex) && (
                   <div className="p-3 bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-purple-950/40 border border-blue-500/30 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider flex items-center gap-1.5">
                         <FileText size={12} className="text-blue-400" />
                         Xuất Xứ Đề Thi Gốc (Provenance)
                       </span>
-                      {activeQuestion.sourceExamName && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-400/40 shadow-sm">
-                          Mã đề: {activeQuestion.sourceExamName}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {activeQuestion.hierarchyIndex && activeQuestion.hierarchyIndex !== '0_0_0_0' && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-500/25 text-purple-200 border border-purple-400/50 shadow-sm" title="Mã phân cấp thứ bậc: {Exam}_{Part}_{SubPart}_{Directive}">
+                            Thứ bậc: {activeQuestion.hierarchyIndex}
+                          </span>
+                        )}
+                        {activeQuestion.sourceExamName && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-400/40 shadow-sm">
+                            Mã đề: {activeQuestion.sourceExamName}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-[11px]">
                       {activeQuestion.sourceQuestionNo && (
@@ -822,6 +829,12 @@ export function QuestionModal({
                         <div className="bg-slate-900/80 px-2.5 py-1.5 rounded-xl border border-slate-800 flex items-center gap-1.5 truncate" title={activeQuestion.sourceSectionName}>
                           <span className="text-slate-500 font-medium shrink-0">Phần:</span>
                           <span className="text-amber-300 font-bold truncate">{activeQuestion.sourceSectionName}</span>
+                        </div>
+                      )}
+                      {activeQuestion.hierarchyIndex && activeQuestion.hierarchyIndex !== '0_0_0_0' && (
+                        <div className="bg-slate-900/80 px-2.5 py-1.5 rounded-xl border border-slate-800 flex items-center gap-1.5 truncate" title={`Mã phân cấp thứ bậc 4 tầng (Đề_Phần_TiểuPhần_ChỉThị): ${activeQuestion.hierarchyIndex}`}>
+                          <span className="text-slate-500 font-medium shrink-0">Mã phân cấp:</span>
+                          <span className="text-purple-300 font-mono font-bold">{activeQuestion.hierarchyIndex}</span>
                         </div>
                       )}
                       {activeQuestion.sourceFileName && (

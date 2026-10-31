@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -15,19 +16,27 @@ using AegisQuiz.Infrastructure.Data;
 namespace AegisQuiz.Infrastructure.Services
 {
     /// <summary>
-    /// [Enterprise Fortress — Epoch 3] Triển khai dịch vụ kiểm toán chuỗi băm bất biến (Tamper-Evident Hash Chaining).
+    /// [Enterprise Fortress — Epoch 3 / 2030 High-Concurrency Upgrade]
+    /// Triển khai dịch vụ kiểm toán chuỗi băm bất biến (Tamper-Evident Hash Chaining)
+    /// với cơ chế Phân mảnh Khóa theo từng Kỳ thi (Per-Exam Sharded Concurrency Lock),
+    /// xóa bỏ hoàn toàn điểm nghẽn khóa đơn toàn cục khi hàng trăm nghìn thí sinh thi đồng thời.
     /// </summary>
     public class ExamAuditService : IExamAuditService
     {
         private readonly AegisQuizDbContext _db;
         private readonly ILogger<ExamAuditService> _logger;
-        private static readonly SemaphoreSlim _chainLock = new(1, 1);
+
+        // Phân mảnh khóa theo ExamId: Các kỳ thi khác nhau ghi chuỗi băm song song 100% không chờ nhau
+        private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _examChainLocks = new();
 
         public ExamAuditService(AegisQuizDbContext db, ILogger<ExamAuditService> logger)
         {
             _db = db;
             _logger = logger;
         }
+
+        private static SemaphoreSlim GetExamLock(Guid examId)
+            => _examChainLocks.GetOrAdd(examId, _ => new SemaphoreSlim(1, 1));
 
         public async Task<ExamAuditLog> AppendAuditLogAsync(
             Guid tenantId,
@@ -40,10 +49,11 @@ namespace AegisQuiz.Infrastructure.Services
             string userAgent = "",
             CancellationToken ct = default)
         {
-            await _chainLock.WaitAsync(ct);
+            var examLock = GetExamLock(examId);
+            await examLock.WaitAsync(ct);
             try
             {
-                // 1. Tự động kiểm tra và tạo bảng nếu chưa có (Self-healing DDL)
+                // 1. Tự động kiểm tra và tạo bảng nếu là Relational DB (Self-healing DDL)
                 await EnsureTableExistsAsync(ct);
 
                 // 2. Lấy block kiểm toán mới nhất của ExamId này
@@ -57,7 +67,7 @@ namespace AegisQuiz.Infrastructure.Services
                 string prevHash = (lastLog != null) ? lastLog.CurrentHash : "GENESIS_0000000000000000";
                 var now = DateTime.UtcNow;
 
-                // 3. Tính toán SHA-256 Hash Chaining
+                // 3. Tính toán SHA-256 Hash Chaining chuẩn tắc
                 string payloadToHash = $"{tenantId}|{examId}|{userId}|{action}|{now:O}|{clientIp}|{nextSequence}|{prevHash}|{details}";
                 string currentHash = ComputeSha256Hex(payloadToHash);
 
@@ -82,14 +92,14 @@ namespace AegisQuiz.Infrastructure.Services
                 await _db.SaveChangesAsync(ct);
 
                 _logger.LogInformation(
-                    "[AuditFortress] Ghi nhận khối kiểm toán #{Seq} (Hash: {Hash}) cho Kỳ thi {ExamId}, Hành động: {Action}",
-                    nextSequence, currentHash[..8], examId, action);
+                    "[AuditFortress] AppendAuditLog | ExamId={ExamId} | Seq={Seq} | Hash={Hash} -> Action={Action}",
+                    examId, nextSequence, currentHash[..8], action);
 
                 return logEntry;
             }
             finally
             {
-                _chainLock.Release();
+                examLock.Release();
             }
         }
 
@@ -123,6 +133,18 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 var block = logs[i];
 
+                // Kiểm tra tính liên tục của SequenceNumber (phát hiện hành vi xóa khối ở giữa)
+                long expectedSeq = i + 1;
+                if (block.SequenceNumber != expectedSeq)
+                {
+                    result.IsChainValid = false;
+                    result.BrokenAtBlockId = block.Id.ToString();
+                    result.BrokenSequenceNumber = block.SequenceNumber;
+                    result.AnomalyDescription = $"Phát hiện lỗ hổng thứ tự khối: Kỳ vọng khối #{expectedSeq} nhưng gặp #{block.SequenceNumber}.";
+                    _logger.LogCritical("[AuditFortress] IntegritySequenceGap | ExamId={ExamId} -> {Description}", examId, result.AnomalyDescription);
+                    return result;
+                }
+
                 // Kiểm tra liên kết với khối trước
                 if (block.PreviousLogHash != expectedPrevHash)
                 {
@@ -130,7 +152,7 @@ namespace AegisQuiz.Infrastructure.Services
                     result.BrokenAtBlockId = block.Id.ToString();
                     result.BrokenSequenceNumber = block.SequenceNumber;
                     result.AnomalyDescription = $"Mắt xích bị đứt tại khối #{block.SequenceNumber}! PreviousLogHash lưu trong DB không khớp với CurrentHash của khối trước đó.";
-                    _logger.LogCritical("[AuditFortress] 🚨 PHÁT HIỆN GIAN LẬN KIỂM TOÁN: {Description}", result.AnomalyDescription);
+                    _logger.LogCritical("[AuditFortress] IntegrityChainBroken | ExamId={ExamId} -> {Description}", examId, result.AnomalyDescription);
                     return result;
                 }
 
@@ -144,7 +166,7 @@ namespace AegisQuiz.Infrastructure.Services
                     result.BrokenAtBlockId = block.Id.ToString();
                     result.BrokenSequenceNumber = block.SequenceNumber;
                     result.AnomalyDescription = $"Dữ liệu khối #{block.SequenceNumber} đã bị chỉnh sửa trái phép! Băm thực tế {recomputedHash[..8]} != Băm lưu trữ {block.CurrentHash[..8]}.";
-                    _logger.LogCritical("[AuditFortress] 🚨 PHÁT HIỆN DỮ LIỆU BỊ CAN THIỆP: {Description}", result.AnomalyDescription);
+                    _logger.LogCritical("[AuditFortress] IntegrityPayloadTampered | ExamId={ExamId} -> {Description}", examId, result.AnomalyDescription);
                     return result;
                 }
 
@@ -152,7 +174,7 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             result.LatestBlockHash = expectedPrevHash;
-            _logger.LogInformation("[AuditFortress] ✅ Xác minh thành công tính toàn vẹn 100% của {Count} khối kiểm toán cho Kỳ thi {ExamId}", logs.Count, examId);
+            _logger.LogInformation("[AuditFortress] VerifyAuditIntegrity | ExamId={ExamId} | Blocks={Count} -> Valid=100%", examId, logs.Count);
             return result;
         }
 
@@ -175,22 +197,22 @@ namespace AegisQuiz.Infrastructure.Services
                 .ToListAsync(ct);
         }
 
-        private static string ComputeSha256Hex(string input)
+        public static string ComputeSha256Hex(string input)
         {
-            using var sha = SHA256.Create();
-            byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-            var sb = new StringBuilder(bytes.Length * 2);
-            foreach (byte b in bytes)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return sb.ToString();
+            byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+            return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
         private static bool _tableEnsured = false;
         private async Task EnsureTableExistsAsync(CancellationToken ct)
         {
             if (_tableEnsured) return;
+
+            if (!_db.Database.IsRelational())
+            {
+                _tableEnsured = true;
+                return;
+            }
 
             try
             {

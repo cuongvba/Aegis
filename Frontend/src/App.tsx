@@ -30,6 +30,7 @@ const CreatorZenStudioPage = lazy(() => import('@/pages/creator/studio/CreatorZe
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const AdminQuestionsPage = lazy(() => import('@/pages/admin/questions').then(m => ({ default: m.AdminQuestionsPage })));
+const AdminParsingRulesPage = lazy(() => import('@/pages/admin/parsing-rules/AdminParsingRulesPage').then(m => ({ default: m.AdminParsingRulesPage })));
 const AdminNotebooksPage = lazy(() => import('@/pages/admin/AdminNotebooksPage').then(m => ({ default: m.AdminNotebooksPage })));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
 const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then(m => ({ default: m.AdminPaymentsPage })));
@@ -90,6 +91,7 @@ export default function App() {
               >
                 <Route index element={<AdminDashboard />} />
                 <Route path="questions" element={<AdminQuestionsPage />} />
+                <Route path="parsing-rules" element={<AdminParsingRulesPage />} />
                 <Route path="notebooks" element={<AdminNotebooksPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
                 <Route path="payments" element={<AdminPaymentsPage />} />

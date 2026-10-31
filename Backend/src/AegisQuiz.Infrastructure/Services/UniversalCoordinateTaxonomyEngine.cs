@@ -65,6 +65,13 @@ namespace AegisQuiz.Infrastructure.Services
             DynamicDomainContext? dynamicContext)
             => IsAcademicTopic(topicCode, dynamicContext);
 
+        void ITaxonomyEngine.SynthesizeCanonicalTaxonomy(
+            CognitiveCoordinateTaxonomyResult result,
+            string combinedText,
+            string? fileName,
+            DynamicDomainContext? dynamicContext)
+            => SynthesizeCanonicalTaxonomy(result, combinedText, fileName, dynamicContext);
+
         #endregion
 
         public static CognitiveCoordinateTaxonomyResult SniffCoordinates(
@@ -120,6 +127,8 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 AddTagIfNotExists(result.Tags, CleanToTag(result.TopicCode));
             }
+
+            SynthesizeCanonicalTaxonomy(result, combinedAll, fileName, dynamicContext);
             return result;
         }
 
@@ -131,38 +140,26 @@ namespace AegisQuiz.Infrastructure.Services
                 if (resolved != "GENERAL") return resolved;
             }
 
-            // PASS 1A (Ưu tiên tối cao): Quét tìm nhãn MÔN THI / BÀI THI tường minh
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns
+                ?? new TaxonomyReconnaissancePatternsDto();
+
+            // PASS 1: Quét tìm nhãn MÔN THI / BÀI THI / CHỦ ĐỀ đa ngôn ngữ từ TaxonomyReconPatterns (Zero-Hardcode & MultiLang)
             foreach (var banner in banners)
             {
                 if (string.IsNullOrWhiteSpace(banner)) continue;
 
-                var m = Regex.Match(banner, @"(?i)(?:^|[\t\s|•\-–—;]+)(?:BÀI\s*THI\s*(?:MÔN)?|MÔN\s*THI|MÔN|HỌC\s*PHẦN|MÃ\s*CĐ|TOPIC|SUBJECT|COURSE|MODULE)[\.\:\s\-]+([^\n\r\t|;]+)");
-                if (m.Success)
+                foreach (var pattern in reconPatterns.TopicHeaderPatterns)
                 {
-                    string raw = m.Groups[1].Value.Trim();
-                    raw = Regex.Replace(raw, @"(?i)\s*(?:Thời\s*gian|Thời\s*lượng|Mã\s*đề).*$", "").Trim();
-                    var resolved = ResolveTopicCode(raw, dynamicContext);
-                    if (resolved != "GENERAL" && resolved != "EDUCATION" && resolved != "THPT_NATIONAL")
+                    var m = Regex.Match(banner, pattern);
+                    if (m.Success)
                     {
-                        return resolved;
-                    }
-                }
-            }
-
-            // PASS 1B: Nếu không có nhãn Môn thi, mới quét nhãn CHỦ ĐỀ / CHƯƠNG / LĨNH VỰC ở Header
-            foreach (var banner in banners)
-            {
-                if (string.IsNullOrWhiteSpace(banner)) continue;
-
-                var m = Regex.Match(banner, @"(?i)(?:^|[\t\s|•\-–—;]+)(?:CHỦ\s*ĐỀ|CHƯƠNG|LĨNH\s*VỰC)[\.\:\s\-]+([^\n\r\t|;]+)");
-                if (m.Success)
-                {
-                    string raw = m.Groups[1].Value.Trim();
-                    raw = Regex.Replace(raw, @"(?i)\s*(?:Thời\s*gian|Thời\s*lượng|Mã\s*đề).*$", "").Trim();
-                    var resolved = ResolveTopicCode(raw, dynamicContext);
-                    if (resolved != "GENERAL" && resolved != "EDUCATION" && resolved != "THPT_NATIONAL")
-                    {
-                        return resolved;
+                        string raw = m.Groups[1].Value.Trim();
+                        raw = Regex.Replace(raw, @"(?i)\s*(?:Thời\s*gian|Thời\s*lượng|Mã\s*đề|Time|Duration|Code|Exam\s*Code).*$", "").Trim();
+                        var resolved = ResolveTopicCode(raw, dynamicContext);
+                        if (resolved != "GENERAL" && resolved != "EDUCATION" && resolved != "THPT_NATIONAL")
+                        {
+                            return resolved;
+                        }
                     }
                 }
             }
@@ -172,19 +169,26 @@ namespace AegisQuiz.Infrastructure.Services
                 ? dynamicContext.Topics
                 : DynamicDomainContext.CreateDefault().Topics;
 
+            // Sắp xếp các Topics theo độ dài tên/code giảm dần để ưu tiên tên dài hơn (ví dụ "Khoa học tự nhiên" trước "Hóa học")
+            var orderedTopics = allTopics
+                .Where(t => !string.Equals(t.Code, "GENERAL", StringComparison.OrdinalIgnoreCase) &&
+                            !string.Equals(t.Code, "EDUCATION", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(t => t.Name?.Length ?? 0)
+                .ThenByDescending(t => t.Code.Length)
+                .ToList();
+
             foreach (var banner in banners)
             {
                 if (string.IsNullOrWhiteSpace(banner)) continue;
-                var cleanBanner = CleanToTag(banner);
+                var bannerSlug = "_" + NormalizeToCodeSlug(banner) + "_";
 
-                foreach (var t in allTopics)
+                foreach (var t in orderedTopics)
                 {
-                    if (string.Equals(t.Code, "GENERAL", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(t.Code, "EDUCATION", StringComparison.OrdinalIgnoreCase))
-                        continue;
+                    var nameSlug = "_" + NormalizeToCodeSlug(t.Name) + "_";
+                    var codeSlug = "_" + NormalizeToCodeSlug(t.Code) + "_";
 
-                    // Chỉ khớp Tên đầy đủ của môn học (ví dụ "Hóa học", "Toán học", "Tiếng Anh", "Vật lý")
-                    if (cleanBanner.Contains(CleanToTag(t.Name)))
+                    if ((nameSlug.Length > 2 && bannerSlug.Contains(nameSlug)) ||
+                        (codeSlug.Length > 2 && bannerSlug.Contains(codeSlug)))
                     {
                         return t.Code;
                     }
@@ -194,14 +198,14 @@ namespace AegisQuiz.Infrastructure.Services
             // PASS 3: Quét tên file nếu Header không có
             if (!string.IsNullOrWhiteSpace(fileName))
             {
-                var cleanFile = CleanToTag(fileName);
-                foreach (var t in allTopics)
+                var fileSlug = "_" + NormalizeToCodeSlug(fileName) + "_";
+                foreach (var t in orderedTopics)
                 {
-                    if (string.Equals(t.Code, "GENERAL", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(t.Code, "EDUCATION", StringComparison.OrdinalIgnoreCase))
-                        continue;
+                    var nameSlug = "_" + NormalizeToCodeSlug(t.Name) + "_";
+                    var codeSlug = "_" + NormalizeToCodeSlug(t.Code) + "_";
 
-                    if (cleanFile.Contains(CleanToTag(t.Name)) || cleanFile.Contains(CleanToTag(t.Code)))
+                    if ((nameSlug.Length > 2 && fileSlug.Contains(nameSlug)) ||
+                        (codeSlug.Length > 2 && fileSlug.Contains(codeSlug)))
                     {
                         return t.Code;
                     }
@@ -238,19 +242,20 @@ namespace AegisQuiz.Infrastructure.Services
             var preset = MatchPreset(dynamicContext, "TARGET_LEVEL", combinedAll, domainCode);
             if (preset != null) return preset;
 
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
             foreach (var banner in banners)
             {
-                var m = Regex.Match(banner, @"(?:vị\s*trí|chức\s*danh|ngạch|đối\s*tượng|cấp\s*bậc|khối\s*lớp|hạng\s*bằng|dành\s*cho)\s*[:\-–—]\s*([^\r\n|;]+)", RegexOptions.IgnoreCase);
-                if (!m.Success) continue;
-                var extracted = CleanExtractedText(m.Groups[1].Value);
-                if (!string.IsNullOrWhiteSpace(extracted) && extracted.Length > 2)
+                foreach (var pattern in reconPatterns.TargetLevelPatterns)
                 {
-                    return NormalizeLevelName(extracted);
+                    var m = Regex.Match(banner, pattern, RegexOptions.IgnoreCase);
+                    if (!m.Success) continue;
+                    var extracted = CleanExtractedText(m.Groups[1].Value);
+                    if (!string.IsNullOrWhiteSpace(extracted) && extracted.Length > 2)
+                    {
+                        return NormalizeLevelName(extracted, dynamicContext);
+                    }
                 }
             }
-
-            var licenseClass = Regex.Match(combinedAll, @"\bhạng\s*(b2|b1|c|d|e|f)\b", RegexOptions.IgnoreCase);
-            if (licenseClass.Success) return "GPLX Hạng " + licenseClass.Groups[1].Value.ToUpperInvariant();
 
             return null;
         }
@@ -264,14 +269,18 @@ namespace AegisQuiz.Infrastructure.Services
             var preset = MatchPreset(dynamicContext, "ASSESSMENT_PURPOSE", combinedAll, domainCode);
             if (preset != null) return preset;
 
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
             foreach (var banner in banners)
             {
                 var stripped = Regex.Replace(banner, @"^(?:bộ\s*câu\s*hỏi(?:\s*,\s*đáp\s*án)?\s*(?:ôn\s*tập\s*)?[-–—:]?\s*)", "", RegexOptions.IgnoreCase).Trim();
-                var m = Regex.Match(stripped, @"(kỳ\s*kiểm\s*tra[^\r\n|;]+|kỳ\s*thi[^\r\n|;]+|sát\s*hạch[^\r\n|;]+|đánh\s*giá[^\r\n|;]+|ôn\s*tập\s*nghiệp\s*vụ[^\r\n|;]+)", RegexOptions.IgnoreCase);
-                if (m.Success)
+                foreach (var pattern in reconPatterns.AssessmentPurposePatterns)
                 {
-                    var purpose = Regex.Replace(m.Groups[1].Value.Trim(), @"\s+năm\s+\d{4}$", "", RegexOptions.IgnoreCase).Trim();
-                    return NormalizeTitleCase(purpose);
+                    var m = Regex.Match(stripped, pattern, RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        var purpose = Regex.Replace(m.Groups[1].Value.Trim(), @"\s+năm\s+\d{4}$", "", RegexOptions.IgnoreCase).Trim();
+                        return NormalizeTitleCase(purpose, dynamicContext);
+                    }
                 }
             }
 
@@ -287,22 +296,21 @@ namespace AegisQuiz.Infrastructure.Services
             var preset = MatchPreset(dynamicContext, "ISSUING_ORG", combinedAll, domainCode);
             if (preset != null)
             {
-                if (Regex.IsMatch(combinedAll, @"\bchi\s+nhánh\b", RegexOptions.IgnoreCase) && !preset.Contains("Chi nhánh", StringComparison.OrdinalIgnoreCase))
-                {
-                    return $"{preset} (Chi nhánh)";
-                }
                 return preset;
             }
 
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
             foreach (var banner in banners)
             {
-                var m = Regex.Match(banner, @"(?:đơn\s*vị|cơ\s*quan|trường|ngân\s*hàng|chi\s*nhánh)\s*[:\-–—]\s*([^\r\n|;]+)", RegexOptions.IgnoreCase);
-                if (m.Success)
+                foreach (var pattern in reconPatterns.IssuingOrgPatterns)
                 {
-                    var extracted = CleanExtractedText(m.Groups[1].Value);
-                    if (!string.IsNullOrWhiteSpace(extracted)) return NormalizeTitleCase(extracted);
+                    var m = Regex.Match(banner, pattern, RegexOptions.IgnoreCase);
+                    if (m.Success)
+                    {
+                        var extracted = CleanExtractedText(m.Groups[1].Value);
+                        if (!string.IsNullOrWhiteSpace(extracted)) return NormalizeTitleCase(extracted, dynamicContext);
+                    }
                 }
-                if (Regex.IsMatch(banner, @"\btại\s+chi\s+nhánh\b", RegexOptions.IgnoreCase)) return "Chi nhánh";
             }
             return null;
         }
@@ -400,15 +408,15 @@ namespace AegisQuiz.Infrastructure.Services
                 }
             }
 
-            var decision = Regex.Match(combinedAll, @"(quy\s*định\s*số\s*\d+/[A-Za-z0-9\-_]+)", RegexOptions.IgnoreCase);
-            if (decision.Success) return NormalizeTitleCase(decision.Groups[1].Value);
-
-            var circular = Regex.Match(combinedAll, @"(thông\s*tư\s*\d+(?:/\d+)?/TT-[A-Za-z0-9]+)", RegexOptions.IgnoreCase);
-            if (circular.Success) return circular.Groups[1].Value.ToUpperInvariant();
-
-            if (combinedAll.Contains("đợt", StringComparison.OrdinalIgnoreCase) && year.HasValue)
+            var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
+            foreach (var pattern in reconPatterns.BenchmarkStandardPatterns)
             {
-                return $"Quy chế kiểm tra nghiệp vụ định kỳ Đợt {ExtractDotNumber(combinedAll)}/{year}";
+                var m = Regex.Match(combinedAll, pattern, RegexOptions.IgnoreCase);
+                if (m.Success)
+                {
+                    var val = m.Groups[1].Value.Trim();
+                    return val.Contains("TT-", StringComparison.OrdinalIgnoreCase) ? val.ToUpperInvariant() : NormalizeTitleCase(val, dynamicContext);
+                }
             }
 
             // Fallback lấy chuẩn mặc định theo Domain từ dynamicContext (triệt tiêu 100% switch-case cứng)
@@ -604,26 +612,44 @@ namespace AegisQuiz.Infrastructure.Services
             return Regex.Replace(input, @"[|\t]+", " ").Trim(' ', ':', '-', '–', '—');
         }
 
-        private static string NormalizeLevelName(string text)
+        private static string NormalizeLevelName(string text, DynamicDomainContext? dynamicContext = null)
         {
             var trimmed = text.Trim();
-            if (trimmed.Equals("TÍN DỤNG KHÁCH HÀNG DOANH NGHIỆP", StringComparison.OrdinalIgnoreCase) || trimmed.Equals("TÍN DỤNG KHDN", StringComparison.OrdinalIgnoreCase))
-                return "Tín dụng Khách hàng Doanh nghiệp";
-            if (trimmed.Equals("TÍN DỤNG KHÁCH HÀNG CÁ NHÂN", StringComparison.OrdinalIgnoreCase) || trimmed.Equals("TÍN DỤNG KHCN", StringComparison.OrdinalIgnoreCase))
-                return "Tín dụng Khách hàng Cá nhân";
-            return NormalizeTitleCase(trimmed);
+            if (dynamicContext?.CoordinatePresets != null)
+            {
+                var matched = dynamicContext.CoordinatePresets.FirstOrDefault(p =>
+                    p.CoordinateType.Equals("TARGET_LEVEL", StringComparison.OrdinalIgnoreCase) &&
+                    (p.PresetCode.Equals(trimmed, StringComparison.OrdinalIgnoreCase)
+                     || p.PresetLabel.Equals(trimmed, StringComparison.OrdinalIgnoreCase)
+                     || p.Synonyms.Any(s => s.Equals(trimmed, StringComparison.OrdinalIgnoreCase))));
+                if (matched != null) return matched.PresetLabel;
+            }
+            return NormalizeTitleCase(trimmed, dynamicContext);
         }
 
-        private static readonly HashSet<string> UpperCaseAcronyms = new(StringComparer.OrdinalIgnoreCase)
-            { "KHDN", "KHCN", "GPLX", "THPT", "GDPT", "AML", "HSE", "PCCC", "CNTT", "ISO" };
-
         private static readonly HashSet<string> LowerCaseConnectors = new(StringComparer.OrdinalIgnoreCase)
-            { "và", "với", "tại", "cho", "của" };
+            { "và", "với", "tại", "cho", "của", "and", "or", "for", "of", "with", "in", "on", "at" };
 
-        /// <summary>Viết hoa chữ cái đầu mỗi từ; giữ nguyên viết tắt chuyên ngành; hạ thường liên từ tiếng Việt.</summary>
-        public static string NormalizeTitleCase(string input)
+        /// <summary>Viết hoa chữ cái đầu mỗi từ; giữ nguyên viết tắt chuyên ngành nạp động từ Dictionary; hạ thường liên từ đa ngôn ngữ.</summary>
+        public static string NormalizeTitleCase(string input, DynamicDomainContext? dynamicContext = null)
         {
             if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+
+            var acronyms = new HashSet<string>(dynamicContext?.StructureDictionary?.KnownAcronyms ?? DocumentStructureDictionaryDto.GetDefaultAcronyms(), StringComparer.OrdinalIgnoreCase);
+            if (dynamicContext?.Domains != null)
+            {
+                foreach (var d in dynamicContext.Domains)
+                {
+                    if (!string.IsNullOrWhiteSpace(d.Code)) acronyms.Add(d.Code);
+                }
+            }
+            if (dynamicContext?.Topics != null)
+            {
+                foreach (var t in dynamicContext.Topics)
+                {
+                    if (!string.IsNullOrWhiteSpace(t.Code)) acronyms.Add(t.Code);
+                }
+            }
 
             var words = input.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var sb = new StringBuilder();
@@ -631,7 +657,7 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 var word = words[i];
                 if (word.Length == 1) sb.Append(char.ToUpper(word[0]));
-                else if (UpperCaseAcronyms.Contains(word)) sb.Append(word.ToUpperInvariant());
+                else if (acronyms.Contains(word)) sb.Append(word.ToUpperInvariant());
                 else if (i > 0 && LowerCaseConnectors.Contains(word)) sb.Append(word.ToLowerInvariant());
                 else sb.Append(char.ToUpper(word[0])).Append(word.Substring(1).ToLowerInvariant());
 
@@ -826,25 +852,39 @@ namespace AegisQuiz.Infrastructure.Services
                 // Bỏ qua các từ khóa quá ngắn hoặc ký tự biểu thức (y =, x =, dx, dy...) để tránh nhận nhầm chữ cái đơn lẻ
                 if (trimmedKw.Length < 2) return false;
 
-                if (trimmedKw.Length >= 3 && cleanText.Contains(trimmedKw, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
+                // 1. So khớp token slug nguyên từ (ngăn ngừa "hoa" khớp vào "khoa")
                 var kwSlug = NormalizeToCodeSlug(trimmedKw);
-                if (kwSlug.Length >= 3)
+                if (kwSlug.Length >= 2)
                 {
-                    if (slugText == kwSlug || slugText.StartsWith(kwSlug + "_") || slugText.EndsWith("_" + kwSlug) || slugText.Contains("_" + kwSlug + "_"))
+                    var surrounded = "_" + slugText + "_";
+                    if (surrounded.Contains("_" + kwSlug + "_"))
                     {
                         return true;
                     }
                 }
+
+                // 2. So khớp từ nguyên vẹn với word boundary
+                if (trimmedKw.Length >= 4 && cleanText.Contains(trimmedKw, StringComparison.OrdinalIgnoreCase))
+                {
+                    var pattern = $@"(?i)(?:^|[^\p{{L}}\d]){Regex.Escape(trimmedKw)}(?:$|[^\p{{L}}\d])";
+                    if (Regex.IsMatch(cleanText, pattern))
+                    {
+                        return true;
+                    }
+                }
+
                 return false;
             }
 
             if (effectiveCtx.Topics != null && effectiveCtx.Topics.Count > 0)
             {
-                var foundTopic = effectiveCtx.Topics.FirstOrDefault(t =>
+                var sortedTopics = effectiveCtx.Topics
+                    .Where(t => !string.Equals(t.Code, "GENERAL", StringComparison.OrdinalIgnoreCase) &&
+                                !string.Equals(t.Code, "EDUCATION", StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(t => t.Name?.Length ?? 0)
+                    .ThenByDescending(t => t.Code.Length);
+
+                var foundTopic = sortedTopics.FirstOrDefault(t =>
                     t.Code.Equals(clean, StringComparison.OrdinalIgnoreCase)
                     || t.Name.Equals(clean, StringComparison.OrdinalIgnoreCase)
                     || slug.Equals(NormalizeToCodeSlug(t.Code), StringComparison.OrdinalIgnoreCase)
@@ -855,12 +895,13 @@ namespace AegisQuiz.Infrastructure.Services
                 if (foundTopic != null) return foundTopic.Code;
             }
 
-            // 3. Khớp qua Từ điển Taxonomy cấu hình (DocumentStructureDictionary / DB)
+            // 3. Khớp qua Từ điển Taxonomy cấu hình đa ngôn ngữ (DocumentStructureDictionary / DB / SSoT)
             var taxonomyEntries = DocumentStructureDictionaryDto.GetDefaultTopicTaxonomy();
             foreach (var entry in taxonomyEntries)
             {
-                if (entry.TopicCode.Equals(clean, StringComparison.OrdinalIgnoreCase)
-                    || entry.TopicName.Equals(clean, StringComparison.OrdinalIgnoreCase))
+                if (entry.MatchesCodeOrAlias(clean)
+                    || entry.TopicName.Equals(clean, StringComparison.OrdinalIgnoreCase)
+                    || (entry.LocalizedNames != null && entry.LocalizedNames.Values.Any(n => n.Equals(clean, StringComparison.OrdinalIgnoreCase))))
                 {
                     return entry.TopicCode;
                 }
@@ -965,6 +1006,21 @@ namespace AegisQuiz.Infrastructure.Services
                 if (!dict.ContainsKey("benchmarkStandard"))
                     dict["benchmarkStandard"] = sniffed.BenchmarkStandard ?? "CIG V3";
 
+                if (!dict.ContainsKey("canonicalTopicCode") && !string.IsNullOrWhiteSpace(sniffed.CanonicalTopicCode))
+                    dict["canonicalTopicCode"] = sniffed.CanonicalTopicCode;
+
+                if (!dict.ContainsKey("treePath") && !string.IsNullOrWhiteSpace(sniffed.TreePath))
+                    dict["treePath"] = sniffed.TreePath;
+
+                if (!dict.ContainsKey("friendlyTopicName") && !string.IsNullOrWhiteSpace(sniffed.FriendlyTopicName))
+                    dict["friendlyTopicName"] = sniffed.FriendlyTopicName;
+
+                if (!dict.ContainsKey("curriculumSeries") && !string.IsNullOrWhiteSpace(sniffed.CurriculumSeries))
+                    dict["curriculumSeries"] = sniffed.CurriculumSeries;
+
+                if (!dict.ContainsKey("semesterPhase") && !string.IsNullOrWhiteSpace(sniffed.SemesterPhase))
+                    dict["semesterPhase"] = sniffed.SemesterPhase;
+
                 q.Payload = System.Text.Json.JsonDocument.Parse(System.Text.Json.JsonSerializer.Serialize(dict));
             }
             catch
@@ -995,6 +1051,23 @@ namespace AegisQuiz.Infrastructure.Services
 
             if (hasEnvelope)
             {
+                if (string.IsNullOrEmpty(q.CanonicalTopicCode))
+                {
+                    var envelopeResult = new CognitiveCoordinateTaxonomyResult
+                    {
+                        DomainCode = q.DomainCode,
+                        TopicCode = q.TopicCode,
+                        TargetLevel = q.TargetLevel,
+                        AssessmentPurpose = q.AssessmentPurpose
+                    };
+                    SynthesizeCanonicalTaxonomy(envelopeResult, $"{q.SourceFileName} {q.ContextTitle} {q.SubCategory} {q.SourceExamName}", q.SourceFileName, ctx);
+                    q.CanonicalTopicCode ??= envelopeResult.CanonicalTopicCode;
+                    q.TreePath ??= envelopeResult.TreePath;
+                    q.FriendlyTopicName ??= envelopeResult.FriendlyTopicName;
+                    q.CurriculumSeries ??= envelopeResult.CurriculumSeries;
+                    q.SemesterPhase ??= envelopeResult.SemesterPhase;
+                }
+
                 EnrichItemDeltaTags(q);
                 return;
             }
@@ -1022,6 +1095,11 @@ namespace AegisQuiz.Infrastructure.Services
             q.IssuingOrg = sniffed.IssuingOrg ?? q.IssuingOrg ?? "GDDT";
             q.BenchmarkYear = sniffed.BenchmarkYear ?? q.BenchmarkYear ?? 2026;
             q.BenchmarkStandard = sniffed.BenchmarkStandard ?? q.BenchmarkStandard ?? "CIG V3";
+            q.CanonicalTopicCode ??= sniffed.CanonicalTopicCode;
+            q.TreePath ??= sniffed.TreePath;
+            q.FriendlyTopicName ??= sniffed.FriendlyTopicName;
+            q.CurriculumSeries ??= sniffed.CurriculumSeries;
+            q.SemesterPhase ??= sniffed.SemesterPhase;
 
             if (string.IsNullOrWhiteSpace(q.OrgUnitName) && !string.IsNullOrWhiteSpace(q.IssuingOrg) && q.IssuingOrg.Contains("Trường", StringComparison.OrdinalIgnoreCase))
             {
@@ -1262,12 +1340,337 @@ namespace AegisQuiz.Infrastructure.Services
             }
         }
 
+        /// <summary>
+        /// [Canonical Topic & Materialized Path Engine]
+        /// Chuẩn hóa và tổng hợp mã chủ đề chuẩn tắc (CanonicalTopicCode), cây phả hệ O(1) (TreePath)
+        /// và nhãn hiển thị thân thiện giàu ngữ cảnh (FriendlyTopicName).
+        /// </summary>
+        public static void SynthesizeCanonicalTaxonomy(
+            CognitiveCoordinateTaxonomyResult result,
+            string combinedText,
+            string? fileName = null,
+            DynamicDomainContext? dynamicContext = null)
+        {
+            if (result == null) return;
+            var text = $"{fileName} {combinedText}";
+            var effectiveCtx = dynamicContext ?? DynamicDomainContext.CreateDefault();
+            var dict = effectiveCtx.StructureDictionary ?? new DocumentStructureDictionaryDto();
+            var reconPatterns = dict.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
+
+            // 1. Phân giải Domain (giữ nguyên DomainCode chuẩn "EDUCATION", dùng domainPrefix "EDU" cho treePath và canonicalCode)
+            string domain = !string.IsNullOrWhiteSpace(result.DomainCode) && result.DomainCode != "GENERAL"
+                ? result.DomainCode.ToUpperInvariant()
+                : "EDUCATION";
+            if (string.IsNullOrWhiteSpace(result.DomainCode) || result.DomainCode == "GENERAL")
+            {
+                result.DomainCode = domain;
+            }
+            string domainPrefix = domain.Equals("EDUCATION", StringComparison.OrdinalIgnoreCase) ? "EDU" : domain;
+
+            // 2. Phân giải TopicCode & TopicName
+            string topic = !string.IsNullOrWhiteSpace(result.TopicCode) && result.TopicCode != "GENERAL"
+                ? result.TopicCode.ToUpperInvariant()
+                : "GENERAL";
+
+            string topicDisplay = !string.IsNullOrWhiteSpace(result.TopicName) && result.TopicName != "GENERAL"
+                ? result.TopicName
+                : topic;
+
+            // 3. Phân giải Khối lớp / Cấp bậc (Grade) -> Chuẩn hóa K01..K12 hoặc PresetCode
+            string gradeCode = "GENERAL";
+            string gradeDisplay = "";
+            int gradeNum = 0;
+
+            // 3a. Quét từ TargetLevel đã nhận diện trước
+            if (!string.IsNullOrWhiteSpace(result.TargetLevel))
+            {
+                foreach (var gp in reconPatterns.GradeDetectionPatterns)
+                {
+                    var mLevel = Regex.Match(result.TargetLevel, gp, RegexOptions.IgnoreCase);
+                    if (mLevel.Success && int.TryParse(mLevel.Groups[1].Value, out var g1) && g1 >= 1 && g1 <= 12)
+                    {
+                        gradeNum = g1;
+                        break;
+                    }
+                }
+            }
+
+            // 3b. Kiểm tra theo Topics động (ngữ cảnh neo vững chắc: ví dụ "KHTN 7", "Toán 10", "Khoa học tự nhiên 7")
+            if (gradeNum == 0 && effectiveCtx.Topics != null)
+            {
+                foreach (var t in effectiveCtx.Topics)
+                {
+                    var mTopicCodeGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Code)}[\s\-_]*(\d{{1,2}})\b");
+                    if (mTopicCodeGrade.Success && int.TryParse(mTopicCodeGrade.Groups[1].Value, out var g3) && g3 >= 1 && g3 <= 12)
+                    {
+                        gradeNum = g3;
+                        break;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(t.Name))
+                    {
+                        var mTopicNameGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Name)}[\s\-_]*(\d{{1,2}})\b");
+                        if (mTopicNameGrade.Success && int.TryParse(mTopicNameGrade.Groups[1].Value, out var g4) && g4 >= 1 && g4 <= 12)
+                        {
+                            gradeNum = g4;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3c. Quét từ text tổng hợp và fileName theo GradeDetectionPatterns
+            if (gradeNum == 0)
+            {
+                foreach (var gp in reconPatterns.GradeDetectionPatterns)
+                {
+                    var mGrade = Regex.Match(text, gp, RegexOptions.IgnoreCase);
+                    if (mGrade.Success && int.TryParse(mGrade.Groups[1].Value, out var g2) && g2 >= 1 && g2 <= 12)
+                    {
+                        gradeNum = g2;
+                        break;
+                    }
+                }
+            }
+
+            if (gradeNum >= 1 && gradeNum <= 12)
+            {
+                gradeCode = $"K{gradeNum:D2}";
+                gradeDisplay = $"Lớp {gradeNum}";
+            }
+            else if (!string.IsNullOrWhiteSpace(result.TargetLevel))
+            {
+                gradeCode = NormalizeToCodeSlug(result.TargetLevel);
+                gradeDisplay = result.TargetLevel;
+            }
+
+            // 4. Phân giải Kỳ thi / Giai đoạn học tập (Term / Semester Phase) nạp động từ TermPhaseCatalog (OCP & MultiLang)
+            string termCode = "REGULAR";
+            string semesterPhase = "REGULAR";
+            string termDisplay = "";
+
+            var termCatalog = dict.TermPhaseCatalog != null && dict.TermPhaseCatalog.Count > 0
+                ? dict.TermPhaseCatalog
+                : DocumentStructureDictionaryDto.GetDefaultTermPhases();
+
+            foreach (var termEntry in termCatalog)
+            {
+                bool matched = termEntry.Keywords.Any(kw =>
+                {
+                    if (string.IsNullOrWhiteSpace(kw)) return false;
+                    var trimmed = kw.Trim();
+                    if (trimmed.Length <= 4)
+                        return Regex.IsMatch(text, $@"(?i)\b{Regex.Escape(trimmed)}\b");
+                    return text.Contains(trimmed, StringComparison.OrdinalIgnoreCase);
+                });
+
+                if (matched)
+                {
+                    termCode = termEntry.TermCode;
+                    semesterPhase = termEntry.SemesterPhase;
+                    termDisplay = termEntry.DisplayName;
+                    break;
+                }
+            }
+
+            // 5. Phân giải Bộ sách giáo khoa (Curriculum Series) nạp động từ CurriculumSeriesCatalog (OCP & MultiLang)
+            string seriesCode = "CORE";
+            string seriesDisplay = "";
+
+            var seriesCatalog = dict.CurriculumSeriesCatalog != null && dict.CurriculumSeriesCatalog.Count > 0
+                ? dict.CurriculumSeriesCatalog
+                : DocumentStructureDictionaryDto.GetDefaultCurriculumSeries();
+
+            foreach (var seriesEntry in seriesCatalog)
+            {
+                bool matched = seriesEntry.Keywords.Any(kw =>
+                {
+                    if (string.IsNullOrWhiteSpace(kw)) return false;
+                    var trimmed = kw.Trim();
+                    if (trimmed.StartsWith(@"\b") || trimmed.Contains(@"\b") || trimmed.Contains(@"^"))
+                        return Regex.IsMatch(text, "(?i)" + trimmed);
+                    if (trimmed.Length <= 4)
+                        return Regex.IsMatch(text, $@"(?i)\b{Regex.Escape(trimmed)}\b");
+                    return text.Contains(trimmed, StringComparison.OrdinalIgnoreCase);
+                });
+
+                if (matched)
+                {
+                    seriesCode = seriesEntry.SeriesCode;
+                    seriesDisplay = seriesEntry.DisplayName;
+                    break;
+                }
+            }
+
+            // 6. Tổng hợp CanonicalTopicCode & TreePath & FriendlyTopicName
+            result.CanonicalTopicCode = $"{domainPrefix}_{topic}_{gradeCode}_{termCode}_{seriesCode}";
+            result.TreePath = $"/{domainPrefix}/{topic}/{gradeCode}/{termCode}/{seriesCode}/";
+            result.CurriculumSeries = string.IsNullOrEmpty(seriesDisplay) ? null : seriesDisplay;
+            result.SemesterPhase = semesterPhase;
+
+            var sbFriendly = new StringBuilder();
+            sbFriendly.Append(topicDisplay);
+            if (gradeNum > 0)
+            {
+                sbFriendly.Append($" {gradeNum}");
+            }
+            else if (!string.IsNullOrEmpty(gradeDisplay))
+            {
+                sbFriendly.Append($" — {gradeDisplay}");
+            }
+
+            if (!string.IsNullOrEmpty(termDisplay))
+            {
+                sbFriendly.Append($" — {termDisplay}");
+            }
+
+            if (!string.IsNullOrEmpty(seriesDisplay))
+            {
+                sbFriendly.Append($" ({seriesDisplay})");
+            }
+
+            result.FriendlyTopicName = sbFriendly.ToString().Trim();
+        }
+
         private static void AddTagIfNotExists(List<string> tags, string tag)
         {
             if (!tags.Any(t => string.Equals(t, tag, StringComparison.OrdinalIgnoreCase)))
             {
                 tags.Add(tag);
             }
+        }
+
+        /// <summary>
+        /// [SSoT Grade Extraction] Trích xuất và chuẩn hóa khối lớp (K01..K12 hoặc K_GEN) từ QuestionBase và DB BankTopic.
+        /// </summary>
+        public static string ExtractGrade(QuestionBase question, Dictionary<string, BankTopic>? topicMap = null)
+        {
+            if (question == null) return "K_GEN";
+
+            // 1. Kiểm tra trực tiếp property Grade
+            if (!string.IsNullOrWhiteSpace(question.Grade))
+            {
+                var mg = Regex.Match(question.Grade, @"(?i)(?:Lớp|K|Khối)?\s*(\d{1,2})");
+                if (mg.Success && int.TryParse(mg.Groups[1].Value, out var g)) return $"K{g:D2}";
+            }
+
+            // 2. Kiểm tra TreePath (/K07/, /K12/...)
+            if (!string.IsNullOrWhiteSpace(question.TreePath))
+            {
+                var m = Regex.Match(question.TreePath, @"/(K\d{2})/");
+                if (m.Success) return m.Groups[1].Value.ToUpperInvariant();
+            }
+
+            // 3. Kiểm tra JSONB Payload (grade, targetLevel, treePath, sourceFileName, sourceExamName)
+            if (question.Payload != null && question.Payload.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                var root = question.Payload.RootElement;
+                if (root.TryGetProperty("grade", out var gProp) && !string.IsNullOrWhiteSpace(gProp.GetString()))
+                {
+                    var mg = Regex.Match(gProp.GetString()!, @"(?i)(?:Lớp|K|Khối)?\s*(\d{1,2})");
+                    if (mg.Success && int.TryParse(mg.Groups[1].Value, out var g)) return $"K{g:D2}";
+                }
+                if (root.TryGetProperty("targetLevel", out var tlProp) && !string.IsNullOrWhiteSpace(tlProp.GetString()))
+                {
+                    var mg = Regex.Match(tlProp.GetString()!, @"(?i)(?:Lớp|K|Khối)?\s*(\d{1,2})");
+                    if (mg.Success && int.TryParse(mg.Groups[1].Value, out var g)) return $"K{g:D2}";
+                }
+                if (root.TryGetProperty("treePath", out var tpProp) && !string.IsNullOrWhiteSpace(tpProp.GetString()))
+                {
+                    var m = Regex.Match(tpProp.GetString()!, @"/(K\d{2})/");
+                    if (m.Success) return m.Groups[1].Value.ToUpperInvariant();
+                }
+                if (root.TryGetProperty("sourceFileName", out var fnProp) && !string.IsNullOrWhiteSpace(fnProp.GetString()))
+                {
+                    var mFn = Regex.Match(fnProp.GetString()!, @"(?i)(?:Lớp|Khối|K)\s*([1-9]|1[0-2])\b|(?:Tiếng\s*Anh|Toán|Văn|Vật\s*lý|Hóa\s*học|Sinh\s*học|Lịch\s*sử|Địa\s*lý|Tin\s*học|GDCD|KHTN|KHXH|Công\s*nghệ)[-_ ]*([1-9]|1[0-2])\b|[-_]([1-9]|1[0-2])[-_.]");
+                    if (mFn.Success)
+                    {
+                        var gStr = mFn.Groups[1].Success ? mFn.Groups[1].Value : (mFn.Groups[2].Success ? mFn.Groups[2].Value : mFn.Groups[3].Value);
+                        if (int.TryParse(gStr, out var gNum) && gNum >= 1 && gNum <= 12) return $"K{gNum:D2}";
+                    }
+                }
+            }
+
+            // 4. Kiểm tra TargetLevel
+            if (!string.IsNullOrWhiteSpace(question.TargetLevel))
+            {
+                var m = Regex.Match(question.TargetLevel, @"(?i)(?:Lớp|K|Khối)?\s*(\d{1,2})");
+                if (m.Success && int.TryParse(m.Groups[1].Value, out var g)) return $"K{g:D2}";
+
+                // Tốt nghiệp THPT / Phổ thông trung học quy chuẩn K12
+                if (Regex.IsMatch(question.TargetLevel, @"(?i)Tốt\s*nghiệp|TNPT|THPT|Lớp\s*12|Khối\s*12|Phổ\s*thông"))
+                    return "K12";
+            }
+
+            // 5. Kiểm tra SubCategory
+            if (!string.IsNullOrWhiteSpace(question.SubCategory))
+            {
+                var mSc = Regex.Match(question.SubCategory, @"(?i)(?:Lớp|Khối|K)\s*([1-9]|1[0-2])\b|[-_ ]([1-9]|1[0-2])[-_ ]");
+                if (mSc.Success)
+                {
+                    var gStr = mSc.Groups[1].Success ? mSc.Groups[1].Value : mSc.Groups[2].Value;
+                    if (int.TryParse(gStr, out var gNum) && gNum >= 1 && gNum <= 12) return $"K{gNum:D2}";
+                }
+            }
+
+            // 6. Nhận diện từ Tags
+            if (question.Tags != null && question.Tags.Count > 0)
+            {
+                foreach (var tag in question.Tags)
+                {
+                    var cleanTag = tag.Trim().TrimStart('#').ToUpperInvariant();
+                    if (cleanTag.Contains("TOTNGHIEP") || cleanTag.Contains("THPT") || cleanTag == "K12" || cleanTag == "LOP12")
+                        return "K12";
+                    var mTag = Regex.Match(cleanTag, @"(?:K|LOP)(\d{1,2})");
+                    if (mTag.Success && int.TryParse(mTag.Groups[1].Value, out var gTag)) return $"K{gTag:D2}";
+                }
+            }
+
+            // 7. Nhận diện từ CategoryCode (e.g. TNPT_TIENG_ANH, TNPT_HOA_HOC -> K12)
+            if (!string.IsNullOrWhiteSpace(question.CategoryCode))
+            {
+                var catUpper = question.CategoryCode.ToUpperInvariant();
+                if (catUpper.StartsWith("TNPT_") || catUpper.StartsWith("THPT_") || catUpper.Contains("TOT_NGHIEP") || catUpper.Contains("K12"))
+                    return "K12";
+
+                var mCat = Regex.Match(catUpper, @"(?:K|LOP|KHOI)(\d{1,2})");
+                if (mCat.Success && int.TryParse(mCat.Groups[1].Value, out var gCat)) return $"K{gCat:D2}";
+
+                // 7.1 Tra cứu phả hệ BankTopic trong DB
+                if (topicMap != null && topicMap.TryGetValue(question.CategoryCode, out var bt))
+                {
+                    string parentName = "";
+                    if (bt.ParentId.HasValue)
+                    {
+                        var parentTopic = topicMap.Values.FirstOrDefault(p => p.Id == bt.ParentId.Value);
+                        if (parentTopic != null) parentName = parentTopic.Name;
+                    }
+
+                    var blob = $"{bt.Code} {bt.Name} {bt.MaterializedPath} {bt.Description} {parentName}".ToUpperInvariant();
+                    if (blob.Contains("TNPT") || blob.Contains("THPT") || blob.Contains("TỐT NGHIỆP") || blob.Contains("TOT NGHIEP") || blob.Contains("PHỔ THÔNG"))
+                        return "K12";
+
+                    var mBt = Regex.Match(blob, @"(?:K|LỚP|LOP)(\d{1,2})");
+                    if (mBt.Success && int.TryParse(mBt.Groups[1].Value, out var gBt)) return $"K{gBt:D2}";
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(question.TargetLevel))
+                return question.TargetLevel.Trim();
+
+            return "K_GEN";
+        }
+
+        /// <summary>
+        /// [SSoT Topic Extraction] Phân giải mã môn học/chủ đề từ câu hỏi qua UCTE.
+        /// </summary>
+        public static string ExtractTopic(QuestionBase question)
+        {
+            if (!string.IsNullOrWhiteSpace(question.CategoryCode))
+            {
+                return ResolveTopicCode(question.CategoryCode);
+            }
+            return "GENERAL";
         }
     }
 }

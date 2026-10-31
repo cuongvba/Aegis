@@ -412,6 +412,8 @@ export function normalizeQuestion(data: unknown, idx: number): LearnerQuestion {
     sourceSectionName:   String(pickFirst(source, payload, ['sourceSectionName', 'source_section_name', 'sectionInFile', 'sourceSection', 'source_section']) ?? '') || undefined,
     sourceQuestionNo:    String(pickFirst(source, payload, ['sourceQuestionNo', 'source_question_no', 'originalQuestionNo', 'original_question_no']) ?? '') || undefined,
     sourceRowIndex:      Number(pickFirst(source, payload, ['sourceRowIndex', 'source_row_index', 'rowIndex', 'row_index']) ?? 0) || undefined,
+    hierarchyIndex:      String(pickFirst(source, payload, ['hierarchyIndex', 'hierarchy_index']) ?? '') || undefined,
+    createdAt:           String(pickFirst(source, payload, ['createdAt', 'created_at']) ?? '') || undefined,
     // Ownership & Attribution metadata
     creatorId:           String(pickFirst(source, payload, ['creatorId', 'creator_id', 'authorId', 'author_id', 'userId']) ?? '') || undefined,
     creatorName:         String(pickFirst(source, payload, ['creatorName', 'creator_name', 'authorName', 'author_name', 'author']) ?? '') || undefined,
@@ -420,6 +422,12 @@ export function normalizeQuestion(data: unknown, idx: number): LearnerQuestion {
     scope:               (pickFirst(source, payload, ['scope']) as any) || 'COMMUNITY',
     visibilityScope:     (pickFirst(source, payload, ['visibilityScope', 'visibility_scope']) as any) || 'PUBLIC',
     contributionStatus:  (pickFirst(source, payload, ['contributionStatus', 'contribution_status']) as any) || undefined,
+    // Universal Coordinate Taxonomy Facets
+    treePath:            String(pickFirst(source, payload, ['treePath', 'tree_path']) ?? '') || undefined,
+    grade:               String(pickFirst(source, payload, ['grade', 'kGrade', 'k_grade']) ?? '') || undefined,
+    canonicalTopicCode:  String(pickFirst(source, payload, ['canonicalTopicCode', 'canonical_topic_code']) ?? '') || undefined,
+    curriculumSeries:    String(pickFirst(source, payload, ['curriculumSeries', 'curriculum_series', 'series']) ?? '') || undefined,
+    semesterPhase:       String(pickFirst(source, payload, ['semesterPhase', 'semester_phase', 'termPhase', 'term_phase', 'term']) ?? '') || undefined,
     payload,
   };
 }

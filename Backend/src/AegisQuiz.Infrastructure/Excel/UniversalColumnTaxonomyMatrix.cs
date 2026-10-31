@@ -209,6 +209,8 @@ namespace AegisQuiz.Infrastructure.Excel
                 "GRADING_RUBRIC" => 5,
                 "TOPIC_CODE" => 5,
                 "TOPIC_NAME" => 5,
+                "HIERARCHY_INDEX" => 4,
+                "SOURCE_QUESTION_NO" => 4,
                 "STT" => 4,
                 _ => 3
             };
@@ -289,12 +291,12 @@ namespace AegisQuiz.Infrastructure.Excel
             // Tiếng Việt
             AddRule("QUESTION_CONTENT", 7, 5,
                 @"(cau\s*hoi|noi\s*dung|de\s*bai|yeu\s*cau|tinh\s*huong|van\s*de|menh\s*de|khang\s*dinh)",
-                negativePattern: @"(trich\s*dan|can\s*cu|giai\s*thich|dap\s*an)", lang: "vi");
+                negativePattern: @"(trich\s*dan|can\s*cu|giai\s*thich|dap\s*an|loai|kieu|hinh\s*thuc)", lang: "vi");
 
             // Tiếng Anh
             AddRule("QUESTION_CONTENT", 7, 5,
                 @"(question|content|prompt|stem|problem|statement|task|title|item\s*text)",
-                negativePattern: @"(answer|explanation|reference)", lang: "en");
+                negativePattern: @"(answer|explanation|reference|type)", lang: "en");
 
             // Tiếng Trung / Nhật
             AddRule("QUESTION_CONTENT", 7, 5, @"(题目|问题|题干|内容|問題|設問|問題文|質問)", lang: "any");
@@ -317,7 +319,7 @@ namespace AegisQuiz.Infrastructure.Excel
             // ═════════════════════════════════════════════════════════════════════
             AddRule("TOPIC_CODE", 5, 2,
                 @"(ma\s*cd|ma\s*chu\s*de|topic\s*code|topiccode|mcd|chu\s*de|chuyen\s*de|ma\s*chuyen\s*de|category|nghiep\s*vu|phan\b)",
-                negativePattern: @"(ten\s*chu\s*de|ten\s*cd)", lang: "any");
+                negativePattern: @"(ten\s*chu\s*de|ten\s*cd|toa\s*do|phan\s*cap|hierarchy)", lang: "any");
 
             AddRule("TOPIC_NAME", 5, 2,
                 @"(ten\s*chu\s*de|ten\s*cd|topic\s*name|ten\s*chuyen\s*de|category\s*name)",
@@ -355,7 +357,7 @@ namespace AegisQuiz.Infrastructure.Excel
             AddRule("CRITICAL", 3, 2,
                 @"(diem\s*liet|liet|tu\s*than|fatal|critical|bat\s*buoc\s*dung|cau\s*cot\s*loi)", lang: "any");
 
-            AddRule("TYPE", 3, 2,
+            AddRule("TYPE", 8, 4,
                 @"(loai|loai\s*cau\s*hoi|hinh\s*thuc|type|question\s*type|kieu|题型|設問形式)", lang: "any");
 
             AddRule("DURATION", 3, 2,
@@ -369,6 +371,22 @@ namespace AegisQuiz.Infrastructure.Excel
 
             AddRule("MEDIA_URL", 3, 2,
                 @"(hinh\s*anh|anh|media|image|photo|audio|video|link\s*anh|media\s*url|image\s*url|duong\s*dan\s*anh)", lang: "any");
+
+            // [Hệ phân cấp 4 cấp H(e,p,s,d) & Số hiệu gốc & Chuẩn mực]
+            AddRule("HIERARCHY_INDEX", 7, 5,
+                @"(toa\s*do\s*phan\s*cap|phan\s*cap|hierarchy|hierarchy\s*index|h\(e\s*,\s*p\s*,\s*s\s*,\s*d\)|toa\s*do|h\s*index)", lang: "any");
+
+            AddRule("SOURCE_QUESTION_NO", 6, 5,
+                @"(so\s*hieu\s*goc|cau\s*goc|source\s*no|source\s*question\s*no|so\s*cau\s*goc|original\s*no|source\s*num)", lang: "any");
+
+            AddRule("SUB_ITEMS", 6, 5,
+                @"(chum\s*y\s*con|menh\s*de|y\s*con|sub\s*items|subitems|propositions)", lang: "any");
+
+            AddRule("BENCHMARK_STANDARD", 5, 4,
+                @"(chuan\s*muc|chuan\s*khao\s*thi|benchmark\s*standard|benchmark|standard|chuong\s*trinh|gdpt)", lang: "any");
+
+            AddRule("BENCHMARK_YEAR", 5, 4,
+                @"(nam\s*chuan\s*muc|nam\s*ban\s*hanh|benchmark\s*year)", lang: "any");
         }
 
         private void AddRule(string targetField, int priority, int score, string pattern, string? negativePattern = null, string domain = "ALL", string lang = "any")

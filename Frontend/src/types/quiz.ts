@@ -48,7 +48,9 @@ export interface LearnerQuestion {
   sourceFileName?: string;
   sourceExamName?: string;
   sourceSectionName?: string;
+  hierarchyIndex?: string;
   sourceQuestionNo?: string;
+  createdAt?: string;
   sourceRowIndex?: number;
   // Ownership & Contribution metadata (Task: TeamLeader Contribution & Ownership)
   creatorId?: string;
@@ -58,6 +60,12 @@ export interface LearnerQuestion {
   scope?: 'COMMUNITY' | 'TENANT' | 'TEAM' | 'PERSONAL';
   visibilityScope?: 'PUBLIC' | 'ORG_UNIT' | 'TEAM' | 'PRIVATE';
   contributionStatus?: 'DRAFT' | 'TEAM_PUBLISHED' | 'SUBMITTED_FOR_TENANT' | 'APPROVED_TENANT';
+  // Universal Coordinate Taxonomy Facets
+  treePath?: string;
+  grade?: string;
+  canonicalTopicCode?: string;
+  curriculumSeries?: string;
+  semesterPhase?: string;
   payload?: Record<string, any>;
 }
 
@@ -216,6 +224,7 @@ export interface UniversalQuestionPreviewDto {
   sourceFileName?: string;
   sourceExamName?: string;
   sourceSectionName?: string;
+  hierarchyIndex?: string;
   sourceQuestionNo?: string;
   sourceRowIndex?: number;
   fileHashSha256?: string;

@@ -482,6 +482,11 @@ namespace AegisQuiz.Infrastructure.Excel
                     var mediaRaw = colMap.MediaUrl >= 0 ? GetCellValue(row, colMap.MediaUrl).Trim() : string.Empty;
                     var targetLevelRaw = colMap.TargetLevel >= 0 ? GetCellValue(row, colMap.TargetLevel).Trim() : string.Empty;
                     var domainRaw = colMap.DomainCode >= 0 ? GetCellValue(row, colMap.DomainCode).Trim() : string.Empty;
+                    var hierarchyRaw = colMap.HierarchyIndex >= 0 ? GetCellValue(row, colMap.HierarchyIndex).Trim() : string.Empty;
+                    var sourceNoRaw = colMap.SourceQuestionNo >= 0 ? GetCellValue(row, colMap.SourceQuestionNo).Trim() : string.Empty;
+                    var benchmarkStdRaw = colMap.BenchmarkStandard >= 0 ? GetCellValue(row, colMap.BenchmarkStandard).Trim() : string.Empty;
+                    var benchmarkYearRaw = colMap.BenchmarkYear >= 0 ? GetCellValue(row, colMap.BenchmarkYear).Trim() : string.Empty;
+                    var subItemsRaw = colMap.SubItems >= 0 ? GetCellValue(row, colMap.SubItems).Trim() : string.Empty;
 
                     // Cập nhật ngữ cảnh dùng chung (hỗ trợ đọc trực tiếp hoặc kế thừa từ ô Merged Region)
                     currentContextContent = contextRaw;
@@ -559,10 +564,75 @@ namespace AegisQuiz.Infrastructure.Excel
                         SourceFileName = fileName ?? "Import.xlsx",
                         SourceExamName = sheetName,
                         SourceSectionName = string.IsNullOrWhiteSpace(currentSectionTitle) ? null : currentSectionTitle,
-                        SourceQuestionNo = !string.IsNullOrWhiteSpace(sttVal) ? sttVal : (sheetPreview.Questions.Count + 1).ToString(),
+                        HierarchyIndex = !string.IsNullOrWhiteSpace(hierarchyRaw) ? hierarchyRaw : "0_0_0_0",
+                        SourceQuestionNo = !string.IsNullOrWhiteSpace(sourceNoRaw) ? sourceNoRaw : (!string.IsNullOrWhiteSpace(sttVal) ? sttVal : (sheetPreview.Questions.Count + 1).ToString()),
+                        BenchmarkStandard = !string.IsNullOrWhiteSpace(benchmarkStdRaw) ? benchmarkStdRaw : null,
+                        BenchmarkYear = int.TryParse(benchmarkYearRaw, out var byVal) ? byVal : null,
                         SourceRowIndex = r + 1,
                         CanonicalContentHash = ExamDeduplicationEngine.GenerateCanonicalFingerprint(CleanText(contentVal), options)
                     };
+
+                    // [SGI v5.6]: Tái cấu trúc SubItems cho câu hỏi True/False GDPT 2025 bảo đảm Lossless Round-Trip
+                    if ((dto.QuestionType == "TRUE_FALSE" || dto.QuestionType == "MULTI_TRUE_FALSE") && dto.Options.Count >= 2)
+                    {
+                        for (int optI = 0; optI < dto.Options.Count; optI++)
+                        {
+                            var optText = dto.Options[optI];
+                            var matchSub = Regex.Match(optText, @"^(?:<u>|\*|\*\*|\<b\>)?[\(\s]*([a-d1-4])[\)\.\:]\s*(?:</u>|\*|\*\*|\</b\>)?(.*)", RegexOptions.IgnoreCase);
+                            string key = matchSub.Success ? matchSub.Groups[1].Value.ToLowerInvariant() : ((char)('a' + optI)).ToString();
+                            string subContent = matchSub.Success ? matchSub.Groups[2].Value.Trim() : optText;
+                            dto.SubItems.Add(new QuestionSubItemDto
+                            {
+                                Key = key,
+                                Content = subContent,
+                                OrderIndex = optI + 1
+                            });
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(dto.SuggestedAnswer) && dto.SubItems.Count > 0)
+                        {
+                            var subMatches = Regex.Matches(dto.SuggestedAnswer, @"([a-d1-4])[\:\)\-\s]+(Đúng|Sai|True|False|Đ|S)", RegexOptions.IgnoreCase);
+                            foreach (Match m in subMatches)
+                            {
+                                string sKey = m.Groups[1].Value.ToLowerInvariant();
+                                if (int.TryParse(sKey, out int sNum) && sNum >= 1 && sNum <= 4)
+                                {
+                                    sKey = ((char)('a' + sNum - 1)).ToString();
+                                }
+                                string sVal = m.Groups[2].Value.StartsWith("đ", StringComparison.OrdinalIgnoreCase) || m.Groups[2].Value.StartsWith("d", StringComparison.OrdinalIgnoreCase) || m.Groups[2].Value.StartsWith("t", StringComparison.OrdinalIgnoreCase) ? "Đúng" : "Sai";
+                                var sub = dto.SubItems.FirstOrDefault(s => string.Equals(s.Key, sKey, StringComparison.OrdinalIgnoreCase));
+                                if (sub != null)
+                                {
+                                    sub.ExpectedAnswer = sVal;
+                                }
+                            }
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(subItemsRaw))
+                        {
+                            var sLines = subItemsRaw.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (var sLine in sLines)
+                            {
+                                var sm = Regex.Match(sLine, @"^([a-d1-4])\)\s*(?:\[(.*?)\])?\s*(.*?)(?:\s*\(Giải thích:\s*(.*?)\))?$", RegexOptions.IgnoreCase);
+                                if (sm.Success)
+                                {
+                                    string sk = sm.Groups[1].Value.ToLowerInvariant();
+                                    var sub = dto.SubItems.FirstOrDefault(s => string.Equals(s.Key, sk, StringComparison.OrdinalIgnoreCase));
+                                    if (sub != null)
+                                    {
+                                        if (sm.Groups[2].Success && !string.IsNullOrWhiteSpace(sm.Groups[2].Value) && string.IsNullOrEmpty(sub.ExpectedAnswer))
+                                        {
+                                            sub.ExpectedAnswer = sm.Groups[2].Value.Trim();
+                                        }
+                                        if (sm.Groups[4].Success && !string.IsNullOrWhiteSpace(sm.Groups[4].Value))
+                                        {
+                                            sub.Explanation = sm.Groups[4].Value.Trim();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     sheetPreview.Questions.Add(dto);
                 }
@@ -696,6 +766,11 @@ namespace AegisQuiz.Infrastructure.Excel
             public int MediaUrl { get; set; } = -1;
             public int TargetLevel { get; set; } = -1;
             public int DomainCode { get; set; } = -1;
+            public int HierarchyIndex { get; set; } = -1;
+            public int SourceQuestionNo { get; set; } = -1;
+            public int BenchmarkStandard { get; set; } = -1;
+            public int BenchmarkYear { get; set; } = -1;
+            public int SubItems { get; set; } = -1;
             public int ContentType { get; set; } = -1;
             public int OptionType { get; set; } = -1;
             public bool IsUnstructuredSingleCell { get; set; } = false;
@@ -746,7 +821,12 @@ namespace AegisQuiz.Infrastructure.Excel
                                 Tags = map.Tags >= 0 ? map.Tags : nextMap.Tags,
                                 MediaUrl = map.MediaUrl >= 0 ? map.MediaUrl : nextMap.MediaUrl,
                                 TargetLevel = map.TargetLevel >= 0 ? map.TargetLevel : nextMap.TargetLevel,
-                                DomainCode = map.DomainCode >= 0 ? map.DomainCode : nextMap.DomainCode
+                                DomainCode = map.DomainCode >= 0 ? map.DomainCode : nextMap.DomainCode,
+                                HierarchyIndex = map.HierarchyIndex >= 0 ? map.HierarchyIndex : nextMap.HierarchyIndex,
+                                SourceQuestionNo = map.SourceQuestionNo >= 0 ? map.SourceQuestionNo : nextMap.SourceQuestionNo,
+                                BenchmarkStandard = map.BenchmarkStandard >= 0 ? map.BenchmarkStandard : nextMap.BenchmarkStandard,
+                                BenchmarkYear = map.BenchmarkYear >= 0 ? map.BenchmarkYear : nextMap.BenchmarkYear,
+                                SubItems = map.SubItems >= 0 ? map.SubItems : nextMap.SubItems
                             };
                             foreach (var opt in nextMap.OptionCols)
                             {
@@ -916,6 +996,21 @@ namespace AegisQuiz.Infrastructure.Excel
                     case "DOMAIN_CODE":
                         if (map.DomainCode < 0) map.DomainCode = c;
                         break;
+                    case "HIERARCHY_INDEX":
+                        if (map.HierarchyIndex < 0) map.HierarchyIndex = c;
+                        break;
+                    case "SOURCE_QUESTION_NO":
+                        if (map.SourceQuestionNo < 0) map.SourceQuestionNo = c;
+                        break;
+                    case "BENCHMARK_STANDARD":
+                        if (map.BenchmarkStandard < 0) map.BenchmarkStandard = c;
+                        break;
+                    case "BENCHMARK_YEAR":
+                        if (map.BenchmarkYear < 0) map.BenchmarkYear = c;
+                        break;
+                    case "SUB_ITEMS":
+                        if (map.SubItems < 0) map.SubItems = c;
+                        break;
                 }
             }
 
@@ -949,11 +1044,11 @@ namespace AegisQuiz.Infrastructure.Excel
             // 1. Nếu có từ 2 phương án trở lên: Tuyệt đối ưu tiên định dạng trắc nghiệm SINGLE
             if (options.Count >= 2)
             {
-                // Kiểm tra chùm mệnh đề Đúng / Sai GDPT 2025 (a-Đ, b-S, c-Đ, d-S hoặc Đ,S,Đ,S)
-                if (Regex.IsMatch(cleanAns, @"^(?:[a-d]\s*[\-\:\.]\s*[ĐSđsTFtf][\,\;\s]*){2,}$", RegexOptions.IgnoreCase) ||
+                // Kiểm tra chùm mệnh đề Đúng / Sai GDPT 2025 (a-Đ, b-S, c-Đ, d-S hoặc Đ,S,Đ,S hoặc a: Đúng; b: Sai)
+                if (Regex.IsMatch(cleanAns, @"^(?:[a-d1-4]\s*[\-\:\.\)]\s*(?:Đúng|Sai|True|False|[ĐSđsTFtf])[\,\;\s]*){2,}$", RegexOptions.IgnoreCase) ||
                     Regex.IsMatch(cleanAns, @"^[ĐSđsTFtf](?:[\,\;\s]+[ĐSđsTFtf]){2,}$", RegexOptions.IgnoreCase))
                 {
-                    return "TRUE_FALSE";
+                    return "MULTI_TRUE_FALSE";
                 }
 
                 // Kiểm tra ghép nối thực sự (Matching: 1-A, 2-B, 3-C)

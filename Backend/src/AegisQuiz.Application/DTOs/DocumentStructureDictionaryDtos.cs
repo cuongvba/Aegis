@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using AegisQuiz.Application.Services;
 
 namespace AegisQuiz.Application.DTOs
 {
@@ -8,65 +10,39 @@ namespace AegisQuiz.Application.DTOs
     /// Cấu hình hóa 100% (Zero-Hardcode) việc nhận diện Phân đoạn, Lời giải, Bảng đáp án, Biên giới đề thi,
     /// chữ ký ngôn ngữ (Language Signatures) và bảng phân loại nhanh O(1) (Fast Classification Spec).
     /// Nạp từ khóa <c>documentStructureDictionary</c> trong <c>parsing_rules_registry.json</c>.
+    /// Các giá trị mặc định được tách biệt hoàn toàn tại <see cref="DocumentStructureSeedFactory"/>.
     /// </summary>
     public class DocumentStructureDictionaryDto
     {
         /// <summary>Ánh xạ tiêu đề phân đoạn → loại câu hỏi (SINGLE, TRUE_FALSE, SHORT_ANSWER, ESSAY).</summary>
         public Dictionary<string, List<string>> SectionMarkers { get; set; } = GetDefaultSectionMarkers();
 
-        public static Dictionary<string, List<string>> GetDefaultSectionMarkers() => new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["ESSAY"] = new()
-            {
-                @"(?i)(?:TỰ\s*LUẬN|TU\s*LUAN|\bESSAY\b|FREE\s*RESPONSE|XỬ\s*LÝ\s*TÌNH\s*HUỐNG|解答题)",
-                @"^(?:PHẦN\s+)?TỰ\s*LUẬN",
-                @"^BÀI\s*TẬP\s*TỰ\s*LUẬN",
-                @"^(?:PHẦN\s+)?XỬ\s*LÝ\s*TÌNH\s*HUỐNG"
-            },
-            ["SHORT_ANSWER"] = new()
-            {
-                @"(?i)(?:TRẢ\s*LỜI\s*NGẮN|TRA\s*LOI\s*NGAN|SHORT\s*ANSWER|ĐIỀN\s*(?:ĐÁP\s*SỐ|KẾT\s*QUẢ)|填空题)",
-                @"^(?:PHẦN|PHAN)\s+III\b",
-                @"^(?:PART|SECTION)\s+III\b",
-                @"^(?:PHẦN|PHAN)\s+3\b",
-                @"^(?:CÂU\s*)?TRẢ\s*LỜI\s*NGẮN$",
-                @"^ĐIỀN\s*(?:ĐÁP\s*SỐ|KẾT\s*QUẢ)$"
-            },
-            ["TRUE_FALSE"] = new()
-            {
-                @"(?i)(?:ĐÚNG\s*[-–/\s]*SAI|DUNG\s*[-–/\s]*SAI|TRUE\s*[-–/\s]*FALSE|判断题)",
-                @"^(?:PHẦN|PHAN)\s+II(?:[\.\:\s\-]+.*(?:ĐÚNG|TRUE|SAI|FALSE).*)?$",
-                @"^(?:PART|SECTION)\s+II(?:[\.\:\s\-]+.*(?:TRUE|FALSE|ĐÚNG|SAI).*)?$",
-                @"^(?:PHẦN|PHAN)\s+2(?:[\.\:\s\-]+.*(?:ĐÚNG|TRUE|SAI|FALSE).*)?$",
-                @"^TRẮC\s*NGHIỆM\s*ĐÚNG\s*[-–\s\/]*SAI",
-                @"^CÂU\s*HỎI\s*ĐÚNG\s*[-–\s\/]*SAI"
-            },
-            ["SINGLE"] = new()
-            {
-                @"(?i)(?:TRẮC\s*NGHIỆM(?:\s*(?:NHIỀU\s*LỰA\s*CHỌN|ĐƠN|4\s*PHƯƠNG\s*ÁN))?|MULTIPLE\s*CHOICE|ĐƠN\s*LỰA\s*CHỌN|NHIỀU\s*LỰA\s*CHỌN|单项选择|ĐỌC\s*HIỂU|READING|LISTENING)",
-                @"^(?:PHẦN|PHAN)\s+I\b",
-                @"^(?:PART|SECTION)\s+I\b",
-                @"^(?:PHẦN|PHAN)\s+1\b",
-                @"^(?:CHƯƠNG|CHUONG)\s+[I|V|X\d]+",
-                @"^TRẮC\s*NGHIỆM(?:\\s*(?:NHIỀU\s*LỰA\s*CHỌN|ĐƠN|4\s*PHƯƠNG\s*ÁN))?$"
-            }
-        };
+        public static Dictionary<string, List<string>> GetDefaultSectionMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultSectionMarkers();
 
         /// <summary>Mẫu nhận diện dòng chuyển sang pha "Lời giải tham khảo / Hướng dẫn chấm".</summary>
         public List<string> SolutionPhaseMarkers { get; set; } = GetDefaultSolutionPhaseMarkers();
 
+        public static List<string> GetDefaultSolutionPhaseMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultSolutionPhaseMarkers();
+
         /// <summary>Mẫu nhận diện dòng tiêu đề "Bảng đáp án".</summary>
         public List<string> AnswerPhaseMarkers { get; set; } = GetDefaultAnswerPhaseMarkers();
+
+        public static List<string> GetDefaultAnswerPhaseMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultAnswerPhaseMarkers();
 
         /// <summary>Mẫu nhận diện dòng mở đầu Lời giải / Hướng dẫn giải / Ý tưởng giải / Biểu điểm (cấu hình động 100%).</summary>
         public List<string> ExplanationMarkers { get; set; } = GetDefaultExplanationMarkers();
 
+        public static List<string> GetDefaultExplanationMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultExplanationMarkers();
+
         /// <summary>Mẫu nhận diện biên giới đề thi (Group 1 = mã đề).</summary>
-        public List<string> ExamBoundaryMarkers { get; set; } = new()
-        {
-            @"^(?:ĐỀ\s*(?:THI)?\s*(?:SỐ|KIỂM\s*TRA\s*SỐ|MT)?|BỘ\s*ĐỀ\s*SỐ)\s*(\d+)",
-            @"^MÃ\s*ĐỀ\s*[:\-]?\s*(\d+)"
-        };
+        public List<string> ExamBoundaryMarkers { get; set; } = GetDefaultExamBoundaryMarkers();
+
+        public static List<string> GetDefaultExamBoundaryMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultExamBoundaryMarkers();
 
         /// <summary>Mẫu nhận diện tiêu đề chủ đề / môn học (Group 1 = tên chủ đề).</summary>
         public List<string> TopicHeadingPatterns { get; set; } = new();
@@ -77,8 +53,14 @@ namespace AegisQuiz.Application.DTOs
         /// <summary>Mẫu nhận diện dòng mở đầu bài đọc hiểu ở cấp tài liệu.</summary>
         public List<string> PassageStartPatterns { get; set; } = GetDefaultPassageStartPatterns();
 
+        public static List<string> GetDefaultPassageStartPatterns() =>
+            DocumentStructureSeedFactory.GetDefaultPassageStartPatterns();
+
         /// <summary>Mẫu bóc tách phạm vi câu hỏi của bài đọc (Group 1 = từ, Group 2 = đến).</summary>
         public List<string> PassageRangePatterns { get; set; } = GetDefaultPassageRangePatterns();
+
+        public static List<string> GetDefaultPassageRangePatterns() =>
+            DocumentStructureSeedFactory.GetDefaultPassageRangePatterns();
 
         /// <summary>Hồ sơ năng lực theo dạng câu hỏi (OCP) — thêm dạng mới không cần sửa mã lõi bộ phân loại.</summary>
         public Dictionary<string, QuestionTypeProfileDto> QuestionTypeProfiles { get; set; } = QuestionTypeProfileDto.GetDefaults();
@@ -86,56 +68,17 @@ namespace AegisQuiz.Application.DTOs
         /// <summary>Mẫu ngôn ngữ học đa ngôn ngữ của bộ phân loại (khóa theo <see cref="LinguisticKeys"/>).</summary>
         public Dictionary<string, List<string>> LinguisticPatterns { get; set; } = QuestionTypeProfileDto.GetDefaultLinguisticPatterns();
 
-        public static List<string> GetDefaultSolutionPhaseMarkers() => new()
-        {
-            @"^(?:HƯỚNG\s*DẪN\s*(?:CHẤM|GIẢI)|ĐÁP\s*ÁN\s*(?:VÀ|&)?\s*(?:BIỂU|THANG)?\s*ĐIỂM|ĐÁP\s*ÁN\s*THAM\s*KHẢO|ĐÁP\s*ÁN\s*CHI\s*TIẾT|LỜI\s*GIẢI\s*THAM\s*KHẢO|LỜI\s*GIẢI\s*CHI\s*TIẾT|HƯỚNG\s*DẪN\s*GIẢI\s*CHI\s*TIẾT|BIỂU\s*ĐIỂM\s*(?:VÀ|&)?\s*HƯỚNG\s*DẪN|THANG\s*ĐIỂM\s*CHI\s*TIẾT|HƯỚNG\s*DẪN\s*TỰ\s*LUẬN|MARKING\s*SCHEME|RUBRICS?|MODEL\s*ANSWERS?|SOLUTIONS?)[\.\:\s\-]*$",
-            @"^(?:(?:BẢNG\s*)?ĐÁP\s*ÁN|D[\.\?\s]*P\s*[\.\?\s]*N)\s+(?:THAM\s*KHẢO|CHI\s*TIẾT|VÀ\s*LỜI\s*GIẢI.*)[\.\:\s\-]*$",
-            @"^(?:HƯỚNG\s*DẪN\s*GIẢI\s*VÀ\s*ĐÁP\s*ÁN|ĐÁP\s*ÁN\s*VÀ\s*HƯỚNG\s*DẪN\s*GIẢI)[\.\:\s\-]*$"
-        };
+        /// <summary>Mẫu nhận diện ranh giới kết thúc đề thi (HẾT, [Hết đề 1], THE END, END OF TEST, END OF PAPER...).</summary>
+        public List<string> EndOfExamMarkers { get; set; } = GetDefaultEndOfExamMarkers();
 
-        public static List<string> GetDefaultAnswerPhaseMarkers() => new()
-        {
-            @"^(?:BẢNG\s*)?(?:ĐÁP\s*ÁN|D[\.\?\s]*P\s*[\.\?\s]*N|ANSWER\s*KEY|KEY|ANSWERS?)\s*(?:THAM\s*KHẢO|CHI\s*TIẾT|TRẮC\s*NGHIỆM)?[\.\:\s\-]*$",
-            @"^(?:答案|参考答案)[\.\:\s\-]*$"
-        };
-
-        public static List<string> GetDefaultExplanationMarkers() => new()
-        {
-            @"(?i)^(?:Lời\s*giải|L[\.\?\s]*i\s*gi[\.\?\s]*i|Hướng\s*dẫn\s*(?:giải|chấm|ý\s*giải)|Hu?ng\s*d?n\s*(?:gi?i|ch?m)|HƯỚNG\s*DẪN|LỜI\s*GIẢI|HD|Giải\s*thích|Gợi\s*ý(?:\s*làm\s*bài|\s*giải)?|Ý\s*tưởng\s*giải|Sơ\s*đồ\s*giải|Căn\s*cứ|Biểu\s*điểm|Thang\s*điểm|Explanation|Rationale|Rubric|Marking\s*Scheme|Solution|Model\s*Answer|Detailed\s*Solution)[\.\:\s\-]*",
-            @"(?i)^(?:Phương\s*pháp\s*giải|Các\s*bước\s*giải|Cách\s*(?:1|2|3|một|hai|ba))[\.\:\s\-]*",
-            @"(?i)^(?:Chọn|Đáp\s*án|Đáp\s*số)\s+[A-D0-9,\.\-]+"
-        };
-
-        public static List<string> GetDefaultPassageStartPatterns() => new()
-        {
-            @"(?i)(?:đọc\s+(?:đoạn|bài)\s*văn|đọc\s+thông\s*tin|read\s+the\s+following\s+(?:passage|text|advertisement|announcement)|read\s+the\s+passage).*?(?:trả\s*lời|answer)",
-            @"(?i)(?:sử\s*dụng|dựa\s*vào|dựa\s*trên|cho|dùng)\s+thông\s*tin.*?(?:để\s*trả\s*lời|trả\s*lời\s*(?:các\s*)?câu)",
-            @"(?i)(?:thông\s*tin|dữ\s*liệu|tình\s*huống)\s+(?:dưới\s*đây|sau)\s+để\s*trả\s*lời",
-            @"(?i)^bài\s*đọc\s*hiểu"
-        };
-
-        public static List<string> GetDefaultPassageRangePatterns() => new()
-        {
-            @"(?i)(?:từ\s+(?:các\s+)?câu(?:\s+số)?|ở\s+mỗi\s+câu(?:\s+hỏi)?\s*(?:từ)?|(?:các\s+)?câu(?:\s+số|\s+hỏi)?)\s*(\d+)\s*(?:đến\s*(?:các\s+)?câu(?:\s+số)?|đến|[-–—])\s*(\d+)",
-            @"(?i)(?:questions?|items?|from\s+question|for\s+questions?|in\s+questions?)\s*(\d+)\s*(?:to|through|[-–—])\s*(?:questions?\s*)?(\d+)",
-            @"(?i)(?:questions?|items?)\s+from\s*(\d+)\s*to\s*(\d+)",
-            @"(?i)(?:từ\s+câu|từ)\s*(\d+)\s*(?:đến\s*hết|trở\s*đi)"
-        };
-
-        /// <summary>Mẫu nhận diện ranh giới kết thúc đề thi (HẾT, THE END, END OF TEST, END OF PAPER...).</summary>
-        public List<string> EndOfExamMarkers { get; set; } = new()
-        {
-            @"^(?:[\-\–\—_*\=.\s]*\b(?:HẾT|HET|THE\s*END|END\s*OF\s*(?:TEST|EXAM|PAPER)|HẾT\s+ĐỀ\s+THI)\b[\-\–\—_*\=.\s]*)$",
-            @"^(?:[\-\–\—_\s]*HẾT[\-\–\—_\s]*)$"
-        };
+        public static List<string> GetDefaultEndOfExamMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultEndOfExamMarkers();
 
         /// <summary>Mẫu nhận diện chỉ thị coi thi / ghi chú phụ ngoài nội dung câu hỏi (Cán bộ coi thi..., Thí sinh không được...).</summary>
-        public List<string> ProctorInstructionMarkers { get; set; } = new()
-        {
-            @"(?i)(?:Cán\s*bộ\s*coi\s*thi|Giám\s*thị|Giám\s*khảo)\s+không\s+giải\s+thích(?:\s+gì)?\s+thêm",
-            @"(?i)Thí\s*sinh\s+không\s+được\s+sử\s+dụng\s+tài\s+liệu",
-            @"(?i)Họ\s*(?:và)?\s*tên\s+thí\s*sinh[\.\:\s_]+Số\s*báo\s*danh"
-        };
+        public List<string> ProctorInstructionMarkers { get; set; } = GetDefaultProctorInstructionMarkers();
+
+        public static List<string> GetDefaultProctorInstructionMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultProctorInstructionMarkers();
 
         /// <summary>Đặc tả bảng đáp án ma trận (tiêu đề cột Câu / Đáp án).</summary>
         public AnswerTableDictionaryDto AnswerTableSpecs { get; set; } = new();
@@ -146,8 +89,35 @@ namespace AegisQuiz.Application.DTOs
         /// <summary>Từ điển danh mục phân loại môn học / chủ đề nạp động từ config/DB.</summary>
         public List<TopicTaxonomyEntryDto> TopicTaxonomyEntries { get; set; } = GetDefaultTopicTaxonomy();
 
+        public static List<TopicTaxonomyEntryDto> GetDefaultTopicTaxonomy() =>
+            TaxonomyResourceSeedLoader.GetDefaultTopics();
+
         /// <summary>Từ điển danh mục phân loại miền tri thức (Domain) nạp động từ config/DB.</summary>
         public List<DomainTaxonomyEntryDto> DomainTaxonomyEntries { get; set; } = GetDefaultDomainTaxonomy();
+
+        public static List<DomainTaxonomyEntryDto> GetDefaultDomainTaxonomy() =>
+            TaxonomyResourceSeedLoader.GetDefaultDomains();
+
+        /// <summary>Đặc tả mẫu nhận diện trinh sát 5 trục tọa độ đa ngôn ngữ (Zero-Hardcode & MultiLang).</summary>
+        public TaxonomyReconnaissancePatternsDto TaxonomyReconPatterns { get; set; } = new();
+
+        /// <summary>Danh mục bộ sách giáo khoa / chương trình đào tạo đa quốc gia nạp động từ DB/Config (OCP).</summary>
+        public List<CurriculumSeriesEntryDto> CurriculumSeriesCatalog { get; set; } = GetDefaultCurriculumSeries();
+
+        public static List<CurriculumSeriesEntryDto> GetDefaultCurriculumSeries() =>
+            DocumentStructureSeedFactory.GetDefaultCurriculumSeries();
+
+        /// <summary>Danh mục kỳ thi / giai đoạn khảo thí đa ngôn ngữ nạp động từ DB/Config (OCP & MultiLang).</summary>
+        public List<TermPhaseEntryDto> TermPhaseCatalog { get; set; } = GetDefaultTermPhases();
+
+        public static List<TermPhaseEntryDto> GetDefaultTermPhases() =>
+            DocumentStructureSeedFactory.GetDefaultTermPhases();
+
+        /// <summary>Danh sách từ viết tắt chuyên ngành viết hoa.</summary>
+        public List<string> KnownAcronyms { get; set; } = GetDefaultAcronyms();
+
+        public static List<string> GetDefaultAcronyms() =>
+            DocumentStructureSeedFactory.GetDefaultAcronyms();
 
         /// <summary>Chữ ký nhận diện ngôn ngữ theo mã ISO-639-1 ("vi", "en", "zh", "ko", "ja", "fr", "de"...).</summary>
         public Dictionary<string, LanguageSignatureDto> LanguageSignatures { get; set; } = new(StringComparer.OrdinalIgnoreCase);
@@ -161,86 +131,117 @@ namespace AegisQuiz.Application.DTOs
         /// </summary>
         public Dictionary<string, List<string>> ScopeDirectiveMarkers { get; set; } = GetDefaultScopeDirectiveMarkers();
 
+        public static Dictionary<string, List<string>> GetDefaultScopeDirectiveMarkers() =>
+            DocumentStructureSeedFactory.GetDefaultScopeDirectiveMarkers();
+
+        /// <summary>
+        /// [R_GEN & R_SPEC] Cấu hình Phân cấp Khảo thí Thích ứng Đa ngôn ngữ Toàn cầu (Zero-Config Heuristic).
+        /// Tự động hóa 100% cho đề phẳng H(x, 0, 0, 0), đề chỉ thị H(x, 0, 0, d), và đề đa tầng H(x, p, s, d).
+        /// </summary>
+        public AdaptiveHierarchyConfigDto HierarchyConfig { get; set; } = AdaptiveHierarchyConfigDto.Default();
+
         /// <summary>Mẫu bóc tách dải số câu hỏi tổng quát [StartQ..EndQ] (đa ngôn ngữ VI, EN, ZH...).</summary>
-        public List<string> ScopeRangePatterns { get; set; } = new()
+        public List<string> ScopeRangePatterns { get; set; } = GetDefaultScopeRangePatterns();
+
+        public static List<string> GetDefaultScopeRangePatterns() =>
+            DocumentStructureSeedFactory.GetDefaultScopeRangePatterns();
+    }
+
+    /// <summary>Bộ sách / Chương trình quy chuẩn nạp động từ cấu hình / DB (OCP).</summary>
+    public class CurriculumSeriesEntryDto
+    {
+        public string SeriesCode { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public List<string> Keywords { get; set; } = new();
+    }
+
+    /// <summary>Kỳ thi / Giai đoạn khảo thí nạp động từ cấu hình / DB (OCP & MultiLang).</summary>
+    public class TermPhaseEntryDto
+    {
+        public string TermCode { get; set; } = string.Empty;
+        public string SemesterPhase { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public List<string> Keywords { get; set; } = new();
+    }
+
+    /// <summary>Đặc tả nhận diện trinh sát Hệ 5 trục tọa độ đa ngôn ngữ (Zero-Hardcode & MultiLang).</summary>
+    public class TaxonomyReconnaissancePatternsDto
+    {
+        public List<string> TopicHeaderPatterns { get; set; } = new()
         {
-            @"(?i)(?:từ\s+(?:các\s+)?câu(?:\s+số)?|ở\s+mỗi\s+câu(?:\s+hỏi)?\s*(?:từ)?|(?:các\s+)?câu(?:\s+số|\s+hỏi)?)\s*(\d+)\s*(?:đến\s*(?:các\s+)?câu(?:\s+số)?|đến|[-–—])\s*(\d+)",
-            @"(?i)(?:questions?|items?|from\s+question|for\s+questions?|in\s+questions?)\s*(\d+)\s*(?:to|through|[-–—])\s*(?:questions?\s*)?(\d+)",
-            @"(?i)(?:questions?|items?)\s+from\s*(\d+)\s*to\s*(\d+)",
-            @"(?i)(?:từ\s+câu|từ)\s*(\d+)\s*(?:đến\s*hết|trở\s*đi)"
+            @"(?i)(?:^|[\t\s|•\-–—;]+)(?:BÀI\s*THI\s*(?:MÔN)?|MÔN\s*THI|MÔN|HỌC\s*PHẦN|MÃ\s*CĐ|TOPIC|SUBJECT|COURSE|MODULE|DISCIPLINE|EXAM\s*SUBJECT|科目|课程)[\.\:\s\-]+([^\n\r\t|;]+)",
+            @"(?i)(?:^|[\t\s|•\-–—;]+)(?:CHỦ\s*ĐỀ|CHƯƠNG|LĨNH\s*VỰC|THEME|UNIT|CHAPTER)[\.\:\s\-]+([^\n\r\t|;]+)"
         };
 
-        public static Dictionary<string, List<string>> GetDefaultScopeDirectiveMarkers() => new(StringComparer.OrdinalIgnoreCase)
+        public List<string> TargetLevelPatterns { get; set; } = new()
         {
-            ["MULTI_TRUE_FALSE"] = new()
-            {
-                @"(?i)(?:mỗi\s+ý\s+[a-d]|các\s+mệnh\s+đề|mỗi\s+câu\s+có\s+4\s+ý).*?(?:chọn\s+đúng\s+(?:hoặc|hay)\s+sai|đúng\s*[-–\/\s]*sai|true\s*[-–\/\s]*false)",
-                @"(?i)(?:chọn\s+đúng\s+(?:hoặc|hay)\s+sai|thí\s*sinh\s*chọn\s*đúng\s*hoặc\s*sai|mệnh\s+đề\s+đúng\s+hay\s+sai|indicate\s+whether\s+each\s+statement\s+is\s+true\s+or\s+false)"
-            },
-            ["SHORT_ANSWER"] = new()
-            {
-                @"(?i)(?:(?:phần\s+iii|part\s+iii|section\s+iii).*?trả\s*lời|trả\s*lời\s*ngắn|yêu\s*cầu\s*trả\s*lời\s*ngắn|điền\s*(?:đáp\s*số|vào\s*chỗ\s*trống)|viết\s*câu\s*trả\s*lời|kết\s*quả\s*làm\s*tròn|fill\s*in\s*the\s*blank|short\s*answer|write\s*your\s*answer)"
-            },
-            ["ORDERING"] = new()
-            {
-                @"(?i)(?:sắp\s*xếp\s*(?:các\s*(?:bước|câu|đoạn|ý))?|thứ\s*tự\s*(?:thực\s*hiện|đúng)|arrange\s+the\s+(?:utterances|sentences|steps)|chronological\s+order)"
-            },
-            ["MATCHING"] = new()
-            {
-                @"(?i)(?:ghép\s*(?:nội\s*dung|thông\s*tin)?\s*(?:ở\s*)?cột\s+[a-b1-2]|nối\s*(?:mệnh\s*đề|cột)|match\s*(?:each\s*item|the\s*items)?\s*in\s*column)"
-            },
-            ["MULTI"] = new()
-            {
-                @"(?i)(?:chọn\s+(?:tất\s*cả|các)\s+phương\s*án\s+đúng|có\s+thể\s+chọn\s+nhiều\s+đáp\s+án|choose\s+all\s+that\s+apply|select\s+all\s+correct)"
-            },
-            ["SINGLE"] = new()
-            {
-                @"(?i)(?:chỉ\s*chọn\s*(?:một|01|1)\s*phương\s*án|(?:mỗi\s+câu(?:\s+hỏi)?(?:\s+thí\s+sinh)?\s+)?chọn\s+(?:một|01|1)\s+phương\s*án|chọn\s*(?:một|01|1)\s*phương\s*án\s*đúng|chọn\s+phương\s*án\s*(?:đúng\s*nhất|chính\s*xác\s*nhất)|mark\s+the\s+letter\s+[a-d]|choose\s+the\s+(?:best|correct)\s+answer|select\s+one\s+answer|chọn\s+câu\s+trả\s+lời\s+đúng)"
-            },
-            ["ESSAY"] = new()
-            {
-                @"(?i)(?:tự\s*luận|thí\s*sinh\s*giải\s*(?:các\s*)?bài\s*toán|trình\s*bày\s*(?:chi\s*tiết\s*)?lời\s*giải|thang\s*điểm.*?điểm|solve\s+the\s+following|show\s+your\s+work)"
-            }
+            @"(?i)(?:vị\s*trí|chức\s*danh|ngạch|đối\s*tượng|cấp\s*bậc|khối\s*lớp|hạng\s*bằng|dành\s*cho|grade|level|target\s*audience|position|rank|class|年级|级别)\s*[:\-–—]\s*([^\r\n|;]+)"
         };
 
-        public static List<TopicTaxonomyEntryDto> GetDefaultTopicTaxonomy() => new()
+        public List<string> AssessmentPurposePatterns { get; set; } = new()
         {
-            new() { TopicCode = "TIENG_ANH", TopicName = "Tiếng Anh", DomainCode = "EDUCATION", Keywords = new() { "tiếng anh", "tieng anh", "môn tiếng anh", "bài thi tiếng anh", "english", "ngoại ngữ 1", "ngoại ngữ", "foreign language", "reading comprehension", "pronunciation", "grammar" } },
-            new() { TopicCode = "TIENG_PHAP", TopicName = "Tiếng Pháp", DomainCode = "EDUCATION", Keywords = new() { "tiếng pháp", "tieng phap", "môn tiếng pháp", "français", "french", "langue française" } },
-            new() { TopicCode = "TIENG_TRUNG", TopicName = "Tiếng Trung Quốc", DomainCode = "EDUCATION", Keywords = new() { "tiếng trung", "tiếng hoa", "tieng trung", "môn tiếng trung", "chinese", "hsk", "hán ngữ", "chữ hán", "汉语", "中文" } },
-            new() { TopicCode = "TIENG_NHAT", TopicName = "Tiếng Nhật Bản", DomainCode = "EDUCATION", Keywords = new() { "tiếng nhật", "tieng nhat", "môn tiếng nhật", "japanese", "jlpt", "nihongo", "日本語" } },
-            new() { TopicCode = "TIENG_HAN", TopicName = "Tiếng Hàn Quốc", DomainCode = "EDUCATION", Keywords = new() { "tiếng hàn", "tieng han", "môn tiếng hàn", "korean", "topik", "한국어" } },
-            new() { TopicCode = "TIENG_DUC", TopicName = "Tiếng Đức", DomainCode = "EDUCATION", Keywords = new() { "tiếng đức", "tieng duc", "môn tiếng đức", "german", "deutsch" } },
-            new() { TopicCode = "TIENG_NGA", TopicName = "Tiếng Nga", DomainCode = "EDUCATION", Keywords = new() { "tiếng nga", "tieng nga", "môn tiếng nga", "russian", "русский" } },
-            new() { TopicCode = "MATH", TopicName = "Toán học", DomainCode = "EDUCATION", Keywords = new() { "toán", "toán học", "toan", "toan hoc", "môn toán", "mon toan", "math", "mathematics", "đạo hàm", "tích phân", "hình học", "đại số", "giải tích" } },
-            new() { TopicCode = "HOA_HOC", TopicName = "Hóa học", DomainCode = "EDUCATION", Keywords = new() { "hoá học", "hóa học", "hoá", "hóa", "hoa hoc", "hoa", "môn hoá học", "môn hóa học", "môn hoá", "môn hóa", "chemistry", "chimie", "phản ứng", "dung dịch", "mol", "axit", "acid", "bazo", "bazơ" } },
-            new() { TopicCode = "SINH_HOC", TopicName = "Sinh học", DomainCode = "EDUCATION", Keywords = new() { "sinh học", "sinh", "môn sinh học", "môn sinh", "biology", "di truyền", "nhiễm sắc thể", "tế bào", "gen", "adn" } },
-            new() { TopicCode = "VAT_LY", TopicName = "Vật lý", DomainCode = "EDUCATION", Keywords = new() { "vật lý", "vật lí", "vat ly", "vat li", "môn vật lý", "môn vật lí", "physics", "dao động", "sóng", "điện xoay chiều", "quang học", "cơ học" } },
-            new() { TopicCode = "LICH_SU", TopicName = "Lịch sử", DomainCode = "EDUCATION", Keywords = new() { "lịch sử", "sử", "môn lịch sử", "môn sử", "history", "cách mạng", "chiến dịch", "kháng chiến", "hiệp định" } },
-            new() { TopicCode = "DIA_LY", TopicName = "Địa lý", DomainCode = "EDUCATION", Keywords = new() { "địa lý", "địa lí", "dia ly", "môn địa lý", "môn địa lí", "geography", "khí hậu", "địa hình", "kinh tế vùng", "biển đảo" } },
-            new() { TopicCode = "NGU_VAN", TopicName = "Ngữ văn", DomainCode = "EDUCATION", Keywords = new() { "ngữ văn", "văn học", "văn", "môn văn", "môn ngữ văn", "literature", "tác phẩm", "thơ", "truyện ngắn", "nghị luận" } },
-            new() { TopicCode = "TIN_HOC", TopicName = "Tin học", DomainCode = "EDUCATION", Keywords = new() { "tin học", "tin hoc", "môn tin học", "mon tin hoc", "môn tin", "mon tin", "bài thi tin học", "informatics", "computer science", "tin", "công nghệ thông tin", "cntt", "lập trình", "thuật toán", "python", "máy tính", "mạng máy tính" } },
-            new() { TopicCode = "CNTT", TopicName = "Tin học", DomainCode = "EDUCATION", Keywords = new() { "tin học", "công nghệ thông tin", "cntt", "môn tin", "informatics", "computer science", "lập trình", "thuật toán" } },
-            new() { TopicCode = "GDKT_PL", TopicName = "Giáo dục Kinh tế & Pháp luật", DomainCode = "EDUCATION", Keywords = new() { "giáo dục kinh tế và pháp luật", "gdkt&pl", "gdkt", "kinh tế pháp luật", "pháp luật", "kinh tế" } }
+            @"(?i)(kỳ\s*kiểm\s*tra[^\r\n|;]+|kỳ\s*thi[^\r\n|;]+|sát\s*hạch[^\r\n|;]+|đánh\s*giá[^\r\n|;]+|ôn\s*tập\s*nghiệp\s*vụ[^\r\n|;]+|examination[^\r\n|;]+|midterm[^\r\n|;]+|final\s*exam[^\r\n|;]+|assessment[^\r\n|;]+|mock\s*test[^\r\n|;]+|期中[^\r\n|;]+|期末[^\r\n|;]+|中考[^\r\n|;]+|高考[^\r\n|;]+)"
         };
 
-        public static List<DomainTaxonomyEntryDto> GetDefaultDomainTaxonomy() => new()
+        public List<string> IssuingOrgPatterns { get; set; } = new()
         {
-            new() { DomainCode = "BANKING", DomainName = "Tài chính - Ngân hàng", Weight = 2, Keywords = new() { "tín dụng", "khdn", "khcn", "tiền gửi", "ngân hàng", "chi nhánh", "rửa tiền", "aml", "thế chấp", "tài sản bảo đảm", "e-banking", "ebanking", "agribank", "vietcombank", "bidv", "vietinbank", "cic", "kho tiền", "ngân quỹ", "thẩm định", "cho vay", "bảo lãnh", "lãi suất", "sổ tiết kiệm", "thẻ tín dụng", "quy định số 1686", "nhno", "hạn mức" } },
-            new() { DomainCode = "EDUCATION", DomainName = "Giáo dục phổ thông & Đại học", Weight = 2, Keywords = new() { "toán", "đạo hàm", "tích phân", "hàm số", "ngữ văn", "tiếng anh", "vật lý", "hóa học", "gdpt", "thpt", "lớp 12", "lớp 11", "lớp 10", "k-12", "reading passage", "pronunciation", "chuyên amsterdam" } },
-            new() { DomainCode = "GOV_DRIVING", DomainName = "Giao thông - Sát hạch lái xe", Weight = 3, Keywords = new() { "gplx", "sa hình", "biển báo", "lái xe", "vượt ẩu", "xe cơ giới", "tốc độ tối đa", "điểm liệt", "cục đường bộ" } },
-            new() { DomainCode = "HEALTHCARE", DomainName = "Y tế & Chăm sóc sức khỏe", Weight = 3, Keywords = new() { "bác sĩ", "dược lâm sàng", "phác đồ", "điều trị", "bệnh nhân", "bệnh viện", "bộ y tế", "y khoa" } },
-            new() { DomainCode = "HSE", DomainName = "An toàn - Sức khỏe - Môi trường", Weight = 3, Keywords = new() { "an toàn lao động", "bảo hộ lao động", "pccc", "phòng cháy chữa cháy", "vslđ", "iso 45001", "hóa chất", "an toàn điện" } },
-            new() { DomainCode = "IT_SECURITY", DomainName = "Công nghệ thông tin & An ninh mạng", Weight = 3, Keywords = new() { "an toàn thông tin", "iso 27001", "owasp", "an ninh mạng", "phishing", "mật khẩu", "cybersecurity", "devsecops" } }
+            @"(?i)(?:đơn\s*vị|cơ\s*quan|trường|ngân\s*hàng|chi\s*nhánh|bộ|sở|phòng|organization|issued\s*by|institution|university|school|college|department|bank|branch|academy|institute|学校|大学|考试院|部门)\s*[:\-–—]\s*([^\r\n|;]+)"
+        };
+
+        public List<string> BenchmarkStandardPatterns { get; set; } = new()
+        {
+            @"(?i)(quy\s*định\s*số\s*\d+/[A-Za-z0-9\-_]+)",
+            @"(?i)(thông\s*tư\s*\d+(?:/\d+)?/TT-[A-Za-z0-9]+)",
+            @"(?i)(tiêu\s*chuẩn|quy\s*chuẩn|standard|specification|directive|iso\s*\d+|iec\s*\d+|rfc\s*\d+|tcvn\s*\d+|qcvn\s*\d+)"
+        };
+
+        public List<string> GradeDetectionPatterns { get; set; } = new()
+        {
+            @"(?i)\b(?:LỚP|KHOÍ|KHỐI|GRADE|CLASS|YEAR|年级)\s*(\d{1,2})\b",
+            @"(?i)\b[KG](\d{1,2})\b",
+            @"(?i)(?:^|[^\d])([1-9]|1[0-2])[\-_ ]*(?:KNTT|CD|CTST|CKP|GDPT|CAMBRIDGE|IB|AP)\b"
         };
     }
 
-    /// <summary>Cấu hình đặc tả bảng đáp án động</summary>
+    /// <summary>Cấu hình đặc tả bảng đáp án động đa ngôn ngữ (Zero-Hardcode / MultiLang / OCP)</summary>
     public class AnswerTableDictionaryDto
     {
-        public string QuestionHeaderPattern { get; set; } = @"^(?:Câu|C[\.\?\s]*u|CÂU|TT|Q|Question)$";
-        public string AnswerHeaderPattern { get; set; } = @"^(?:Chọn|Ch[\.\?\s]*n|Đáp\s*án|D[\.\?\s]*p\s*[\.\?\s]*n|Answer|Key|Đ[\/\.]?A|Phương\s*án)$";
+        public string QuestionHeaderPattern { get; set; } = @"^(?:Câu|C[\.\?\s]*u|CÂU|TT|Q|Question|Item|Task|Problem|Aufgabe|Exercice|Domanda|Pregunta|第)$";
+        public string AnswerHeaderPattern { get; set; } = @"^(?:Chọn|Ch[\.\?\s]*n|Đáp\s*án|D[\.\?\s]*p\s*[\.\?\s]*n|Answer|Key|Đ[\/\.]?A|Phương\s*án|Option|Réponse|Antwort|答案)$";
         public List<string> TrueFalseColumnLabels { get; set; } = new() { "a", "b", "c", "d" };
+
+        /// <summary>Biểu thức nhận diện bảng bài làm thí sinh cần bỏ qua</summary>
+        public string StudentAnswerSheetPattern { get; set; } = @"(?i)(?:HS|học\s*sinh|thí\s*sinh)\s*(?:viết|ghi|điền)\s*đáp\s*án|(?:ghi|viết)\s*lại\s*đáp\s*án\s*vào\s*bảng|phiếu\s*trả\s*lời|student\s*answer\s*sheet|answer\s*box|fill\s+in\s+the\s+table|考生答题";
+
+        /// <summary>Biểu thức nhận diện cột nội dung câu hỏi đề bài cần loại trừ khỏi bảng đáp án</summary>
+        public string QuestionContentColumnPattern { get; set; } = @"(?i)^(?:Nội\s*dung|Mệnh\s*đề|Phát\s*biểu|Khẳng\s*định|Ý\s*kiến|Nhận\s*định|Nội\s*dung\s*câu\s*hỏi|Content|Statement|Proposition|Assertion|Inhalt|内容)$";
+
+        /// <summary>Biểu thức nhận diện ô tổ hợp số câu + đáp án (Composite Cell)</summary>
+        public string CompositeCellPattern { get; set; } = @"(?i)(?:^|[\s\|\;•\-\–])(?:(?:Câu|Q|Item|Task|Question)\s*)?([1-9]\d{0,2})\s*[\.\:\-\)]?\s*([A-Ha-h]|Đúng|Sai|True|False|Vrai|Faux|Richtig|Falsch|[ĐSTFVF])(?:\b|$|[\s\|\;])";
+
+        /// <summary>Biểu thức nhận diện giá trị ĐÚNG (đa ngôn ngữ)</summary>
+        public string TrueValuePattern { get; set; } = @"^(?:Đ|D|T|V|R|Đúng|True|Vrai|Richtig|对|正确)$";
+
+        /// <summary>Biểu thức nhận diện giá trị SAI (đa ngôn ngữ)</summary>
+        public string FalseValuePattern { get; set; } = @"^(?:S|F|Sai|False|Faux|Falsch|错|错误)$";
+
+        /// <summary>Biểu thức nhận diện chuỗi ký tự đáp án liên tiếp trong bảng (A-D, Đ/S, T/F...)</summary>
+        public string AnswerLetterGridCellPattern { get; set; } = @"^(?:[A-Ga-g]|Đ|S|T|F|V|R|Đúng|Sai|True|False|Vrai|Faux|Richtig|Falsch|对|错)$";
+
+        /// <summary>Biểu thức nhận diện chuỗi đáp án Đúng Sai gộp (ví dụ ĐSĐĐ, TFTF, TTFF...)</summary>
+        public string TrueFalseSeriesPattern { get; set; } = @"^[SĐTFsdtfVFvf]{1,5}$";
+
+        /// <summary>Biểu thức nhận diện tiêu đề bảng đáp án / pha lời giải</summary>
+        public string AnswerPhaseHeaderPattern { get; set; } = @"(?i)^\s*(?:HƯỚNG\s*DẪN\s*CHẤM|ĐÁP\s*ÁN|BIỂU\s*ĐIỂM|THANG\s*ĐIỂM|ANSWER\s*KEY|KEY|MARKING\s*SCHEME|SOLUTIONS?|MODEL\s*ANSWERS?)";
+
+        /// <summary>Biểu thức nhận diện tiêu đề cột mã đề trong bảng ma trận đa mã đề</summary>
+        public string MultiExamCrossMatrixPattern { get; set; } = @"^(?:(?:mã\s*đề|đề|exam|test|paper|code)\s*)?\d{2,4}$";
+
+        /// <summary>Độ dài tối đa của văn bản câu hỏi trong ô bảng lưới ngang (vượt quá ngưỡng coi là bảng đề bài)</summary>
+        public int MaxQuestionTextLengthInGrid { get; set; } = 20;
+
+        /// <summary>Độ dài tối đa của văn bản đáp án trong ô bảng lưới ngang</summary>
+        public int MaxAnswerTextLengthInGrid { get; set; } = 35;
     }
 
     /// <summary>
@@ -311,16 +312,56 @@ namespace AegisQuiz.Application.DTOs
         public Dictionary<string, double> LanguageScores { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         public int SampledParagraphs { get; set; }
-
     }
 
-    /// <summary>Thực thể từ điển phân loại môn học / chủ đề nạp động.</summary>
+    /// <summary>
+    /// Thực thể từ điển phân loại môn học / chủ đề nạp động chuẩn quốc tế (OCP / MultiLang / ISCED-F / ISO 639-1).
+    /// </summary>
     public class TopicTaxonomyEntryDto
     {
+        /// <summary>Mã chủ đề chuẩn tắc quốc tế: MATH, PHYS, CHEM, BIO, NAT_SCI, LANG_EN... hoặc mã tùy biến</summary>
         public string TopicCode { get; set; } = string.Empty;
+
+        /// <summary>Mã chuẩn quốc tế ISCED-F 2013 / ISO 639-1 tương ứng</summary>
+        public string? StandardIscedCode { get; set; }
+
+        /// <summary>Tên hiển thị mặc định (fallback)</summary>
         public string TopicName { get; set; } = string.Empty;
+
+        /// <summary>Miền tri thức cha (EDUCATION, CORPORATE, BANKING...)</summary>
         public string DomainCode { get; set; } = "GENERAL";
+
+        /// <summary>Bản địa hóa tên môn theo ngôn ngữ người dùng: { "vi": "Hóa học", "en": "Chemistry", "fr": "Chimie", "zh": "化学" }</summary>
+        public Dictionary<string, string> LocalizedNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Danh mục bí danh tương thích ngược và viết tắt (ví dụ CHEM có Aliases: HOA_HOC, HOA, CHEMISTRY)</summary>
+        public List<string> Aliases { get; set; } = new();
+
+        /// <summary>Từ khóa nhận diện phân tầng theo ngôn ngữ</summary>
+        public Dictionary<string, List<string>> LocalizedKeywords { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>Thuật ngữ bản thể khoa học đặc thù của môn (đạo hàm, axit, mol, tế bào, ADN...)</summary>
+        public List<string> OntologicalTerms { get; set; } = new();
+
+        /// <summary>Danh sách từ khóa phẳng tổng hợp (Bảo đảm tương thích ngược 100% với các hàm tra cứu cũ)</summary>
         public List<string> Keywords { get; set; } = new();
+
+        /// <summary>Hàm Helper lấy tên theo Locale tự động</summary>
+        public string GetDisplayName(string locale = "vi")
+        {
+            if (LocalizedNames != null && LocalizedNames.TryGetValue(locale, out var name) && !string.IsNullOrWhiteSpace(name))
+                return name;
+            return !string.IsNullOrWhiteSpace(TopicName) ? TopicName : TopicCode;
+        }
+
+        /// <summary>Kiểm tra một mã (code hoặc alias) có khớp với entry này không</summary>
+        public bool MatchesCodeOrAlias(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return false;
+            if (TopicCode.Equals(code, StringComparison.OrdinalIgnoreCase)) return true;
+            if (!string.IsNullOrWhiteSpace(StandardIscedCode) && StandardIscedCode.Equals(code, StringComparison.OrdinalIgnoreCase)) return true;
+            return Aliases != null && Aliases.Any(a => a.Equals(code, StringComparison.OrdinalIgnoreCase));
+        }
     }
 
     /// <summary>Thực thể từ điển phân loại miền tri thức (Domain) nạp động.</summary>
@@ -329,7 +370,16 @@ namespace AegisQuiz.Application.DTOs
         public string DomainCode { get; set; } = string.Empty;
         public string DomainName { get; set; } = string.Empty;
         public int Weight { get; set; } = 2;
+        public Dictionary<string, string> LocalizedNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public List<string> Aliases { get; set; } = new();
         public List<string> Keywords { get; set; } = new();
+
+        public string GetDisplayName(string locale = "vi")
+        {
+            if (LocalizedNames != null && LocalizedNames.TryGetValue(locale, out var name) && !string.IsNullOrWhiteSpace(name))
+                return name;
+            return !string.IsNullOrWhiteSpace(DomainName) ? DomainName : DomainCode;
+        }
     }
 
     /// <summary>Kết quả nhận diện Hệ 5 Trục Tọa Độ Tri Thức + Smart Tags (Vỏ bọc Nhận thức Đề thi).</summary>
@@ -344,6 +394,21 @@ namespace AegisQuiz.Application.DTOs
         public int? BenchmarkYear { get; set; }
         public string? BenchmarkStandard { get; set; }
         public List<string> Tags { get; set; } = new();
+
+        /// <summary>Mã chủ đề chuẩn tắc duy nhất: [DOMAIN]_[TOPIC]_[GRADE]_[TERM]_[SERIES] (ví dụ: EDU_KHTN_K07_HK1_MID_KNTT)</summary>
+        public string? CanonicalTopicCode { get; set; }
+
+        /// <summary>Đường dẫn phả hệ O(1) B-Tree Prefix: /[DOMAIN]/[TOPIC]/[GRADE]/[TERM]/[SERIES]/</summary>
+        public string? TreePath { get; set; }
+
+        /// <summary>Tên chủ đề đầy đủ thân thiện hiển thị trên giao diện (ví dụ: Khoa học tự nhiên 7 — Giữa Học kỳ 1 (Kết nối tri thức))</summary>
+        public string? FriendlyTopicName { get; set; }
+
+        /// <summary>Bộ sách / Chương trình quy chuẩn (ví dụ: KNTT, CD, CTST, GDPT_2018)</summary>
+        public string? CurriculumSeries { get; set; }
+
+        /// <summary>Học kỳ & Giai đoạn khảo thí (ví dụ: HK1_MID, HK1_FIN, HK2_MID, HK2_FIN)</summary>
+        public string? SemesterPhase { get; set; }
     }
 
     /// <summary>
@@ -366,5 +431,57 @@ namespace AegisQuiz.Application.DTOs
         public string? DetectedSubject { get; set; }
         public CognitiveCoordinateTaxonomyResult? TaxonomyCoordinates { get; set; }
     }
-}
 
+    /// <summary>
+    /// [R_GEN & R_SPEC] Cấu hình Phân cấp Khảo thí Thích ứng Đa ngôn ngữ Toàn cầu (Zero-Config Heuristic).
+    /// Hóa giải đề phẳng H(x, 0, 0, 0), đề chỉ thị H(x, 0, 0, d), và đề đa tầng H(x, p, s, d).
+    /// </summary>
+    public class AdaptiveHierarchyConfigDto
+    {
+        public bool Enabled { get; set; } = true;
+        public string HierarchyFormat { get; set; } = "{Exam}_{Part}_{SubPart}_{Directive}";
+        public bool AllowDeficientLevels { get; set; } = true;
+
+        /// <summary>[TẦNG 1: R_GEN] Hạt nhân phổ quát toàn cầu (Built-in Universal Invariant Core)</summary>
+        public UniversalHierarchyCoreDto UniversalCore { get; set; } = UniversalHierarchyCoreDto.Default();
+
+        /// <summary>[TẦNG 2: R_SPEC] Danh mục các quy tắc đặc thù theo ngôn ngữ/văn hóa (Key = mã ngôn ngữ hoặc mã kỳ thi)</summary>
+        public Dictionary<string, SovereignHierarchyRuleDto> SovereignRules { get; set; } = GetDefaultSovereignRules();
+
+        public static AdaptiveHierarchyConfigDto Default() =>
+            DocumentStructureSeedFactory.GetDefaultHierarchyConfig();
+
+        public static Dictionary<string, SovereignHierarchyRuleDto> GetDefaultSovereignRules() =>
+            DocumentStructureSeedFactory.GetDefaultSovereignRules();
+    }
+
+    /// <summary>
+    /// [TẦNG 1: R_GEN] Hạt nhân Phổ quát Toàn cầu mặc định.
+    /// Hoạt động độc lập, tự động hóa 100% cho đề phẳng H(x,0,0,0) và các cấu trúc Latin chuẩn.
+    /// </summary>
+    public class UniversalHierarchyCoreDto
+    {
+        public bool Enabled { get; set; } = true;
+        public List<string> UniversalPartKeywords { get; set; } = DocumentStructureSeedFactory.GetDefaultUniversalPartKeywords();
+        public List<string> UniversalSubPartKeywords { get; set; } = DocumentStructureSeedFactory.GetDefaultUniversalSubPartKeywords();
+        public List<string> UniversalActionVerbs { get; set; } = DocumentStructureSeedFactory.GetDefaultUniversalActionVerbs();
+
+        public static UniversalHierarchyCoreDto Default() =>
+            DocumentStructureSeedFactory.GetDefaultUniversalCore();
+    }
+
+    /// <summary>
+    /// [TẦNG 2: R_SPEC] Đặc tả quy tắc phân cấp theo Ngôn ngữ / Văn hóa / Chuẩn khảo thí Quốc gia.
+    /// </summary>
+    public class SovereignHierarchyRuleDto
+    {
+        public string LanguageCode { get; set; } = "all";
+        public string ExamStandard { get; set; } = "GENERAL";
+        public string ScriptType { get; set; } = "LATIN";
+        public List<string> PartKeywords { get; set; } = new();
+        public List<string> SubPartKeywords { get; set; } = new();
+        public List<string> DirectiveVerbs { get; set; } = new();
+        public string? CustomNumeralDecoder { get; set; }
+        public Dictionary<string, string> QuestionTypeInferenceMap { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    }
+}

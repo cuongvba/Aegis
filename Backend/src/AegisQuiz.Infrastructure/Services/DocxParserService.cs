@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -107,8 +107,21 @@ namespace AegisQuiz.Infrastructure.Services
                 var langProfile = cig.DetectDocumentLanguageProfile(headerTexts, dynamicContext?.Language ?? "vi");
 
                 var effectiveContext = dynamicContext ?? DynamicDomainContext.CreateDefault();
+                var headerProfile = cig.ProfileHeader(headerTexts.Take(35), headerTexts.Skip(35).Take(15), effectiveContext);
+                if (!string.IsNullOrEmpty(headerProfile.DetectedExamCode) && string.IsNullOrEmpty(effectiveContext.DetectedExamCode))
+                {
+                    effectiveContext.DetectedExamCode = headerProfile.DetectedExamCode;
+                }
+                if (string.IsNullOrEmpty(effectiveContext.DetectedExamCode) && !string.IsNullOrWhiteSpace(effectiveContext.FileName))
+                {
+                    if (cig.TryExtractExamCodeFromFileName(effectiveContext.FileName, out var fnCode) && !string.IsNullOrEmpty(fnCode))
+                    {
+                        effectiveContext.DetectedExamCode = fnCode;
+                    }
+                }
+
                 var sniffedHeader = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
-                    fileName: null,
+                    fileName: effectiveContext.FileName,
                     sheetName: null,
                     headerBannerLines: headerTexts,
                     dynamicContext: effectiveContext);
@@ -125,8 +138,10 @@ namespace AegisQuiz.Infrastructure.Services
                     });
                 }
 
-                // [Pipeline v4.0 - Giai đoạn 3: Bóc tách Bảng Đáp án Ma trận có định hướng ngôn ngữ]
-                var answerKeyMap = DocxTableQuestionExtractor.ExtractAnswerTables(doc, out var answerTableElements);
+                // [Pipeline v4.0 - Giai đoạn 3: Bóc tách Bảng Đáp án Ma trận có định hướng ngôn ngữ & Universal Parsing Rules]
+                var activeRule = effectiveContext.ParsingRules.FirstOrDefault(r => r.IsActive)
+                    ?? cig.GetAllRules(effectiveContext.TenantId).FirstOrDefault(r => r.IsActive);
+                var answerKeyMap = DocxTableQuestionExtractor.ExtractAnswerTables(doc, out var answerTableElements, defaultExamPrefix: "DE", engineOverride: cig, activeRule: activeRule);
 
                 // [Pipeline v4.0 - Giai đoạn 4: Duyệt Cây DOM & Chuẩn hóa Toán học Lai]
                 var paragraphs = ExtractParagraphTokens(doc, relsMap, mediaDict, answerTableElements);
@@ -231,9 +246,31 @@ namespace AegisQuiz.Infrastructure.Services
 
                     if (containsQuestionStructure)
                     {
-                        foreach (var cellChild in el.Elements(W + "tr").SelectMany(tr => tr.Elements(W + "tc")).SelectMany(tc => tc.Elements()))
+                        foreach (var tr in el.Elements(W + "tr"))
                         {
-                            Traverse(cellChild);
+                            foreach (var tc in tr.Elements(W + "tc"))
+                            {
+                                var tcPr = tc.Element(W + "tcPr");
+                                var tcShd = tcPr?.Element(W + "shd")?.Attribute(W + "fill")?.Value?.ToLowerInvariant();
+                                bool cellShaded = !string.IsNullOrEmpty(tcShd) && tcShd != "auto" && tcShd != "none" && tcShd != "ffffff" && tcShd != "000000";
+
+                                foreach (var cellChild in tc.Elements())
+                                {
+                                    if (cellShaded && cellChild.Name == W + "p")
+                                    {
+                                        var text = ExtractParagraphText(cellChild, relsMap, mediaDict);
+                                        if (!string.IsNullOrWhiteSpace(text))
+                                        {
+                                            if (!text.Contains("<mark>")) text = "<mark>" + text + "</mark>";
+                                            paragraphs.Add(text);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Traverse(cellChild);
+                                    }
+                                }
+                            }
                         }
                         return;
                     }
@@ -257,7 +294,13 @@ namespace AegisQuiz.Infrastructure.Services
         }
 
         private static string CellText(XElement paragraph)
-            => string.Concat(paragraph.Descendants(W + "t").Select(t => t.Value)).Trim();
+        {
+            var nonFallbackTexts = paragraph.Descendants(W + "t")
+                .Where(t => !t.Ancestors().Any(a => a.Name.LocalName == "Fallback"))
+                .Select(t => t.Value.Trim())
+                .Where(v => !string.IsNullOrEmpty(v));
+            return string.Join(" ", nonFallbackTexts).Trim();
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // Paragraph → text (OMML, runs, sub/superscript, underline, media)
@@ -265,12 +308,24 @@ namespace AegisQuiz.Infrastructure.Services
 
         private static string ExtractParagraphText(XElement p, Dictionary<string, string> relsMap, Dictionary<string, byte[]> mediaDict)
         {
+            var pPr = p.Element(W + "pPr");
+            var pShd = pPr?.Element(W + "shd")?.Attribute(W + "fill")?.Value?.ToLowerInvariant();
+            bool pShaded = !string.IsNullOrEmpty(pShd) && pShd != "auto" && pShd != "none" && pShd != "ffffff" && pShd != "000000";
+            var pHl = pPr?.Element(W + "rPr")?.Element(W + "highlight")?.Attribute(W + "val")?.Value?.ToLowerInvariant();
+            bool pHighlighted = !string.IsNullOrEmpty(pHl) && pHl != "none";
+
             var sb = new StringBuilder();
             foreach (var child in p.Elements())
             {
                 ProcessNode(child);
             }
-            return NormalizeMathInlineText(sb.ToString().Trim());
+            var fullText = sb.ToString().Trim();
+            fullText = Regex.Replace(fullText, @"</mark>\s*<mark>", " ");
+            if ((pShaded || pHighlighted) && !fullText.Contains("<mark>") && !string.IsNullOrWhiteSpace(fullText))
+            {
+                fullText = "<mark>" + fullText + "</mark>";
+            }
+            return NormalizeMathInlineText(fullText);
 
             void ProcessNode(XElement elem)
             {
@@ -304,6 +359,10 @@ namespace AegisQuiz.Infrastructure.Services
                 var rPr = r.Element(W + "rPr");
                 bool underlined = rPr?.Element(W + "u") != null;
                 var vertAlign = rPr?.Element(W + "vertAlign")?.Attribute(W + "val")?.Value?.ToLowerInvariant();
+                var hlVal = rPr?.Element(W + "highlight")?.Attribute(W + "val")?.Value?.ToLowerInvariant();
+                bool highlighted = !string.IsNullOrEmpty(hlVal) && hlVal != "none";
+                var shdFill = rPr?.Element(W + "shd")?.Attribute(W + "fill")?.Value?.ToLowerInvariant();
+                bool shaded = !string.IsNullOrEmpty(shdFill) && shdFill != "auto" && shdFill != "none" && shdFill != "ffffff" && shdFill != "000000";
 
                 var runText = new StringBuilder();
                 foreach (var child in r.Elements())
@@ -319,13 +378,15 @@ namespace AegisQuiz.Infrastructure.Services
                     if (vertAlign == "subscript") text = "$_{" + text + "}$";
                     else if (vertAlign == "superscript") text = "$^{" + text + "}$";
                     if (underlined) text = "<u>" + text + "</u>";
+                    if (highlighted || shaded) text = "<mark>" + text + "</mark>";
                     sb.Append(text);
                 }
 
                 // Media lồng trực tiếp trong run (không nằm trong container đã xử lý ở tổ tiên)
                 var mediaLeaves = r.DescendantsAndSelf()
                     .Where(e => MediaLeafNames.Contains(e.Name.LocalName))
-                    .Where(e => !e.Ancestors().Any(a => a != r && MediaAncestorNames.Contains(a.Name.LocalName)));
+                    .Where(e => !e.Ancestors().Any(a => a != r && MediaAncestorNames.Contains(a.Name.LocalName)))
+                    .Where(e => !e.Ancestors().Any(a => a.Name.LocalName == "Fallback"));
                 foreach (var leaf in mediaLeaves)
                 {
                     ProcessDrawingOrMedia(leaf);
@@ -334,6 +395,20 @@ namespace AegisQuiz.Infrastructure.Services
 
             void ProcessDrawingOrMedia(XElement container)
             {
+                var txbx = container.Descendants().FirstOrDefault(e => e.Name.LocalName == "txbxContent");
+                if (txbx != null)
+                {
+                    foreach (var pChild in txbx.DescendantsAndSelf().Where(e => e.Name == W + "p"))
+                    {
+                        var innerText = ExtractParagraphText(pChild, relsMap, mediaDict);
+                        if (!string.IsNullOrWhiteSpace(innerText))
+                        {
+                            if (sb.Length > 0 && !sb.ToString().EndsWith(" ")) sb.Append(' ');
+                            sb.Append(innerText).Append(' ');
+                        }
+                    }
+                }
+
                 var relationshipIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var el in container.DescendantsAndSelf())
                 {

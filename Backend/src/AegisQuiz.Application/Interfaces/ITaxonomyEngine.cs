@@ -46,5 +46,11 @@ namespace AegisQuiz.Application.Interfaces
         bool IsAcademicTopic(
             string? topicCode,
             DynamicDomainContext? dynamicContext = null);
+
+        void SynthesizeCanonicalTaxonomy(
+            CognitiveCoordinateTaxonomyResult result,
+            string combinedText,
+            string? fileName = null,
+            DynamicDomainContext? dynamicContext = null);
     }
 }

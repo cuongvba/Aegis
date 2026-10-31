@@ -20,7 +20,8 @@
 9. [Lộ Trình Triển Khai Toàn Diện & Hoàn Hảo Vượt Trội (5 Giai Đoạn Vàng)](#9-lộ-trình-triển-khai-toàn-diện--hoàn-hảo-vượt-trội-5-giai-đoạn-vàng)
 10. [Động Cơ Bóc Tách Excel Siêu Việt Đạt Cảnh Giới CIG (Transcendent Dynamic Excel Ingestion Engine)](#10-động-cơ-bóc-tách-excel-siêu-việt-đạt-cảnh-giới-cig-transcendent-dynamic-excel-ingestion-engine)
 11. [Báo Cáo Kiểm Chứng Thực Nghiệm Trọng Điểm (Stress Test & Real-World Ingestion)](#11-báo-cáo-kiểm-chứng-thực-nghiệm-trọng-điểm-stress-test--real-world-ingestion)
-12. [Tổng Kết Thành Tựu Đạt Được (Milestone Summary)](#12-tổng-kết-thành-tựu-đạt-được-milestone-summary)
+12. [Đột Phá Mới: Cơ Chế Tiền Luận Giải QuestionType Theo Chỉ Thị Nhóm & Bộ Lọc Standalone Directives](#12-đột-phá-mới-cơ-chế-tiền-luận-giải-questiontype-theo-chỉ-thị-nhóm--bộ-lọc-standalone-directives)
+13. [Tổng Kết Thành Tựu Đạt Được (Milestone Summary)](#13-tổng-kết-thành-tựu-đạt-được-milestone-summary)
 
 ---
 
@@ -612,7 +613,77 @@ Nhằm tối ưu hóa trải nghiệm người dùng và trao quyền kiểm so�
 
 ---
 
-## 12. TỔNG KẾT THÀNH TỰU ĐẠT ĐƯỢC (MILESTONE SUMMARY)
+## 12. ĐỘT PHÁ MỚI: CƠ CHẾ TIỀN LUẬN GIẢI QUESTIONTYPE THEO CHỈ THỊ NHÓM & BỘ LỌC STANDALONE DIRECTIVES
+
+### 12.1. Động Cơ Tiền Luận Giải QuestionType Theo Chỉ Thị (Directive-Driven Type Inference)
+Trong các đề thi trắc nghiệm hiện đại (PISA v7.0, Cambridge, SAT, THPT Quốc Gia), loại câu hỏi không được ghi cứng bên cạnh số câu mà được tuyên bố trước qua **Chỉ thị làm bài (Group Directive)** ở đầu mỗi nhóm câu:
+- *"Thí sinh trả lời từ câu 1 đến câu 4. Trong mỗi ý a), b), c), d) chọn đúng hoặc sai"* $
+ightarrow$ `MULTI_TRUE_FALSE`
+- *"Thí sinh trả lời từ câu 1 đến câu 6. Điền đáp số vào ô trống"* $
+ightarrow$ `SHORT_ANSWER`
+- *"Choose the word A, B, C or D whose underlined part is pronounced differently from the others"* $
+ightarrow$ `SINGLE`
+- *"Choose the letter A, B, C or D on your answer sheet to indicate the underlined part that needs correction"* $
+ightarrow$ `SINGLE`
+- *"Odd one out"* $
+ightarrow$ `SINGLE`
+
+### 12.2. Ma Trận Độ Ưu Tiên 8 Bậc (Priority Order Governance)
+Để triệt tiêu xung đột phân loại, động cơ thực thi kiểm tra theo thứ tự ưu tiên từ nghiêm ngặt tới nới lỏng:
+1. `MULTI_TRUE_FALSE` (Đúng/Sai nhiều ý)
+2. `SHORT_ANSWER` (Trả lời ngắn / Điền số)
+3. `ORDERING` (Sắp xếp thứ tự quy trình)
+4. `MATCHING` (Ghép nối 2 cột)
+5. `MULTI` (Nhiều lựa chọn Multi-Select)
+6. `FILL_BLANK` (Điền vào chỗ trống từ vựng)
+7. `ESSAY` (Tự luận / Trình bày)
+8. `SINGLE` (Trắc nghiệm đơn Single Choice)
+
+### 12.3. Mở Rộng Bộ Lọc Standalone Directives Không Giới Hạn Cứng
+Tại [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L644-L648), các chỉ thị mở (không chứa dải số `from 1 to 10`) được nhận diện tự động qua biểu thức mở rộng:
+- Bắt trọn các mệnh lệnh: `Choose\s+(?:all|the|one|each|a)`, `Select\s+(?:all|the|one)`, `Odd\s+one\s+out`, `Circle\s+(?:the\s+)?odd`, `Find\s+(?:the\s+)?(?:mistake|error|word)`.
+- Kích hoạt cửa sổ phạm vi `DirectiveScopeWindow` với độ tin cậy $\ge 0.90$ và thiết lập `HierarchyIndex` 4 cấp đàn hồi.
+
+### 12.4. Đồng Bộ 2 Chiều CSDL Cho CIG Rule Studio (Realtime Zero-Downtime)
+- Mọi điều chỉnh về mẫu Regex chỉ thị từ giao diện Quản trị Rule Studio được `AdminParsingRulesController.SaveCustomRule` ghi nhận tức thời:
+  - CSDL PostgreSQL: Bảng `QuestionParsingRules` (cột `SemanticsSpecJson`).
+  - Tệp Registry: `parsing_rules_registry.json`.
+  - Bộ nhớ RAM: Precompile lại JIT Regex với **0ms downtime**, bảo đảm không bị mất cấu hình khi hệ thống khởi động lại.
+
+---
+
+## 13. TÀI LIỆU QUY TRÌNH BÓC TÁCH ĐA TẦNG TOÀN DIỆN (END-TO-END PIPELINE SPECIFICATION)
+
+Để kiểm chứng chi tiết toàn bộ chu trình sống của một đề thi từ khi người dùng kéo thả file .docx trên trình duyệt qua 7 giai đoạn bóc tách cho tới khi ghi vào CSDL PostgreSQL dạng JSONB đa hình 27 trường, tham khảo tài liệu chuẩn ALDS v1.0:
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+- **Giai đoạn 1**: Tiếp nhận & Kiểm thực MIME tại Client Web.
+- **Giai đoạn 2**: Tenant Scoping & Khởi tạo Dynamic Domain Context.
+- **Giai đoạn 3**: Giải nén ZipArchive, Trích xuất Media & Giải mã MathType WMF/OMML sang KaTeX/SVG.
+- **Giai đoạn 4**: Máy trạng thái hạn định DSMC & Quản trị phân cấp HierarchyIndex 4 cấp.
+- **Giai đoạn 5**: Động cơ CIG luận giải QuestionType 8 tầng & Thực thi Explanation Boundary Guard.
+- **Giai đoạn 6**: Phân tích trùng lặp toàn cục SHA-256 Canonical Hash (ExamDeduplicationEngine).
+- **Giai đoạn 7**: Giao dịch nguyên tử ACID PostgreSQL, lưu trữ QuestionContext duy nhất và cây chủ đề MaterializedPath.
+
+---
+
+## 14. ĐỘT PHÁ KIẾN TRÚC PHÂN CẤP THÍCH ỨNG HAI TẦNG R_GEN & R_SPEC (TOÀN CẦU HÓA CIG V6.1)
+
+Nhằm đáp ứng yêu cầu vận hành toàn cầu trên mọi hệ thống khảo thí và triệt tiêu gánh nặng khai báo Regex cho người dùng:
+1. **Hóa giải Đề phẳng Tuyến tính $H(x, 0, 0, 0)$:**
+   - Hệ thống không ép buộc phải có phân đoạn lớn.
+   - Khi tệp tin không có Phần I, II và không có Chỉ thị làm bài, toàn bộ câu hỏi tự động nhận tọa độ $	ext{HierarchyIndex} = 	exttt{x\_0\_0\_0}$.
+   - UI tự động nhận diện chế độ tuyến tính phẳng, không sinh ra các node phân cấp giả rác.
+2. **Kiến Trúc Hai Tầng Nhận Thức Toàn Cầu:**
+   - `R_GEN` (Universal Core): Tự động nhận diện các phân đoạn và chỉ thị dựa trên bất biến hình thái học (Morphological Invariants) và từ điển động từ mệnh lệnh quốc tế (`Read`, `Choose`, `Select`, `Circle`, `Odd`, `Find`...).
+   - `R_SPEC` (Sovereign Plugins): Cho phép từng quốc gia/ngôn ngữ (`zh` Gaokao, `ja` JCEE, `ko` Suneung, `ar` Thanaweya RTL, `vi` GDPT 2025) khai báo từ khóa đặc thù bằng chuỗi ký tự thông thường, hoàn toàn không cần viết biểu thức Regex phức tạp.
+3. **Triệt tiêu 100% Hard-code:**
+   - Đưa phương thức `cig.TryMatchSubPartHeading(line, out _)` vào thay thế toàn bộ regex cứng tại dòng 331 `DocxStateMachineClassifier.cs`.
+4. **Giải mã Thứ bậc Đa Ngôn ngữ:**
+   - `CognitiveScopeManager.ParseRankNumber` hỗ trợ toàn diện số Ả Rập, số La Mã I..XX, ký tự chữ cái Part A..J, số Hán tự 第一..二十, và số Ả Rập Đông ١..٩.
+
+---
+
+## 15. TỔNG KẾT THÀNH TỰU ĐẠT ĐƯỢC (MILESTONE SUMMARY)
 
 > **Lời kết của Tổng Công Trình Sư No.1:**  
 > *"Một hệ thống vĩ đại không phải là hệ thống viết ra thật nhiều dòng code để xử lý mọi trường hợp, mà là hệ thống trao toàn bộ quyền năng định nghĩa tri thức vào tay người dùng thông qua các quy luật tối giản và thanh lịch nhất. Với Động Cơ Nhập Câu Hỏi Vạn Năng đạt chuẩn CIG trên cả Word, PDF và Excel, AegisQuiz chính thức bước lên đỉnh cao công nghệ khảo thí toàn cầu — nơi tri thức nhân loại được bóc tách và giải phóng không giới hạn!"*

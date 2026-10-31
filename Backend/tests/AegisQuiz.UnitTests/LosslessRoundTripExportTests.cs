@@ -406,5 +406,80 @@ namespace AegisQuiz.UnitTests
                 Assert.StartsWith("a - c", optA);
             }
         }
+         [Fact]
+        public void TestExportNativeIsomorphic_PreservesHierarchyAndSubItemsAndLosslessRoundTrip()
+        {
+            var qTf = new DocxImportPreviewDto
+            {
+                SourceQuestionNo = "15",
+                HierarchyIndex = "1_2_1_1",
+                Content = "Cho hàm số y = f(x) có đạo hàm liên tục trên R. Xét tính đúng sai của các khẳng định sau:",
+                QuestionType = "MULTI_TRUE_FALSE",
+                SuggestedAnswer = "a: Đúng; b: Sai; c: Đúng; d: Sai",
+                DomainCode = "TOAN",
+                BenchmarkYear = 2025,
+                BenchmarkStandard = "GDPT 2018",
+                Difficulty = 3,
+                AiExplanation = "Khảo sát hàm số theo chương trình GDPT 2025.",
+                SubItems = new List<QuestionSubItemDto>
+                {
+                    new QuestionSubItemDto { Key = "a", Content = "Hàm số đồng biến trên khoảng (0; 2)", ExpectedAnswer = "Đúng", Explanation = "Vì f'(x) > 0 với mọi x thuộc (0; 2)." },
+                    new QuestionSubItemDto { Key = "b", Content = "Đồ thị có điểm cực tiểu tại x = 1", ExpectedAnswer = "Sai", Explanation = "Vì f'(1) = 0 và f''(1) < 0 nên là cực đại." },
+                    new QuestionSubItemDto { Key = "c", Content = "Giá trị lớn nhất trên [0; 3] bằng 5", ExpectedAnswer = "Đúng", Explanation = "f(2) = 5 là giá trị lớn nhất." },
+                    new QuestionSubItemDto { Key = "d", Content = "Hàm số có đúng 1 tiệm cận ngang", ExpectedAnswer = "Sai", Explanation = "Hàm đa thức không có tiệm cận ngang." }
+                }
+            };
+
+            var exportService = new UniversalExcelExportService(new[] { new NativeIsomorphicExportStrategy() });
+            var options = new ExcelExportOptionsDto
+            {
+                ExamTitle = "Toán Học GDPT 2025",
+                DomainCode = "TOAN",
+                BenchmarkYear = 2025,
+                BenchmarkStandard = "GDPT 2018"
+            };
+
+            byte[] bytes = exportService.Export(new[] { qTf }, "NATIVE_AEGIS", options);
+            Assert.NotNull(bytes);
+
+            // Kiểm tra cấu trúc sheet
+            using (var ms = new MemoryStream(bytes))
+            {
+                var wb = new XSSFWorkbook(ms);
+                var sheet = wb.GetSheetAt(0);
+                var row = sheet.GetRow(5); // dòng câu hỏi đầu tiên
+                
+                // Cột 16: Tọa độ phân cấp
+                Assert.Equal("1_2_1_1", row.GetCell(16)?.StringCellValue);
+                
+                // Cột 17: Số hiệu gốc
+                Assert.Equal("15", row.GetCell(17)?.StringCellValue);
+                
+                // Cột 18: Lĩnh vực
+                Assert.Equal("TOAN", row.GetCell(18)?.StringCellValue);
+                
+                // Cột 19: Chuẩn mực
+                Assert.Contains("GDPT 2018", row.GetCell(19)?.StringCellValue);
+
+                // Cột 20: Chùm ý con (SubItems)
+                string subText = row.GetCell(20)?.StringCellValue ?? "";
+                Assert.Contains("a) [Đúng] Hàm số đồng biến", subText);
+                Assert.Contains("Vì f'(x) > 0", subText);
+            }
+
+            // Round-Trip re-import qua ExcelParserService
+            var parser = new ExcelParserService(null!);
+            var preview = parser.ParseExcelFileToPreview(new MemoryStream(bytes), "Toan2025.xlsx");
+            Assert.Equal(1, preview.TotalQuestions);
+            var restored = preview.Sheets[0].Questions[0];
+
+            Assert.Equal("1_2_1_1", restored.HierarchyIndex);
+            Assert.Equal("15", restored.SourceQuestionNo);
+            Assert.Equal("TOAN", restored.DomainCode);
+            Assert.Equal(4, restored.SubItems.Count);
+            Assert.Equal("Đúng", restored.SubItems[0].ExpectedAnswer);
+            Assert.Equal("Sai", restored.SubItems[1].ExpectedAnswer);
+            Assert.Contains("f'(x) > 0", restored.SubItems[0].Explanation);
+        }
     }
 }

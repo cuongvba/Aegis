@@ -20,6 +20,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
     {
         private readonly List<DirectiveScopeWindow> _scopeWindows = new();
         private readonly List<ContextStimulusWindow> _contextWindows = new();
+        private int _contextCounter = 0;
 
         public string CurrentMacroSection { get; private set; } = "SINGLE";
         public string? CurrentSectionTitle { get; private set; }
@@ -27,25 +28,186 @@ namespace AegisQuiz.Infrastructure.Services.Docx
         public IReadOnlyList<DirectiveScopeWindow> ScopeWindows => _scopeWindows;
         public IReadOnlyList<ContextStimulusWindow> ContextWindows => _contextWindows;
 
+        private int _examCounter = 0;
+        public int CurrentExamRank { get; private set; } = 0;
+        public int CurrentPartRank { get; private set; } = 0;
+        public int CurrentSubPartRank { get; private set; } = 0;
+        public int CurrentDirectiveRank { get; private set; } = 0;
+
+        public void SetCurrentExam(string examCode)
+        {
+            var match = Regex.Match(examCode ?? string.Empty, @"\d+");
+            if (match.Success && int.TryParse(match.Value, out var num))
+            {
+                CurrentExamRank = num;
+            }
+            else
+            {
+                _examCounter++;
+                CurrentExamRank = _examCounter;
+            }
+            CurrentPartRank = 0;
+            CurrentSubPartRank = 0;
+            CurrentDirectiveRank = 0;
+            _contextWindows.Clear();
+            _scopeWindows.Clear();
+        }
+
+        public void RegisterSubPart(string? subPartTitle)
+        {
+            int subNum = ParseRankNumber(subPartTitle ?? string.Empty);
+            CurrentSubPartRank = subNum > 0 ? subNum : (CurrentSubPartRank + 1);
+        }
+
+        public void IncrementDirectiveRank()
+        {
+            CurrentDirectiveRank++;
+        }
+
+        public QuestionAddress AddressOf(int questionNo)
+        {
+            return new QuestionAddress(CurrentExamRank, CurrentPartRank, CurrentSubPartRank, CurrentDirectiveRank, questionNo);
+        }
+
+        public string GetHierarchyIndex()
+        {
+            return AddressOf(0).SectionKey;
+        }
+
+        private AdaptiveHierarchyConfigDto? _hierarchyConfig;
+
+        public void Configure(AdaptiveHierarchyConfigDto? config)
+        {
+            _hierarchyConfig = config ?? AdaptiveHierarchyConfigDto.Default();
+        }
+
+        /// <summary>
+        /// [R_GEN & R_SPEC Multi-Lingual Decoder]
+        /// Giải mã số thứ tự cấp bậc đa ngôn ngữ:
+        /// 1. Số Ả Rập (1, 2, 3...)
+        /// 2. Số La Mã mở rộng (I đến XX)
+        /// 3. Ký tự chữ cái thứ tự (Part A -> 1, Part B -> 2...)
+        /// 4. Số Hán tự (第一 -> 1, 第二 -> 2... 十五 -> 15... 二十 -> 20)
+        /// 5. Số Ả Rập Đông Phương (١, ٢, ٣...)
+        /// </summary>
+        public static int ParseRankNumber(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return 0;
+            var trimmed = text.Trim();
+
+            // 1. Nếu có từ khóa phân cấp chỉ định (PHẦN, PART, SECTION, CHƯƠNG, BÀI...), bóc tách số thứ tự NGAY SAU từ khóa đó
+            var prefixMatch = Regex.Match(trimmed, @"\b(?:PHẦN|PHAN|PART|SECTION|CHƯƠNG|CHUONG|BÀI|BAI|ĐỀ|DE|TIỂU MỤC|MỤC|SESSION)\s+([IVXLCDM]+|\d+|[A-J])\b", RegexOptions.IgnoreCase);
+            if (prefixMatch.Success)
+            {
+                var token = prefixMatch.Groups[1].Value;
+                var rVal = DecodeRomanNumeral(token);
+                if (rVal > 0) return rVal;
+                if (int.TryParse(token, out var pNum)) return pNum;
+                if (token.Length == 1 && char.IsLetter(token[0])) return char.ToUpperInvariant(token[0]) - 'A' + 1;
+            }
+
+            // 2. Số La Mã mở rộng (I đến XX)
+            var romanMatch = Regex.Match(trimmed, @"\b(XX|XIX|XVIII|XVII|XVI|XV|XIV|XIII|XII|XI|X|IX|VIII|VII|VI|V|IV|III|II|I)\b", RegexOptions.IgnoreCase);
+            if (romanMatch.Success)
+            {
+                var rVal = DecodeRomanNumeral(romanMatch.Value);
+                if (rVal > 0) return rVal;
+            }
+
+            // 3. Ký tự chữ cái thứ tự (Part A, Section B, Phần C...)
+            var alphaMatch = Regex.Match(trimmed, @"\b(?:PART|SECTION|PHẦN|PHAN|TEIL|PARTIE)\s+([A-J])\b", RegexOptions.IgnoreCase);
+            if (alphaMatch.Success)
+            {
+                char c = char.ToUpperInvariant(alphaMatch.Groups[1].Value[0]);
+                return (c - 'A' + 1);
+            }
+
+            // 4. Số Hán tự (第一, 第二, 第三... hoặc 一、二、三...)
+            var hanziMatch = Regex.Match(trimmed, @"[第]?([一二三四五六七八九十]+)[部分|卷|大题|题|、]?");
+            if (hanziMatch.Success)
+            {
+                return DecodeHanziNumeral(hanziMatch.Groups[1].Value);
+            }
+
+            // 5. Số Ả Rập Đông (Eastern Arabic: ١, ٢, ٣...)
+            var easternArabicMatch = Regex.Match(trimmed, @"[\u0660-\u0669]+");
+            if (easternArabicMatch.Success)
+            {
+                int val = 0;
+                foreach (char c in easternArabicMatch.Value)
+                {
+                    val = val * 10 + (c - '\u0660');
+                }
+                if (val > 0) return val;
+            }
+
+            // 6. Số Ả Rập chuẩn (1, 2, 3...) - Dự phòng cuối cùng khi không có La Mã hay từ khóa
+            var digitMatch = Regex.Match(trimmed, @"\b\d+\b");
+            if (digitMatch.Success && int.TryParse(digitMatch.Value, out var num))
+            {
+                return num;
+            }
+
+            return 0;
+        }
+
+        private static int DecodeHanziNumeral(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return 0;
+            return text switch
+            {
+                "一" => 1, "二" => 2, "三" => 3, "四" => 4, "五" => 5,
+                "六" => 6, "七" => 7, "八" => 8, "九" => 9, "十" => 10,
+                "十一" => 11, "十二" => 12, "十三" => 13, "十四" => 14, "十五" => 15,
+                "十六" => 16, "十七" => 17, "十八" => 18, "十九" => 19, "二十" => 20,
+                _ => 1
+            };
+        }
+
         /// <summary>
         /// Cập nhật Phân đoạn Vĩ mô khi gặp tiêu đề phân đoạn lớn (PHẦN I, PHẦN II, SECTION A, TỰ LUẬN...).
+        /// [PISA v7.0 Law 2]: Khi một Section mới mở ra, tự động đóng các phạm vi mở (Open-Ended) thuộc cấp Section, SubSection, GroupDirective trước đó.
         /// </summary>
         public void RegisterMacroSection(string sectionKey, string? sectionTitle)
         {
             if (!string.IsNullOrWhiteSpace(sectionKey))
             {
+                CloseOpenScopesAtOrBelowLevel(ScopeHierarchyLevel.Section);
                 CurrentMacroSection = sectionKey.Trim().ToUpperInvariant();
                 CurrentSectionTitle = sectionTitle?.Trim();
+
+                int partNum = ParseRankNumber(sectionTitle ?? sectionKey);
+                CurrentPartRank = partNum > 0 ? partNum : (CurrentPartRank + 1);
+                CurrentSubPartRank = 0;
+                CurrentDirectiveRank = 0;
+                _scopeWindows.Clear();
+                _contextWindows.Clear();
             }
+        }
+
+        private static int DecodeRomanNumeral(string val)
+        {
+            if (string.IsNullOrWhiteSpace(val)) return 0;
+            return val.ToUpperInvariant() switch
+            {
+                "I" => 1, "II" => 2, "III" => 3, "IV" => 4, "V" => 5,
+                "VI" => 6, "VII" => 7, "VIII" => 8, "IX" => 9, "X" => 10,
+                "XI" => 11, "XII" => 12, "XIII" => 13, "XIV" => 14, "XV" => 15,
+                "XVI" => 16, "XVII" => 17, "XVIII" => 18, "XIX" => 19, "XX" => 20,
+                _ => 0
+            };
         }
 
         /// <summary>
         /// Đăng ký một Cửa sổ Chỉ thị Phạm vi mới.
+        /// [PISA v7.0 Law 2]: Tự động đóng các phạm vi mở cùng cấp hoặc cấp thấp hơn trước khi đẩy phạm vi mới vào ngăn xếp.
         /// </summary>
         public void RegisterScopeDirective(DirectiveScopeWindow window)
         {
             if (window == null || window.StartQuestion <= 0) return;
             if (window.EndQuestion < window.StartQuestion) window.EndQuestion = window.StartQuestion;
+
+            CloseOpenScopesAtOrBelowLevel(window.Level, window.StartQuestion - 1);
             _scopeWindows.Add(window);
         }
 
@@ -57,13 +219,16 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             if (startQ <= 0) return;
             if (endQ < startQ) endQ = startQ;
 
-            _scopeWindows.Add(new DirectiveScopeWindow
+            bool isOpen = endQ == int.MaxValue;
+            RegisterScopeDirective(new DirectiveScopeWindow
             {
                 StartQuestion = startQ,
                 EndQuestion = endQ,
                 QuestionType = questionType,
                 RawDirective = rawDirective,
-                Confidence = confidence
+                Confidence = confidence,
+                Level = ScopeHierarchyLevel.GroupDirective,
+                IsOpenEnded = isOpen
             });
         }
 
@@ -72,34 +237,164 @@ namespace AegisQuiz.Infrastructure.Services.Docx
         /// </summary>
         public void RegisterContextPassage(int startQ, int endQ, string content, string? title = null, string? contextId = null)
         {
+            RegisterContextPassage(startQ, endQ, content, title, contextId, ScopeHierarchyLevel.GroupDirective, endQ == int.MaxValue);
+        }
+
+        /// <summary>
+        /// [PISA v7.0] Đăng ký ngữ cảnh kèm cấp phân cấp đàn hồi (SubSection / GroupDirective) và trạng thái mở/đóng.
+        /// </summary>
+        public void RegisterContextPassage(int startQ, int endQ, string content, string? title, string? contextId, ScopeHierarchyLevel level, bool isOpenEnded = false)
+        {
             if (startQ <= 0) return;
             if (endQ < startQ) endQ = startQ;
 
-            string safeTitle = !string.IsNullOrWhiteSpace(title) 
-                ? title.Trim() 
-                : (endQ < int.MaxValue && endQ > startQ ? $"Bài đọc hiểu (Câu {startQ} - {endQ})" : $"Bài đọc hiểu (Từ câu {startQ})");
+            CloseOpenContextsAtOrBelowLevel(level, startQ - 1);
+
+            _contextCounter++;
+            int contextIdx = _contextCounter;
+
+            string rawTitle = !string.IsNullOrWhiteSpace(title) ? title.Trim() : "Bài đọc hiểu / Ngữ cảnh";
+            string indexPrefix = $"[Ngữ cảnh #{contextIdx}]";
+            string safeTitle = endQ < int.MaxValue && endQ >= startQ
+                ? $"{indexPrefix} {rawTitle} (Câu {startQ} - {endQ})"
+                : $"{indexPrefix} {rawTitle} (Từ câu {startQ})";
+
+            string resolvedContextId = contextId ?? $"CTX_{contextIdx}_{startQ}_{(endQ == int.MaxValue ? "OPEN" : endQ.ToString())}";
 
             _contextWindows.Add(new ContextStimulusWindow
             {
                 StartQuestion = startQ,
                 EndQuestion = endQ,
-                ContextId = contextId ?? $"CTX_{startQ}_{endQ}",
+                ContextId = resolvedContextId,
                 ContextTitle = safeTitle,
-                ContextContent = content.Trim()
+                ContextContent = (content ?? string.Empty).Trim(),
+                Level = level,
+                IsOpenEnded = isOpenEnded || endQ == int.MaxValue
             });
         }
 
         /// <summary>
+        /// [PISA v7.0] Nối thêm đoạn văn bản vào ngữ cảnh đang mở gần nhất (dùng cho bài đọc hiểu nhiều đoạn văn trước câu hỏi đầu tiên).
+        /// </summary>
+        public void AppendToActiveContext(string additionalText)
+        {
+            if (string.IsNullOrWhiteSpace(additionalText)) return;
+            var latest = _contextWindows.LastOrDefault(c => !c.IsExplicitlyClosed);
+            if (latest != null)
+            {
+                if (string.IsNullOrWhiteSpace(latest.ContextContent) ||
+                    (!string.IsNullOrWhiteSpace(latest.ContextTitle) && latest.ContextTitle.Contains(latest.ContextContent, StringComparison.OrdinalIgnoreCase)))
+                {
+                    latest.ContextContent = additionalText.Trim();
+                }
+                else
+                {
+                    latest.ContextContent += "\n\n" + additionalText.Trim();
+                }
+            }
+        }
+
+        /// <summary>
+        /// [PISA v7.0 Law 5] Đóng tường minh phạm vi ở cấp chỉ định và mọi phạm vi con bên trong.
+        /// </summary>
+        public bool CloseScopeByLevel(ScopeHierarchyLevel level, int lastQuestionNumber = 0)
+        {
+            if (level == ScopeHierarchyLevel.None) return false;
+            bool closedAny = false;
+
+            for (int i = _scopeWindows.Count - 1; i >= 0; i--)
+            {
+                var w = _scopeWindows[i];
+                if (!w.IsExplicitlyClosed && (int)w.Level >= (int)level)
+                {
+                    if (lastQuestionNumber > 0 && lastQuestionNumber >= w.StartQuestion)
+                    {
+                        w.EndQuestion = Math.Min(w.EndQuestion, lastQuestionNumber);
+                    }
+                    else
+                    {
+                        w.IsExplicitlyClosed = true;
+                    }
+                    closedAny = true;
+                    if (w.Level == level) break;
+                }
+            }
+
+            for (int i = _contextWindows.Count - 1; i >= 0; i--)
+            {
+                var c = _contextWindows[i];
+                if (!c.IsExplicitlyClosed && (int)c.Level >= (int)level)
+                {
+                    if (lastQuestionNumber > 0 && lastQuestionNumber >= c.StartQuestion)
+                    {
+                        c.EndQuestion = Math.Min(c.EndQuestion, lastQuestionNumber);
+                    }
+                    else
+                    {
+                        c.IsExplicitlyClosed = true;
+                    }
+                    closedAny = true;
+                    if (c.Level == level) break;
+                }
+            }
+
+            return closedAny;
+        }
+
+        private void CloseOpenScopesAtOrBelowLevel(ScopeHierarchyLevel incomingLevel, int capEndQuestion = 0)
+        {
+            foreach (var w in _scopeWindows)
+            {
+                if (!w.IsExplicitlyClosed && w.IsOpenEnded && (int)w.Level >= (int)incomingLevel)
+                {
+                    if (capEndQuestion > 0 && capEndQuestion >= w.StartQuestion)
+                        w.EndQuestion = capEndQuestion;
+                    else
+                        w.IsExplicitlyClosed = true;
+                    w.IsOpenEnded = false;
+                }
+            }
+        }
+
+        private void CloseOpenContextsAtOrBelowLevel(ScopeHierarchyLevel incomingLevel, int capEndQuestion = 0)
+        {
+            foreach (var c in _contextWindows)
+            {
+                if (!c.IsExplicitlyClosed && c.IsOpenEnded && (int)c.Level >= (int)incomingLevel)
+                {
+                    if (capEndQuestion > 0 && capEndQuestion >= c.StartQuestion)
+                    {
+                        c.EndQuestion = capEndQuestion;
+                        if (c.ContextTitle.Contains("(Từ câu"))
+                        {
+                            c.ContextTitle = Regex.Replace(c.ContextTitle, @"\(Từ\s+câu\s+\d+\)", $"(Câu {c.StartQuestion} - {capEndQuestion})");
+                        }
+                    }
+                    else
+                    {
+                        c.IsExplicitlyClosed = true;
+                    }
+                    c.IsOpenEnded = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Suy luận loại câu hỏi kỳ vọng cho câu hỏi số qNum:
-        /// Ưu tiên 1: Cửa sổ chỉ thị phạm vi hẹp nhất bao trùm qNum.
+        /// Ưu tiên 1: Cửa sổ chỉ thị phạm vi có cấp phân cấp sâu nhất (GroupDirective -> SubSection -> Section) và hẹp nhất bao trùm qNum.
         /// Ưu tiên 2: Fallback chỉ định hoặc Phân đoạn vĩ mô hiện tại (CurrentMacroSection).
         /// </summary>
         public string ResolveExpectedQuestionType(int qNum, string? fallbackType = null)
         {
             if (qNum > 0)
             {
-                var matched = _scopeWindows.LastOrDefault(w => w.Contains(qNum));
-                if (matched != null && !string.IsNullOrWhiteSpace(matched.QuestionType) && matched.QuestionType != "UNKNOWN")
+                var matched = _scopeWindows
+                    .Where(w => w.Contains(qNum) && !string.IsNullOrWhiteSpace(w.QuestionType) && w.QuestionType != "UNKNOWN")
+                    .OrderByDescending(w => (int)w.Level)
+                    .ThenBy(w => w.EndQuestion - w.StartQuestion)
+                    .FirstOrDefault();
+
+                if (matched != null)
                 {
                     return matched.QuestionType;
                 }
@@ -110,11 +405,23 @@ namespace AegisQuiz.Infrastructure.Services.Docx
 
         /// <summary>
         /// Tìm ngữ cảnh bài đọc hiểu / tình huống tương ứng cho câu hỏi số qNum.
+        /// Nếu có cả ngữ cảnh SubSection (Tiểu phần) lẫn GroupDirective (Chỉ thị cụm câu) cùng bao trùm qNum,
+        /// tự động hợp nhất ngữ cảnh phân cấp hoặc trả về ngữ cảnh sâu nhất.
         /// </summary>
         public ContextStimulusWindow? ResolveContextForQuestion(int qNum)
         {
             if (qNum <= 0) return null;
-            return _contextWindows.LastOrDefault(w => w.Contains(qNum));
+            var activeContexts = _contextWindows
+                .Where(w => w.Contains(qNum) && !string.IsNullOrWhiteSpace(w.ContextContent))
+                .OrderByDescending(w => (int)w.Level)
+                .ThenBy(w => w.EndQuestion - w.StartQuestion)
+                .ToList();
+
+            if (activeContexts.Count == 0) return null;
+
+            // TUYỆT ĐỐI KHÔNG GỘP CHUỖI các ngữ cảnh độc lập!
+            // Trả về ngữ cảnh hẹp nhất và sâu nhất bao trùm qNum:
+            return activeContexts[0];
         }
 
         // ─────────────────────────────────────────────────────────────────────

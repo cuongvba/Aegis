@@ -1,4 +1,4 @@
-# AegisQuiz Frontend (Vite + React 19)
+# Aegis Global (AGCI) Frontend (Vite + React 19)
 # Multi-stage build tối ưu
 
 # ===== STAGE 1: Dependencies =====
@@ -59,4 +59,3 @@ RUN printf 'server {\n\
 
 EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
-

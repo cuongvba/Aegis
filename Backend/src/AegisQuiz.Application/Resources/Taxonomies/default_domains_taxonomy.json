@@ -1,0 +1,94 @@
+[
+  {
+    "DomainCode": "BANKING",
+    "DomainName": "Tài chính - Ngân hàng",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "Tài chính - Ngân hàng",
+      "en": "Banking & Finance"
+    },
+    "Aliases": ["BANKING", "FINANCE", "NGAN_HANG"],
+    "Keywords": [
+      "tín dụng", "khdn", "khcn", "tiền gửi", "ngân hàng", "chi nhánh", "rửa tiền", "aml", "thế chấp", "tài sản bảo đảm", "e-banking", "ebanking", "agribank", "vietcombank", "bidv", "vietinbank", "cic", "kho tiền", "ngân quỹ", "thẩm định", "cho vay", "bảo lãnh", "lãi suất", "sổ tiết kiệm", "thẻ tín dụng", "quy định số 1686", "nhno", "hạn mức"
+    ]
+  },
+  {
+    "DomainCode": "EDUCATION",
+    "DomainName": "Giáo dục phổ thông & Đại học",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "Giáo dục phổ thông & Đại học",
+      "en": "K-12 & Higher Education",
+      "fr": "Éducation"
+    },
+    "Aliases": ["EDUCATION", "EDU", "GIAO_DUC"],
+    "Keywords": [
+      "toán", "đạo hàm", "tích phân", "hàm số", "ngữ văn", "tiếng anh", "vật lý", "hóa học", "gdpt", "thpt", "lớp 12", "lớp 11", "lớp 10", "k-12", "reading passage", "pronunciation", "chuyên amsterdam"
+    ]
+  },
+  {
+    "DomainCode": "GOV_DRIVING",
+    "DomainName": "Giao thông - Sát hạch lái xe",
+    "Weight": 3,
+    "LocalizedNames": {
+      "vi": "Giao thông - Sát hạch lái xe",
+      "en": "Driving License & Road Traffic"
+    },
+    "Aliases": ["GOV_DRIVING", "DRIVING", "GPLX"],
+    "Keywords": [
+      "gplx", "sa hình", "biển báo", "lái xe", "vượt ẩu", "xe cơ giới", "tốc độ tối đa", "điểm liệt", "cục đường bộ"
+    ]
+  },
+  {
+    "DomainCode": "HEALTHCARE",
+    "DomainName": "Y tế & Chăm sóc sức khỏe",
+    "Weight": 3,
+    "LocalizedNames": {
+      "vi": "Y tế & Chăm sóc sức khỏe",
+      "en": "Healthcare & Medicine"
+    },
+    "Aliases": ["HEALTHCARE", "MEDICAL", "Y_TE"],
+    "Keywords": [
+      "bác sĩ", "dược lâm sàng", "phác đồ", "điều trị", "bệnh nhân", "bệnh viện", "bộ y tế", "y khoa"
+    ]
+  },
+  {
+    "DomainCode": "HSE",
+    "DomainName": "An toàn - Sức khỏe - Môi trường",
+    "Weight": 3,
+    "LocalizedNames": {
+      "vi": "An toàn - Sức khỏe - Môi trường",
+      "en": "Health, Safety & Environment (HSE)"
+    },
+    "Aliases": ["HSE", "SAFETY", "AN_TOAN_LAO_DONG"],
+    "Keywords": [
+      "an toàn lao động", "bảo hộ lao động", "pccc", "phòng cháy chữa cháy", "vslđ", "iso 45001", "hóa chất", "an toàn điện"
+    ]
+  },
+  {
+    "DomainCode": "IT_SECURITY",
+    "DomainName": "CNTT & An Toàn Thông Tin",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "CNTT & An Toàn Thông Tin",
+      "en": "IT & Cybersecurity"
+    },
+    "Aliases": ["IT_SECURITY", "CYBERSECURITY", "AN_NINH_MANG"],
+    "Keywords": [
+      "an toàn thông tin", "an ninh mạng", "cntt", "công nghệ thông tin", "iso 27001", "bảo mật", "soc", "pentest"
+    ]
+  },
+  {
+    "DomainCode": "GENERAL",
+    "DomainName": "Tổng hợp / Đại cương",
+    "Weight": 1,
+    "LocalizedNames": {
+      "vi": "Tổng hợp / Đại cương",
+      "en": "General Knowledge"
+    },
+    "Aliases": ["GENERAL", "COMMON", "TONG_HOP"],
+    "Keywords": [
+      "tổng hợp", "đại cương", "tuyển dụng", "kỹ năng mềm"
+    ]
+  }
+]

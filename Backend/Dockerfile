@@ -1,4 +1,4 @@
-# AegisQuiz Backend — .NET 10 Multi-stage build
+# Aegis Global (AGCI) Backend — .NET 10 Multi-stage build
 # Fix: bỏ --no-restore ở publish
 
 

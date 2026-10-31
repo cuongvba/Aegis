@@ -1,4 +1,4 @@
-# AegisQuiz IRT Service — Multi-stage Dockerfile
+# Aegis Global (AGCI) IRT Service — Multi-stage Dockerfile
 # Stage 1: Builder
 FROM python:3.12-slim AS builder
 

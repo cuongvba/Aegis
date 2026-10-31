@@ -475,7 +475,7 @@ D. Frankfurt
 Lösung: B
 Erklärung: Berlin ist seit 1990 die Bundeshauptstadt der Bundesrepublik Deutschland.
 ";
-            var result = engine.ParseSnippet(snippet);
+            var result = engine.ParseSnippet(snippet, specificRuleCode: "GERMANY_ABITUR_STANDARD");
             _output.WriteLine($"[Abitur] Matched Rule: {result.MatchedRuleCode} | Questions: {result.TotalQuestionsFound}");
             if (result.Questions.Count > 0)
             {

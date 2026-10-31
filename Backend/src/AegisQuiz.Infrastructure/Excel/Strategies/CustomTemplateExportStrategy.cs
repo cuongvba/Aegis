@@ -325,8 +325,15 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
 
         private static string GetOption(DocxImportPreviewDto q, int idx)
         {
-            if (q.Options == null || idx >= q.Options.Count) return string.Empty;
-            return Regex.Replace(q.Options[idx], @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            if (q.Options != null && idx < q.Options.Count && !string.IsNullOrWhiteSpace(q.Options[idx]))
+            {
+                return Regex.Replace(q.Options[idx], @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            }
+            if (q.SubItems != null && idx < q.SubItems.Count)
+            {
+                return q.SubItems[idx].Content?.Trim() ?? string.Empty;
+            }
+            return string.Empty;
         }
 
         private static string FormatAnswer(DocxImportPreviewDto q)

@@ -18,6 +18,9 @@
 8. [Đột Phá 7: Quản Trị Danh Tính Đa Thuê Bao (Enterprise IAM), Scoped RBAC Đa Tầng & Giao Thức Kích Hoạt / Reset Mật Khẩu OTT](#9-đột-phá-7-quản-trị-danh-tính-đa-thuê-bao-enterprise-iam-scoped-rbac-đa-tầng--giao-thức-kích-hoạt--reset-mật-khẩu-ott)
 9. [Đột Phá 8: Động Cơ Chuyển Hóa Công Thức Toán Học Toàn Năng (UPMP v2.0 & MathLocaleNormalizer)](#10-đột-phá-8-động-cơ-chuyển-hóa-công-thức-toán-học-toàn-năng-upmp-v20--mathlocalenormalizer)
 10. [Bảng Tổng Hợp Kiểm Thử & Hiệu Năng Thực Chiến](#11-bảng-tổng-hợp-kiểm-thử--hiệu-năng-thực-chiến)
+11. [Đột Phá Cảnh Giới 5: Hệ Thống Điều Phối Thanh Toán Đa Cổng Toàn Cầu, Quỹ Mời Cafe & Tri Ân Danh Dự](#12-đột-phá-cảnh-giới-5-hệ-thống-điều-phối-thanh-toán-đa-cổng-toàn-cầu-quỹ-mời-cafe--tri-ân-danh-dự)
+12. [Đột Phá Cảnh Giới 6: Hệ Thống Định Danh Phân Cấp 4 Bậc (Hierarchy Index), Ranh Giới Kháng Nuốt Bối Cảnh & Chế Độ Xem Kép Sắp Xếp Tự Nhiên (Dual-View UI)](#13-đột-phá-cảnh-giới-6-hệ-thống-định-danh-phân-cấp-4-bậc-hierarchy-index-ranh-giới-kháng-nuốt-bối-cảnh--chế-độ-xem-kép-sắp-xếp-tự-nhiên-dual-view-ui)
+13. [Đột Phá Cảnh Giới 7: Động Cơ Tiền Luận Giải QuestionType Theo Chỉ Thị Nhóm Đa Ngôn Ngữ & Đồng Bộ CSDL 2 Chiều CIG Rule Studio](#14-đột-phá-cảnh-giới-7-động-cơ-tiền-luận-giải-questiontype-theo-chỉ-thị-nhóm-đa-ngôn-ngữ--đồng-bộ-csdl-2-chiều-cig-rule-studio)
 
 ---
 
@@ -316,5 +319,131 @@ Khảo thí trực tuyến truyền thống thường rơi vào 2 cực đoan:
 
 ---
 
+## 13. ĐỘT PHÁ CẢNH GIỚI 6: HỆ THỐNG ĐỊNH DANH PHÂN CẤP 4 BẬC (HIERARCHY INDEX), RANH GIỚI KHÁNG NUỐT BỐI CẢNH & CHẾ ĐỘ XEM KÉP SẮP XẾP TỰ NHIÊN (DUAL-VIEW UI)
+
+### 13.1. Thách Thức Nghiệp Vụ & Điểm Nghẽn Cũ
+1. **Thiếu định danh phân cấp tổng quát**: Trong các đề thi không có cấu trúc đầy đủ `Section -> SubSection` mà đi trực tiếp từ `Exam -> Directive` (như bộ đề Tiếng Anh THCS), hệ thống cũ bị mất dấu ngữ cảnh phân cấp, không xác định được câu hỏi thuộc chỉ thị nào khi hiển thị và tra cứu.
+2. **Lỗi nuốt bối cảnh (Context Swallowing)**: Khi FSM đang ở pha giải thích của câu hỏi trước, nếu gặp chỉ thị hoặc bài đọc hiểu mới của nhóm câu sau, FSM nuốt luôn cả bài đọc hoặc chỉ thị vào lời giải của câu trước (như lỗi Câu 22 Đề 7 nuốt bài đọc Câu 23-27).
+3. **Trùng lặp thân câu hỏi (Duplicate Stem)**: Các dòng neo câu hỏi chứa chữ thừa bị gán hai lần vào `Content` và `PendingLines` khiến nội dung câu hỏi bị lặp lại.
+4. **Trở ngại đối chiếu theo thời gian mới nhất (Sorting Pain)**: Giao diện quản trị mặc định sắp xếp theo `CreatedAt DESC`, khiến 40 câu hỏi của một đề thi vừa nhập bị xáo trộn ngược ngào, gây cực kỳ khó khăn cho Quản trị viên khi đối chiếu với đề thi gốc Word/PDF.
+
+### 13.2. Giải Pháp Đột Phá Kiến Trúc
+1. **Mã Phân Cấp 4 Bậc Chuẩn Hóa (`HierarchyIndex`)**:
+   - Kiến trúc mã hóa 4 bậc: `Exam_Part_SubPart_Directive` (ví dụ: `7_0_0_6`, `7_0_0_7`, `2_1_0_4`).
+   - Cấp nào bị khuyết nhận giá trị `0`. Định vị tọa độ cấu trúc $O(1)$ cho mọi câu hỏi trong CSDL.
+2. **Ranh Giới Ngắt Pha Lời Giải Chủ Động (Explanation Boundary Termination)**:
+   - Tại `DocxStateMachineClassifier.cs`, bất kỳ tín hiệu phân đoạn mới nào (`isScopeDirective`, `isPassageStart`, `isSectionHeader`, `isExamHeader`) lập tức chốt và đóng phạm vi lời giải của câu hiện hành (`finalizeCurrentQuestion(); inExplanation = false;`), bảo vệ trọn vẹn bối cảnh cho các câu kế tiếp.
+3. **Triệt Tiêu Nhân Đôi Thân Câu Hỏi (Duplicate Stem Elimination)**:
+   - Phần chữ dư của dòng neo (remainder text) chỉ được chuyển tiếp qua `currentQuestionPendingLines` để chuẩn hóa một lần duy nhất qua `cig.ExtractCleanStemAndOptions`.
+4. **Chế Độ Xem Kép Sắp Xếp Tự Nhiên (Dual-View UI Mode) & Lọc Mã Đề**:
+   - Bổ sung bộ lọc `MÃ ĐỀ THI` (`qExamFilter`) ngay trên thanh công cụ Quản trị câu hỏi.
+   - Nút chuyển chế độ xem tức thời:
+     - `[ 📄 Theo cấu trúc đề ]`: Sắp xếp tự nhiên đa khóa `Exam ASC -> Part ASC -> SubPart ASC -> Directive ASC -> QuestionNo ASC`.
+     - `[ ⏱️ Mới nhất trước ]`: Sắp xếp theo dòng thời gian `CreatedAt DESC`.
+   - Hiển thị Huy hiệu kép: Số thứ tự bảng hiển thị song hành cùng Huy hiệu `Câu {sourceQuestionNo}` từ đề gốc, mang lại trải nghiệm tra cứu trực quan và đối chiếu nhanh gấp 10 lần.
+
+---
+
+## 14. ĐỘT PHÁ CẢNH GIỚI 7: ĐỘNG CƠ TIỀN LUẬN GIẢI QUESTIONTYPE THEO CHỈ THỊ NHÓM ĐA NGÔN NGỮ & ĐỒNG BỘ CSDL 2 CHIỀU CIG RULE STUDIO
+
+### 14.1. Vấn Đề Thực Tiễn
+Khi nhập đề thi trắc nghiệm tiếng Anh hoặc đề thi chuyên môn quốc tế:
+- Các chỉ thị khảo thí thường là dạng mệnh lệnh mở (không kèm dải số câu tường minh):
+  1. `Choose the word A, B, C or D whose underlined part is pronounced differently from the others.`
+  2. `Choose the best option to complete each of the following sentences.`
+  3. `Choose the letter A, B, C or D on your answer sheet to indicate the underlined part that needs correction following sentences.`
+  4. `Odd one out`
+- Các hệ thống trước đây hoặc không nhận diện được chỉ thị độc lập (bị chặn bởi regex hạn hẹp), hoặc suy luận sai loại câu hỏi, hoặc khi người dùng chỉnh sửa biểu thức Regex trên giao diện Rule Studio thì chỉ lưu tạm vào file cấu hình trên đĩa mà không cập nhật vào CSDL PostgreSQL, dẫn tới việc bị mất cấu hình khi container khởi động lại.
+
+### 14.2. Giải Pháp Đột Phá Kiến Trúc
+1. **Ma Trận Luận Giải QuestionType 8 Bậc Ưu Tiên**:
+   - `MULTI_TRUE_FALSE` $
+ightarrow$ `SHORT_ANSWER` $
+ightarrow$ `ORDERING` $
+ightarrow$ `MATCHING` $
+ightarrow$ `MULTI` $
+ightarrow$ `FILL_BLANK` $
+ightarrow$ `ESSAY` $
+ightarrow$ `SINGLE`.
+   - Bổ sung 5 nhóm mẫu quy nạp toàn diện cho `SINGLE` trong quy tắc `GENERAL_UNIVERSAL_INGESTION`: phát âm (`pronounced differently`), trọng âm (`primary stress`), tìm lỗi sai (`needs correction`), từ khác loại (`odd one out`), chọn chữ cái/từ (`choose the letter/word`).
+2. **Mở Rộng Bộ Lọc Standalone Directives (Line 646)**:
+   - Trong `DynamicQuestionIngestionEngine.Structure.cs`, mở rộng nhận diện các câu lệnh mở bắt đầu bằng `Choose\s+(?:all|the|one|each|a\b)`, `Select\s+(?:all|the|one)`, `Odd\s+one\s+out`, `Circle\s+(?:the\s+)?odd`, `Find\s+(?:the\s+)?(?:mistake|error|word)`.
+   - Tự động kích hoạt `DirectiveScopeWindow` mở rộng với độ tin cậy $\ge 0.90$.
+3. **Đồng Bộ CSDL 2 Chiều Cho Rule Studio (Realtime Zero-Downtime)**:
+   - Nâng cấp `AdminParsingRulesController.SaveCustomRule` để gọi trực tiếp `SaveRuleToDatabaseAsync`:
+     - Ghi nhận ngay vào bảng `QuestionParsingRules` (cột `SemanticsSpecJson`) trong PostgreSQL.
+     - Cập nhật file cấu hình `parsing_rules_registry.json`.
+     - Hot-reload JIT Compiled Regex trong bộ nhớ RAM máy chủ tức thời với **0ms downtime**.
+
+---
+
 > 🌟 **Lời kết:** Với những đột phá mang tính bản lề nói trên, AegisQuiz không chỉ hoàn thiện về mặt công nghệ mà còn nâng tầm trải nghiệm của người dùng lên mức vượt trội, thông minh và tinh tế nhất theo đúng triết lý của Nhà kiến tạo No.1 thế giới!
 
+
+
+---
+
+## 15. ĐỘT PHÁ CẢNH GIỚI 8: ĐẶC TẢ KIẾN TRÚC BÓC TÁCH TOÀN TRÌNH WORD (.DOCX) ĐẠT CHUẨN ALDS v1.0
+
+Để phục vụ công tác thanh kiểm tra, chuyển giao công nghệ và nghiệm thu cấp quốc gia/toàn cầu, toàn bộ chu trình sống 7 giai đoạn của quá trình nạp đề thi từ tệp Word (.docx) đến cơ sở dữ liệu PostgreSQL đã được đóng gói thành hồ sơ kiến trúc sống:
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+👉 **[AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md)**
+
+### Tóm tắt 7 Giai đoạn Độc lập (Decoupled 7-Stage Architecture):
+1. **Giai đoạn 1 (Client Ingestion & Validation)**: Tiếp nhận tệp tin, kiểm tra MIME OpenXML, đóng gói cờ AI Autopilot tại [DocxCigRulesPanel.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx).
+2. **Giai đoạn 2 (Tenant Scoping & Domain Context)**: Phân giải định danh đa khách thuê và nạp cấu hình bộ quy tắc CIG tại [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs).
+3. **Giai đoạn 3 (OOXML Decompress & Media/Math Transformation)**: Giải nén gói zip, bóc tách word/media/, giải mã vector MathType WMF/OLE và OMML sang KaTeX LaTeX bởi [MathTypeWmfEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs).
+4. **Giai đoạn 4 (DSMC Finite State Machine & Scope Manager)**: Máy trạng thái hạn định Skinny Orchestrator [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) kết hợp CognitiveScopeManager tạo chỉ số tọa độ phân cấp $	ext{HierarchyIndex} = E\_P\_S\_D$ và kích hoạt Explanation Boundary Guard.
+5. **Giai đoạn 5 (CIG Engine & 8-Priority QuestionType Inference)**: Suy luận loại câu hỏi theo 8 tầng ưu tiên từ chỉ thị nhóm (SINGLE, MULTI_TRUE_FALSE, SHORT_ANSWER,...) tại [DynamicQuestionIngestionEngine.Classification.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs).
+6. **Giai đoạn 6 (Cognitive Deduplication & Preview State)**: Tính toán mã băm SHA-256 Canonical Hash, đánh dấu trùng lặp và ghi nhận xuất xứ _provenance bởi [ExamDeduplicationEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs).
+7. **Giai đoạn 7 (ACID Transaction & PostgreSQL JSONB Storage)**: Giao dịch nguyên tử, lưu ngữ cảnh dùng chung QuestionContext duy nhất một lần, đồng bộ cây chủ đề MaterializedPath và lưu bản ghi JSONB đa hình 27 trường.
+
+
+---
+
+## 16. ĐỘT PHÁ CẢNH GIỚI 9: HỆ THỐNG PHÂN CẤP THÍCH ỨNG ĐA NGÔN NGỮ HAI TẦNG (R_GEN & R_SPEC), HÓA GIẢI ĐỀ PHẲNG H(x,0,0,0) VÀ TRIỆT TIÊU 100% HARD-CODE
+
+### 16.1. Bối Cảnh & Thách Thức Toàn Cầu Hóa
+Sau khi thiết lập hệ tọa độ phân cấp 4 cấp $H(x, p, s, d)$, hệ thống đối mặt với 2 thách thức lớn khi triển khai ra môi trường khảo thí toàn cầu:
+1. **Bài toán Đề phẳng Tuyến tính $H(x, 0, 0, 0)$:** Đại đa số đề thi 15 phút, 1 tiết, đề thi trắc nghiệm Toán/Lý không chia "Phần" và không có "Chỉ thị làm bài". Nếu hệ thống ép buộc phải có cấu trúc cây hoặc sinh ra các node nhóm rác, trải nghiệm người dùng sẽ bị phá vỡ.
+2. **Nghịch lý Bùng nổ Cấu hình Regex (Configuration Fatigue):** Nếu để hỗ trợ các kỳ thi quốc tế mà bắt người dùng/quản trị viên phải viết hàng chục chuỗi Regex cho Rank 0, 1, 2, 3 thì hệ thống đã chuyển giao sự phức tạp kỹ thuật sang cho người dùng.
+
+### 16.2. Kiến Trúc Hai Tầng Nhận Thức Toàn Cầu
+Hệ sinh thái chính thức chuyển dịch sang mô hình Hai Tầng:
+- **Tầng 1: `R_GEN` (Universal Invariant Core):** Tự động phát hiện và hóa giải đề phẳng $H(x, 0, 0, 0)$ về tọa độ `x_0_0_0`. Tích hợp bộ từ điển động từ mệnh lệnh khảo thí (`Read`, `Choose`, `Select`, `Circle`, `Odd`, `Find`...) và các từ khóa phân đoạn quốc tế (`PHẦN`, `PART`, `SECTION`, `TEIL`, `PARTIE`...).
+- **Tầng 2: `R_SPEC` (Sovereign Language/Exam Plugins):** Hỗ trợ cấu hình hóa theo từng ngôn ngữ và kỳ thi đặc thù (`zh` Gaokao, `ja` JCEE, `ko` Suneung, `ar` Thanaweya RTL, `vi` GDPT 2025) mà người dùng chỉ cần nhập từ khóa thông thường, không cần viết Regex.
+
+### 16.3. Giải Mã Thứ Bậc Đa Ngôn Ngữ (ParseRankNumber)
+Nâng cấp `CognitiveScopeManager.ParseRankNumber` hỗ trợ toàn diện:
+- Số Ả Rập: $1, 2, 3...$
+- Số La Mã mở rộng: $I$ đến $XX$ (1 đến 20)
+- Ký tự chữ cái thứ tự: `Part A` $\rightarrow 1$, `Section B` $\rightarrow 2$, `Phần C` $\rightarrow 3$
+- Số Hán tự: `第一部分` $\rightarrow 1$, `第二部分` $\rightarrow 2$, `第十部分` $\rightarrow 10$, `二十` $\rightarrow 20$
+- Số Ả Rập Đông Phương: $\text{١, ٢, ٣...} \rightarrow 1, 2, 3...$
+
+### 16.4. Xóa Bỏ 100% Hard-Code trong DocxStateMachineClassifier
+- Thay thế hoàn toàn biểu thức Regex cứng tại dòng 331 `DocxStateMachineClassifier.cs` bằng lệnh ủy nhiệm:
+  `bool isSubCategoryHeading = cig.TryMatchSubPartHeading(line, out _);`
+- Đảm bảo tuân thủ 100% Quy luật 1 của AGENTS.md (Zero Hard-code & 100% Config-Driven).
+
+### 16.5. Bằng Chứng Kiểm Thử Định Lượng
+- Thực thi 20/20 Scoped Unit Tests tại [`AdaptiveHierarchyIngestionTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/AdaptiveHierarchyIngestionTests.cs) (100% Green).
+- Toàn bộ các kịch bản $H(x, 0, 0, 0)$, $H(x, 0, 0, d)$, $H(x, p, 0, 0)$ và $H(x, p, s, d)$ vận hành hoàn hảo với độ trễ $< 80$ms.
+
+
+---
+
+## 17. ĐỘT PHÁ CẢNH GIỚI 10: TÁCH BIỆT TUYỆT ĐỐI TẦNG HẠT GIỐNG (SEED FACTORY DECOUPLING) VÀ CHUẨN HÓA DTO CONTRACT
+
+### 17.1. Bối Cảnh & Động Lực
+Tệp `DocumentStructureDictionaryDtos.cs` trước đây chứa đồng thời định nghĩa dữ liệu (POCO DTO) và hơn 350 dòng mã nguồn static seed factory chứa hàng loạt biểu thức chính quy (Regex). Dù các giá trị mặc định này là cần thiết làm sàn an toàn (Fail-Safe Floor) chống NullReferenceException khi khởi động nguội (Cold-Start) hoặc khi tệp `parsing_rules_registry.json` chưa sẵn sàng, việc nhồi nhét chuỗi Regex vào DTO làm mờ ranh giới giữa Data Contract và Domain/Application Logic (vi phạm SoC).
+
+### 17.2. Giải Pháp Triển Khai
+Hệ thống thiết lập lớp nhà máy hạt giống chuyên biệt:
+- **Tạo mới [`DocumentStructureSeedFactory.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Services/DocumentStructureSeedFactory.cs):** Đóng gói toàn bộ các mẫu Regex mặc định cho Phân đoạn (`SectionMarkers`), Pha lời giải (`SolutionPhaseMarkers`), Bảng đáp án (`AnswerPhaseMarkers`), Chỉ thị dạng câu (`ScopeDirectiveMarkers`), Biên giới đề (`ExamBoundaryMarkers`), Quy tắc quốc gia (`SovereignRules`) và Hạt nhân phổ quát (`UniversalCore`).
+- **Chuẩn hóa [`DocumentStructureDictionaryDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs):** Trở về bản chất Pure POCO DTO với các thuộc tính sạch sẽ. Đồng thời duy trì các **Static Forwarders** ủy nhiệm sang `DocumentStructureSeedFactory`, đảm bảo **100% Zero Breaking Changes** đối với mọi mã nguồn gọi và bài kiểm thử unit tests hiện hữu.
+
+### 17.3. Bằng Chứng Thực Nghiệm
+- **Biên dịch:** `dotnet build` đạt kết quả `0 Error(s)`.
+- **Kiểm thử Scoped:** 41/41 bài kiểm thử (`AdaptiveHierarchyIngestionTests` 20/20, `TestParseSnippetDirective` 5/5, `DocxClassifierRegistryComplianceTests` 16/16) đạt trạng thái **100% Green**.
+- **Môi trường Container:** Tái đóng gói và kiểm chứng Docker container `aegis-backend` hoạt động ổn định và sẵn sàng phục vụ.

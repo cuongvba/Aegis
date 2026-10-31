@@ -15,7 +15,7 @@ namespace AegisQuiz.Infrastructure.Services
     {
         private static readonly InlineAnswerExtractSpecDto BuiltInInlineAnswerSpec = new();
         private static readonly string BuiltInInlineOptionPattern = new InteractionSpecDto().InlineOptionDelimiterPattern;
-        private const string BuiltInExplanationLinePattern = @"^(?:Lời\s*giải|L[\.\?\s]*i\s*gi[\.\?\s]*i|Hướng\s*dẫn\s*giải|Hu?ng\s*d?n\s*gi?i|HƯỚNG\s*DẪN|LỜI\s*GIẢI|HD|Giải\s*thích|Căn\s*cứ|Explanation|Rationale)\b";
+        private const string BuiltInExplanationLinePattern = @"^\[?\s*(?:Lời\s*giải|L[\.\?\s]*i\s*gi[\.\?\s]*i|Hướng\s*dẫn(?:\s*giải)?|Hu?ng\s*d?n(?:\s*gi?i)?|HƯỚNG\s*DẪN|LỜI\s*GIẢI|HD|Giải\s*thích|Căn\s*cứ|Explanation|Rationale)\b";
         private const string BuiltInAnswerLinePattern = @"^(?:Đáp\s*(?:án|số)|Đa['\s]*p\s*a['\s]*n|Đ\/a|Key|Answer|Kết\s*quả)(?:\s*bằng)?[\.\:\s]+(.*)";
         private static readonly HashSet<string> TruthTokens = new(StringComparer.OrdinalIgnoreCase) { "đúng", "d", "true", "t", "正确", "对" };
 
@@ -151,7 +151,9 @@ namespace AegisQuiz.Infrastructure.Services
                 var m = GetOrAddRegex(pattern).Match(line);
                 if (m.Success)
                 {
-                    cleanRemainder = m.Groups.Count > 1 ? m.Groups[1].Value.Trim() : line;
+                    cleanRemainder = m.Groups.Count > 1
+                        ? m.Groups[1].Value.Trim().TrimEnd(']').Trim()
+                        : line.Substring(m.Index + m.Length).Trim().TrimStart(':', '.', '-', ']').TrimEnd(']').Trim();
                     return true;
                 }
             }
@@ -291,14 +293,15 @@ namespace AegisQuiz.Infrastructure.Services
                 if (match.Groups.Count < 3 || string.IsNullOrEmpty(match.Groups[2].Value)) continue;
 
                 char letter = match.Groups[2].Value[0];
-                bool isMarked = match.Value.Contains("<u>") || match.Value.Contains("<b>") || match.Value.Contains("*")
-                    || !string.IsNullOrEmpty(match.Groups[1].Value) 
-                    || (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value));
-
                 int contentStart = match.Index + match.Length;
                 int contentEnd = i + 1 < matches.Count ? matches[i + 1].Index : line.Length;
                 string content = contentEnd > contentStart ? line.Substring(contentStart, contentEnd - contentStart).Trim() : string.Empty;
                 content = Regex.Replace(content, @"[\.\s\t]+$", "").Trim();
+
+                bool isMarked = match.Value.Contains("<u>") || match.Value.Contains("<b>") || match.Value.Contains("*") || match.Value.Contains("<mark>")
+                    || !string.IsNullOrEmpty(match.Groups[1].Value) 
+                    || (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
+                    || content.Contains("<mark>");
 
                 result.Add((letter, content, isMarked));
             }
@@ -410,6 +413,9 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             string currentSection = string.Empty;
+            string currentScopeType = string.Empty;
+            DirectiveScopeWindow? currentDirectiveWindow = null;
+            int lastKnownQNum = 0;
 
             foreach (var rawLine in lines)
             {
@@ -426,7 +432,11 @@ namespace AegisQuiz.Infrastructure.Services
                     }
 
                     currentSection = detectedSection;
-                    response.ParsingLogs.Add($"[Section Match] Phát hiện phân đoạn {detectedSection}");
+                    string sectionDirective = MatchScopeDirectiveMarkerType(line, activeRule, rules)
+                        ?? (detectedSection == "TRUE_FALSE" ? "MULTI_TRUE_FALSE" : detectedSection);
+                    currentScopeType = sectionDirective;
+                    currentDirectiveWindow = null;
+                    response.ParsingLogs.Add($"[Section Match] Phát hiện phân đoạn {detectedSection} (ScopeType: {currentScopeType})");
 
                     // Tự động định tuyến sang quy tắc tương ứng nếu không bị chỉ định cứng
                     if (customRule == null && string.IsNullOrEmpty(specificRuleCode))
@@ -446,7 +456,28 @@ namespace AegisQuiz.Infrastructure.Services
                     continue;
                 }
 
-                // 0b. Bỏ qua các dòng chỉ dẫn khảo thí / thông tin kỳ thi
+                // 0b1. Nhận diện Chỉ thị phạm vi dải câu (PISA v7.0 Scope Directive: từ câu X đến câu Y)
+                if (TryParseScopeDirective(line, out var detectedWindow, lastKnownQNum, rules) && detectedWindow != null)
+                {
+                    currentDirectiveWindow = detectedWindow;
+                    if (!string.IsNullOrEmpty(detectedWindow.QuestionType) && detectedWindow.QuestionType != "UNKNOWN")
+                    {
+                        currentScopeType = detectedWindow.QuestionType == "TRUE_FALSE" ? "MULTI_TRUE_FALSE" : detectedWindow.QuestionType;
+                    }
+                    response.ParsingLogs.Add($"[Directive Match] Phát hiện chỉ thị: {currentScopeType} [Câu {detectedWindow.StartQuestion}..{(detectedWindow.EndQuestion == int.MaxValue ? "∞" : detectedWindow.EndQuestion.ToString())}] - {line}");
+                    continue;
+                }
+
+                // 0b2. Nhận diện Chỉ thị dạng câu hỏi từ Marker
+                var markerInferred = MatchScopeDirectiveMarkerType(line, activeRule, rules);
+                if (!string.IsNullOrEmpty(markerInferred) && markerInferred != "SINGLE")
+                {
+                    currentScopeType = markerInferred == "TRUE_FALSE" ? "MULTI_TRUE_FALSE" : markerInferred;
+                    response.ParsingLogs.Add($"[Directive Marker] Suy luận dạng câu hỏi từ chỉ thị: {currentScopeType}");
+                    continue;
+                }
+
+                // 0b3. Bỏ qua các dòng chỉ dẫn khảo thí / thông tin kỳ thi chung
                 if (IsExamInstructionOrMeta(line))
                 {
                     response.ParsingLogs.Add($"[Instruction Skip] Bỏ qua dòng chỉ dẫn: {line}");
@@ -479,10 +510,44 @@ namespace AegisQuiz.Infrastructure.Services
                 {
                     if (currentQ != null) response.Questions.Add(currentQ);
 
+                    lastKnownQNum = qNum;
                     activeRule ??= matchedRule;
                     response.MatchedRuleCode = matchedRule.RuleCode;
 
-                    string determinedType = matchedRule.InteractionSpec.DefaultQuestionType;
+                    // [PISA v7.0] Luận giải QuestionType theo Ma trận Độ ưu tiên từ Cao xuống Thấp (Rank 1 -> Rank 6):
+                    // Ưu tiên 1 (Cao nhất): Thân câu hỏi chứa chỉ thị nội dòng trực tiếp (Stem In-line Directive)
+                    string determinedType = InferQuestionTypeFromStemDirective(line, "SINGLE", rules);
+
+                    // Ưu tiên 2: Cửa sổ chỉ thị dải câu đang hoạt động bao trùm số câu này (Directive Scope Window [Start..End])
+                    if (determinedType == "SINGLE" && currentDirectiveWindow != null && currentDirectiveWindow.Contains(qNum)
+                        && !string.IsNullOrWhiteSpace(currentDirectiveWindow.QuestionType) && currentDirectiveWindow.QuestionType != "UNKNOWN")
+                    {
+                        determinedType = currentDirectiveWindow.QuestionType;
+                    }
+
+                    // Ưu tiên 3: Phân đoạn / Chỉ thị Marker hiện hành gần nhất (Section Scope Type)
+                    if (determinedType == "SINGLE" && !string.IsNullOrWhiteSpace(currentScopeType))
+                    {
+                        determinedType = currentScopeType;
+                    }
+
+                    // Ưu tiên 4: Tiêu đề phân đoạn vĩ mô (Section Macro: PHẦN I, PHẦN II, PHẦN III)
+                    if (determinedType == "SINGLE" && !string.IsNullOrWhiteSpace(currentSection))
+                    {
+                        determinedType = currentSection == "TRUE_FALSE" ? "MULTI_TRUE_FALSE" : currentSection;
+                    }
+
+                    // Ưu tiên 5: Dạng mặc định của quy tắc cụ thể (nếu là quy tắc đặc thù khác SINGLE)
+                    if (determinedType == "SINGLE" && !string.IsNullOrWhiteSpace(matchedRule.InteractionSpec?.DefaultQuestionType) && matchedRule.InteractionSpec.DefaultQuestionType != "SINGLE")
+                    {
+                        determinedType = matchedRule.InteractionSpec.DefaultQuestionType;
+                    }
+
+                    // Ưu tiên 6 (Dự phòng): Mặc định SINGLE
+                    if (string.IsNullOrWhiteSpace(determinedType)) determinedType = "SINGLE";
+
+                    // Chuẩn hóa loại câu hỏi thống nhất hệ sinh thái Aegis
+                    if (determinedType == "TRUE_FALSE") determinedType = "MULTI_TRUE_FALSE";
 
                     currentQ = new DocxImportPreviewDto
                     {
@@ -547,25 +612,22 @@ namespace AegisQuiz.Infrastructure.Services
                 if (currentQ.QuestionType == "MULTI_TRUE_FALSE" || currentQ.QuestionType == "TRUE_FALSE")
                 {
                     var matchMultiTfAns = Regex.Match(line, @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|HƯỚNG\s*DẪN)[\.\:\s\-]+(.*)", RegexOptions.IgnoreCase);
-                    if (matchMultiTfAns.Success)
+                    var candidateText = matchMultiTfAns.Success ? matchMultiTfAns.Groups[1].Value.Trim() : line;
+                    var tfMatches = Regex.Matches(candidateText, @"(?:^|\b|\,)([a-d])[\)\:\.\s\-]+(đúng|sai|true|false|đ|s|t|f)\b", RegexOptions.IgnoreCase);
+                    if (tfMatches.Count >= 2 || (matchMultiTfAns.Success && tfMatches.Count > 0))
                     {
-                        var remainder = matchMultiTfAns.Groups[1].Value.Trim();
-                        var tfMatches = Regex.Matches(remainder, @"(?:^|\b|\,)([a-d])[\)\:\.\s\-]+(đúng|sai|true|false|đ|s|t|f)\b", RegexOptions.IgnoreCase);
-                        if (tfMatches.Count > 0)
+                        var parts = new List<string>();
+                        foreach (Match tm in tfMatches)
                         {
-                            var parts = new List<string>();
-                            foreach (Match tm in tfMatches)
-                            {
-                                string ltr = tm.Groups[1].Value.ToLowerInvariant();
-                                string vt = tm.Groups[2].Value.ToLowerInvariant();
-                                string val = (vt.StartsWith("đ") || vt.StartsWith("d") || vt.StartsWith("t")) ? "Đúng" : "Sai";
-                                parts.Add($"{ltr}) {val}");
-                            }
-                            parts.Sort();
-                            currentQ.SuggestedAnswer = string.Join(", ", parts);
-                            response.ParsingLogs.Add($"[Multi-TF Answer] Nhận diện ma trận đáp án: {currentQ.SuggestedAnswer}");
-                            continue;
+                            string ltr = tm.Groups[1].Value.ToLowerInvariant();
+                            string vt = tm.Groups[2].Value.ToLowerInvariant();
+                            string val = (vt.StartsWith("đ") || vt.StartsWith("d") || vt.StartsWith("t")) ? "Đúng" : "Sai";
+                            parts.Add($"{ltr}) {val}");
                         }
+                        parts.Sort();
+                        currentQ.SuggestedAnswer = string.Join(", ", parts);
+                        response.ParsingLogs.Add($"[Multi-TF Answer] Nhận diện ma trận đáp án: {currentQ.SuggestedAnswer}");
+                        continue;
                     }
                 }
 
@@ -649,6 +711,8 @@ namespace AegisQuiz.Infrastructure.Services
                     currentQ.AiExplanation += "\n" + line;
                 }
                 else if (currentQ.Options.Count == 0
+                         || currentQ.QuestionType == "SHORT_ANSWER"
+                         || currentQ.QuestionType == "ESSAY"
                          || ruleToUse.InteractionSpec.DefaultQuestionType == "SHORT_ANSWER"
                          || ruleToUse.InteractionSpec.DefaultQuestionType == "ESSAY")
                 {
@@ -661,6 +725,19 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             if (currentQ != null) response.Questions.Add(currentQ);
+
+            // [PISA v7.0 Self-Healing]: Tự phục hồi dạng câu hỏi nếu các mệnh đề hoặc cấu trúc thực tế xác nhận dạng đặc thù
+            foreach (var q in response.Questions)
+            {
+                if (q.QuestionType == "SINGLE" && q.Options.Count >= 2 && q.Options.All(o => Regex.IsMatch(o, @"^[a-d]\)")))
+                {
+                    q.QuestionType = "MULTI_TRUE_FALSE";
+                }
+                else if (q.QuestionType == "SINGLE" && q.Options.Count == 0 && !string.IsNullOrWhiteSpace(q.SuggestedAnswer) && Regex.IsMatch(q.SuggestedAnswer, @"^[\-\+]?\d+[\,\.]?\d*$"))
+                {
+                    q.QuestionType = "SHORT_ANSWER";
+                }
+            }
 
             response.ParsedCount = response.Questions.Count;
             response.Success = response.ParsedCount > 0;
@@ -695,12 +772,14 @@ namespace AegisQuiz.Infrastructure.Services
                 var match = matches[i];
                 char rawChar = match.Groups[2].Value[0];
                 char letter = char.IsDigit(rawChar) ? (char)('A' + (rawChar - '1')) : char.ToUpperInvariant(rawChar);
-                bool isCorrect = match.Groups[1].Value == "*" || match.Groups[3].Value == "*";
-
                 int contentStart = match.Index + match.Length;
                 int contentEnd = i + 1 < matches.Count ? matches[i + 1].Index : text.Length;
                 string content = text.Substring(contentStart, contentEnd - contentStart).Trim();
                 content = Regex.Replace(content, @"[\.\s\t]+$", "").Trim();
+
+                bool isCorrect = match.Groups[1].Value == "*" || match.Groups[3].Value == "*"
+                    || match.Value.Contains("<mark>") || match.Value.Contains("<u>")
+                    || content.Contains("<mark>");
 
                 options.Add(new InlineOptionMatch
                 {
@@ -751,8 +830,8 @@ namespace AegisQuiz.Infrastructure.Services
 
             bool isGplx = rule?.RuleCode == "VN_GPLX_600_STANDARD" || rule?.TargetExamType == "GPLX";
             string pattern = isGplx
-                ? @"(?:^|[\s\t\–\—]+|(?<=[\.\:\)\;\!\?]))(?:<u>|\*|\*\*|\<b\>)?(\*?)((?-i:[A-H])|[1-4])(\*?)(?:</u>|\*|\*\*|\</b\>)?[\.\:\)](?:</u>|\</b\>)?[\s\t]+"
-                : @"(?:^|[\s\t\–\—]+|(?<=[\.\:\)\;\!\?]))(?:<u>|\*|\*\*|\<b\>)?(\*?)(?-i:([A-H]))(\*?)(?:</u>|\*|\*\*|\</b\>)?[\.\:\)](?:</u>|\</b\>)?[\s\t]+";
+                ? @"(?:^|[\s\t\–\—]+|(?<=[\.\:\)\;\!\?]))(?:\<mark\>|<u>|\*|\*\*|\<b\>)?(\*?)((?-i:[A-H])|[1-4])(\*?)(?:\</mark\>|</u>|\*|\*\*|\</b\>)?[\.\:\)](?:\</mark\>|</u>|\</b\>)?[\s\t]+"
+                : @"(?:^|[\s\t\–\—]+|(?<=[\.\:\)\;\!\?]))(?:\<mark\>|<u>|\*|\*\*|\<b\>)?(\*?)(?-i:([A-H]))(\*?)(?:\</mark\>|</u>|\*|\*\*|\</b\>)?[\.\:\)](?:\</mark\>|</u>|\</b\>)?[\s\t]+";
 
             var regex = GetOrAddRegex(pattern);
             var matches = regex.Matches(line);
@@ -768,13 +847,14 @@ namespace AegisQuiz.Infrastructure.Services
                 var match = matches[i];
                 char rawChar = match.Groups[2].Value[0];
                 char letter = char.IsDigit(rawChar) ? (char)('A' + (rawChar - '1')) : char.ToUpperInvariant(rawChar);
-                bool isCorrect = match.Value.Contains("<u>") || match.Value.Contains("<b>") || match.Groups[1].Value == "*" || match.Groups[3].Value == "*";
 
                 int contentStart = match.Index + match.Length;
                 int contentEnd = (i + 1 < matches.Count) ? matches[i + 1].Index : line.Length;
 
                 string content = line.Substring(contentStart, contentEnd - contentStart).Trim();
                 content = Regex.Replace(content, @"[\.\s\t]+$", "").Trim();
+
+                bool isCorrect = match.Value.Contains("<u>") || match.Value.Contains("<b>") || match.Value.Contains("<mark>") || match.Groups[1].Value == "*" || match.Groups[3].Value == "*" || content.Contains("<mark>");
 
                 options.Add(new ParsedOptionDto
                 {
@@ -935,18 +1015,22 @@ namespace AegisQuiz.Infrastructure.Services
 
                 bool isGplx = rule?.RuleCode == "VN_GPLX_600_STANDARD" || rule?.TargetExamType == "GPLX";
                 var matchUpper = isGplx
-                    ? Regex.Match(line, @"^(?:<u>|\*|\*\*|\<b\>|\<strong\>|\<em\>)*[\(\[\s]*((?-i:[A-H])|[1-4])(?:\</[a-z0-9]+\>)*[\)\]\.\:\-]+(?:\</[a-z0-9]+\>)*\s*(.*)")
-                    : Regex.Match(line, @"^(?:<u>|\*|\*\*|\<b\>|\<strong\>|\<em\>)*[\(\[\s]*(?-i:([A-H]))(?:\</[a-z0-9]+\>)*[\)\]\.\:\-]+(?:\</[a-z0-9]+\>)*\s*(.*)");
+                    ? Regex.Match(line, @"^(?:\<mark\>|<u>|\*|\*\*|\<b\>|\<strong\>|\<em\>)*[\(\[\s]*(?:Phương\s*án(?:\s*trả\s*lời)?\s*|Option\s*)?((?-i:[A-H])|[1-4])(?:\</[a-z0-9]+\>)*[\)\]\.\:\-]+(?:\</[a-z0-9]+\>)*\s*(.*)", RegexOptions.IgnoreCase)
+                    : Regex.Match(line, @"^(?:\<mark\>|<u>|\*|\*\*|\<b\>|\<strong\>|\<em\>)*[\(\[\s]*(?:(?i:Phương\s*án(?:\s*trả\s*lời)?\s*|Option\s*))?(?-i:([A-H]))(?:\</[a-z0-9]+\>)*[\)\]\.\:\-]+(?:\</[a-z0-9]+\>)*\s*(.*)");
                 if (matchUpper.Success)
                 {
                     char rawChar = matchUpper.Groups[1].Value[0];
-                    char letterChar = char.IsDigit(rawChar) ? (char)('A' + (rawChar - '1')) : rawChar;
+                    char letterChar = char.IsDigit(rawChar) ? (char)('A' + (rawChar - '1')) : char.ToUpperInvariant(rawChar);
 
                     if (letterChar == expectedUpper)
                     {
                         if (singleStart == -1) singleStart = i;
                         string content = matchUpper.Groups[2].Value.Trim();
-                        bool isCorrect = line.Contains("<u>") || line.Contains("<b>") || line.Contains("*");
+                        if (line.StartsWith("[") && content.EndsWith("]") && !content.Contains("["))
+                        {
+                            content = content.Substring(0, content.Length - 1).Trim();
+                        }
+                        bool isCorrect = line.Contains("<u>") || line.Contains("<b>") || line.Contains("*") || line.Contains("<mark>");
                         currentUpperOpt = new ParsedOptionDto
                         {
                             Letter = letterChar,
@@ -961,8 +1045,13 @@ namespace AegisQuiz.Infrastructure.Services
 
                 if (currentUpperOpt != null)
                 {
+                    // [ANTI-IMAGE GUARD]: Tuyệt đối không gộp ảnh minh họa hoặc hình vẽ vào nội dung phương án trắc nghiệm
+                    if (line.StartsWith("data:image/") || line.StartsWith("![") || line.Contains("data:image/"))
+                    {
+                        break;
+                    }
                     currentUpperOpt.Content = string.IsNullOrEmpty(currentUpperOpt.Content) ? line : $"{currentUpperOpt.Content}\n{line}";
-                    if (line.Contains("<u>") || line.Contains("<b>") || line.Contains("*"))
+                    if (line.Contains("<u>") || line.Contains("<b>") || line.Contains("*") || line.Contains("<mark>"))
                     {
                         currentUpperOpt.IsMarkedCorrect = true;
                     }
@@ -1051,28 +1140,34 @@ namespace AegisQuiz.Infrastructure.Services
                 ? (inlineOpts.Count >= 3 && inlineOpts[0].Letter == 'A')
                 : (inlineOpts.Count >= 2 && (inlineOpts[0].Letter == 'A' || inlineOpts[0].Letter == '1'));
 
+            string resolvedChoiceType = (currentSection is "MULTI" or "ORDERING" or "MATCHING")
+                ? currentSection
+                : (rule?.InteractionSpec?.DefaultQuestionType is "MULTI" or "ORDERING" or "MATCHING"
+                    ? rule.InteractionSpec.DefaultQuestionType
+                    : "SINGLE");
+
             if (inlineOptsValid)
             {
                 options = inlineOpts;
                 optionStartIndex = inlineStart;
-                questionType = "SINGLE";
+                questionType = resolvedChoiceType;
                 return true;
             }
 
-            // 3. Phương án in HOA nhiều dòng (Multiline Options A., B., C., D.)
+            // 3. Phương án in HOA nhiều dòng (Multiline Options A., B., C., D., E...)
             if (TryExtractUppercaseMultilineOptions(lines, rule, out var multilineOpts, out int multilineStart))
             {
                 if (!isEssayQuestion || multilineOpts.Count >= 3)
                 {
                     options = multilineOpts;
                     optionStartIndex = multilineStart;
-                    questionType = "SINGLE";
+                    questionType = resolvedChoiceType;
                     return true;
                 }
             }
 
             // 4. Phương án chữ thường cá biệt (a., b., c., d.) khi không có chữ hoa
-            if (currentSection == "SINGLE" && !isEssayQuestion)
+            if ((currentSection == "SINGLE" || currentSection == "MULTI") && !isEssayQuestion)
             {
                 var lowerOpts = new List<ParsedOptionDto>();
                 int lowerStart = lines.Count;
@@ -1115,7 +1210,7 @@ namespace AegisQuiz.Infrastructure.Services
                     {
                         options = lowerOpts;
                         optionStartIndex = lowerStart;
-                        questionType = "SINGLE";
+                        questionType = resolvedChoiceType;
                         return true;
                     }
                 }
@@ -1240,13 +1335,13 @@ namespace AegisQuiz.Infrastructure.Services
                 if (HasTypeCapability(q.QuestionType, QuestionTypeProfileDto.CapSingleAnswer) && !string.IsNullOrWhiteSpace(res.AnswerValue))
                 {
                     string trimmed = res.AnswerValue.Trim();
-                    var matchLet = Regex.Match(trimmed, @"\b([A-G])\b", RegexOptions.IgnoreCase);
+                    var matchLet = Regex.Match(trimmed, @"\b([A-H])\b", RegexOptions.IgnoreCase);
                     if (matchLet.Success)
                     {
                         q.SuggestedAnswer = (char.ToUpperInvariant(matchLet.Value[0]) - 'A' + 1).ToString();
                         return;
                     }
-                    if (int.TryParse(trimmed, out int numVal) && numVal >= 1 && numVal <= 7)
+                    if (int.TryParse(trimmed, out int numVal) && numVal >= 1 && numVal <= 8)
                     {
                         q.SuggestedAnswer = numVal.ToString();
                         return;
@@ -1273,7 +1368,7 @@ namespace AegisQuiz.Infrastructure.Services
             return "SINGLE";
         }
 
-        /// <summary>Gỡ các dòng HẾT / chỉ thị coi thi còn sót ở đuôi nội dung.</summary>
+        /// <summary>Gỡ các dòng HẾT / thẻ đóng phạm vi / chỉ thị coi thi còn sót ở đuôi nội dung.</summary>
         public string StripTrailingExamNoise(string content)
         {
             if (string.IsNullOrEmpty(content)) return content;
@@ -1281,7 +1376,7 @@ namespace AegisQuiz.Infrastructure.Services
             while (lines.Count > 0)
             {
                 var last = lines[^1];
-                if (string.IsNullOrWhiteSpace(last) || TryMatchEndOfExam(last) || IsProctorDisclaimerLine(last))
+                if (string.IsNullOrWhiteSpace(last) || TryMatchEndOfExam(last) || TryMatchScopeClosingSentinel(last, out _) || IsProctorDisclaimerLine(last))
                     lines.RemoveAt(lines.Count - 1);
                 else break;
             }
@@ -1299,7 +1394,7 @@ namespace AegisQuiz.Infrastructure.Services
             while (lines.Count > 0)
             {
                 var bottom = lines[^1].Trim();
-                if (TryMatchEndOfExam(bottom) || IsProctorDisclaimerLine(bottom))
+                if (TryMatchEndOfExam(bottom) || TryMatchScopeClosingSentinel(bottom, out _) || IsProctorDisclaimerLine(bottom))
                 {
                     lines.RemoveAt(lines.Count - 1);
                     continue;
@@ -1395,24 +1490,53 @@ namespace AegisQuiz.Infrastructure.Services
                                   || HasTypeCapability(currentQuestion.QuestionType, QuestionTypeProfileDto.CapFreeText)
                                   || (currentQuestion.SourceSectionName?.Contains("III") == true);
 
+            string effectiveSectionForOptions = (currentQuestion.QuestionType is "MULTI" or "ORDERING" or "MATCHING" or "TRUE_FALSE" or "MULTI_TRUE_FALSE")
+                ? currentQuestion.QuestionType
+                : currentSection;
+
             string detectedType = null;
-            if (!isShortOrEssay && TryExtractOptionsBottomUp(lines, currentSection, matchedRule, out var extractedOptions, out int optStartIdx, out detectedType))
+            if (!isShortOrEssay && TryExtractOptionsBottomUp(lines, effectiveSectionForOptions, matchedRule, out var extractedOptions, out int optStartIdx, out detectedType))
             {
                 currentQuestion.QuestionType = detectedType;
+                var markedIndices = new List<string>();
+                var trailingImageLines = lines.Skip(optStartIdx).Where(l => l.StartsWith("data:image/") || l.StartsWith("![") || l.Contains("data:image/")).ToList();
+
                 foreach (var opt in extractedOptions)
                 {
-                    currentQuestion.Options.Add(opt.Content);
-                    if (opt.IsMarkedCorrect && string.IsNullOrEmpty(currentQuestion.SuggestedAnswer))
+                    string optContent = opt.Content;
+                    // [ISOLATION GUARD]: Nếu ảnh minh họa bị dính vào phương án, bóc tách ảnh ra để gắn vào câu hỏi
+                    if (optContent.Contains("data:image/") || optContent.Contains("!["))
                     {
-                        currentQuestion.SuggestedAnswer = currentQuestion.Options.Count.ToString();
+                        var mImg = Regex.Match(optContent, @"(!\[[^\]]*\]\([^\)]+\)|data:image\/[a-zA-Z0-9\+\/\=;:,]+)");
+                        if (mImg.Success)
+                        {
+                            string imgToken = mImg.Value;
+                            optContent = optContent.Replace(imgToken, "").Trim();
+                            if (!trailingImageLines.Contains(imgToken))
+                            {
+                                trailingImageLines.Add(imgToken);
+                            }
+                        }
                     }
-                    if (opt.Content.Contains("data:image/"))
+
+                    currentQuestion.Options.Add(optContent);
+                    if (opt.IsMarkedCorrect)
+                    {
+                        markedIndices.Add(currentQuestion.Options.Count.ToString());
+                    }
+                    if (optContent.Contains("data:image/"))
                     {
                         currentQuestion.OptionType = "image";
                     }
                 }
+                if (markedIndices.Count > 0 && string.IsNullOrEmpty(currentQuestion.SuggestedAnswer))
+                {
+                    currentQuestion.SuggestedAnswer = currentQuestion.QuestionType == "MULTI" || markedIndices.Count > 1
+                        ? string.Join(",", markedIndices)
+                        : markedIndices[0];
+                }
 
-                lines = lines.Take(optStartIdx).ToList();
+                lines = lines.Take(optStartIdx).Concat(trailingImageLines).ToList();
             }
             else
             {
@@ -1453,13 +1577,39 @@ namespace AegisQuiz.Infrastructure.Services
             currentQuestion.Content = contentBuilder.ToString().Trim();
             currentQuestion.Content = StripTrailingExamNoise(currentQuestion.Content);
 
-            if (string.IsNullOrWhiteSpace(currentQuestion.Content))
+            // [PISA v7.0 — Rank 4 Stem Override] Nếu thân câu hỏi chứa chỉ thị nội dòng ([Chỉ thị làm bài cho câu x]),
+            // Rank 4 (Stem) có độ ưu tiên cao nhất và ghi đè các phạm vi bao ngoài (Rank 1..3)
+            if (!string.IsNullOrWhiteSpace(currentQuestion.Content))
             {
-                currentQuestion.Content = !string.IsNullOrWhiteSpace(currentQuestion.SourceSectionName) && currentQuestion.SourceSectionName != "SINGLE" && currentQuestion.SourceSectionName != "MULTI"
-                    ? currentQuestion.SourceSectionName
-                    : (!string.IsNullOrWhiteSpace(currentQuestion.ContextContent) && currentQuestion.ContextContent.Length <= 250
-                        ? currentQuestion.ContextContent
-                        : $"Chọn phương án đúng nhất điền vào vị trí ({currentQuestion.SourceQuestionNo}):");
+                var stemInferred = InferQuestionTypeFromStemDirective(currentQuestion.Content, currentQuestion.QuestionType);
+                if (!string.IsNullOrWhiteSpace(stemInferred) && stemInferred != currentQuestion.QuestionType)
+                {
+                    // Chỉ nâng cấp sang MULTI/ORDERING/MATCHING khi câu hỏi có phương án, hoặc sang SHORT_ANSWER/ESSAY khi không có phương án A/B/C/D
+                    if ((stemInferred is "MULTI" or "ORDERING" or "MATCHING" && currentQuestion.Options.Count >= 2)
+                        || (stemInferred is "SHORT_ANSWER" or "ESSAY" && currentQuestion.Options.Count == 0))
+                    {
+                        currentQuestion.QuestionType = stemInferred;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(currentQuestion.Content) || currentQuestion.Content.StartsWith("![Hình minh họa]") || currentQuestion.Content.StartsWith("data:image/"))
+            {
+                // [PISA v7.0 Safeguard]: Tuyệt đối KHÔNG dùng SourceSectionName làm thân câu hỏi nếu nó là chuỗi phân đoạn hoặc rác
+                string prefixPrompt = !string.IsNullOrWhiteSpace(currentQuestion.ContextContent)
+                    ? currentQuestion.ContextContent.Trim()
+                    : (!string.IsNullOrWhiteSpace(currentQuestion.ContextTitle) && !currentQuestion.ContextTitle.StartsWith("[Ngữ cảnh #")
+                        ? currentQuestion.ContextTitle.Trim()
+                        : $"Chọn phương án đúng nhất ({currentQuestion.SourceQuestionNo}):");
+
+                if (string.IsNullOrWhiteSpace(currentQuestion.Content))
+                {
+                    currentQuestion.Content = prefixPrompt;
+                }
+                else
+                {
+                    currentQuestion.Content = prefixPrompt + "\n\n" + currentQuestion.Content;
+                }
             }
 
             if (IsCriticalQuestion(currentQuestion.Content, matchedRule))
@@ -1486,13 +1636,45 @@ namespace AegisQuiz.Infrastructure.Services
         /// <summary>
         /// Tra cứu câu hỏi 3 tầng theo phân cấp (Map -> Danh sách -> Fallback an toàn).
         /// </summary>
+        /// <summary>
+        /// [5D Spatial Engine] Định vị câu hỏi mục tiêu tức thời trong O(1) qua SpatialResolution.
+        /// </summary>
+        public DocxImportPreviewDto? ResolveQuestion(IDocumentSpatialIndex spatialIndex, QuestionAddress address)
+        {
+            if (spatialIndex == null) return null;
+            var res = spatialIndex.Resolve(address);
+            return res.Question;
+        }
+
         public DocxImportPreviewDto? FindQuestionByHierarchy(
             Dictionary<string, DocxImportPreviewDto> questionMap,
             List<DocxImportPreviewDto> results,
             string examCode,
             string section,
-            int qNum)
+            int qNum,
+            int partRank = 0,
+            string? hierarchyIndex = null)
         {
+            // 0. Tra cứu tuyệt đối theo HierarchyIndex hoặc PartRank nếu có (Áp dụng cho Hướng dẫn giải / Lời giải theo phân cấp)
+            if (!string.IsNullOrWhiteSpace(hierarchyIndex) && questionMap.TryGetValue($"{examCode}_H_{hierarchyIndex}_{qNum}", out var hFound))
+            {
+                return hFound;
+            }
+            if (partRank > 0 && questionMap.TryGetValue($"{examCode}_P_{partRank}_{qNum}", out var pFound))
+            {
+                return pFound;
+            }
+            if (partRank > 0)
+            {
+                var matchByPart = results.FirstOrDefault(r =>
+                    (string.Equals(r.SourceExamName, examCode, StringComparison.OrdinalIgnoreCase) || examCode == "DEFAULT") &&
+                    r.SourceQuestionNo == qNum.ToString() &&
+                    !string.IsNullOrWhiteSpace(r.HierarchyIndex) &&
+                    r.HierarchyIndex.Split('_').Length >= 2 &&
+                    r.HierarchyIndex.Split('_')[1] == partRank.ToString());
+                if (matchByPart != null) return matchByPart;
+            }
+
             string normSec = NormalizeSectionKey(section);
             var candidateSections = GetEquivalentSections(normSec);
             if (!candidateSections.Contains(normSec)) candidateSections.Insert(0, normSec);
@@ -1553,7 +1735,8 @@ namespace AegisQuiz.Infrastructure.Services
             }
 
             // [Tự Luận & Barem Điểm Safeguard - 100% CIG Data-Driven]
-            bool isEssay = q.QuestionType == "ESSAY" || IsEssayQuestion(q.Content ?? "", rule, q.TopicCode);
+            bool isEssay = q.QuestionType == "ESSAY"
+                || (q.QuestionType != "SHORT_ANSWER" && IsEssayQuestion(q.Content ?? "", rule, q.TopicCode));
 
             if (isEssay)
             {
@@ -1684,7 +1867,96 @@ namespace AegisQuiz.Infrastructure.Services
         }
 
         /// <summary>
-        /// Đóng gói và hợp nhất câu hỏi vào bộ nhớ đệm đề thi (tránh trùng lặp / merge lời giải chi tiết).
+        /// [5D Spatial SSoT] Đóng gói và đăng ký câu hỏi vào Không Gian Định Vị Toàn Cục (IDocumentSpatialIndex).
+        /// </summary>
+        public void FinalizeAndMergeQuestion(
+            List<DocxImportPreviewDto> results,
+            IDocumentSpatialIndex spatialIndex,
+            DocxImportPreviewDto q,
+            string examCode,
+            int qNum,
+            DynamicDomainContext? ctx = null,
+            QuestionParsingRuleDto? rule = null)
+        {
+            FinalizeQuestion(q, ctx, rule);
+
+            if (int.TryParse(q.SourceQuestionNo, out var sourceQInt))
+            {
+                var addr = QuestionAddress.FromSection(q.HierarchyIndex ?? "0_0_0_0", sourceQInt);
+                var existingRes = spatialIndex.Resolve(addr);
+                if (existingRes.Tier == SpatialResolutionTier.Exact5D && existingRes.Question != null && !ReferenceEquals(existingRes.Question, q))
+                {
+                    MergeDuplicateQuestionData(existingRes.Question, q, rule);
+                    return;
+                }
+            }
+
+            spatialIndex.Register(q);
+            if (!results.Contains(q))
+            {
+                results.Add(q);
+            }
+        }
+
+        private void MergeDuplicateQuestionData(DocxImportPreviewDto existing, DocxImportPreviewDto q, QuestionParsingRuleDto? rule)
+        {
+            // [PISA v7.0] Nếu khối lặp lại [Hướng dẫn] -> [Câu số x ... Phương án A..E] có dòng giải thích nối đuôi ở phương án cuối
+            if (existing.Options.Count >= 2 && q.Options.Count == existing.Options.Count)
+            {
+                var lastOrig = existing.Options[^1].Trim().TrimEnd(']');
+                var lastDup = q.Options[^1].Trim().TrimEnd(']');
+                if (lastDup.Length > lastOrig.Length && lastDup.StartsWith(lastOrig, StringComparison.OrdinalIgnoreCase))
+                {
+                    var extraExplanation = lastDup.Substring(lastOrig.Length).Trim().TrimStart(']').Trim();
+                    if (!string.IsNullOrWhiteSpace(extraExplanation))
+                    {
+                        AppendExplanationLine(q, extraExplanation, rule);
+                        TryExtractAnswer(q, extraExplanation, rule);
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(existing.AiExplanation) && !string.IsNullOrWhiteSpace(q.AiExplanation))
+            {
+                existing.AiExplanation = q.AiExplanation;
+            }
+            else if (!string.IsNullOrWhiteSpace(q.AiExplanation) && q.AiExplanation.Length > existing.AiExplanation.Length)
+            {
+                existing.AiExplanation = q.AiExplanation;
+            }
+
+            if ((string.IsNullOrWhiteSpace(existing.SuggestedAnswer) || existing.SuggestedAnswer.Contains("Điền đáp số"))
+                && !string.IsNullOrWhiteSpace(q.SuggestedAnswer))
+            {
+                existing.SuggestedAnswer = q.SuggestedAnswer;
+            }
+            else if (string.IsNullOrWhiteSpace(existing.SuggestedAnswer) && !string.IsNullOrWhiteSpace(existing.AiExplanation))
+            {
+                TryExtractAnswer(existing, existing.AiExplanation, rule);
+            }
+
+            if (existing.SubItems.Count > 0 && q.SubItems.Count > 0)
+            {
+                foreach (var sub in q.SubItems)
+                {
+                    var exSub = existing.SubItems.FirstOrDefault(s => string.Equals(s.Key, sub.Key, StringComparison.OrdinalIgnoreCase));
+                    if (exSub != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(exSub.ExpectedAnswer) && !string.IsNullOrWhiteSpace(sub.ExpectedAnswer))
+                        {
+                            exSub.ExpectedAnswer = sub.ExpectedAnswer;
+                        }
+                        if (string.IsNullOrWhiteSpace(exSub.Explanation) && !string.IsNullOrWhiteSpace(sub.Explanation))
+                        {
+                            exSub.Explanation = sub.Explanation;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// [Legacy Overload] Đóng gói và hợp nhất câu hỏi vào bộ nhớ đệm đề thi (tránh trùng lặp / merge lời giải chi tiết).
         /// </summary>
         public void FinalizeAndMergeQuestion(
             List<DocxImportPreviewDto> results,
@@ -1700,8 +1972,34 @@ namespace AegisQuiz.Infrastructure.Services
             string secKey = NormalizeSectionKey(q.SourceSectionName, q.QuestionType);
             string key = $"{examCode}_{secKey}_{qNum}";
 
+            if (!string.IsNullOrWhiteSpace(q.HierarchyIndex))
+            {
+                questionMap[$"{examCode}_H_{q.HierarchyIndex}_{qNum}"] = q;
+                var hParts = q.HierarchyIndex.Split('_');
+                if (hParts.Length >= 2)
+                {
+                    questionMap[$"{examCode}_P_{hParts[1]}_{qNum}"] = q;
+                }
+            }
+
             if (questionMap.TryGetValue(key, out var existing))
             {
+                // [PISA v7.0] Nếu khối lặp lại [Hướng dẫn] -> [Câu số x ... Phương án A..E] có dòng giải thích nối đuôi ở phương án cuối
+                if (existing.Options.Count >= 2 && q.Options.Count == existing.Options.Count)
+                {
+                    var lastOrig = existing.Options[^1].Trim().TrimEnd(']');
+                    var lastDup = q.Options[^1].Trim().TrimEnd(']');
+                    if (lastDup.Length > lastOrig.Length && lastDup.StartsWith(lastOrig, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var extraExplanation = lastDup.Substring(lastOrig.Length).Trim().TrimStart(']').Trim();
+                        if (!string.IsNullOrWhiteSpace(extraExplanation))
+                        {
+                            AppendExplanationLine(q, extraExplanation, rule);
+                            TryExtractAnswer(q, extraExplanation, rule);
+                        }
+                    }
+                }
+
                 if (string.IsNullOrWhiteSpace(existing.AiExplanation) && !string.IsNullOrWhiteSpace(q.AiExplanation))
                 {
                     existing.AiExplanation = q.AiExplanation;
@@ -1715,6 +2013,10 @@ namespace AegisQuiz.Infrastructure.Services
                     && !string.IsNullOrWhiteSpace(q.SuggestedAnswer))
                 {
                     existing.SuggestedAnswer = q.SuggestedAnswer;
+                }
+                else if (string.IsNullOrWhiteSpace(existing.SuggestedAnswer) && !string.IsNullOrWhiteSpace(existing.AiExplanation))
+                {
+                    TryExtractAnswer(existing, existing.AiExplanation, rule);
                 }
 
                 if (existing.SubItems.Count > 0 && q.SubItems.Count > 0)

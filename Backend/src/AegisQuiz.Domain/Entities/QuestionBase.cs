@@ -76,6 +76,18 @@ namespace AegisQuiz.Domain.Entities
             get => TryGetPayloadProperty(Payload, "targetLevel", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
         }
 
+        /// <summary>Khối lớp chuẩn hoá ISCED (e.g. K06, K07.. K12)</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("grade")]
+        public string? Grade
+        {
+            get
+            {
+                if (TryGetPayloadProperty(Payload, "grade", out var el) && el.ValueKind == JsonValueKind.String)
+                    return el.GetString();
+                return TargetLevel;
+            }
+        }
+
         /// <summary>Mục đích sát hạch / Loại kỳ thi (e.g. "Tốt nghiệp THPT", "Tuân thủ định kỳ AML", "Nâng ngạch")</summary>
         [System.Text.Json.Serialization.JsonPropertyName("assessmentPurpose")]
         public string? AssessmentPurpose
@@ -110,6 +122,41 @@ namespace AegisQuiz.Domain.Entities
         public string? BenchmarkStandard
         {
             get => TryGetPayloadProperty(Payload, "benchmarkStandard", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Mã chủ đề chuẩn tắc: [DOMAIN]_[TOPIC]_[GRADE]_[TERM]_[SERIES] (e.g. EDU_KHTN_K07_HK1_MID_KNTT)</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("canonicalTopicCode")]
+        public string? CanonicalTopicCode
+        {
+            get => TryGetPayloadProperty(Payload, "canonicalTopicCode", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Đường dẫn phả hệ O(1) B-Tree Prefix (e.g. /EDU/KHTN/K07/HK1/MID/KNTT/)</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("treePath")]
+        public string? TreePath
+        {
+            get => TryGetPayloadProperty(Payload, "treePath", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Tên chủ đề đầy đủ thân thiện hiển thị</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("friendlyTopicName")]
+        public string? FriendlyTopicName
+        {
+            get => TryGetPayloadProperty(Payload, "friendlyTopicName", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Bộ sách giáo khoa quy chuẩn (e.g. KNTT, CD, CTST)</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("curriculumSeries")]
+        public string? CurriculumSeries
+        {
+            get => TryGetPayloadProperty(Payload, "curriculumSeries", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Giai đoạn khảo thí / Kỳ thi (e.g. HK1_MID, HK1_FIN)</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("semesterPhase")]
+        public string? SemesterPhase
+        {
+            get => TryGetPayloadProperty(Payload, "semesterPhase", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
         }
 
         /// <summary>Giải thích chi tiết / Căn cứ pháp lý</summary>
@@ -214,6 +261,13 @@ namespace AegisQuiz.Domain.Entities
         public string? SourceQuestionNo
         {
             get => TryGetPayloadProperty(Payload, "sourceQuestionNo", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+        }
+
+        /// <summary>Mã phân cấp thứ bậc 4 tầng {ExamRank}_{PartRank}_{SubPartRank}_{DirectiveRank}</summary>
+        [System.Text.Json.Serialization.JsonPropertyName("hierarchyIndex")]
+        public string? HierarchyIndex
+        {
+            get => TryGetPayloadProperty(Payload, "hierarchyIndex", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : "0_0_0_0";
         }
 
         /// <summary>Dòng số mấy trong file nguồn (Excel row, Word position)</summary>

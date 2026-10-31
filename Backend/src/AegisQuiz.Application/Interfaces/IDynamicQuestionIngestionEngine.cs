@@ -19,11 +19,16 @@ namespace AegisQuiz.Application.Interfaces
         bool IsEssayQuestion(string text, QuestionParsingRuleDto? rule = null, string? topicCode = null);
         bool TryMatchExamHeading(string line, out string examCode);
         bool TryMatchTopicHeading(string line, out string topicName);
+        bool TryMatchSubPartHeading(string line, out string subPartTitle);
         bool TryMatchSectionHeader(string line, out string sectionKey);
         bool TryMatchSolutionPhase(string line);
+        bool TryMatchSolutionPhase(string line, out string? targetExamNumber);
         bool TryMatchAnswerTablePhase(string line);
         bool TryMatchReadingPassage(string line, out int startQ, out int endQ);
         bool TryParseScopeDirective(string line, out DirectiveScopeWindow? window);
+        bool TryParseScopeDirective(string line, out DirectiveScopeWindow? window, int currentQuestionNumber, IEnumerable<QuestionParsingRuleDto>? activeRules = null);
+        bool TryMatchScopeClosingSentinel(string line, out ScopeHierarchyLevel closedLevel, IEnumerable<QuestionParsingRuleDto>? activeRules = null);
+        string InferQuestionTypeFromStemDirective(string stemText, string fallbackType, IEnumerable<QuestionParsingRuleDto>? activeRules = null);
         bool TryParsePassageContextPrompt(string line, out int startQ, out int endQ, out string contextTitle);
         ICognitiveScopeManager CreateScopeManager();
         bool TryExtractInlineAnswer(string line, string questionType, QuestionParsingRuleDto? matchedRule, out string extractedAnswer);
@@ -56,10 +61,14 @@ namespace AegisQuiz.Application.Interfaces
         string NormalizeSectionKey(string? rawSec, string? questionType = null);
         /// <summary>Đóng gói và làm giàu câu hỏi hoàn chỉnh (Tự luận, Trắc nghiệm, Độ khó, Mã băm, Tọa độ).</summary>
         void FinalizeQuestion(DocxImportPreviewDto q, DynamicDomainContext? ctx = null, QuestionParsingRuleDto? rule = null);
-        /// <summary>Đóng gói và hợp nhất câu hỏi vào bộ nhớ đệm đề thi (tránh trùng lặp / merge lời giải chi tiết).</summary>
+        /// <summary>Đóng gói và hợp nhất câu hỏi vào bộ nhớ đệm đề thi qua Không gian Định vị 5D.</summary>
+        void FinalizeAndMergeQuestion(List<DocxImportPreviewDto> results, IDocumentSpatialIndex spatialIndex, DocxImportPreviewDto q, string examCode, int qNum, DynamicDomainContext? ctx = null, QuestionParsingRuleDto? rule = null);
+        /// <summary>[Legacy Overload] Hỗ trợ tương thích ngược cho Dictionary questionMap.</summary>
         void FinalizeAndMergeQuestion(List<DocxImportPreviewDto> results, Dictionary<string, DocxImportPreviewDto> questionMap, DocxImportPreviewDto q, string examCode, int qNum, DynamicDomainContext? ctx = null, QuestionParsingRuleDto? rule = null);
+        /// <summary>[5D Spatial Resolution] Định vị câu hỏi mục tiêu tức thời trong O(1).</summary>
+        DocxImportPreviewDto? ResolveQuestion(IDocumentSpatialIndex spatialIndex, QuestionAddress address);
         /// <summary>Tra cứu câu hỏi 3 tầng theo phân cấp (Map -> Danh sách -> Fallback an toàn).</summary>
-        DocxImportPreviewDto? FindQuestionByHierarchy(Dictionary<string, DocxImportPreviewDto> questionMap, List<DocxImportPreviewDto> results, string examCode, string section, int qNum);
+        DocxImportPreviewDto? FindQuestionByHierarchy(Dictionary<string, DocxImportPreviewDto> questionMap, List<DocxImportPreviewDto> results, string examCode, string section, int qNum, int partRank = 0, string? hierarchyIndex = null);
         /// <summary>Danh sách phân đoạn tương đương khi tra cứu.</summary>
         List<string> GetEquivalentSections(string section);
         string? DetectSubCategory(string text, QuestionParsingRuleDto? matchedRule = null);

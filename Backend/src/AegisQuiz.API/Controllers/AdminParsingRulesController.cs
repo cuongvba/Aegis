@@ -113,14 +113,15 @@ namespace AegisQuiz.API.Controllers
         /// [Phase 4] Lưu và kích hoạt ngay quy tắc tùy biến vào Engine (Realtime Zero-Downtime)
         /// </summary>
         [HttpPost("save-custom-rule")]
-        public IActionResult SaveCustomRule([FromBody] QuestionParsingRuleDto rule)
+        public async System.Threading.Tasks.Task<IActionResult> SaveCustomRule([FromBody] QuestionParsingRuleDto rule)
         {
-            if (string.IsNullOrWhiteSpace(rule.RuleCode) || string.IsNullOrWhiteSpace(rule.Structure?.QuestionHeaderRegexPattern))
+            var pattern = rule.AnchorSpec?.RegexPattern ?? rule.Structure?.QuestionHeaderRegexPattern;
+            if (string.IsNullOrWhiteSpace(rule.RuleCode) || string.IsNullOrWhiteSpace(pattern))
             {
-                return BadRequest(new { Message = "Quy tắc không hợp lệ (RuleCode hoặc QuestionHeaderRegexPattern trống)." });
+                return BadRequest(new { Message = "Quy tắc không hợp lệ (RuleCode hoặc RegexPattern trống)." });
             }
 
-            DynamicQuestionIngestionEngine.Instance.AddOrUpdateRule(rule, persistToFile: true);
+            await DynamicQuestionIngestionEngine.Instance.SaveRuleToDatabaseAsync(rule);
 
             return Ok(new
             {

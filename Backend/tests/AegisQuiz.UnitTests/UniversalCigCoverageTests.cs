@@ -558,6 +558,181 @@ namespace AegisQuiz.UnitTests
                 Assert.Contains($"Chủ đề {i}", q.SubCategory);
             }
         }
+
+        [Fact]
+        public void CanonicalTaxonomy_Synthesis_ShouldProduceCorrectMaterializedPathAndCode()
+        {
+            var fileName = "thuvienhoclieu.com-Bo-20-de-on-tap-giua-HK1-KHTN-7-KNTT.docx";
+            var headerLines = new List<string>
+            {
+                "TRƯỜNG THCS NGUYỄN DU",
+                "BỘ ĐỀ ÔN TẬP GIỮA HỌC KỲ 1",
+                "MÔN: KHOA HỌC TỰ NHIÊN 7",
+                "BỘ SÁCH: KẾT NỐI TRI THỨC VỚI CUỘC SỐNG",
+                "NĂM HỌC 2024 - 2025"
+            };
+
+            var sniffed = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                fileName: fileName,
+                sheetName: null,
+                headerBannerLines: headerLines);
+
+            _output.WriteLine($"DomainCode: {sniffed.DomainCode}");
+            _output.WriteLine($"TopicCode: {sniffed.TopicCode}");
+            _output.WriteLine($"TopicName: {sniffed.TopicName}");
+            _output.WriteLine($"CanonicalTopicCode: {sniffed.CanonicalTopicCode}");
+            _output.WriteLine($"TreePath: {sniffed.TreePath}");
+            _output.WriteLine($"FriendlyTopicName: {sniffed.FriendlyTopicName}");
+            _output.WriteLine($"CurriculumSeries: {sniffed.CurriculumSeries}");
+            _output.WriteLine($"SemesterPhase: {sniffed.SemesterPhase}");
+
+            Assert.Equal("EDUCATION", sniffed.DomainCode);
+            Assert.Equal("KHTN", sniffed.TopicCode);
+            Assert.Equal("Khoa học tự nhiên", sniffed.TopicName);
+            Assert.Equal("EDU_KHTN_K07_HK1_MID_KNTT", sniffed.CanonicalTopicCode);
+            Assert.Equal("/EDU/KHTN/K07/HK1_MID/KNTT/", sniffed.TreePath);
+            Assert.Equal("Khoa học tự nhiên 7 — Giữa Học kỳ 1 (Kết nối tri thức)", sniffed.FriendlyTopicName);
+            Assert.Equal("Kết nối tri thức", sniffed.CurriculumSeries);
+            Assert.Equal("GIUA_HK1", sniffed.SemesterPhase);
+        }
+
+        [Fact]
+        public void TopicTaxonomy_MultiLang_And_ZeroHardcode_ContractCompliance()
+        {
+            // 1. Kiểm tra nạp động từ Seed JSON (Không còn hardcode C#)
+            var topics = DocumentStructureDictionaryDto.GetDefaultTopicTaxonomy();
+            Assert.NotNull(topics);
+            Assert.NotEmpty(topics);
+
+            var chem = topics.FirstOrDefault(t => t.TopicCode == "HOA_HOC");
+            Assert.NotNull(chem);
+            Assert.Equal("CHEM", chem.StandardIscedCode);
+            Assert.Equal("Hóa học", chem.GetDisplayName("vi"));
+            Assert.Equal("Chemistry", chem.GetDisplayName("en"));
+            Assert.Equal("Chimie", chem.GetDisplayName("fr"));
+            Assert.Contains("HOA_HOC", chem.Aliases);
+            Assert.Contains("CHEM", chem.Aliases);
+
+            var natSci = topics.FirstOrDefault(t => t.TopicCode == "KHTN");
+            Assert.NotNull(natSci);
+            Assert.Equal("NAT_SCI", natSci.StandardIscedCode);
+            Assert.Equal("Khoa học tự nhiên", natSci.GetDisplayName("vi"));
+            Assert.Equal("Natural Sciences", natSci.GetDisplayName("en"));
+            Assert.Equal("Sciences Naturelles", natSci.GetDisplayName("fr"));
+
+            // 2. Kiểm tra ResolveTopicCode đa ngôn ngữ và bí danh (Aliases)
+            Assert.Equal("HOA_HOC", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("Chimie"));
+            Assert.Equal("HOA_HOC", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("CHEM"));
+            Assert.Equal("HOA_HOC", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("Hóa học"));
+
+            Assert.Equal("KHTN", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("Sciences Naturelles"));
+            Assert.Equal("KHTN", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("NAT_SCI"));
+            Assert.Equal("KHTN", UniversalCoordinateTaxonomyEngine.ResolveTopicCode("Khoa học tự nhiên"));
+
+            // 3. Kiểm tra Domains Seed
+            var domains = DocumentStructureDictionaryDto.GetDefaultDomainTaxonomy();
+            Assert.NotNull(domains);
+            Assert.NotEmpty(domains);
+            var eduDomain = domains.FirstOrDefault(d => d.DomainCode == "EDUCATION");
+            Assert.NotNull(eduDomain);
+            Assert.Equal("Giáo dục phổ thông & Đại học", eduDomain.GetDisplayName("vi"));
+            Assert.Equal("K-12 & Higher Education", eduDomain.GetDisplayName("en"));
+        }
+
+        [Fact]
+        public void MultiPerspectiveTaxonomy_PivotAndFacets_ContractCompliance()
+        {
+            // Kiểm tra QuestionPagedQuery hỗ trợ đa diện đầy đủ
+            var query = new QuestionPagedQuery
+            {
+                TopicCode = "KHTN",
+                Grade = "7",
+                CanonicalTopicCode = "EDU_KHTN_K07_HK1_MID_KNTT",
+                TreePath = "/EDU/KHTN/K07/",
+                CurriculumSeries = "KNTT",
+                SemesterPhase = "HK1_MID"
+            };
+
+            Assert.Equal("KHTN", query.TopicCode);
+            Assert.Equal("7", query.Grade);
+            Assert.Equal("EDU_KHTN_K07_HK1_MID_KNTT", query.CanonicalTopicCode);
+            Assert.Equal("/EDU/KHTN/K07/", query.TreePath);
+            Assert.Equal("KNTT", query.CurriculumSeries);
+            Assert.Equal("HK1_MID", query.SemesterPhase);
+
+            // Giả lập danh sách câu hỏi đa chiều để kiểm chứng logic lọc của các vai trò
+            var q1 = new DocxImportPreviewDto
+            {
+                Content = "Câu 1 Toán 7",
+                TopicCode = "MATH",
+                DomainCode = "EDUCATION",
+                TargetLevel = "Lớp 7",
+                CanonicalTopicCode = "EDU_MATH_K07_HK1_MID_KNTT",
+                TreePath = "/EDU/MATH/K07/HK1_MID/KNTT/",
+                CurriculumSeries = "Kết nối tri thức",
+                SemesterPhase = "HK1_MID"
+            };
+            var q2 = new DocxImportPreviewDto
+            {
+                Content = "Câu 2 KHTN 7",
+                TopicCode = "KHTN",
+                DomainCode = "EDUCATION",
+                TargetLevel = "Lớp 7",
+                CanonicalTopicCode = "EDU_KHTN_K07_HK1_MID_KNTT",
+                TreePath = "/EDU/KHTN/K07/HK1_MID/KNTT/",
+                CurriculumSeries = "Kết nối tri thức",
+                SemesterPhase = "HK1_MID"
+            };
+            var q3 = new DocxImportPreviewDto
+            {
+                Content = "Câu 3 KHTN 8",
+                TopicCode = "KHTN",
+                DomainCode = "EDUCATION",
+                TargetLevel = "Lớp 8",
+                CanonicalTopicCode = "EDU_KHTN_K08_HK1_FIN_CD",
+                TreePath = "/EDU/KHTN/K08/HK1_FIN/CD/",
+                CurriculumSeries = "Cánh diều",
+                SemesterPhase = "HK1_FIN"
+            };
+            var q4 = new DocxImportPreviewDto
+            {
+                Content = "Câu 4 Ngữ văn 7",
+                TopicCode = "NGU_VAN",
+                DomainCode = "EDUCATION",
+                TargetLevel = "Lớp 7",
+                CanonicalTopicCode = "EDU_LIT_K07_HK1_MID_KNTT",
+                TreePath = "/EDU/LIT/K07/HK1_MID/KNTT/",
+                CurriculumSeries = "Kết nối tri thức",
+                SemesterPhase = "HK1_MID"
+            };
+
+            var questions = new List<DocxImportPreviewDto> { q1, q2, q3, q4 };
+
+            // 1. Kịch bản Giáo viên KHTN: Lọc theo Môn KHTN xuyên suốt các khối lớp
+            var khtnAll = questions.Where(x => x.TopicCode == "KHTN").ToList();
+            Assert.Equal(2, khtnAll.Count);
+            Assert.Contains(q2, khtnAll);
+            Assert.Contains(q3, khtnAll);
+
+            // 2. Kịch bản Khối trưởng Lớp 7: Lọc theo Khối 7 xuyên suốt tất cả các môn
+            var grade7All = questions.Where(x => x.TargetLevel != null && x.TargetLevel.Contains("7")).ToList();
+            Assert.Equal(3, grade7All.Count);
+            Assert.Contains(q1, grade7All);
+            Assert.Contains(q2, grade7All);
+            Assert.Contains(q4, grade7All);
+
+            // 3. Kịch bản Ban Khảo thí: Lọc theo Đợt thi Giữa HK1 của toàn trường
+            var midTermAll = questions.Where(x => x.SemesterPhase == "HK1_MID").ToList();
+            Assert.Equal(3, midTermAll.Count);
+            Assert.Contains(q1, midTermAll);
+            Assert.Contains(q2, midTermAll);
+            Assert.Contains(q4, midTermAll);
+
+            // 4. Kịch bản Giáo viên bộ môn Lớp 7: Lọc theo TreePath Prefix O(1)
+            var khtn7Prefix = questions.Where(x => x.TreePath != null && x.TreePath.StartsWith("/EDU/KHTN/K07/")).ToList();
+            Assert.Single(khtn7Prefix);
+            Assert.Equal(q2, khtn7Prefix[0]);
+        }
     }
 }
 

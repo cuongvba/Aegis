@@ -211,6 +211,13 @@ namespace AegisQuiz.Application.Interfaces
         public int? BenchmarkYear { get; set; } = 2026;
         public string? BenchmarkStandard { get; set; } = "CIG V3";
 
+        // [Canonical Topic & Materialized Path O(1) Taxonomy]
+        public string? CanonicalTopicCode { get; set; }
+        public string? TreePath { get; set; }
+        public string? FriendlyTopicName { get; set; }
+        public string? CurriculumSeries { get; set; }
+        public string? SemesterPhase { get; set; }
+
         // [Universal Extended Fields: Sư phạm, Khảo thí & Đa phương tiện]
         public string? GradingRubric { get; set; } // Tiêu chí chấm điểm / Barem điểm
         public int DurationSeconds { get; set; } = 60; // Thời gian chuẩn làm bài
@@ -239,6 +246,16 @@ namespace AegisQuiz.Application.Interfaces
         public string? DuplicateReason { get; set; }
         public int OccurrenceCount { get; set; } = 1;
         public List<ProvenanceAppearance> ExistingAppearances { get; set; } = new();
+        public string HierarchyIndex { get; set; } = "0_0_0_0";
+
+        /// <summary>
+        /// [5D Spatial SSoT] Mã tọa độ toàn cục: {ExamRank}_{PartRank}_{SubPartRank}_{DirectiveRank}_{QuestionNo}
+        /// </summary>
+        [System.Text.Json.Serialization.JsonPropertyName("fullQuestionIndex")]
+        public string FullQuestionIndex =>
+            !string.IsNullOrWhiteSpace(HierarchyIndex) && !string.IsNullOrWhiteSpace(SourceQuestionNo)
+                ? $"{HierarchyIndex}_{SourceQuestionNo}"
+                : $"{HierarchyIndex ?? "0_0_0_0"}_{SourceQuestionNo ?? "0"}";
     }
 
     /// <summary>
@@ -270,8 +287,22 @@ namespace AegisQuiz.Application.Interfaces
         void RegisterScopeDirective(DirectiveScopeWindow window);
         void RegisterScopeDirective(int startQ, int endQ, string questionType, string? rawDirective, double confidence = 1.0);
         void RegisterContextPassage(int startQ, int endQ, string content, string? title = null, string? contextId = null);
+        void RegisterContextPassage(int startQ, int endQ, string content, string? title, string? contextId, ScopeHierarchyLevel level, bool isOpenEnded = false);
+        void AppendToActiveContext(string additionalText);
+        bool CloseScopeByLevel(ScopeHierarchyLevel level, int lastQuestionNumber = 0);
         string ResolveExpectedQuestionType(int qNum, string? fallbackType = null);
         ContextStimulusWindow? ResolveContextForQuestion(int qNum);
+
+        int CurrentExamRank { get; }
+        int CurrentPartRank { get; }
+        int CurrentSubPartRank { get; }
+        int CurrentDirectiveRank { get; }
+        void SetCurrentExam(string examCode);
+        void RegisterSubPart(string? subPartTitle);
+        void IncrementDirectiveRank();
+        string GetHierarchyIndex();
+        QuestionAddress AddressOf(int questionNo);
+        void Configure(AdaptiveHierarchyConfigDto? config);
     }
 
     /// <summary>

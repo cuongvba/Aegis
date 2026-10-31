@@ -1,11 +1,15 @@
-# AegisQuiz - Docker Compose (Chạy toàn bộ hệ thống cục bộ)
+# Aegis Global (AGCI) - Docker Compose (Chạy toàn bộ hệ thống cục bộ)
 # Lệnh khởi động: cp .env.example .env && docker compose up -d
 # [CG2: Cảm biến Đe dọa] Mọi credential đọc từ .env — KHÔNG hardcode!
 # [CG6: Định danh Tuyệt đối] Thêm Keycloak IdP chuẩn OIDC/OAuth2
 
+name: aegis
+
 services:
   # ===== BACKEND (C# .NET 10) =====
   backend:
+    image: aegis-backend:latest
+    container_name: aegis-backend
     build: ./Backend
     ports:
       - "8080:8080"
@@ -45,6 +49,8 @@ services:
 
   # ===== IRT/CAT ENGINE (Python FastAPI) =====
   irt-service:
+    image: aegis-irt-service:latest
+    container_name: aegis-irt-service
     build: ./irt-service
     ports:
       - "8001:8001"
@@ -60,6 +66,8 @@ services:
 
   # ===== FRONTEND (Vite + React 19) =====
   frontend:
+    image: aegis-frontend:latest
+    container_name: aegis-frontend
     build:
       context: ./Frontend
       args:
@@ -72,6 +80,7 @@ services:
 
   # ===== DATABASE (PostgreSQL) =====
   postgres:
+    container_name: aegis-postgres
     image: postgres:17-alpine
     ports:
       - "5432:5432"
@@ -90,6 +99,7 @@ services:
 
   # ===== CACHE (Redis) =====
   redis:
+    container_name: aegis-redis
     image: redis:7-alpine
     ports:
       - "6379:6379"
@@ -102,6 +112,7 @@ services:
 
   # ===== [CG6: Định danh Tuyệt đối] KEYCLOAK IdP (OAuth2/OIDC) =====
   keycloak:
+    container_name: aegis-keycloak
     image: quay.io/keycloak/keycloak:25.0
     command: start-dev
     ports:
@@ -124,4 +135,8 @@ services:
 
 volumes:
   pgdata:
+    name: aegisquiz_pgdata
+    external: true
   keycloak_data:
+    name: aegisquiz_keycloak_data
+    external: true

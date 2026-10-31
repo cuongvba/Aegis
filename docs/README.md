@@ -7,6 +7,7 @@ Tất cả tài liệu kỹ thuật, kiến trúc, đặc tả API, hướng d�
 ## 🌟 Đại Đặc Tả Chuẩn Tắc Thống Nhất (Supreme Master Bible)
 
 Tài liệu chuẩn tắc duy nhất, toàn diện và sống động nhất của toàn bộ hệ sinh thái:
+- 🌐 **[AEGIS_GLOBAL_MASTER_OVERVIEW.md](AEGIS_GLOBAL_MASTER_OVERVIEW.md)**: **[FLAGSHIP 2026.10] ĐẠI CƯƠNG TỔNG QUAN HỆ SINH THÁI AEGIS GLOBAL (AGCI)** — Biên soạn theo chuẩn ALDS v1.0 bởi Tổng Công Trình Sư No.1. Nêu bật 7 bài toán thế kỷ, 4 mục tiêu chiến lược, 8 phân hệ chủ quyền, thành tựu định lượng thực nghiệm, đối chuẩn quốc tế và tầm nhìn hạ tầng nhận thức toàn cầu.
 - 🌌 **[AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md](AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md)**: **ĐẠI ĐẶC TẢ HỆ THỐNG THỐNG NHẤT TOÀN DIỆN (UNIFIED MASTER SPECIFICATION v4.0 Superlative)** — Biên soạn bởi Kiến trúc sư trưởng & Nhà biên soạn kỹ thuật No.1 thế giới. Hợp nhất trọn vẹn toàn bộ triết lý, kiến trúc 4 tầng, 7 kỳ quan công nghệ (kèm ví dụ minh họa vui vẻ, ấn tượng), đại sảnh 6 Gameshow kinh điển, lược đồ dữ liệu và sổ tay vận hành cho mọi tầng lớp tiếp cận!
 
 ### Các Bản Thiết Kế Chuyên Sâu Bổ Trợ (Master Blueprints):

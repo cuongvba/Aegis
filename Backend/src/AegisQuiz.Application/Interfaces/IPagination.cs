@@ -60,5 +60,19 @@ namespace AegisQuiz.Application.Interfaces
         public string? TargetLevel   { get; set; }
         public string? AssessmentPurpose { get; set; }
         public string? IssuingOrg    { get; set; }
+
+        // [Multi-Dimensional Canonical Taxonomy & Materialized Path Facets]
+        /// <summary>Mã chủ đề môn học (e.g. "KHTN", "MATH", "HOA_HOC" hoặc mã ISCED "CHEM")</summary>
+        public string? TopicCode     { get; set; }
+        /// <summary>Khối lớp / Cấp học (e.g. "7", "K07", "GRADE_12")</summary>
+        public string? Grade         { get; set; }
+        /// <summary>Mã chủ đề chuẩn tắc duy nhất (e.g. "EDU_KHTN_K07_HK1_MID_KNTT")</summary>
+        public string? CanonicalTopicCode { get; set; }
+        /// <summary>Đường dẫn phả hệ O(1) B-Tree Prefix (e.g. "/EDU/KHTN/K07/" lấy toàn bộ câu hỏi Lớp 7 môn KHTN)</summary>
+        public string? TreePath      { get; set; }
+        /// <summary>Bộ sách giáo khoa quy chuẩn (e.g. "KNTT", "CD", "CTST", "CAMBRIDGE")</summary>
+        public string? CurriculumSeries { get; set; }
+        /// <summary>Giai đoạn học kỳ / Kỳ khảo thí (e.g. "HK1_MID", "HK1_FIN", "HK2_MID", "HK2_FIN")</summary>
+        public string? SemesterPhase { get; set; }
     }
 }

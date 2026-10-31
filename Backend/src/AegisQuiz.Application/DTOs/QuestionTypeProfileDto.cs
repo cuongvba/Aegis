@@ -84,7 +84,7 @@ namespace AegisQuiz.Application.DTOs
             // Group 1 = tiêu đề phần (PHẦN IV / PART IV / SECTION IV / TEIL IV / PARTIE IV / 第IV部分)
             [LinguisticKeys.SectionTitle] = new()
             {
-                @"(?:^|\b)(PHẦN\s+[IVXLCDM\d]+|PART\s+[IVXLCDM\d]+|SECTION\s+[IVXLCDM\d]+|TEIL\s+[IVXLCDM\d]+|PARTIE\s+[IVXLCDM\d]+|第\s*[IVXLCDM\d一二三四五六七八九十]+\s*部分)"
+                @"(?:^|\b)(PHẦN\s+[IVXLCDM\d]+\b|PART\s+[IVXLCDM\d]+\b|SECTION\s+[IVXLCDM\d]+\b|TEIL\s+[IVXLCDM\d]+\b|PARTIE\s+[IVXLCDM\d]+\b|第\s*[IVXLCDM\d一二三四五六七八九十]+\s*部分)"
             },
             // Dòng chứa từ khóa tiêu đề vĩ mô (không được coi là lời giải inline)
             [LinguisticKeys.MacroPhaseHint] = new()

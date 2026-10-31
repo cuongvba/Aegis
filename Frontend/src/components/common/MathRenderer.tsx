@@ -185,7 +185,7 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     });
 
     // Trường hợp 5: Hỗ trợ gạch chân cho Đề thi Ngoại ngữ (Phát âm, Trọng âm, Tìm lỗi sai)
-    processed = processed.replace(/<u>([\s\S]+?)<\/u>/gi, (_match, text) => {
+    processed = processed.replace(/<u[\s\S]*?>([\s\S]+?)<\/u>/gi, (_match, text) => {
       return `<u class="underline decoration-2 decoration-sky-400 underline-offset-4 font-bold text-sky-300">${text}</u>`;
     });
 

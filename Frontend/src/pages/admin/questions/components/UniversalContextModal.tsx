@@ -14,6 +14,9 @@ export const UniversalContextModal: React.FC<UniversalContextModalProps> = ({
   if (!context) return null;
 
   const wordCount = context.content.split(/\s+/).filter(Boolean).length;
+  const matchIndex = context.title.match(/^\[(?:Ngữ\s*cảnh|Context)\s*#?(\d+)\]\s*(.*)$/i);
+  const contextIndex = matchIndex ? matchIndex[1] : null;
+  const cleanTitle = matchIndex ? matchIndex[2] : context.title;
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -25,11 +28,18 @@ export const UniversalContextModal: React.FC<UniversalContextModalProps> = ({
           <X size={18} />
         </button>
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-950/60 text-indigo-300 border border-indigo-500/30 rounded-full text-[10px] font-black uppercase tracking-wider">
-            <BookOpen size={11} /> Universal Shared Stimulus / Context
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-950/60 text-indigo-300 border border-indigo-500/30 rounded-full text-[10px] font-black uppercase tracking-wider">
+              <BookOpen size={11} /> Universal Shared Stimulus / Context
+            </div>
+            {contextIndex && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-purple-950/70 text-purple-300 border border-purple-500/40 rounded-full text-[10px] font-black tracking-wide">
+                📑 Ngữ cảnh #{contextIndex}
+              </span>
+            )}
           </div>
           <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300">
-            {context.title}
+            {cleanTitle}
           </h3>
           <p className="text-xs text-slate-400">
             Đoạn văn / Ngữ cảnh bài thi dùng chung cho các câu hỏi liên quan. Lưu trữ tối ưu một lần duy nhất trong cơ sở dữ liệu.

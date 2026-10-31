@@ -515,6 +515,11 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 return false;
             }
+            // [PISA v7.0] Loại trừ dòng chỉ thị dải câu hỏi (ví dụ: "Câu 1-2:", "Questions 1-2:", "Từ câu 1 đến câu 5") không phải neo câu hỏi đơn
+            if (Regex.IsMatch(line, @"(?i)^\[?\s*(?:Từ\s+câu|From\s+question|(?:Câu(?:\s+hỏi)?(?:\s+số)?|Questions?|Items?)\s*(?:from\s*)?\d+\s*(?:[-–—]|đến|tới|to|through)\s*(?:câu\s*|questions?\s*)?\d+)"))
+            {
+                return false;
+            }
 
             var candidates = activeRules != null ? activeRules.ToList() : SnapshotRules();
             foreach (var rule in candidates)
@@ -534,10 +539,10 @@ namespace AegisQuiz.Infrastructure.Services
                 }
             }
 
-            // Fallback Resilience: Dòng câu hỏi độc lập (ví dụ: "Câu 1", "Câu 1.", "Câu 1 (2,0 điểm).", "Bài 3")
-            if (Regex.IsMatch(line, @"^(?:Câu|Question|Item|Task|Exercise|Q|Bài|Bai|Problem|Aufgabe)\s*(\d+)(?:\s*\([^)]*\))?[\.\:\s\-]*$", RegexOptions.IgnoreCase))
+            // Fallback Resilience: Dòng câu hỏi độc lập hoặc có từ nối "số" (ví dụ: "Câu 1", "Câu số 1.", "[Câu số 1.", "Câu 1 (2,0 điểm).", "Bài 3")
+            if (Regex.IsMatch(line, @"^\[?\s*(?:(?:Câu(?:\s+hỏi)?|Question|Item|Task|Exercise|Bài|Bai|Problem|Aufgabe|Exercice|Domanda|Pregunta)(?:\s+(?:số|no\.?|number))?|第|Q)\s*#?(\d+)(?:\s*\([^)]*\))?(?:[\.\:\)\s\-]+.*|$)", RegexOptions.IgnoreCase))
             {
-                var mFallback = Regex.Match(line, @"^(?:Câu|Question|Item|Task|Exercise|Q|Bài|Bai|Problem|Aufgabe)\s*(\d+)", RegexOptions.IgnoreCase);
+                var mFallback = Regex.Match(line, @"^\[?\s*(?:(?:Câu(?:\s+hỏi)?|Question|Item|Task|Exercise|Bài|Bai|Problem|Aufgabe|Exercice|Domanda|Pregunta)(?:\s+(?:số|no\.?|number))?|第|Q)\s*#?(\d+)", RegexOptions.IgnoreCase);
                 int.TryParse(mFallback.Groups[1].Value, out questionNumber);
                 matchedRule = candidates.FirstOrDefault(r => r.TargetExamType != "TABLE_MATRIX" && HasLanguageEvidenceForAnchor(r.Language, line))
                               ?? candidates.FirstOrDefault(r => r.TargetExamType != "TABLE_MATRIX");
@@ -584,14 +589,33 @@ namespace AegisQuiz.Infrastructure.Services
         public bool TryMatchAnswer(string line, QuestionParsingRuleDto rule, out string answer)
         {
             answer = string.Empty;
-            var match = GetOrAddRegex(rule.EvaluationSpec.AnswerRegexPattern).Match(line);
-            if (!match.Success) return false;
+            if (string.IsNullOrWhiteSpace(line)) return false;
 
-            int groupIdx = rule.EvaluationSpec.AnswerGroupIndex;
-            answer = groupIdx <= match.Groups.Count - 1 && !string.IsNullOrEmpty(match.Groups[groupIdx].Value)
-                ? match.Groups[groupIdx].Value.Trim()
-                : match.Value.Trim();
-            return true;
+            var match = GetOrAddRegex(rule.EvaluationSpec.AnswerRegexPattern).Match(line);
+            if (match.Success)
+            {
+                int groupIdx = rule.EvaluationSpec.AnswerGroupIndex;
+                answer = groupIdx <= match.Groups.Count - 1 && !string.IsNullOrEmpty(match.Groups[groupIdx].Value)
+                    ? match.Groups[groupIdx].Value.Trim()
+                    : match.Value.Trim();
+
+                var fullNumMatch = Regex.Match(line, @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|KẾT\s*QUẢ|ĐÁP\s*SỐ|CHỌN)[\.\:\s\-]+([\-\+]?\d+(?:[\,\.]\d+)?(?:\s*[\/\%]\s*\d+)?)", RegexOptions.IgnoreCase);
+                if (fullNumMatch.Success && fullNumMatch.Groups[1].Value.Length > answer.Length)
+                {
+                    answer = fullNumMatch.Groups[1].Value.Trim();
+                }
+
+                return true;
+            }
+
+            var numMatch = Regex.Match(line, @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|KẾT\s*QUẢ|ĐÁP\s*SỐ)[\.\:\s\-]+([\-\+]?\d+(?:[\,\.]\d+)?(?:\s*[\/\%]\s*\d+)?|[A-H]|Đúng|Sai)\s*$", RegexOptions.IgnoreCase);
+            if (numMatch.Success)
+            {
+                answer = numMatch.Groups[1].Value.Trim();
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>Nhận diện dòng bắt đầu phần Lời giải / Hướng dẫn giải theo quy tắc.</summary>
@@ -696,18 +720,28 @@ namespace AegisQuiz.Infrastructure.Services
             CompileAndCache(rule.AnchorSpec?.RegexPattern);
             CompileAndCache(rule.InteractionSpec?.OptionRegexPattern);
             CompileAndCache(rule.EvaluationSpec?.AnswerRegexPattern);
+            if (rule.StimulusSpec?.DirectiveQuestionTypeMap != null)
+            {
+                foreach (var patterns in rule.StimulusSpec.DirectiveQuestionTypeMap.Values)
+                {
+                    if (patterns == null) continue;
+                    foreach (var p in patterns) CompileAndCache(p);
+                }
+            }
         }
 
         /// <summary>True nếu văn bản khớp bất kỳ mẫu regex nào trong danh sách (bỏ qua mẫu rỗng / lỗi cú pháp).</summary>
         private bool MatchesAny(string text, IEnumerable<string>? patterns)
         {
             if (patterns == null) return false;
+            var cleanText = text.Contains('<') ? Regex.Replace(text, @"<[^>]+>", "").Trim() : text;
             foreach (var pattern in patterns)
             {
                 if (string.IsNullOrWhiteSpace(pattern)) continue;
                 try
                 {
                     if (GetOrAddRegex(pattern).IsMatch(text)) return true;
+                    if (cleanText != text && GetOrAddRegex(pattern).IsMatch(cleanText)) return true;
                 }
                 catch (ArgumentException ex)
                 {
@@ -721,6 +755,7 @@ namespace AegisQuiz.Infrastructure.Services
         private string? FirstCapture(string text, IEnumerable<string>? patterns)
         {
             if (patterns == null) return null;
+            var cleanText = text.Contains('<') ? Regex.Replace(text, @"<[^>]+>", "").Trim() : text;
             foreach (var pattern in patterns)
             {
                 if (string.IsNullOrWhiteSpace(pattern)) continue;
@@ -730,6 +765,14 @@ namespace AegisQuiz.Infrastructure.Services
                     if (match.Success)
                     {
                         return match.Groups.Count > 1 && match.Groups[1].Success ? match.Groups[1].Value.Trim() : match.Value.Trim();
+                    }
+                    if (cleanText != text)
+                    {
+                        var matchClean = GetOrAddRegex(pattern).Match(cleanText);
+                        if (matchClean.Success)
+                        {
+                            return matchClean.Groups.Count > 1 && matchClean.Groups[1].Success ? matchClean.Groups[1].Value.Trim() : matchClean.Value.Trim();
+                        }
                     }
                 }
                 catch (ArgumentException ex)
@@ -762,24 +805,72 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 new()
                 {
-                    RuleCode = "VN_STANDARD_MULTIPLE_CHOICE",
-                    RuleName = "Trắc Nghiệm Đơn Tiêu Chuẩn (A/B/C/D)",
+                    RuleCode = "GENERAL_UNIVERSAL_INGESTION",
+                    RuleName = "Quy Tắc Khảo Thí Phổ Quát Đa Ngôn Ngữ (General Universal Exam Ingestion)",
                     TargetExamType = "GENERAL",
-                    Language = "vi",
-                    Priority = 10,
-                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:Câu|Question|Item|Bài|Q)\s*(\d+)", QuestionNumberGroupIndex = 1 },
+                    Language = "all",
+                    Priority = 1,
+                    AnchorSpec = new AnchorSpecDto
+                    {
+                        RegexPattern = @"^\[?\s*(?:(?:Câu(?:\s+hỏi)?|Question|Item|Bài|Task|Exercise|Problem|Aufgabe|Exercice|Domanda|Pregunta)(?:\s+(?:số|no\.?|number))?|第|Q)\s*#?(\d+)",
+                        QuestionNumberGroupIndex = 1,
+                        SectionMarkers = new List<string> { "PHẦN I", "PART I", "PHẦN II", "PART II", "PHẦN III", "PART III", "TRẮC NGHIỆM", "TỰ LUẬN" }
+                    },
+                    StimulusSpec = new StimulusSpecDto
+                    {
+                        DirectiveQuestionTypeMap = StimulusSpecDto.GetDefaultDirectiveQuestionTypeMap()
+                    },
                     InteractionSpec = new InteractionSpecDto
                     {
                         DefaultQuestionType = "SINGLE",
-                        OptionRegexPattern = @"^(?:([A-D])|[(]([A-D])[)])[\.\:\)\s\-]+(.*)$",
+                        OptionRegexPattern = @"^\[?\s*(?:Phương\s*án(?:\s*trả\s*lời)?\s*|Option\s*)?(?:([A-H])|[(]([A-H])[)]|[【]([A-H])[】])[\.\:\)\s\-]+(.*)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 4
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|CHỌN|RÉPONSE|ANTWORT|答案)[\.\:\s\-]+([A-H0-9a-h\,\sĐSđsTFtf\.\-\/\%]+)",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^\[?\s*(?:Lời\s*giải|Hướng\s*dẫn(?:\s*giải)?|HD|Giải\s*thích|Explanation|Solution|Lösung|解析)\b",
+                        CriticalQuestionMarkerRegex = @"(?:\bĐIỂM\s*LIỆT\b|⚠️|TỬ\s*THẦN|\bCRITICAL\b|\bFATAL\b)",
+                        TableMatrixSpec = new TableMatrixSpecDto
+                        {
+                            QuestionHeaderPattern = @"(?:câu|bài|tt|q|question|item|task|problem|aufgabe|exercice|domanda|pregunta|第)",
+                            AnswerHeaderPattern = @"(?:chọn|đáp\s*án|phương\s*án|answer|key|option|réponse|antwort|答案)",
+                            StudentAnswerSheetPattern = @"(?:hs\s*viết\s*đáp\s*án|ghi\s*lại\s*đáp\s*án|phiếu\s*trả\s*lời|bài\s*làm\s*của\s*thí\s*sinh|thí\s*sinh\s*điền|student\s*answer\s*sheet|candidate\s*response)",
+                            QuestionContentColumnPattern = @"(?:nội\s*dung|mệnh\s*đề|khẳng\s*định|statement|content|item|question\s*text)",
+                            CompositeCellPattern = @"^(?:câu\s*)?(\d+)[\.\:\s\-]+([A-Ha-h1-4]|[ĐSĐTFsdtf])$",
+                            TrueValuePattern = @"^(?:Đ|D|T|V|R|Đúng|True|Vrai|Richtig|对|正确)$",
+                            FalseValuePattern = @"^(?:S|F|Sai|False|Faux|Falsch|错|错误)$",
+                            AnswerLetterGridCellPattern = @"^(?:[A-Ha-h]|Đ|S|D|T|F|Đúng|Sai|True|False)$",
+                            TrueFalseSeriesPattern = @"^[SĐTFsdtf]{1,5}$",
+                            AnswerPhaseHeaderPattern = @"(?i)^\s*(?:hướng\s*dẫn\s*chấm|đáp\s*án|biểu\s*điểm|bảng\s*đáp\s*án|answer\s*key|marking\s*scheme|solutions?)",
+                            MultiExamCrossMatrixPattern = @"^(?:(?:mã\s*đề|đề|exam|code)\s*)?\d{2,4}$",
+                            MaxQuestionTextLengthInGrid = 20,
+                            MaxAnswerTextLengthInGrid = 35
+                        }
+                    }
+                },
+                new()
+                {
+                    RuleCode = "VN_STANDARD_MULTIPLE_CHOICE",
+                    RuleName = "Trắc Nghiệm Đơn Tiêu Chuẩn (A/B/C/D/E)",
+                    TargetExamType = "GENERAL",
+                    Language = "vi",
+                    Priority = 10,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^\[?\s*(?:(?:Câu(?:\s+hỏi)?|Question|Item|Bài)(?:\s+(?:số|no\.?|number))?|Q)\s*#?(\d+)", QuestionNumberGroupIndex = 1 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^\[?\s*(?:Phương\s*án(?:\s*trả\s*lời)?\s*|Option\s*)?(?:([A-H])|[(]([A-H])[)])[\.\:\)\s\-]+(.*)$",
                         OptionLabelGroupIndex = 1,
                         OptionContentGroupIndex = 3
                     },
                     EvaluationSpec = new EvaluationSpecDto
                     {
-                        AnswerRegexPattern = @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|CHỌN)[\.\:\s\-]+([A-D0-9a-d\,\s]+)",
+                        AnswerRegexPattern = @"^(?:ĐÁP\s*ÁN|ANSWER|KEY|CHỌN)[\.\:\s\-]+([A-H0-9a-h\,\s]+)",
                         AnswerGroupIndex = 1,
-                        ExplanationRegexPattern = @"^(?:Lời\s*giải|Hướng\s*dẫn|HD|Giải\s*thích|Explanation|Căn\s*cứ)\b",
+                        ExplanationRegexPattern = @"^\[?\s*(?:Lời\s*giải|Hướng\s*dẫn(?:\s*giải)?|HD|Giải\s*thích|Explanation|Căn\s*cứ)\b",
                         CriticalQuestionMarkerRegex = @"(?:\bĐIỂM\s*LIỆT\b|⚠️|TỬ\s*THẦN)"
                     }
                 },
@@ -866,6 +957,116 @@ namespace AegisQuiz.Infrastructure.Services
                         AnswerRegexPattern = @"^\[(?:Key|Truth|Answer)\s*\:\s*([A-D])\]",
                         AnswerGroupIndex = 1,
                         ExplanationRegexPattern = @"^\[(?:Rationale|Explanation)\]"
+                    }
+                },
+                new()
+                {
+                    RuleCode = "CHINA_GAOKAO_STANDARD",
+                    RuleName = "Cao Khảo Trung Quốc (Gaokao)",
+                    TargetExamType = "GAOKAO",
+                    Language = "zh",
+                    Priority = 50,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:第\s*([0-9一二三四五六七八九十]+)\s*题|(\d+)[\.\、\:\s\-])", QuestionNumberGroupIndex = 2 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^([A-Da-d])[\.\、\)\s]+(.+)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 2
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:答案|参考答案|正确答案)[\s\:：]+([A-Da-d])",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^(?:解析|详解|解题思路)[\s\:：]"
+                    }
+                },
+                new()
+                {
+                    RuleCode = "KOREA_SUNEUNG_STANDARD",
+                    RuleName = "Đại Học Tu Học Năng Lực Hàn Quốc (Suneung CSAT)",
+                    TargetExamType = "SUNEUNG",
+                    Language = "ko",
+                    Priority = 60,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:문\s*제\s*(\d+)|(\d+)[\.\:\s\-])", QuestionNumberGroupIndex = 2 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^([①②③④⑤]|\([1-5]\)|[1-5]\.)\s*(.+)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 2
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:정답|답|정\s*답)[\s\:：]+([①②③④⑤1-5])",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^(?:해설|풀이)[\s\:：]"
+                    }
+                },
+                new()
+                {
+                    RuleCode = "JAPAN_JCEE_STANDARD",
+                    RuleName = "Kỳ Thi Tuyển Sinh ĐH Nhật Bản (JCEE)",
+                    TargetExamType = "JCEE",
+                    Language = "ja",
+                    Priority = 70,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:第\s*(\d+)\s*問|問\s*(\d+)[\.\:\s\-])", QuestionNumberGroupIndex = 2 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^([①②③④⑤]|\([1-5]\)|[1-5]\.)\s*(.+)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 2
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:正解|解答)[\s\:：]+([①②③④⑤1-5\(\)]+)",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^(?:解説|ヒント)[\s\:：]"
+                    }
+                },
+                new()
+                {
+                    RuleCode = "FRANCE_BACCALAUREAT_STANDARD",
+                    RuleName = "Kỳ Thi Tú Tài Pháp (Baccalauréat BAC)",
+                    TargetExamType = "BACCALAUREAT",
+                    Language = "fr",
+                    Priority = 80,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:Question|Exercice)\s+(\d+)[\.\:\s\-]+", QuestionNumberGroupIndex = 1 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^([A-Da-d])[\.\)\s]+(.+)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 2
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:Réponse|Réponse correcte|Answer)[\s:]+([A-Da-d])",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^(?:Explication|Justification|Correction)[\s:]"
+                    }
+                },
+                new()
+                {
+                    RuleCode = "INTERNATIONAL_IELTS_TOEFL",
+                    RuleName = "Luyện Thi Quốc Tế IELTS / TOEFL Academic",
+                    TargetExamType = "IELTS",
+                    Language = "en",
+                    Priority = 90,
+                    AnchorSpec = new AnchorSpecDto { RegexPattern = @"^(?:Question|Q\.?|Item)\s+(\d+)[-\.:\s]+", QuestionNumberGroupIndex = 1 },
+                    InteractionSpec = new InteractionSpecDto
+                    {
+                        DefaultQuestionType = "SINGLE",
+                        OptionRegexPattern = @"^([A-Da-d])[\.\)\s]+(.+)$",
+                        OptionLabelGroupIndex = 1,
+                        OptionContentGroupIndex = 2
+                    },
+                    EvaluationSpec = new EvaluationSpecDto
+                    {
+                        AnswerRegexPattern = @"^(?:Answer|Key|Correct Answer)[:\s]+([A-Da-dTFNG]+)",
+                        AnswerGroupIndex = 1,
+                        ExplanationRegexPattern = @"^(?:Explanation|Rationale|Script)[:\s]"
                     }
                 }
             };

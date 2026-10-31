@@ -24,16 +24,18 @@ export function useDocxPreviewState({
   onTopicCreated,
 }: UseDocxPreviewStateParams) {
   const { domains } = useAdaptiveTenant();
-  const activeDomains = domains && domains.length > 0
-    ? domains.map((d: any) => ({
-      code: d.code,
-      label: d.label || d.name,
-      short: (d.short || d.name || d.code).length > 15 ? (d.short || d.name || d.code).slice(0, 13) + '...' : (d.short || d.name || d.code),
-      icon: d.icon || '🌐',
-      color: 'from-purple-500 to-indigo-600',
-      badge: 'bg-purple-950/70 text-purple-300 border-purple-800/60'
-    }))
-    : DOMAIN_OPTIONS;
+  const activeDomains = useMemo(() => {
+    return domains && domains.length > 0
+      ? domains.map((d: any) => ({
+        code: d.code,
+        label: d.label || d.name,
+        short: (d.short || d.name || d.code).length > 15 ? (d.short || d.name || d.code).slice(0, 13) + '...' : (d.short || d.name || d.code),
+        icon: d.icon || '🌐',
+        color: 'from-purple-500 to-indigo-600',
+        badge: 'bg-purple-950/70 text-purple-300 border-purple-800/60'
+      }))
+      : DOMAIN_OPTIONS;
+  }, [domains]);
 
   const [localTopics, setLocalTopics] = useState<BankTopic[]>(topics);
   const [bulkTopic, setBulkTopic] = useState<string>(topics.length > 0 ? topics[0].code : 'PARTY_BUILDING');
@@ -130,6 +132,8 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
 }
 
   useEffect(() => {
+    if (!docxPreviewList || docxPreviewList.length === 0) return;
+
     // 1. Tự động suy luận môn học cho từng câu hỏi nếu đang bị gán GENERAL
     let hasChanges = false;
     const effectiveList = docxPreviewList.map(q => {
@@ -173,20 +177,25 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
       }
     });
 
-    setLocalTopics(mergedTopics);
+    setLocalTopics(prev => {
+      if (prev.length === mergedTopics.length && prev.every((t, i) => t.code === mergedTopics[i].code)) {
+        return prev;
+      }
+      return mergedTopics;
+    });
 
     // 3. Đồng bộ Chủ đề đã nhận diện lên thanh công cụ (bulkTopic)
     const detectedTopic = effectiveList.find(q => q.topicCode && q.topicCode !== 'GENERAL' && q.topicCode !== 'EDUCATION' && q.topicCode !== 'THPT_NATIONAL')?.topicCode;
     if (detectedTopic) {
-      setBulkTopic(detectedTopic);
-    } else if (mergedTopics.length > 0 && (!bulkTopic || !mergedTopics.some(t => t.code === bulkTopic))) {
-      setBulkTopic(mergedTopics[0].code);
+      setBulkTopic(prev => prev !== detectedTopic ? detectedTopic : prev);
+    } else if (mergedTopics.length > 0) {
+      setBulkTopic(prev => (!prev || !mergedTopics.some(t => t.code === prev)) ? mergedTopics[0].code : prev);
     }
 
     // 4. Đồng bộ Miền ngành (Domain) đã nhận diện lên thanh công cụ (bulkDomain)
     const detectedDomain = effectiveList.find(q => q.domainCode && q.domainCode !== 'GENERAL')?.domainCode;
     if (detectedDomain && activeDomains.some((d: any) => d.code === detectedDomain)) {
-      setBulkDomain(detectedDomain);
+      setBulkDomain(prev => prev !== detectedDomain ? detectedDomain : prev);
     }
   }, [topics, docxPreviewList, activeDomains]);
 

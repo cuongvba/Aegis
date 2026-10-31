@@ -77,7 +77,9 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 "Phương án C",                  // 6
                 "Phương án D",                  // 7
                 "Đáp án",                       // 8
-                "Lời giải chi tiết"             // 9
+                "Lời giải chi tiết",            // 9
+                "Tọa độ phân cấp",              // 10
+                "Số hiệu gốc"                   // 11
             };
 
             for (int i = 0; i < headers.Length; i++)
@@ -175,6 +177,16 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 c9.SetCellValue(options.IncludeExplanation ? ExcelCellSanitizer.Sanitize(q.AiExplanation) : string.Empty);
                 c9.CellStyle = styles.WrapStyle;
 
+                // 10: Tọa độ phân cấp H(e, p, s, d)
+                var c10 = row.CreateCell(10);
+                c10.SetCellValue(!string.IsNullOrWhiteSpace(q.HierarchyIndex) ? q.HierarchyIndex : "0_0_0_0");
+                c10.CellStyle = styles.CenterStyle;
+
+                // 11: Số hiệu gốc
+                var c11 = row.CreateCell(11);
+                c11.SetCellValue(!string.IsNullOrWhiteSpace(q.SourceQuestionNo) ? q.SourceQuestionNo : (i + 1).ToString());
+                c11.CellStyle = styles.CenterStyle;
+
                 r++;
             }
 
@@ -197,6 +209,8 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
             sheet.SetColumnWidth(7, 20 * 256);  // Phương án D
             sheet.SetColumnWidth(8, 12 * 256);  // Đáp án
             sheet.SetColumnWidth(9, 35 * 256);  // Lời giải chi tiết
+            sheet.SetColumnWidth(10, 16 * 256); // Tọa độ phân cấp
+            sheet.SetColumnWidth(11, 12 * 256); // Số hiệu gốc
         }
 
         private static void RenderPart2Sheet(XSSFWorkbook workbook, ISheet sheet, List<DocxImportPreviewDto> list, StyleSet styles, ExcelExportOptionsDto options)
@@ -216,7 +230,9 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 "Mệnh đề c)",                       // 6
                 "Mệnh đề d)",                       // 7
                 "Đáp án (a,b,c,d: Đ/S)",            // 8
-                "Lời giải chi tiết"                 // 9
+                "Lời giải chi tiết",                // 9
+                "Tọa độ phân cấp",                  // 10
+                "Số hiệu gốc"                       // 11
             };
 
             for (int i = 0; i < headers.Length; i++)
@@ -310,6 +326,16 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 c9.SetCellValue(options.IncludeExplanation ? ExcelCellSanitizer.Sanitize(q.AiExplanation) : string.Empty);
                 c9.CellStyle = styles.WrapStyle;
 
+                // 10: Tọa độ phân cấp H(e, p, s, d)
+                var c10 = row.CreateCell(10);
+                c10.SetCellValue(!string.IsNullOrWhiteSpace(q.HierarchyIndex) ? q.HierarchyIndex : "0_0_0_0");
+                c10.CellStyle = styles.CenterStyle;
+
+                // 11: Số hiệu gốc
+                var c11 = row.CreateCell(11);
+                c11.SetCellValue(!string.IsNullOrWhiteSpace(q.SourceQuestionNo) ? q.SourceQuestionNo : (i + 1).ToString());
+                c11.CellStyle = styles.CenterStyle;
+
                 r++;
             }
 
@@ -331,6 +357,8 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
             sheet.SetColumnWidth(7, 20 * 256);
             sheet.SetColumnWidth(8, 20 * 256);
             sheet.SetColumnWidth(9, 35 * 256);
+            sheet.SetColumnWidth(10, 16 * 256); // Tọa độ phân cấp
+            sheet.SetColumnWidth(11, 12 * 256); // Số hiệu gốc
         }
 
         private static void RenderPart3Sheet(XSSFWorkbook workbook, ISheet sheet, List<DocxImportPreviewDto> list, StyleSet styles, ExcelExportOptionsDto options)
@@ -346,7 +374,9 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 "Nội dung câu hỏi / Bài toán",  // 2
                 "Hình ảnh minh họa",            // 3
                 "Đáp số / Giá trị số",          // 4
-                "Lời giải & Phương pháp giải"   // 5
+                "Lời giải & Phương pháp giải",  // 5
+                "Tọa độ phân cấp",              // 6
+                "Số hiệu gốc"                   // 7
             };
 
             for (int i = 0; i < headers.Length; i++)
@@ -433,6 +463,16 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
                 c5.SetCellValue(options.IncludeExplanation ? ExcelCellSanitizer.Sanitize(q.AiExplanation) : string.Empty);
                 c5.CellStyle = styles.WrapStyle;
 
+                // 6: Tọa độ phân cấp H(e, p, s, d)
+                var c6 = row.CreateCell(6);
+                c6.SetCellValue(!string.IsNullOrWhiteSpace(q.HierarchyIndex) ? q.HierarchyIndex : "0_0_0_0");
+                c6.CellStyle = styles.CenterStyle;
+
+                // 7: Số hiệu gốc
+                var c7 = row.CreateCell(7);
+                c7.SetCellValue(!string.IsNullOrWhiteSpace(q.SourceQuestionNo) ? q.SourceQuestionNo : (i + 1).ToString());
+                c7.CellStyle = styles.CenterStyle;
+
                 r++;
             }
 
@@ -450,6 +490,8 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
             sheet.SetColumnWidth(3, 26 * 256);
             sheet.SetColumnWidth(4, 20 * 256);
             sheet.SetColumnWidth(5, 40 * 256);
+            sheet.SetColumnWidth(6, 16 * 256); // Tọa độ phân cấp
+            sheet.SetColumnWidth(7, 12 * 256); // Số hiệu gốc
         }
 
         private static List<(int StartIdx, int EndIdx, string Title, string Content)> BuildContextGroups(List<DocxImportPreviewDto> list)
@@ -527,9 +569,16 @@ namespace AegisQuiz.Infrastructure.Excel.Strategies
 
         private static string GetOption(DocxImportPreviewDto q, int idx)
         {
-            if (q.Options == null || idx >= q.Options.Count) return string.Empty;
-            var raw = q.Options[idx];
-            return Regex.Replace(raw, @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            if (q.Options != null && idx < q.Options.Count && !string.IsNullOrWhiteSpace(q.Options[idx]))
+            {
+                var raw = q.Options[idx];
+                return Regex.Replace(raw, @"^(?:\[?[A-Ha-h0-9]\]?[\.\)\:]|\([A-Ha-h0-9]\))\s*", "").Trim();
+            }
+            if (q.SubItems != null && idx < q.SubItems.Count)
+            {
+                return q.SubItems[idx].Content?.Trim() ?? string.Empty;
+            }
+            return string.Empty;
         }
 
         private static string FormatSingleAnswer(string? raw)

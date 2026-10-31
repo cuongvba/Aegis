@@ -10,31 +10,46 @@ export interface QuestionParsingRule {
   description: string;
   anchorSpec: {
     regexPattern: string;
-    questionNumberGroupIndex: number;
+    questionNumberGroupIndex?: number;
+    maxScoreGroupIndex?: number;
     sectionMarkers?: string[];
+    subSectionDirectivePatterns?: string[];
+    instructionDirectivePatterns?: string[];
   };
   stimulusSpec: {
-    supportMathTypeWmf: boolean;
-    supportVectorSvg: boolean;
-    extractInlineImages: boolean;
+    supportMathTypeWmf?: boolean;
+    supportVectorSvg?: boolean;
+    extractInlineImages?: boolean;
+    autoTerminateOnNextSection?: boolean;
     readingPassageStartRegex?: string;
     readingPassageRangeRegex?: string;
+    passageStartPatterns?: string[];
+    passageRangePatterns?: string[];
+    instructionDirectivePatterns?: string[];
+    subSectionDirectivePatterns?: string[];
+    stemDirectivePatterns?: string[];
+    directiveQuestionTypeMap?: Record<string, string[]>;
   };
   interactionSpec: {
     defaultQuestionType: string;
     optionRegexPattern: string;
-    optionLabelGroupIndex: number;
-    optionContentGroupIndex: number;
+    optionLabelGroupIndex?: number;
+    optionContentGroupIndex?: number;
     trueFalseSubItemRegex?: string;
     shortAnswerPromptRegex?: string;
   };
   evaluationSpec: {
     answerRegexPattern: string;
-    answerGroupIndex: number;
+    answerGroupIndex?: number;
     explanationRegexPattern?: string;
     criticalQuestionMarkerRegex?: string;
+    criticalMarkers?: string[];
     scoreStrategy?: string;
   };
+  tableMatrixSpec?: any;
+  lifecycleSpec?: any;
+  topologySpec?: any;
+  metaEvolutionSpec?: any;
 }
 
 export interface ParseSnippetResponse {
@@ -115,6 +130,11 @@ export const parsingRulesService = {
 
   async reloadRules(customJsonConfig?: string): Promise<{ success: boolean; message: string; currentRulesCount: number }> {
     const res = await api.post('/api/admin/parsing-rules/reload', { customJsonConfig });
+    return res.data;
+  },
+
+  async resetAndReseedRules(): Promise<{ success: boolean; message: string; rulesCount: number }> {
+    const res = await api.post('/api/admin/parsing-rules/reset-and-seed');
     return res.data;
   },
 

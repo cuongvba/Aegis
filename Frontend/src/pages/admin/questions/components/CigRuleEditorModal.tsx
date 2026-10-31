@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Save, ShieldAlert, Cpu } from 'lucide-react';
+import { X, Save, Cpu } from 'lucide-react';
 import { QuestionParsingRule } from '@/services/parsing-rules.service';
+import { DirectiveTypeMapEditor } from './DirectiveTypeMapEditor';
 
 interface Props {
   rule: QuestionParsingRule;
@@ -27,42 +28,50 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
     }
   };
 
+  const isGeneralMaster = formData.ruleCode === 'GENERAL_UNIVERSAL_INGESTION';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 font-sans">
+      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
+        <div className="p-5 border-b border-slate-800 bg-slate-950/70 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isGeneralMaster ? 'bg-amber-500/20 text-amber-400' : 'bg-purple-500/20 text-purple-400'}`}>
               <Cpu size={22} />
             </div>
             <div>
-              <h3 className="text-base font-black text-white flex items-center gap-2">
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
                 Biên Tập Quy Tắc CIG 4-Specs
-                <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${isGeneralMaster ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'}`}>
                   {formData.ruleCode}
                 </span>
+                {isGeneralMaster && (
+                  <span className="text-[10px] font-bold bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                    ⭐ R_GEN Master
+                  </span>
+                )}
               </h3>
-              <p className="text-xs text-slate-400">Chỉnh sửa tham số nhận diện 4 chiều mà không cần compile lại hệ thống</p>
+              <p className="text-xs text-slate-400">Kiến trúc CIG 4 Chiều (PISA v7.0) — Hot-Reload 0ms không cần compile lại</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer">
             <X size={18} />
           </button>
         </div>
 
         {/* Specs Tabs */}
-        <div className="flex border-b border-slate-800 px-6 gap-4 bg-slate-950/30">
+        <div className="flex border-b border-slate-800 px-6 gap-6 bg-slate-950/30">
           {(['anchor', 'stimulus', 'interaction', 'evaluation'] as const).map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
               className={`py-3 text-xs font-black uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
                 activeTab === tab ? 'border-purple-500 text-purple-400' : 'border-transparent text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab === 'anchor' && '1. Anchor (Điểm Neo)'}
-              {tab === 'stimulus' && '2. Stimulus (Bối Cảnh)'}
+              {tab === 'stimulus' && '2. Stimulus & Tiền Luận Giải'}
               {tab === 'interaction' && '3. Interaction (Tương Tác)'}
               {tab === 'evaluation' && '4. Evaluation (Đánh Giá)'}
             </button>
@@ -70,9 +79,9 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1 font-mono text-xs text-slate-300">
-          {/* General Info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-slate-950/50 rounded-2xl border border-slate-800/80 font-sans">
+        <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1 text-xs text-slate-300">
+          {/* General Metadata */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-slate-950/50 rounded-2xl border border-slate-800/80">
             <div>
               <label className="text-[10px] font-bold text-slate-400 uppercase">Tên Quy Tắc</label>
               <input
@@ -88,8 +97,9 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
               <select
                 value={formData.language}
                 onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white mt-1"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white mt-1 cursor-pointer"
               >
+                <option value="all">🌍 Mọi ngôn ngữ (all / Đa ngôn ngữ)</option>
                 <option value="vi">Tiếng Việt (vi)</option>
                 <option value="en">Tiếng Anh (en)</option>
                 <option value="zh">Tiếng Trung (zh)</option>
@@ -105,16 +115,16 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                 type="number"
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 10 })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white mt-1"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white mt-1 font-mono"
               />
             </div>
           </div>
 
           {/* Chiều 1: AnchorSpec */}
           {activeTab === 'anchor' && (
-            <div className="space-y-4">
+            <div className="space-y-3 font-mono">
               <div>
-                <label className="block text-[11px] font-bold text-amber-400 mb-1">Regex Nhận Diện Đầu Câu (Anchor Pattern):</label>
+                <label className="block text-[11px] font-bold text-amber-400 mb-1 font-sans">Regex Nhận Diện Đầu Câu (Anchor Pattern):</label>
                 <textarea
                   rows={3}
                   value={formData.anchorSpec?.regexPattern || ''}
@@ -122,27 +132,25 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                     ...formData,
                     anchorSpec: { ...formData.anchorSpec, regexPattern: e.target.value }
                   })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-amber-300 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-amber-300 focus:outline-none focus:border-purple-500 text-xs"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] text-slate-400 mb-1">Group Index Số Câu:</label>
-                  <input
-                    type="number"
-                    value={formData.anchorSpec?.questionNumberGroupIndex ?? 1}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      anchorSpec: { ...formData.anchorSpec, questionNumberGroupIndex: parseInt(e.target.value) || 1 }
-                    })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
-                  />
-                </div>
+              <div>
+                <label className="block text-[10px] text-slate-400 mb-1 font-sans">Group Index Số Câu:</label>
+                <input
+                  type="number"
+                  value={formData.anchorSpec?.questionNumberGroupIndex ?? 1}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    anchorSpec: { ...formData.anchorSpec, questionNumberGroupIndex: parseInt(e.target.value) || 1 }
+                  })}
+                  className="w-32 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-white"
+                />
               </div>
             </div>
           )}
 
-          {/* Chiều 2: StimulusSpec */}
+          {/* Chiều 2: StimulusSpec + DirectiveQuestionTypeMap */}
           {activeTab === 'stimulus' && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-3 p-3 bg-slate-950/40 rounded-xl border border-slate-800">
@@ -180,45 +188,46 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                   Trích xuất ảnh nội dòng
                 </label>
               </div>
-              <div>
-                <label className="block text-[11px] font-bold text-blue-400 mb-1">Regex Mở Đầu Bài Đọc Hiểu (Reading Passage):</label>
-                <input
-                  type="text"
-                  value={formData.stimulusSpec?.readingPassageStartRegex || ''}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    stimulusSpec: { ...formData.stimulusSpec, readingPassageStartRegex: e.target.value }
-                  })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-blue-300 focus:outline-none"
-                />
-              </div>
+
+              {/* Sub-component: Directive Type Map Editor */}
+              <DirectiveTypeMapEditor
+                directiveMap={formData.stimulusSpec?.directiveQuestionTypeMap || {}}
+                onChange={(updatedMap) => setFormData({
+                  ...formData,
+                  stimulusSpec: {
+                    ...formData.stimulusSpec,
+                    directiveQuestionTypeMap: updatedMap
+                  }
+                })}
+              />
             </div>
           )}
 
           {/* Chiều 3: InteractionSpec */}
           {activeTab === 'interaction' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] text-slate-400 mb-1">Loại Câu Hỏi Mặc Định:</label>
-                  <select
-                    value={formData.interactionSpec?.defaultQuestionType || 'SINGLE'}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      interactionSpec: { ...formData.interactionSpec, defaultQuestionType: e.target.value }
-                    })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
-                  >
-                    <option value="SINGLE">Trắc nghiệm đơn (SINGLE)</option>
-                    <option value="MULTI">Nhiều lựa chọn (MULTI)</option>
-                    <option value="TRUE_FALSE">Đúng / Sai (TRUE_FALSE)</option>
-                    <option value="SHORT_ANSWER">Trả lời ngắn (SHORT_ANSWER)</option>
-                    <option value="ESSAY">Tự luận (ESSAY)</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-[10px] text-slate-400 mb-1">Loại Câu Hỏi Mặc Định:</label>
+                <select
+                  value={formData.interactionSpec?.defaultQuestionType || 'SINGLE'}
+                  onChange={(e) => setFormData({
+                    ...formData,
+                    interactionSpec: { ...formData.interactionSpec, defaultQuestionType: e.target.value }
+                  })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white cursor-pointer"
+                >
+                  <option value="SINGLE">Trắc nghiệm đơn (SINGLE)</option>
+                  <option value="MULTI">Nhiều lựa chọn (MULTI)</option>
+                  <option value="MULTI_TRUE_FALSE">Đúng / Sai Đa Mệnh Đề (MULTI_TRUE_FALSE)</option>
+                  <option value="SHORT_ANSWER">Trả lời ngắn / Điền số (SHORT_ANSWER)</option>
+                  <option value="ORDERING">Sắp xếp thứ tự (ORDERING)</option>
+                  <option value="MATCHING">Nối cặp (MATCHING)</option>
+                  <option value="FILL_BLANK">Điền khuyết (FILL_BLANK)</option>
+                  <option value="ESSAY">Tự luận (ESSAY)</option>
+                </select>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-emerald-400 mb-1">Regex Nhận Diện Phương Án (Options):</label>
+                <label className="block text-[11px] font-bold text-emerald-400 mb-1 font-mono">Regex Nhận Diện Phương Án (Options):</label>
                 <textarea
                   rows={2}
                   value={formData.interactionSpec?.optionRegexPattern || ''}
@@ -226,7 +235,7 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                     ...formData,
                     interactionSpec: { ...formData.interactionSpec, optionRegexPattern: e.target.value }
                   })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-300 focus:outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-emerald-300 font-mono text-xs focus:outline-none"
                 />
               </div>
             </div>
@@ -234,9 +243,9 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
 
           {/* Chiều 4: EvaluationSpec */}
           {activeTab === 'evaluation' && (
-            <div className="space-y-4">
+            <div className="space-y-4 font-mono">
               <div>
-                <label className="block text-[11px] font-bold text-teal-400 mb-1">Regex Khớp Dòng Đáp Án (Answer):</label>
+                <label className="block text-[11px] font-bold text-teal-400 mb-1 font-sans">Regex Khớp Dòng Đáp Án (Answer):</label>
                 <input
                   type="text"
                   value={formData.evaluationSpec?.answerRegexPattern || ''}
@@ -244,11 +253,11 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                     ...formData,
                     evaluationSpec: { ...formData.evaluationSpec, answerRegexPattern: e.target.value }
                   })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-teal-300 focus:outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-teal-300 text-xs focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-purple-400 mb-1">Regex Tiền Tố Lời Giải / Hướng Dẫn (Explanation):</label>
+                <label className="block text-[11px] font-bold text-purple-400 mb-1 font-sans">Regex Tiền Tố Lời Giải / Hướng Dẫn (Explanation):</label>
                 <input
                   type="text"
                   value={formData.evaluationSpec?.explanationRegexPattern || ''}
@@ -256,21 +265,21 @@ export const CigRuleEditorModal: React.FC<Props> = ({ rule, isOpen, onClose, onS
                     ...formData,
                     evaluationSpec: { ...formData.evaluationSpec, explanationRegexPattern: e.target.value }
                   })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-purple-300 focus:outline-none"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-purple-300 text-xs focus:outline-none"
                 />
               </div>
             </div>
           )}
 
           {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-xl">
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3 font-sans">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-xl cursor-pointer">
               Hủy
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-purple-500/20 active:scale-95 transition-all cursor-pointer"
             >
               <Save size={14} />
               {saving ? 'Đang lưu...' : 'Lưu Quy Tắc (Hot-Reload 0ms)'}

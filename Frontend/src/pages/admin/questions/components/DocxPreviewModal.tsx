@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import type { BankTopic } from '../types';
 import { CreateTopicModal } from './CreateTopicModal';
@@ -41,7 +42,7 @@ interface DocxPreviewModalProps {
  * DocxPreviewModal — Orchestrator duyệt đề thi Word/PDF/Excel đỉnh cao (Zero-Monolith)
  * Đã phân rã toàn diện từ 2,054 dòng code thành các Micro-Components độc lập theo chuẩn AGENTS.md.
  */
-export function DocxPreviewModal({
+function DocxPreviewModalContent({
   isOpen,
   isProcessing,
   isAiSolving,
@@ -67,7 +68,31 @@ export function DocxPreviewModal({
     onTopicCreated,
   });
 
-  if (!isOpen && !isProcessing && !isAiSolving && !isConvertingLatex) return null;
+  // Tối ưu cuộn lũy tiến (Progressive Chunk Rendering) cho đề thi lớn (200-500+ câu)
+  const [renderLimit, setRenderLimit] = useState(30);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isUpdatingChunkRef = useRef(false);
+
+  useEffect(() => {
+    // Reset số lượng hiển thị khi danh sách hoặc bộ lọc đề thi thay đổi
+    setRenderLimit(30);
+  }, [state.selectedExamFilter, state.displayedList.length]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (isUpdatingChunkRef.current) return;
+    const target = e.currentTarget;
+    const remainingScroll = target.scrollHeight - target.scrollTop - target.clientHeight;
+    // Khi cuộn gần tới đáy (< 450px), tự động nạp tiếp 25 câu tiếp theo với throttle bảo vệ CPU/RAM
+    if (remainingScroll < 450 && renderLimit < state.displayedList.length) {
+      isUpdatingChunkRef.current = true;
+      requestAnimationFrame(() => {
+        setRenderLimit(prev => Math.min(prev + 25, state.displayedList.length));
+        setTimeout(() => {
+          isUpdatingChunkRef.current = false;
+        }, 120);
+      });
+    }
+  };
 
   if (isProcessing || isAiSolving || isConvertingLatex) {
     return (
@@ -178,8 +203,12 @@ export function DocxPreviewModal({
         />
 
         {/* 5. Question Preview List */}
-        <div className="flex-1 overflow-y-auto space-y-3 pr-1 my-1">
-          {state.displayedList.map((item, displayedIdx) => {
+        <div 
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto space-y-3 pr-1 my-1 [will-change:scroll-position] overscroll-contain"
+        >
+          {state.displayedList.slice(0, renderLimit).map((item, displayedIdx) => {
             const originalIdx = docxPreviewList.indexOf(item);
             const idx = originalIdx >= 0 ? originalIdx : displayedIdx;
             return (
@@ -204,6 +233,17 @@ export function DocxPreviewModal({
               />
             );
           })}
+          {renderLimit < state.displayedList.length && (
+            <div className="py-4 text-center">
+              <button
+                type="button"
+                onClick={() => setRenderLimit(prev => Math.min(prev + 50, state.displayedList.length))}
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs text-sky-400 font-bold border border-slate-800 hover:border-sky-500/40 transition-all shadow-md"
+              >
+                Đang hiển thị {renderLimit} / {state.displayedList.length} câu • Nhấn hoặc cuộn để tải thêm...
+              </button>
+            </div>
+          )}
         </div>
 
         {/* 6. Footer Action Bar */}
@@ -274,4 +314,11 @@ export function DocxPreviewModal({
       </div>
     </div>
   );
+}
+
+export function DocxPreviewModal(props: DocxPreviewModalProps) {
+  if (!props.isOpen && !props.isProcessing && !props.isAiSolving && !props.isConvertingLatex) {
+    return null;
+  }
+  return <DocxPreviewModalContent {...props} />;
 }

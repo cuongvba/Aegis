@@ -235,3 +235,61 @@ Cuộc đại phẫu kiến trúc v4.0 đã đưa [DocxStateMachineClassifier.cs
 2. **Khẳng định Chân lý duy nhất (SSoT):** Mọi logic bóc tách văn bản, quy tắc Bottom-up, trích xuất phương án, vòng đời gộp câu hỏi thuộc bản quyền của [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs); hệ 5 trục tọa độ và chủ đề khảo thí thuộc bản quyền của [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
 3. **Bảo toàn 100% Khả năng Tương thích ngược (Zero Regression):** Sử dụng Facade Pattern ủy quyền toàn bộ public static methods của DSMC sang CIG Engine; toàn bộ test suites đều PASS 100% mà không cần sửa đổi bất kỳ mã kiểm thử nào.
 4. **Tuân thủ 100% Clean Architecture & OCP:** Đưa DTOs về đúng Application Layer, cấu hình động qua CIG Grammar và Dynamic Domain Context.
+
+---
+
+## IX. NÂNG CẤP ĐỘT PHÁ 2026: RANH GIỚI NGẮT LỜI GIẢI KHÁNG NUỐT BỐI CẢNH & HỆ CHỈ MỤC PHÂN CẤP 4 BẬC
+
+### 1. Cơ Chế Đóng Ranh Giới Lời Giải Kháng Nuốt Bối Cảnh (Explanation Boundary Termination)
+- **Điểm nghẽn cũ**: Khi FSM bước vào pha Lời giải (`inExplanation = true`), nếu gặp bài đọc hiểu (`Read the following passage...`) hoặc chỉ thị làm bài mới (`Choose the word...`) mà không có từ khóa kết thúc lời giải, FSM tiếp tục gộp các đoạn văn này vào trường `Explanation` của câu hỏi trước đó (hiện tượng **Context Swallowing** tại Câu 22 Đề 7).
+- **Giải pháp triệt để**: Tại [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs), thiết lập chốt chặn cấu trúc chủ động:
+  ```csharp
+  // Bất kỳ ranh giới cấu trúc mới nào (Chỉ thị, Bài đọc, Phân đoạn, Đề thi)
+  // đều buộc FSM đóng ngay lập tức phạm vi lời giải của câu hỏi đang mở:
+  if (inExplanation && (isScopeDirective || isPassageStart || isSectionHeader || isExamHeader))
+  {
+      finalizeCurrentQuestion();
+      currentQuestion = null;
+      inExplanation = false;
+      currentSubItemExplKey = null;
+  }
+  ```
+  Nhờ đó, bài đọc hiểu và chỉ thị của nhóm câu kế tiếp được bảo vệ toàn vẹn và chuyển giao chính xác cho câu hỏi tiếp theo.
+
+### 2. Triệt Tiêu Nhân Đôi Thân Câu Hỏi (Duplicate Stem Elimination)
+- **Nguyên nhân**: Khi dòng neo chứa cả nhãn câu và một phần nội dung (inline question anchor), nếu vừa gán `currentQuestion.Content = remainder` vừa đẩy vào `currentQuestionPendingLines`, thuật toán bóc tách sẽ ghép nối cả hai lần gây lặp lại nội dung (như lỗi *"A. like"* hiển thị 2 lần).
+- **Khắc phục**: Remainder text của dòng neo được điều phối duy nhất thông qua `currentQuestionPendingLines` và chỉ được chuẩn hóa một lần duy nhất qua `cig.ExtractCleanStemAndOptions`, bảo đảm thân câu hỏi luôn duy nhất và tinh gọn.
+
+### 3. Hệ Chỉ Mục Phân Cấp 4 Bậc Chuẩn Hóa (`HierarchyIndex`)
+- Thiết lập định danh tọa độ $O(1)$ cho mọi câu hỏi theo quy tắc 4 bậc:
+  $$\text{HierarchyIndex} = \text{ExamRank}\_\text{PartRank}\_\text{SubPartRank}\_\text{DirectiveRank}$$
+- Khởi tạo mặc định: `Exam_0_0_0`. Cấp phân cấp nào bị khuyết trong đề thi nhận giá trị `0`.
+- **Ví dụ thực tế**:
+  - Đề 2, Phần I, Chỉ thị 4 $\rightarrow$ `HierarchyIndex = "2_1_0_4"`
+  - Đề 7 (không có Phần và Tiểu phần, chỉ có Chỉ thị mục thứ 7) $\rightarrow$ `HierarchyIndex = "7_0_0_7"`
+- Toàn bộ chỉ số này được liên kết trực tiếp vào DTO câu hỏi và đồng bộ với giao diện lọc & đối chiếu cấu trúc đề thi trên Frontend.
+
+
+### 9.3. Triệt Tiêu 100% Hard-Code Nhận Diện Phân Mục Con & Giải Mã Thứ Bậc Đa Ngôn Ngữ
+Trong phiên bản cập nhật tháng 10/2026:
+1. **Xóa bỏ triệt để hard-code tại dòng 331:** Biểu thức `Regex.IsMatch(line, @"^(?:[	\s|•\-–—;]*)(?:CHỦ\s*ĐỀ|CHU\s*DE|CHƯƠNG|CHUONG|BÀI|BAI|MODULE|PHẦN|PART|SECTION)...")` đã được xóa bỏ hoàn toàn, thay thế bằng ủy nhiệm qua SSoT:
+   ```csharp
+   bool isSubCategoryHeading = cig.TryMatchSubPartHeading(line, out _);
+   ```
+2. **Tích hợp Kiến trúc Hai Tầng `R_GEN` & `R_SPEC`:** Tự động hóa nhận diện phân mục con theo `UniversalSubPartKeywords` (Toàn cầu) và `SovereignRules` (Quốc gia: Hán tự, Hangul, Kana, Ả Rập RTL) nạp từ `parsing_rules_registry.json`.
+3. **Bộ giải mã thứ bậc mở rộng (`CognitiveScopeManager.ParseRankNumber`):**
+   - Hỗ trợ số Ả Rập chuẩn ($1, 2, 3...$).
+   - Hỗ trợ số La Mã mở rộng từ $I$ đến $XX$ (1 đến 20).
+   - Hỗ trợ ký tự chữ cái (Part A..J $\rightarrow$ 1..10).
+   - Hỗ trợ số Hán tự (第一..二十 $\rightarrow$ 1..20).
+   - Hỗ trợ số Ả Rập Đông (١..٩ $\rightarrow$ 1..9).
+4. **Hóa giải đề phẳng $H(x, 0, 0, 0)$:** Tự động trả về vector chuẩn `x_0_0_0` mà không sinh ra các node phân cấp giả rác.
+
+---
+
+## X. ĐẶC TẢ QUY TRÌNH BÓC TÁCH TOÀN TRÌNH TỪ FILE ĐẾN CSDL (ALDS v1.0)
+Hồ sơ nghiệm thu kiến trúc chi tiết 7 giai đoạn bóc tách (Client Web -> Tenant Scoping -> OOXML Decompress & MathType WMF Vector -> DSMC Skinny Orchestration -> CIG 8-Priority Classification -> SHA-256 Deduplication -> PostgreSQL JSONB 27 trường) tuân thủ 5 Trụ cột ALDS v1.0 được lưu trữ tại:
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+
+---
+

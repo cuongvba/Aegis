@@ -1,13 +1,14 @@
+import { memo } from 'react';
 import { Eye, Trash2, Compass, Hash } from 'lucide-react';
 import type { BankTopic } from '../../types';
 import { LETTERS } from '../../types';
 import { MathRenderer } from '../../../../../components/common/MathRenderer';
-import { 
-  parseMultiTfAnswer, 
-  serializeMultiTfAnswer, 
-  serializeMultiTfVector, 
-  convertMultiToMultiTf, 
-  convertMultiTfToMulti 
+import {
+  parseMultiTfAnswer,
+  serializeMultiTfAnswer,
+  serializeMultiTfVector,
+  convertMultiToMultiTf,
+  convertMultiTfToMulti
 } from '../../../../../shared/lib/quiz/normalizers';
 
 import { DocxSubItemsList } from './DocxSubItemsList';
@@ -44,7 +45,70 @@ const normalizeSingleAnswer = (ans?: string): string => {
   return trimmed;
 };
 
-export function DocxQuestionCardRow({
+/**
+ * Định dạng chuỗi tọa độ phân cấp 4 cấp dạng '1_1_0_1' thành 'H(1, 1, 0, 1)'
+ */
+const formatHierarchyBadge = (h?: string): string => {
+  if (!h) return '';
+  const parts = h.split('_');
+  if (parts.length >= 4) {
+    return `H(${parts.slice(0, 4).join(', ')})`;
+  }
+  return `H(${parts.join(', ')})`;
+};
+
+const getHierarchyInfo = (item: any) => {
+  const full = item.fullQuestionIndex || item.FullQuestionIndex;
+  const hier = item.hierarchyIndex || item.HierarchyIndex;
+  const qNo = item.sourceQuestionNo || item.SourceQuestionNo;
+
+  if (hier && qNo) {
+    return { hier, qNo: String(qNo), full: full || `${hier}_${qNo}` };
+  }
+  if (full) {
+    const parts = String(full).split('_');
+    if (parts.length >= 5) {
+      return { hier: parts.slice(0, 4).join('_'), qNo: parts.slice(4).join('_'), full };
+    }
+  }
+  return { hier: hier || '', qNo: qNo ? String(qNo) : '', full: full || '' };
+};
+
+/**
+ * Lọc nội dung ngữ cảnh liên kết: loại bỏ chỉ thị lặp lại nếu tiêu đề đã chứa toàn bộ chỉ thị
+ */
+const getCleanedContextContent = (title?: string, content?: string): string => {
+  if (!content) return '';
+  if (!title) return content.trim();
+
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[■•\-\*]/g, '')
+      .replace(/\[\s*ngữ cảnh\s*#?\d*\s*\]/gi, '')
+      .replace(/\(từ câu \d+.*?\)/gi, '')
+      .replace(/[^\p{L}\p{N}]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const cNorm = norm(content);
+  const tNorm = norm(title);
+
+  // Nếu nội dung chỉ đơn thuần lặp lại tiêu đề / chỉ thị, không cần hiển thị lại ở phần thân
+  if (!cNorm || cNorm === tNorm || tNorm.includes(cNorm) || cNorm.includes(tNorm)) {
+    return '';
+  }
+
+  // Nếu nội dung bắt đầu bằng tiêu đề / chỉ thị rồi mới đến đoạn văn bản đọc hiểu
+  if (tNorm.length > 15 && cNorm.startsWith(tNorm)) {
+    const remaining = content.slice(title.length).trim();
+    return remaining.replace(/^[:\-\s]+/, '').trim();
+  }
+
+  return content.trim();
+};
+
+function DocxQuestionCardRowComponent({
   item,
   idx,
   activeDomains,
@@ -79,14 +143,29 @@ export function DocxQuestionCardRow({
       }
     }
   };
+  const hierInfo = getHierarchyInfo(item);
+
   return (
-    <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-4 space-y-2.5 hover:border-slate-700/80 transition-all">
+    <div className="bg-slate-950/40 border border-slate-800/60 rounded-2xl p-4 space-y-2.5 hover:border-slate-700/80 transition-all [content-visibility:auto] [contain-intrinsic-size:auto_320px]">
       {/* Question Card Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/70 pb-2">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="w-6 h-6 rounded-md bg-blue-600/20 border border-blue-500/30 text-blue-400 font-black flex items-center justify-center text-[11px] shrink-0">
+          {/* Thứ tự xem trước */}
+          <span className="min-w-6 h-6 px-1.5 rounded-md bg-blue-600/25 border border-blue-500/40 text-blue-400 font-black flex items-center justify-center text-[11px] shrink-0 shadow-sm" title={`Số thứ tự xem trước: ${idx + 1}`}>
             {idx + 1}
           </span>
+          {/* Tọa độ phân cấp 4 cấp H(e, p, s, d) */}
+          {hierInfo.hier ? (
+            <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-indigo-950/90 text-cyan-300 border border-cyan-500/50 shrink-0 shadow-sm flex items-center gap-1" title={`Tọa độ phân cấp nhận thức 4 cấp: ${hierInfo.hier} • Mã toàn cục: ${hierInfo.full || hierInfo.hier}`}>
+              <span className="text-[10px]">🌐</span> {formatHierarchyBadge(hierInfo.hier)}
+            </span>
+          ) : null}
+          {/* Số hiệu câu gốc Question No */}
+          {hierInfo.qNo ? (
+            <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/50 shrink-0 shadow-sm flex items-center gap-1" title={`Số hiệu câu gốc trong file đề thi: Câu ${hierInfo.qNo}`}>
+              <span className="text-amber-400">#</span> Câu {hierInfo.qNo}
+            </span>
+          ) : null}
           <select
             value={item.questionType}
             onChange={e => {
@@ -103,15 +182,14 @@ export function DocxQuestionCardRow({
               onUpdateItem(idx, 'questionType', newType);
               onUpdateItem(idx, 'suggestedAnswer', nextAnswer);
             }}
-            className={`text-[11px] font-black px-2 py-0.5 rounded-lg border cursor-pointer ${
-              item.questionType === 'ESSAY'
-                ? 'bg-amber-950/60 text-amber-300 border-amber-500/50'
-                : item.questionType === 'MULTI' || item.questionType === 'MULTI_TRUE_FALSE'
+            className={`text-[11px] font-black px-2 py-0.5 rounded-lg border cursor-pointer ${item.questionType === 'ESSAY'
+              ? 'bg-amber-950/60 text-amber-300 border-amber-500/50'
+              : item.questionType === 'MULTI' || item.questionType === 'MULTI_TRUE_FALSE'
                 ? 'bg-purple-950/60 text-purple-300 border-purple-500/50'
                 : item.questionType === 'TRUE_FALSE'
-                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50'
-                : 'bg-blue-950/60 text-blue-300 border-blue-500/50'
-            }`}
+                  ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50'
+                  : 'bg-blue-950/60 text-blue-300 border-blue-500/50'
+              }`}
           >
             <option value="SINGLE">📝 Trắc nghiệm</option>
             <option value="MULTI">☑️ Nhiều đáp án</option>
@@ -182,11 +260,10 @@ export function DocxQuestionCardRow({
           <button
             type="button"
             onClick={() => onToggleExpandCoords(idx)}
-            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border flex items-center gap-0.5 cursor-pointer transition-colors ${
-              expandedCoords[idx]
-                ? 'bg-purple-950 text-purple-300 border-purple-500/60 shadow-sm'
-                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
-            }`}
+            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border flex items-center gap-0.5 cursor-pointer transition-colors ${expandedCoords[idx]
+              ? 'bg-purple-950 text-purple-300 border-purple-500/60 shadow-sm'
+              : 'bg-slate-900 hover:bg-slate-800 text-slate-400 border-slate-800'
+              }`}
             title="Chỉnh sửa 5 trục tọa độ chi tiết cho câu hỏi này"
           >
             <Compass size={11} className="text-purple-400" />
@@ -211,20 +288,20 @@ export function DocxQuestionCardRow({
           </span>
           {Array.isArray(item.tags) && item.tags.length > 0
             ? item.tags.map((tag: string) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-950/50 text-purple-300 border border-purple-800/40"
+              <span
+                key={tag}
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-950/50 text-purple-300 border border-purple-800/40"
+              >
+                #{tag}
+                <button
+                  type="button"
+                  onClick={() => onRemoveTagFromQuestion(idx, tag)}
+                  className="hover:text-red-400 cursor-pointer ml-0.5 text-[10px]"
                 >
-                  #{tag}
-                  <button
-                    type="button"
-                    onClick={() => onRemoveTagFromQuestion(idx, tag)}
-                    className="hover:text-red-400 cursor-pointer ml-0.5 text-[10px]"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))
+                  ×
+                </button>
+              </span>
+            ))
             : null}
           <input
             type="text"
@@ -303,48 +380,91 @@ export function DocxQuestionCardRow({
         </div>
       )}
 
-      {/* Ngữ Cảnh Dùng Chung (Bài đọc / tình huống) */}
-      {item.contextContent && (
-        <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3.5 text-xs space-y-2">
-          <div className="flex items-center justify-between text-indigo-300 font-bold text-[11px] uppercase tracking-wider">
-            <span className="flex items-center gap-1.5">
-              📖 {item.contextTitle || 'Bài đọc hiểu / Dữ liệu dùng chung'}
-            </span>
-            <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30 font-semibold lowercase">
-              ngữ cảnh liên kết
-            </span>
-          </div>
-          <div className="text-slate-300 leading-relaxed max-h-36 overflow-y-auto font-sans bg-slate-950/50 p-2.5 rounded-lg border border-indigo-900/30">
-            <MathRenderer content={item.contextContent} />
-          </div>
-        </div>
-      )}
+      {/* Ngữ Cảnh Dùng Chung (Bài đọc / chỉ thị nhóm) */}
+      {(item.contextTitle || item.contextContent) && (() => {
+        const cleanedBody = getCleanedContextContent(item.contextTitle, item.contextContent);
+        const titleText = (item.contextTitle || '').trim();
+
+        // TH 1: Chỉ thị nhóm câu hỏi (tiêu đề chỉ thị, không có bài đọc dài)
+        if (!cleanedBody && titleText) {
+          return (
+            <div className="bg-indigo-950/30 border border-indigo-500/25 rounded-xl px-3.5 py-2 text-xs flex items-center justify-between gap-2 shadow-sm">
+              <span className="flex items-center gap-1.5 text-indigo-300 font-medium text-[11px] min-w-0 truncate">
+                📖 <span className="font-bold shrink-0">Chỉ thị:</span> <span className="truncate">{titleText}</span>
+              </span>
+              <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30 font-semibold shrink-0">
+                chỉ thị nhóm
+              </span>
+            </div>
+          );
+        }
+
+        // TH 2: Đoạn văn đọc hiểu / bài đọc (Stimulus)
+        if (cleanedBody) {
+          return (
+            <div className="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3.5 text-xs space-y-2 shadow-sm">
+              <div className="flex items-center justify-between text-indigo-300 font-bold text-[11px] uppercase tracking-wider">
+                <span className="flex items-center gap-1.5 min-w-0 truncate">
+                  📖 {titleText || 'Bài đọc hiểu / Dữ liệu dùng chung'}
+                </span>
+                <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/30 font-semibold lowercase shrink-0">
+                  ngữ cảnh liên kết
+                </span>
+              </div>
+              <div className="text-slate-300 leading-relaxed max-h-40 overflow-y-auto font-sans bg-slate-950/50 p-2.5 rounded-lg border border-indigo-900/30">
+                <MathRenderer content={cleanedBody} />
+              </div>
+            </div>
+          );
+        }
+
+        return null;
+      })()}
 
       {/* Nội Dung Câu Hỏi */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-[10px] font-black uppercase text-slate-400 tracking-wide">
-            {item.questionType === 'ESSAY' ? 'Nội dung tình huống / Đề bài tự luận' : 'Nội dung câu hỏi'}
-          </label>
-          {(item.content?.includes('data:image/') || item.content?.includes('$')) && (
-            <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40">
-              ⚡ Có công thức/ảnh minh họa
-            </span>
-          )}
-        </div>
-        <textarea
-          value={item.content}
-          onChange={e => onUpdateItem(idx, 'content', e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors"
-          rows={item.questionType === 'ESSAY' ? 4 : 2}
-        />
-        {(item.content?.includes('data:image/') || item.content?.includes('$')) && (
-          <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl text-xs text-slate-300">
-            <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Xem trước trực quan:</div>
-            <MathRenderer content={item.content} />
+      {(() => {
+        const hasVisualFormatting = Boolean(
+          item.content?.includes('data:image/') ||
+          item.content?.includes('$') ||
+          /<u[\s>]/i.test(item.content || '')
+        );
+
+        return (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-wide">
+                {item.questionType === 'ESSAY' ? 'Nội dung tình huống / Đề bài tự luận' : 'Nội dung câu hỏi'}
+              </label>
+              {hasVisualFormatting && (
+                <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 bg-teal-950/40 px-2 py-0.5 rounded border border-teal-800/40">
+                  ⚡ Có chữ gạch dưới / công thức / ảnh
+                </span>
+              )}
+            </div>
+
+            {/* Hiển thị trực quan (Visual Rendered View) cho chữ gạch dưới, công thức toán học và ảnh */}
+            {hasVisualFormatting && (
+              <div className="p-3 bg-slate-900/90 border border-sky-500/40 rounded-xl text-sm text-slate-100 shadow-inner">
+                <div className="text-[10px] uppercase font-bold text-sky-400 mb-1 flex items-center justify-between">
+                  <span>👁️ Hiển thị trực quan:</span>
+                  <span className="text-[10px] text-slate-500 font-normal">Đã áp dụng định dạng <span className="underline decoration-sky-400 font-semibold">gạch dưới</span></span>
+                </div>
+                <div className="font-sans leading-relaxed">
+                  <MathRenderer content={item.content} />
+                </div>
+              </div>
+            )}
+
+            <textarea
+              value={item.content}
+              onChange={e => onUpdateItem(idx, 'content', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition-colors"
+              rows={item.questionType === 'ESSAY' ? 4 : (hasVisualFormatting ? 2 : 2)}
+              placeholder="Nhập nội dung câu hỏi..."
+            />
           </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* [SGI v5.6] Chùm Ý Con / Mệnh Đề Vi Mô (Sub-Items Hierarchy) */}
       {item.subItems && item.subItems.length > 0 && (
@@ -384,11 +504,10 @@ export function DocxQuestionCardRow({
                       onUpdateItem(idx, 'suggestedAnswer', (optIdx + 1).toString());
                     }
                   }}
-                  className={`flex flex-col gap-1 p-3 rounded-xl text-xs transition-all border cursor-pointer hover:border-emerald-500/50 ${
-                    isSelectedAnswer
-                      ? 'bg-emerald-950/40 border-emerald-500/70 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/40'
-                      : 'bg-slate-900/60 border-slate-850 text-slate-300'
-                  }`}
+                  className={`flex flex-col gap-1 p-3 rounded-xl text-xs transition-all border cursor-pointer hover:border-emerald-500/50 ${isSelectedAnswer
+                    ? 'bg-emerald-950/40 border-emerald-500/70 shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/40'
+                    : 'bg-slate-900/60 border-slate-850 text-slate-300'
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-1.5">
@@ -485,9 +604,8 @@ export function DocxQuestionCardRow({
                             const next = { ...currentMap, [letter]: true };
                             onUpdateItem(idx, 'suggestedAnswer', serializeMultiTfAnswer(next));
                           }}
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                            val === true ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
-                          }`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${val === true ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+                            }`}
                         >
                           Đúng
                         </button>
@@ -497,9 +615,8 @@ export function DocxQuestionCardRow({
                             const next = { ...currentMap, [letter]: false };
                             onUpdateItem(idx, 'suggestedAnswer', serializeMultiTfAnswer(next));
                           }}
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
-                            val === false ? 'bg-rose-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
-                          }`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${val === false ? 'bg-rose-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+                            }`}
                         >
                           Sai
                         </button>
@@ -562,3 +679,7 @@ export function DocxQuestionCardRow({
     </div>
   );
 }
+
+export const DocxQuestionCardRow = memo(DocxQuestionCardRowComponent);
+export const DocxQuestionCardRowMemo = DocxQuestionCardRow;
+export default DocxQuestionCardRow;
