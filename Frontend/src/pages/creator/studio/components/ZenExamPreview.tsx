@@ -9,14 +9,24 @@ import { useZenPagination } from '../hooks/useZenPagination';
 
 interface ZenExamPreviewProps {
   data: ZenUploadResult;
-  onLaunch: () => void;
+  onOpenArenaSelector: () => void;
+  onPureSaveToBank?: () => void;
+  isPureSavingToBank?: boolean;
+  onOpenHomeworkConfig?: () => void;
   onReset: () => void;
   onUpdateQuestion: (order: number, patch: ZenQuestionPatch) => void;
   isLaunching: boolean;
 }
 
 export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
-  data, onLaunch, onReset, onUpdateQuestion, isLaunching,
+  data,
+  onOpenArenaSelector,
+  onPureSaveToBank,
+  isPureSavingToBank,
+  onOpenHomeworkConfig,
+  onReset,
+  onUpdateQuestion,
+  isLaunching,
 }) => {
   const { t } = useTranslation('creator');
   const pager = useZenPagination(data.questions.length);
@@ -25,6 +35,7 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
 
   return (
     <div className="space-y-6 pb-28 animate-fadeIn">
+      {/* Header Info Card */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -38,13 +49,15 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
             <span>{t('preview.casDeduplication', { rate: data.deduplicationRatePercentage })}</span>
           </div>
         </div>
-        <button
-          onClick={onReset}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          {t('actions.reset')}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onReset}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            {t('actions.reset')}
+          </button>
+        </div>
       </div>
 
       <ZenTaxonomyBadge taxonomy={data.suggestedTaxonomy} />
@@ -67,7 +80,10 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
         isLaunching={isLaunching}
         onGoTo={pager.goTo}
         onPageSize={pager.changePageSize}
-        onLaunch={onLaunch}
+        onOpenArenaSelector={onOpenArenaSelector}
+        onPureSaveToBank={onPureSaveToBank}
+        isPureSavingToBank={isPureSavingToBank}
+        onOpenHomeworkConfig={onOpenHomeworkConfig}
       />
     </div>
   );

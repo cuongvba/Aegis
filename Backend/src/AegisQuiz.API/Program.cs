@@ -192,6 +192,7 @@ builder.Services.AddScoped<IEpistemicDeepResearchScout, AegisQuiz.Infrastructure
 builder.Services.AddScoped<IExamAuditService, ExamAuditService>();
 builder.Services.AddScoped<IExamFortressPrewarmService, ExamFortressPrewarmService>();
 builder.Services.AddScoped<IProctorService, ProctorService>();
+builder.Services.AddScoped<AegisQuiz.Application.Interfaces.IExamCampaignService, AegisQuiz.Infrastructure.Services.ExamCampaignService>();
 builder.Services.AddScoped<IAegisCoinService, AegisCoinService>();
 builder.Services.AddScoped<IPeerChallengeService, PeerChallengeService>();
 builder.Services.AddSingleton<IFsrsEngine, AegisQuiz.Application.Services.FsrsEngine>();

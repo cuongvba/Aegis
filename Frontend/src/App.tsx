@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+﻿import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
 import { FullScreenSpinner } from '@/components/ui/FullScreenSpinner';
@@ -8,48 +8,78 @@ import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { PwaInstallBanner } from '@/components/common/PwaInstallBanner';
 import { useThemeInjector } from '@/shared/hooks/useThemeInjector';
 
-const Dashboard = lazy(() => import('@/pages/dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
-const LandingPage = lazy(() => import('@/pages/landing/LandingPage').then(m => ({ default: m.LandingPage })));
-const PracticePage = lazy(() => import('@/pages/practice/PracticePage').then(m => ({ default: m.PracticePage })));
-const AttemptRoom = lazy(() => import('@/pages/quiz/AttemptRoom').then(m => ({ default: m.AttemptRoom })));
-const AdaptiveExamRoom = lazy(() => import('@/pages/quiz/AdaptiveExamRoom'));
-const SecureExamRoom = lazy(() => import('@/pages/quiz/SecureExamRoom'));
-const AttemptReview = lazy(() => import('@/pages/quiz/AttemptReview').then(m => ({ default: m.AttemptReview })));
-const LeaderboardPage = lazy(() => import('@/pages/gamification/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
-const AchievementsPage = lazy(() => import('@/pages/gamification/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
-const PathExplorer = lazy(() => import('@/pages/paths/PathExplorer').then(m => ({ default: m.PathExplorer })));
-const PaywallPage = lazy(() => import('@/pages/paywall/PaywallPage').then(m => ({ default: m.PaywallPage })));
-const ArenaHubPage = lazy(() => import('@/pages/arena/ArenaHubPage').then(m => ({ default: m.ArenaHubPage })));
-const ArenaRoomPage = lazy(() => import('@/pages/arena/ArenaRoomPage').then(m => ({ default: m.ArenaRoomPage })));
-const ArenaStudioPage = lazy(() => import('@/pages/arena/ArenaStudioPage').then(m => ({ default: m.ArenaStudioPage })));
-const TeamDashboard = lazy(() => import('@/pages/team-leader/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
-const UniversalSymposiumPage = lazy(() => import('@/pages/symposium/UniversalSymposiumPage').then(m => ({ default: m.UniversalSymposiumPage })));
-const CreatorZenStudioPage = lazy(() => import('@/pages/creator/studio/CreatorZenStudioPage'));
+/**
+ * lazyRetry: Tự động phục hồi khi trình duyệt tải chunk cũ gặp lỗi 404
+ * sau các đợt release/build mới mà client chưa F5.
+ */
+function lazyRetry<T extends { default: React.ComponentType<any> }>(
+  factory: () => Promise<T>,
+  componentName = 'chunk'
+): React.LazyExoticComponent<React.ComponentType<any>> {
+  return lazy(async () => {
+    const retryKey = "aegis_chunk_retry_" + componentName;
+    try {
+      return await factory();
+    } catch (error: any) {
+      const isChunk = /Failed to fetch dynamically imported module|Loading chunk|Failed to load module script/i.test(
+        error?.message || ''
+      );
+      const hasReloaded = sessionStorage.getItem(retryKey);
+      if (isChunk && !hasReloaded) {
+        sessionStorage.setItem(retryKey, 'true');
+        console.warn(`[lazyRetry] Chunk load failed for ${componentName}. Auto-refreshing once...`);
+        window.location.reload();
+        return new Promise<T>(() => {});
+      }
+      throw error;
+    }
+  });
+}
+
+const Dashboard = lazyRetry(() => import('@/pages/dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
+const LandingPage = lazyRetry(() => import('@/pages/landing/LandingPage').then(m => ({ default: m.LandingPage })));
+const PracticePage = lazyRetry(() => import('@/pages/practice/PracticePage').then(m => ({ default: m.PracticePage })));
+const AttemptRoom = lazyRetry(() => import('@/pages/quiz/AttemptRoom').then(m => ({ default: m.AttemptRoom })));
+const AdaptiveExamRoom = lazyRetry(() => import('@/pages/quiz/AdaptiveExamRoom'));
+const SecureExamRoom = lazyRetry(() => import('@/pages/quiz/SecureExamRoom'));
+const AttemptReview = lazyRetry(() => import('@/pages/quiz/AttemptReview').then(m => ({ default: m.AttemptReview })));
+const LeaderboardPage = lazyRetry(() => import('@/pages/gamification/LeaderboardPage').then(m => ({ default: m.LeaderboardPage })));
+const AchievementsPage = lazyRetry(() => import('@/pages/gamification/AchievementsPage').then(m => ({ default: m.AchievementsPage })));
+const PathExplorer = lazyRetry(() => import('@/pages/paths/PathExplorer').then(m => ({ default: m.PathExplorer })));
+const PaywallPage = lazyRetry(() => import('@/pages/paywall/PaywallPage').then(m => ({ default: m.PaywallPage })));
+const ArenaHubPage = lazyRetry(() => import('@/pages/arena/ArenaHubPage').then(m => ({ default: m.ArenaHubPage })));
+const ArenaJoinPage = lazyRetry(() => import('@/pages/arena/ArenaJoinPage').then(m => ({ default: m.ArenaJoinPage })));
+const ArenaRoomPage = lazyRetry(() => import('@/pages/arena/ArenaRoomPage').then(m => ({ default: m.ArenaRoomPage })));
+const ArenaStudioPage = lazyRetry(() => import('@/pages/arena/ArenaStudioPage').then(m => ({ default: m.ArenaStudioPage })));
+const TeamDashboard = lazyRetry(() => import('@/pages/team-leader/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
+const UniversalSymposiumPage = lazyRetry(() => import('@/pages/symposium/UniversalSymposiumPage').then(m => ({ default: m.UniversalSymposiumPage })));
+const CreatorZenStudioPage = lazyRetry(() => import('@/pages/creator/studio/CreatorZenStudioPage'));
 
 // Admin Lazy Pages
-const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
-const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
-const AdminQuestionsPage = lazy(() => import('@/pages/admin/questions').then(m => ({ default: m.AdminQuestionsPage })));
-const AdminParsingRulesPage = lazy(() => import('@/pages/admin/parsing-rules/AdminParsingRulesPage').then(m => ({ default: m.AdminParsingRulesPage })));
-const AdminNotebooksPage = lazy(() => import('@/pages/admin/AdminNotebooksPage').then(m => ({ default: m.AdminNotebooksPage })));
-const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
-const AdminPaymentsPage = lazy(() => import('@/pages/admin/AdminPaymentsPage').then(m => ({ default: m.AdminPaymentsPage })));
-const AdminExamsPage = lazy(() => import('@/pages/admin/AdminExamsPage').then(m => ({ default: m.AdminExamsPage })));
-const TenantsPage = lazy(() => import('@/pages/admin/tenants/TenantsPage').then(m => ({ default: m.TenantsPage })));
-const OrganizationUnitsPage = lazy(() => import('@/pages/admin/org-units/OrganizationUnitsPage').then(m => ({ default: m.OrganizationUnitsPage })));
-const AiSettingsPage = lazy(() => import('@/pages/admin/ai/AiSettingsPage').then(m => ({ default: m.AiSettingsPage })));
-const PromptForgeAdminPage = lazy(() => import('@/pages/admin/PromptForgeAdminPage').then(m => ({ default: m.PromptForgeAdminPage })));
-const SplitScreenStudioPage = lazy(() => import('@/pages/admin/studio').then(m => ({ default: m.SplitScreenStudioPage })));
-const TenantThemeCustomizerPage = lazy(() => import('@/pages/admin/white-label').then(m => ({ default: m.TenantThemeCustomizerPage })));
+const AdminLayout = lazyRetry(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazyRetry(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminQuestionsPage = lazyRetry(() => import('@/pages/admin/questions').then(m => ({ default: m.AdminQuestionsPage })));
+const AdminTopicsPage = lazyRetry(() => import('@/pages/admin/topics').then(m => ({ default: m.AdminTopicsPage })));
+const AdminParsingRulesPage = lazyRetry(() => import('@/pages/admin/parsing-rules/AdminParsingRulesPage').then(m => ({ default: m.AdminParsingRulesPage })));
+const AdminNotebooksPage = lazyRetry(() => import('@/pages/admin/AdminNotebooksPage').then(m => ({ default: m.AdminNotebooksPage })));
+const AdminUsersPage = lazyRetry(() => import('@/pages/admin/AdminUsersPage').then(m => ({ default: m.AdminUsersPage })));
+const AdminPaymentsPage = lazyRetry(() => import('@/pages/admin/AdminPaymentsPage').then(m => ({ default: m.AdminPaymentsPage })));
+const AdminExamsPage = lazyRetry(() => import('@/pages/admin/AdminExamsPage').then(m => ({ default: m.AdminExamsPage })));
+const TenantsPage = lazyRetry(() => import('@/pages/admin/tenants/TenantsPage').then(m => ({ default: m.TenantsPage })));
+const OrganizationUnitsPage = lazyRetry(() => import('@/pages/admin/org-units/OrganizationUnitsPage').then(m => ({ default: m.OrganizationUnitsPage })));
+const AiSettingsPage = lazyRetry(() => import('@/pages/admin/ai/AiSettingsPage').then(m => ({ default: m.AiSettingsPage })));
+const PromptForgeAdminPage = lazyRetry(() => import('@/pages/admin/PromptForgeAdminPage').then(m => ({ default: m.PromptForgeAdminPage })));
+const SplitScreenStudioPage = lazyRetry(() => import('@/pages/admin/studio').then(m => ({ default: m.SplitScreenStudioPage })));
+const TenantThemeCustomizerPage = lazyRetry(() => import('@/pages/admin/white-label').then(m => ({ default: m.TenantThemeCustomizerPage })));
 
 // Auth Lazy Pages
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
-const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
-const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
-const CallbackPage = lazy(() => import('@/pages/auth/CallbackPage').then(m => ({ default: m.CallbackPage })));
-const QrConfirmPage = lazy(() => import('@/pages/auth/QrConfirmPage').then(m => ({ default: m.QrConfirmPage })));
-const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const MobileAppRootPage = lazy(() => import('@/mobile/pages/MobileAppRootPage'));
+const LoginPage = lazyRetry(() => import('@/pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazyRetry(() => import('@/pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const ResetPasswordPage = lazyRetry(() => import('@/pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const CallbackPage = lazyRetry(() => import('@/pages/auth/CallbackPage').then(m => ({ default: m.CallbackPage })));
+const QrConfirmPage = lazyRetry(() => import('@/pages/auth/QrConfirmPage').then(m => ({ default: m.QrConfirmPage })));
+const ProfilePage = lazyRetry(() => import('@/pages/profile/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const MobileAppRootPage = lazyRetry(() => import('@/mobile/pages/MobileAppRootPage'));
 
 export default function App() {
   useThemeInjector();
@@ -90,7 +120,7 @@ export default function App() {
                 }
               >
                 <Route index element={<AdminDashboard />} />
-                <Route path="questions" element={<AdminQuestionsPage />} />
+                <Route path="questions" element={<AdminQuestionsPage />} />`n                <Route path="topics" element={<AdminTopicsPage />} />
                 <Route path="parsing-rules" element={<AdminParsingRulesPage />} />
                 <Route path="notebooks" element={<AdminNotebooksPage />} />
                 <Route path="users" element={<AdminUsersPage />} />
@@ -123,7 +153,7 @@ export default function App() {
 
               {/* Practice/Exam is full screen so it stays separate from MainLayout */}
               <Route path="/practice" element={<PracticePage />} />
-              <Route path="/creator/studio" element={<CreatorZenStudioPage />} />
+              <Route path="/creator/studio" element={<ProtectedRoute><CreatorZenStudioPage /></ProtectedRoute>} />
               <Route
                 path="/admin/studio"
                 element={
@@ -133,6 +163,7 @@ export default function App() {
                 }
               />
               <Route path="/paywall" element={<PaywallPage />} />
+              <Route path="/arena/join" element={<ArenaJoinPage />} />
               <Route path="/arena/studio" element={<ArenaStudioPage />} />
               <Route path="/arena/:gameCode/:roomId" element={<ArenaRoomPage />} />
               <Route path="/quiz/attempt/adaptive" element={<AdaptiveExamRoom />} />
@@ -151,4 +182,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-

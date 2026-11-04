@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, ShieldAlert, Lock, Mail, LogIn, KeyRound, Loader2, ArrowRight, X, Sparkles, Building2, UserCheck, Smartphone, QrCode } from 'lucide-react';
 import { useAgribankPKI } from '../../hooks/useAgribankPKI';
@@ -11,12 +11,14 @@ import { TwoFactorChallengeModal } from './TwoFactorChallengeModal';
 import { QrLoginCard } from './QrLoginCard';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
+import { AegisBrandLogo } from '@/components/common/AegisBrandLogo';
 
 export function LoginPage() {
   const { t, i18n } = useTranslation('auth');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const returnTo = searchParams.get('returnTo');
+  const location = useLocation();
+  const returnTo = searchParams.get('returnTo') || (location.state as any)?.from;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -244,7 +246,10 @@ export function LoginPage() {
       <div className="w-full max-w-md bg-slate-900/80 border border-slate-800/90 rounded-3xl p-8 shadow-2xl backdrop-blur-2xl relative z-10 space-y-6">
 
         {/* Brand Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center pb-1">
+            <AegisBrandLogo size="lg" variant="full" />
+          </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-[11px] font-bold tracking-wide">
             <ShieldCheck size={14} className="text-blue-400" /> {t('badge', 'Nền tảng Khảo thí & Đào tạo Doanh nghiệp')}
           </div>

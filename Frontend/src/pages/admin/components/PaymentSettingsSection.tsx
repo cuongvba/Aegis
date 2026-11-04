@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Key, ShieldCheck, RefreshCw, Check, Copy, Save, AlertCircle, Eye, EyeOff, Zap, ShieldAlert } from 'lucide-react';
 import api from '@/services/api';
 import { BankAccountVerifierBox } from './BankAccountVerifierBox';
 import { MfaStepUpModal } from './MfaStepUpModal';
 
 export const PaymentSettingsSection: React.FC = () => {
+  const { t } = useTranslation('admin_payments');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -12,8 +14,6 @@ export const PaymentSettingsSection: React.FC = () => {
   const [showKeys, setShowKeys] = useState(false);
   const [copiedWebhook, setCopiedWebhook] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
-
-  // Kiểm tra quyền SysAdmin từ LocalStorage Auth State
   const [isSysAdmin, setIsSysAdmin] = useState(true);
 
   const [form, setForm] = useState({
@@ -67,15 +67,12 @@ export const PaymentSettingsSection: React.FC = () => {
     setSaving(true);
     setStatusMsg(null);
     try {
-      const payload = {
-        ...form,
-        ...authData,
-      };
+      const payload = { ...form, ...authData };
       await api.post('/api/payment/config', payload);
-      setStatusMsg({ type: 'success', text: 'Đã xác thực MFA & lưu cấu hình tài khoản thụ hưởng thành công! 0ms Hot-Reload kích hoạt.' });
+      setStatusMsg({ type: 'success', text: t('settings.saveSuccess', 'Cấu hình thanh toán thụ hưởng đã được lưu thành công!') });
       setIsMfaModalOpen(false);
     } catch (err: any) {
-      setStatusMsg({ type: 'error', text: err.response?.data?.message || 'Lỗi lưu cấu hình hoặc xác thực thất bại.' });
+      setStatusMsg({ type: 'error', text: err.response?.data?.message || t('settings.saveError', 'Lỗi lưu cấu hình.') });
     } finally {
       setSaving(false);
     }
@@ -112,25 +109,21 @@ export const PaymentSettingsSection: React.FC = () => {
           <ShieldAlert className="w-5 h-5 shrink-0 text-amber-400" />
           <div>
             <p className="font-bold">Chế độ Chỉ Xem (SysAdmin Sovereignty Protocol)</p>
-            <p className="text-amber-400/80">Bạn đang xem với tư cách Quản trị viên Tenant. Thẩm quyền cấu hình tài khoản thụ hưởng tài chính thuộc về Quản trị viên Tối cao (SysAdmin).</p>
+            <p className="text-amber-400/80">Bạn đang xem với tư cách Quản trị viên Tenant. Thẩm quyền cấu hình tài khoản thuộc SysAdmin.</p>
           </div>
         </div>
       )}
 
       {statusMsg && (
-        <div
-          className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold ${
-            statusMsg.type === 'success'
-              ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300'
-              : 'bg-rose-500/10 border border-rose-500/20 text-rose-300'
-          }`}
-        >
+        <div className={`p-4 rounded-2xl flex items-center gap-3 text-xs font-semibold ${
+          statusMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/20 text-rose-300'
+        }`}>
           {statusMsg.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           <span>{statusMsg.text}</span>
         </div>
       )}
 
-      {/* 1. VietQR Napas Direct với Real-Time Verifier Sub-component */}
+      {/* 1. VietQR Napas Direct */}
       <BankAccountVerifierBox
         bankBin={form.vietQrBankBin}
         accountNumber={form.vietQrAccountNumber}
@@ -146,15 +139,15 @@ export const PaymentSettingsSection: React.FC = () => {
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <Key className="w-5 h-5 text-cyan-400" />
-            <h3 className="font-bold text-slate-100 text-sm md:text-base">2. Tích Hợp Cổng Tự Động PayOS (Napas Webhook)</h3>
+            <h3 className="font-bold text-slate-100 text-sm md:text-base">{t('settings.sectionPayos', '2. Tích Hợp Cổng Tự Động PayOS (Napas Webhook)')}</h3>
           </div>
           <button
             type="button"
             onClick={() => setShowKeys(!showKeys)}
-            className="flex items-center gap-1 text-slate-400 hover:text-slate-200 text-xs"
+            className="flex items-center gap-1 text-slate-400 hover:text-slate-200 text-xs cursor-pointer"
           >
             {showKeys ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span>{showKeys ? 'Ẩn khóa bảo mật' : 'Hiện khóa bảo mật'}</span>
+            <span>{showKeys ? t('settings.hideKeys', 'Ẩn khóa bảo mật') : t('settings.showKeys', 'Hiện khóa bảo mật')}</span>
           </button>
         </div>
 
@@ -196,7 +189,7 @@ export const PaymentSettingsSection: React.FC = () => {
 
         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs">
           <div className="space-y-0.5">
-            <span className="text-slate-400 font-medium">Webhook URL đăng ký trên PayOS:</span>
+            <span className="text-slate-400 font-medium">{t('settings.webhookLabel', 'Webhook URL đăng ký trên PayOS:')}</span>
             <p className="font-mono text-cyan-400 text-[11px] select-all">{form.payOsWebhookUrl}</p>
           </div>
           <button
@@ -206,7 +199,7 @@ export const PaymentSettingsSection: React.FC = () => {
               setCopiedWebhook(true);
               setTimeout(() => setCopiedWebhook(false), 2000);
             }}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
           >
             {copiedWebhook ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
           </button>
@@ -217,7 +210,7 @@ export const PaymentSettingsSection: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-slate-900/60 p-5 rounded-3xl border border-slate-800 space-y-3 backdrop-blur-xl">
           <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-400" /> 3. Stripe & Global Card
+            <ShieldCheck className="w-4 h-4 text-blue-400" /> {t('settings.sectionStripe', '3. Stripe & Global Card')}
           </h4>
           <div className="space-y-2 text-xs">
             <div>
@@ -247,11 +240,11 @@ export const PaymentSettingsSection: React.FC = () => {
 
         <div className="bg-slate-900/60 p-5 rounded-3xl border border-slate-800 space-y-3 backdrop-blur-xl">
           <h4 className="font-bold text-slate-100 text-sm flex items-center gap-2">
-            <Zap className="w-4 h-4 text-purple-400" /> 4. Ví Nhận Web3 (Polygon Treasury)
+            <Zap className="w-4 h-4 text-purple-400" /> {t('settings.sectionWeb3', '4. Ví Nhận Web3 (Polygon Treasury)')}
           </h4>
           <div className="space-y-2 text-xs">
             <div>
-              <label className="block text-slate-400 mb-1">Địa chỉ Ví nhận MATIC / USDT On-chain</label>
+              <label className="block text-slate-400 mb-1">{t('settings.walletLabel', 'Địa chỉ Ví nhận MATIC / USDT On-chain')}</label>
               <input
                 type="text"
                 disabled={!isSysAdmin}
@@ -268,7 +261,7 @@ export const PaymentSettingsSection: React.FC = () => {
                 onChange={(e) => setForm({ ...form, enableSandboxTesting: e.target.checked })}
                 className="w-4 h-4 rounded text-cyan-500 bg-slate-950 border-slate-700"
               />
-              <span className="text-slate-300">Bật Chế độ Sandbox Testing (Cho phép Giả lập nạp thử nghiệm)</span>
+              <span className="text-slate-300">{t('settings.sandboxLabel', 'Bật Chế độ Sandbox Testing')}</span>
             </label>
           </div>
         </div>
@@ -280,25 +273,24 @@ export const PaymentSettingsSection: React.FC = () => {
           type="button"
           onClick={handleTestConnection}
           disabled={testing}
-          className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition disabled:opacity-50"
+          className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
         >
           {testing ? <RefreshCw className="w-4 h-4 animate-spin text-cyan-400" /> : <ShieldCheck className="w-4 h-4 text-emerald-400" />}
-          Kiểm tra Kết nối (Ping Test)
+          {t('settings.btnTest', 'Kiểm tra Kết nối (Ping Test)')}
         </button>
         {isSysAdmin && (
           <button
             type="button"
             onClick={() => setIsMfaModalOpen(true)}
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 hover:opacity-90 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 transition disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 hover:opacity-90 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 transition disabled:opacity-50 cursor-pointer active:scale-95"
           >
             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Lưu Cấu Hình (0ms Hot-Reload)
+            {t('settings.btnSave', 'Lưu Cấu Hình (0ms Hot-Reload)')}
           </button>
         )}
       </div>
 
-      {/* Modal Xác Thực Sudo/MFA Cấp Độ 3 */}
       <MfaStepUpModal
         isOpen={isMfaModalOpen}
         onClose={() => setIsMfaModalOpen(false)}

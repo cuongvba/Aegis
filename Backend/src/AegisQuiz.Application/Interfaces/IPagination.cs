@@ -74,5 +74,9 @@ namespace AegisQuiz.Application.Interfaces
         public string? CurriculumSeries { get; set; }
         /// <summary>Giai đoạn học kỳ / Kỳ khảo thí (e.g. "HK1_MID", "HK1_FIN", "HK2_MID", "HK2_FIN")</summary>
         public string? SemesterPhase { get; set; }
+
+        // [Ownership & Scoped RBAC Filtering]
+        public string? CreatorId     { get; set; }
+        public bool    MyOnly        { get; set; } = false;
     }
 }

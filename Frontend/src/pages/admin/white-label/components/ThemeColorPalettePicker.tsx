@@ -26,12 +26,12 @@ export const ThemeColorPalettePicker: React.FC<ThemeColorPalettePickerProps> = (
     <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-5">
       <div className="flex items-center gap-2 text-sm font-bold text-white pb-3 border-b border-slate-800">
         <Palette className="w-4 h-4 text-indigo-400" />
-        <span>{t('colorSystem')}</span>
+        <span>{t('colorSystem', 'Hệ thống Bảng Màu & Tokens')}</span>
       </div>
 
       {/* Preset Palettes */}
       <div className="space-y-2">
-        <span className="text-xs text-slate-400 font-medium">Bảng màu doanh nghiệp đề xuất</span>
+        <span className="text-xs text-slate-400 font-medium">{t('colorPresets', 'Bảng màu doanh nghiệp đề xuất')}</span>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {PRESET_PALETTES.map((p) => {
             const isSelected =
@@ -47,7 +47,7 @@ export const ThemeColorPalettePicker: React.FC<ThemeColorPalettePickerProps> = (
                     accentColor: p.accent,
                   })
                 }
-                className={`flex items-center justify-between p-2 rounded-xl border text-xs font-medium transition-all ${
+                className={`flex items-center justify-between p-2 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-slate-800 border-indigo-500 shadow-md'
                     : 'bg-slate-950/40 border-slate-800 hover:border-slate-700'
@@ -76,7 +76,7 @@ export const ThemeColorPalettePicker: React.FC<ThemeColorPalettePickerProps> = (
       {/* Tùy chỉnh màu chi tiết */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
         <div>
-          <label className="text-xs text-slate-400 block mb-1.5">{t('primaryColor')}</label>
+          <label className="text-xs text-slate-400 block mb-1.5">{t('primaryColor', 'Màu chủ đạo (Primary)')}</label>
           <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
             <input
               type="color"
@@ -91,7 +91,7 @@ export const ThemeColorPalettePicker: React.FC<ThemeColorPalettePickerProps> = (
         </div>
 
         <div>
-          <label className="text-xs text-slate-400 block mb-1.5">{t('secondaryColor')}</label>
+          <label className="text-xs text-slate-400 block mb-1.5">{t('secondaryColor', 'Màu phụ trợ (Secondary)')}</label>
           <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
             <input
               type="color"
@@ -106,7 +106,7 @@ export const ThemeColorPalettePicker: React.FC<ThemeColorPalettePickerProps> = (
         </div>
 
         <div>
-          <label className="text-xs text-slate-400 block mb-1.5">{t('accentColor')}</label>
+          <label className="text-xs text-slate-400 block mb-1.5">{t('accentColor', 'Màu điểm nhấn (Accent)')}</label>
           <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-2">
             <input
               type="color"

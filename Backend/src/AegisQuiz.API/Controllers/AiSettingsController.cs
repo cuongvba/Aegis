@@ -115,7 +115,9 @@ namespace AegisQuiz.API.Controllers
                     return BadRequest(new { message = "Nội dung câu hỏi không được để trống." });
                 }
 
+#pragma warning disable CS0618
                 var persona = dto.Persona.HasValue ? (AgentPersonaType)dto.Persona.Value : AgentPersonaType.SupremeArbiter;
+#pragma warning restore CS0618
                 var walkthrough = await _aiRouter.GenerateWalkthroughAsync(
                     dto.QuestionContent,
                     dto.Options ?? new List<string>(),

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace AegisQuiz.API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/quiz/topics")]
-    [Authorize(Policy = RoleWeightPolicies.TeamLeader)]
+    [Authorize(Policy = RoleWeightPolicies.Learner)]
     public class TopicsController : ControllerBase
     {
         private readonly AegisQuizDbContext          _db;
@@ -65,107 +65,114 @@ namespace AegisQuiz.API.Controllers
             }
         }
 
+        private static string FormatCreatorCode(string rawCode)
+        {
+            if (string.IsNullOrWhiteSpace(rawCode)) return "CRTGUEST";
+            var stripped = rawCode.Replace("TEACH-", "").Replace("TEACH_", "").Replace("-", "").Replace("_", "").ToUpperInvariant();
+            return stripped.StartsWith("CRT") ? stripped : "CRT" + stripped;
+        }
+
         private async Task AutoHealHierarchicalTopicsAsync()
         {
             try
             {
+                bool changed = false;
+
                 var dot2Topics = await _db.BankTopics
                     .Where(t => t.Code.StartsWith("2026_DOT2_") && (!t.ParentId.HasValue || t.Name == t.Code || t.Description == "Tự động khởi tạo từ dữ liệu nhập file"))
                     .ToListAsync();
 
-                if (dot2Topics.Count == 0) return;
-
-                // 1. Bảo đảm chủ đề cha 2026-DOT2 tồn tại
-                var parent = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == "2026_DOT2");
-                if (parent == null)
+                if (dot2Topics.Count > 0)
                 {
-                    parent = new Domain.Entities.BankTopic
+                    var parent = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == "2026_DOT2");
+                    if (parent == null)
                     {
-                        Id = Guid.NewGuid(),
-                        Code = "2026_DOT2",
-                        Name = "2026-DOT2",
-                        CategoryCode = "BANKING",
-                        DomainCode = "BANKING",
-                        Scope = "COMMUNITY",
-                        MaterializedPath = "/BANKING/2026_DOT2/",
-                        DepthLevel = 1,
-                        Urn = "urn:aegis:topic:banking:2026-dot2",
-                        Description = "Thư mục chuyên đề: 2026-DOT2",
-                        VisibilityScope = Domain.Entities.TopicVisibility.Public,
-                        Enabled = true,
-                        CreatedAt = DateTime.UtcNow
+                        parent = new Domain.Entities.BankTopic
+                        {
+                            Id = Guid.NewGuid(),
+                            Code = "2026_DOT2",
+                            Name = "2026-DOT2",
+                            CategoryCode = "BANKING",
+                            DomainCode = "BANKING",
+                            Scope = "COMMUNITY",
+                            MaterializedPath = "/BANKING/2026_DOT2/",
+                            DepthLevel = 1,
+                            Urn = "urn:aegis:topic:banking:2026-dot2",
+                            Description = "Thư mục chuyên đề: 2026-DOT2",
+                            VisibilityScope = Domain.Entities.TopicVisibility.Public,
+                            Enabled = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.BankTopics.Add(parent);
+                        await _db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        if (parent.DomainCode != "BANKING" || string.IsNullOrWhiteSpace(parent.MaterializedPath))
+                        {
+                            parent.DomainCode = "BANKING";
+                            parent.Scope = "COMMUNITY";
+                            parent.MaterializedPath = "/BANKING/2026_DOT2/";
+                            parent.DepthLevel = 1;
+                            parent.Urn = "urn:aegis:topic:banking:2026-dot2";
+                        }
+                    }
+
+                    var knownTitles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["2026_DOT2_1_TIN_DUNG_KHDN_240_CAU"] = "1. Tín dụng KHDN - 240 câu",
+                        ["2026_DOT2_2_TIN_DUNG_KHCN_240_CAU"] = "2. Tín dụng KHCN - 240 câu",
+                        ["2026_DOT2_3_KE_TOAN_TIEN_GUI_TIEN_VAY"] = "3. Kế toán tiền gửi, tiền vay",
+                        ["2026_DOT2_4_KE_TOAN_THANH_TOAN"] = "4. Kế toán thanh toán",
+                        ["2026_DOT2_5_KE_TOAN_TIEN_MAT"] = "5. Kế toán tiền mặt",
+                        ["2026_DOT2_6_KE_TOAN_TAI_CHINH_TAI_SAN"] = "6. Kế toán tài chính, tài sản",
+                        ["2026_DOT2_7_KE_TOAN_GIAO_DICH_NOI_BO"] = "7. Kế toán giao dịch nội bộ",
+                        ["2026_DOT2_8_THANH_TOAN_QUOC_TE"] = "8. Thanh toán quốc tế",
+                        ["2026_DOT2_9_QUAN_TRI_RUI_RO"] = "9. Quản trị rủi ro",
+                        ["2026_DOT2_10_PHAP_CHE"] = "10. Pháp chế",
+                        ["2026_DOT2_11_KIEM_TRA_KIEM_SOAT_NOI_BO"] = "11. Kiểm tra kiểm soát nội bộ",
+                        ["2026_DOT2_12_XU_LY_NO"] = "12. Xử lý nợ",
+                        ["2026_DOT2_13_DICH_VU_KHACH_HANG"] = "13. Dịch vụ khách hàng",
+                        ["2026_DOT2_14_KHO_QUY"] = "14. Kho quỹ",
+                        ["2026_DOT2_15_KE_HOACH_NGUON_VON"] = "15. Kế hoạch nguồn vốn",
+                        ["2026_DOT2_16_TO_CHUC_CAN_BO"] = "16. Tổ chức cán bộ",
+                        ["2026_DOT2_17_VAN_PHONG_TIEN_ICH"] = "17. Văn phòng tiện ích",
+                        ["2026_DOT2_18_CONG_NGHE_THONG_TIN"] = "18. Công nghệ thông tin",
+                        ["2026_DOT2_19_AN_TOAN_BAO_MAT"] = "19. An toàn bảo mật"
                     };
-                    _db.BankTopics.Add(parent);
-                    await _db.SaveChangesAsync();
-                }
-                else
-                {
-                    if (parent.DomainCode != "BANKING" || string.IsNullOrWhiteSpace(parent.MaterializedPath))
+
+                    foreach (var dt in dot2Topics)
                     {
-                        parent.DomainCode = "BANKING";
-                        parent.Scope = "COMMUNITY";
-                        parent.MaterializedPath = "/BANKING/2026_DOT2/";
-                        parent.DepthLevel = 1;
-                        parent.Urn = "urn:aegis:topic:banking:2026-dot2";
+                        if (dt.Id == parent.Id) continue;
+
+                        if (!dt.ParentId.HasValue)
+                        {
+                            dt.ParentId = parent.Id;
+                            changed = true;
+                        }
+
+                        if (dt.Name == dt.Code && knownTitles.TryGetValue(dt.Code, out var knownName))
+                        {
+                            dt.Name = knownName;
+                            changed = true;
+                        }
+
+                        dt.DomainCode = "BANKING";
+                        dt.Scope = "COMMUNITY";
+                        dt.MaterializedPath = $"/BANKING/2026_DOT2/{dt.Code}/";
+                        dt.DepthLevel = 2;
+                        dt.Urn = $"urn:aegis:topic:banking:2026-dot2:{dt.Code.ToLowerInvariant()}";
+
+                        if (string.IsNullOrWhiteSpace(dt.Description) || dt.Description == "Tự động khởi tạo từ dữ liệu nhập file")
+                        {
+                            var qCount = await _db.Questions.CountAsync(q => q.CategoryCode == dt.Code);
+                            dt.Description = $"{dt.Name} | Đường dẫn: 2026-DOT2";
+                            dt.QuestionCountCached = qCount;
+                            changed = true;
+                        }
                     }
                 }
 
-                var knownTitles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["2026_DOT2_1_TIN_DUNG_KHDN_240_CAU"] = "1. Tín dụng KHDN - 240 câu",
-                    ["2026_DOT2_2_TIN_DUNG_KHCN_240_CAU"] = "2. Tín dụng KHCN - 240 câu",
-                    ["2026_DOT2_3_KE_TOAN_TIEN_GUI_TIEN_VAY"] = "3. Kế toán tiền gửi, tiền vay",
-                    ["2026_DOT2_4_KE_TOAN_THANH_TOAN"] = "4. Kế toán thanh toán",
-                    ["2026_DOT2_5_KE_TOAN_TIEN_MAT"] = "5. Kế toán tiền mặt",
-                    ["2026_DOT2_6_KE_TOAN_TAI_CHINH_TAI_SAN"] = "6. Kế toán tài chính, tài sản",
-                    ["2026_DOT2_7_KE_TOAN_GIAO_DICH_NOI_BO"] = "7. Kế toán giao dịch nội bộ",
-                    ["2026_DOT2_8_THANH_TOAN_QUOC_TE"] = "8. Thanh toán quốc tế",
-                    ["2026_DOT2_9_QUAN_TRI_RUI_RO"] = "9. Quản trị rủi ro",
-                    ["2026_DOT2_10_PHAP_CHE"] = "10. Pháp chế",
-                    ["2026_DOT2_11_KIEM_TRA_KIEM_SOAT_NOI_BO"] = "11. Kiểm tra kiểm soát nội bộ",
-                    ["2026_DOT2_12_XU_LY_NO"] = "12. Xử lý nợ",
-                    ["2026_DOT2_13_DICH_VU_KHACH_HANG"] = "13. Dịch vụ khách hàng",
-                    ["2026_DOT2_14_KHO_QUY"] = "14. Kho quỹ",
-                    ["2026_DOT2_15_KE_HOACH_NGUON_VON"] = "15. Kế hoạch nguồn vốn",
-                    ["2026_DOT2_16_TO_CHUC_CAN_BO"] = "16. Tổ chức cán bộ",
-                    ["2026_DOT2_17_VAN_PHONG_TIEN_ICH"] = "17. Văn phòng tiện ích",
-                    ["2026_DOT2_18_CONG_NGHE_THONG_TIN"] = "18. Công nghệ thông tin",
-                    ["2026_DOT2_19_AN_TOAN_BAO_MAT"] = "19. An toàn bảo mật"
-                };
-
-                bool changed = false;
-                foreach (var dt in dot2Topics)
-                {
-                    if (dt.Id == parent.Id) continue;
-
-                    if (!dt.ParentId.HasValue)
-                    {
-                        dt.ParentId = parent.Id;
-                        changed = true;
-                    }
-
-                    if (dt.Name == dt.Code && knownTitles.TryGetValue(dt.Code, out var knownName))
-                    {
-                        dt.Name = knownName;
-                        changed = true;
-                    }
-
-                    dt.DomainCode = "BANKING";
-                    dt.Scope = "COMMUNITY";
-                    dt.MaterializedPath = $"/BANKING/2026_DOT2/{dt.Code}/";
-                    dt.DepthLevel = 2;
-                    dt.Urn = $"urn:aegis:topic:banking:2026-dot2:{dt.Code.ToLowerInvariant()}";
-
-                    if (string.IsNullOrWhiteSpace(dt.Description) || dt.Description == "Tự động khởi tạo từ dữ liệu nhập file")
-                    {
-                        var qCount = await _db.Questions.CountAsync(q => q.CategoryCode == dt.Code);
-                        dt.Description = $"{dt.Name} | Đường dẫn: 2026-DOT2";
-                        dt.QuestionCountCached = qCount;
-                        changed = true;
-                    }
-                }
-
-                // Cập nhật các chủ đề khác: TNPT_TIENG_ANH
                 var tnpt = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == "TNPT_TIENG_ANH");
                 if (tnpt != null && (tnpt.DomainCode != "EDUCATION" || string.IsNullOrWhiteSpace(tnpt.MaterializedPath)))
                 {
@@ -175,6 +182,126 @@ namespace AegisQuiz.API.Controllers
                     tnpt.DepthLevel = 1;
                     tnpt.Urn = "urn:aegis:topic:education:tnpt-tieng-anh";
                     changed = true;
+                }
+
+                // 2. Auto-Heal Creator Studio Topics Hierarchy (STUDIO / YMD / Creator CRT... / Exam TP...)
+                var legacyStudioTopics = await _db.BankTopics
+                    .Where(t => (t.Code.StartsWith("STUDIO_") || t.Code.StartsWith("TP")) && (!t.ParentId.HasValue || t.DepthLevel == 0 || string.IsNullOrWhiteSpace(t.MaterializedPath) || t.Code.Contains("TEACH") || t.MaterializedPath.Contains("TEACH")))
+                    .ToListAsync();
+
+                if (legacyStudioTopics.Count > 0)
+                {
+                    var defaultPartner = await _db.EducatorPartnerships.FirstOrDefaultAsync();
+                    var defaultCreatorCode = FormatCreatorCode(defaultPartner?.ReferralCode ?? "CRT7571EC");
+
+                    foreach (var st in legacyStudioTopics)
+                    {
+                        if (st.Code == "STUDIO") continue;
+
+                        var createdAt = st.CreatedAt != default ? st.CreatedAt : DateTime.UtcNow;
+                        var ymd = createdAt.ToString("yyyyMMdd");
+                        var ymdFormatted = createdAt.ToString("yyyy-MM-dd");
+                        var tenantId = st.TenantId;
+                        var creatorCode = defaultCreatorCode;
+
+                        // 1. Root: STUDIO
+                        var root = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == "STUDIO" && (tenantId == Guid.Empty || t.TenantId == tenantId || t.TenantId == Guid.Empty));
+                        if (root == null)
+                        {
+                            root = new Domain.Entities.BankTopic
+                            {
+                                Id = Guid.NewGuid(),
+                                Code = "STUDIO",
+                                Name = "Creator Studio",
+                                Description = "Thư mục gốc đề thi sáng tạo Creator Studio",
+                                CategoryCode = "STUDIO",
+                                DomainCode = "EDUCATION",
+                                Scope = tenantId != Guid.Empty ? "TENANT" : "COMMUNITY",
+                                MaterializedPath = "/STUDIO/",
+                                DepthLevel = 1,
+                                ParentId = null,
+                                VisibilityScope = Domain.Entities.TopicVisibility.Public,
+                                Enabled = true,
+                                TenantId = tenantId
+                            };
+                            _db.BankTopics.Add(root);
+                            await _db.SaveChangesAsync();
+                        }
+
+                        // 2. Date Folder: STUDIO_{ymd}
+                        var dateCode = $"STUDIO_{ymd}";
+                        var dateFolder = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == dateCode && (tenantId == Guid.Empty || t.TenantId == tenantId || t.TenantId == Guid.Empty));
+                        if (dateFolder == null)
+                        {
+                            dateFolder = new Domain.Entities.BankTopic
+                            {
+                                Id = Guid.NewGuid(),
+                                Code = dateCode,
+                                Name = $"Studio {ymdFormatted}",
+                                Description = $"Thư mục đề thi ngày {createdAt:dd/MM/yyyy}",
+                                CategoryCode = "STUDIO",
+                                DomainCode = "EDUCATION",
+                                Scope = tenantId != Guid.Empty ? "TENANT" : "COMMUNITY",
+                                MaterializedPath = $"/STUDIO/{ymd}/",
+                                DepthLevel = 2,
+                                ParentId = root.Id,
+                                VisibilityScope = Domain.Entities.TopicVisibility.Public,
+                                Enabled = true,
+                                TenantId = tenantId
+                            };
+                            _db.BankTopics.Add(dateFolder);
+                            await _db.SaveChangesAsync();
+                        }
+
+                        // 3. Creator Folder: STUDIO_{ymd}_{creatorCode} (Ví dụ: STUDIO_20261102_CRT7571EC)
+                        var creatorFolderCode = $"STUDIO_{ymd}_{creatorCode}";
+                        var creatorFolder = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == creatorFolderCode && (tenantId == Guid.Empty || t.TenantId == tenantId || t.TenantId == Guid.Empty));
+                        if (creatorFolder == null)
+                        {
+                            creatorFolder = new Domain.Entities.BankTopic
+                            {
+                                Id = Guid.NewGuid(),
+                                Code = creatorFolderCode,
+                                Name = $"Creator [{creatorCode}]",
+                                Description = $"Không gian đề thi giáo viên {creatorCode} ngày {createdAt:dd/MM/yyyy}",
+                                CategoryCode = "STUDIO",
+                                DomainCode = "EDUCATION",
+                                Scope = tenantId != Guid.Empty ? "TENANT" : "COMMUNITY",
+                                MaterializedPath = $"/STUDIO/{ymd}/{creatorCode}/",
+                                DepthLevel = 3,
+                                ParentId = dateFolder.Id,
+                                VisibilityScope = Domain.Entities.TopicVisibility.Public,
+                                Enabled = true,
+                                TenantId = tenantId,
+                                CreatedByUserId = defaultPartner?.UserId
+                            };
+                            _db.BankTopics.Add(creatorFolder);
+                            await _db.SaveChangesAsync();
+                        }
+
+                        // 4. Update legacy exam topic to level 4: code TP...
+                        if (st.DepthLevel == 4 || (st.Code != dateCode && st.Code != creatorFolderCode && !st.Code.Contains("CRT")))
+                        {
+                            var oldCode = st.Code;
+                            if (st.Code.StartsWith("STUDIO_"))
+                            {
+                                var newCode = "TP" + st.Code.Substring(7);
+                                st.Code = newCode;
+                                var questionsToUpdate = await _db.Questions.Where(q => q.CategoryCode == oldCode).ToListAsync();
+                                foreach (var q in questionsToUpdate)
+                                {
+                                    q.CategoryCode = newCode;
+                                }
+                            }
+                            st.ParentId = creatorFolder.Id;
+                            st.MaterializedPath = $"/STUDIO/{ymd}/{creatorCode}/{st.Code}/";
+                            st.DepthLevel = 4;
+                            if (!st.CreatedByUserId.HasValue) st.CreatedByUserId = defaultPartner?.UserId;
+                            if (string.IsNullOrWhiteSpace(st.Description) || st.Description == "_")
+                                st.Description = $"Đề thi tạo từ Creator Studio bởi {creatorCode}";
+                            changed = true;
+                        }
+                    }
                 }
 
                 if (changed)
@@ -379,6 +506,13 @@ namespace AegisQuiz.API.Controllers
                 if (await _db.BankTopics.AnyAsync(t => t.Code == dto.Code))
                     return Conflict(new { message = $"Mã chủ đề '{dto.Code}' đã tồn tại." });
 
+                var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                Guid? createdByUserId = null;
+                if (!string.IsNullOrEmpty(callerId) && Guid.TryParse(callerId, out var parsedGuid))
+                {
+                    createdByUserId = parsedGuid;
+                }
+
                 var topic = new BankTopic
                 {
                     Id              = Guid.NewGuid(),
@@ -391,6 +525,8 @@ namespace AegisQuiz.API.Controllers
                     VisibilityScope = dto.VisibilityScope,
                     DomainCode      = !string.IsNullOrWhiteSpace(dto.DomainCode) ? dto.DomainCode : "GENERAL",
                     Scope           = !string.IsNullOrWhiteSpace(dto.Scope) ? dto.Scope : "COMMUNITY",
+                    TenantId        = _tenant.CurrentTenantId,
+                    CreatedByUserId = createdByUserId,
                     CreatedAt       = DateTime.UtcNow
                 };
 
@@ -523,6 +659,13 @@ namespace AegisQuiz.API.Controllers
                 if (!_tenant.IsSystemAdmin && topic.TenantId != Guid.Empty && topic.TenantId != _tenant.CurrentTenantId)
                     return NotFound(new { message = "Không tìm thấy chủ đề" });
 
+                // Bảo vệ chủ đề hệ thống bất biến (STUDIO, GENERAL)
+                var protectedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GENERAL", "STUDIO" };
+                if (protectedCodes.Contains(topic.Code))
+                {
+                    return BadRequest(new { message = "Không thể xóa chủ đề gốc bảo vệ của hệ thống." });
+                }
+
                 if (!await _ownershipGuard.CanManageAsync(User, topic.CreatedByUserId?.ToString(), null))
                     return Forbid();
 
@@ -651,11 +794,25 @@ namespace AegisQuiz.API.Controllers
                     }
                     else
                     {
-                        // Câu hỏi ĐỘC QUYỀN (chỉ thuộc riêng nhánh này)
+                        // Câu hỏi ĐỘC QUYỀN (chỉ thuộc riêng nhánh này - chủ đề cuối cùng)
                         if (mode == TopicDeleteMode.SafeCascade)
                         {
-                            questionsToDelete.Add(q);
-                            deletedQuestionsCount++;
+                            // Bảo vệ chủ sở hữu câu hỏi: Chỉ xóa nếu người xóa có quyền quản lý câu hỏi
+                            bool canDeleteQuestion = await _ownershipGuard.CanManageAsync(User, q.CreatorId, q.OrgUnitId);
+                            if (canDeleteQuestion)
+                            {
+                                questionsToDelete.Add(q);
+                                deletedQuestionsCount++;
+                            }
+                            else
+                            {
+                                foreach (var code in affectedCodes)
+                                {
+                                    _deduplicationEngine.DisassociateTopicFromQuestion(q, code, fallbackCode);
+                                }
+                                q.CategoryCode = fallbackCode;
+                                reassignedCount++;
+                            }
                         }
                         else
                         {

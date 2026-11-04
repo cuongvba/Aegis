@@ -6,6 +6,71 @@ using AegisQuiz.Application.Interfaces;
 
 namespace AegisQuiz.Infrastructure.Arena
 {
+    /// <summary>
+    /// Bộ so khớp câu trả lời đa hình chuẩn xác 100% cho đấu trường thực tế.
+    /// Hỗ trợ cả nhãn chữ cái (A, B, C, D), nội dung phương án, số thứ tự, và định dạng loại bỏ tiền tố.
+    /// </summary>
+    public static class ArenaAnswerMatcher
+    {
+        public static bool IsMatch(string? answerPayload, ArenaQuestionItem? q)
+        {
+            if (string.IsNullOrWhiteSpace(answerPayload) || q == null || string.IsNullOrWhiteSpace(q.AnswerRaw))
+                return false;
+
+            var p = answerPayload.Trim();
+            var a = q.AnswerRaw.Trim();
+
+            // 1. So khớp trực tiếp
+            if (string.Equals(p, a, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // 2. Chuẩn hóa loại bỏ tiền tố dạng "A.", "A)", "1."
+            var cleanP = System.Text.RegularExpressions.Regex.Replace(p, @"^[A-Za-z0-9][\.\)\:\s]+", "").Trim();
+            var cleanA = System.Text.RegularExpressions.Regex.Replace(a, @"^[A-Za-z0-9][\.\)\:\s]+", "").Trim();
+            if (!string.IsNullOrWhiteSpace(cleanP) && string.Equals(cleanP, cleanA, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // 3. Nếu câu hỏi có Options và a là nhãn chữ cái (A, B, C, D) hoặc chỉ số
+            if (q.Options != null && q.Options.Count > 0)
+            {
+                int correctIdx = -1;
+                if (a.Length == 1 && char.ToUpperInvariant(a[0]) >= 'A' && char.ToUpperInvariant(a[0]) <= 'Z')
+                    correctIdx = char.ToUpperInvariant(a[0]) - 'A';
+                else if (int.TryParse(a, out var parsedIdx) && parsedIdx >= 0 && parsedIdx < q.Options.Count)
+                    correctIdx = parsedIdx;
+
+                if (correctIdx >= 0 && correctIdx < q.Options.Count)
+                {
+                    var optText = q.Options[correctIdx].Trim();
+                    var cleanOpt = System.Text.RegularExpressions.Regex.Replace(optText, @"^[A-Za-z0-9][\.\)\:\s]+", "").Trim();
+
+                    if (string.Equals(p, optText, StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(cleanP, cleanOpt, StringComparison.OrdinalIgnoreCase))
+                        return true;
+
+                    if (p.Length == 1 && char.ToUpperInvariant(p[0]) - 'A' == correctIdx)
+                        return true;
+                }
+
+                // Trường hợp p là nhãn A, B, C, D và option tại vị trí đó khớp với a
+                if (p.Length == 1 && char.ToUpperInvariant(p[0]) >= 'A' && char.ToUpperInvariant(p[0]) <= 'Z')
+                {
+                    int pIdx = char.ToUpperInvariant(p[0]) - 'A';
+                    if (pIdx >= 0 && pIdx < q.Options.Count)
+                    {
+                        var optText = q.Options[pIdx].Trim();
+                        var cleanOpt = System.Text.RegularExpressions.Regex.Replace(optText, @"^[A-Za-z0-9][\.\)\:\s]+", "").Trim();
+                        if (string.Equals(optText, a, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(cleanOpt, cleanA, StringComparison.OrdinalIgnoreCase))
+                            return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
+
     // ══════════════════════════════════════════════════════════════════════════════
     // 1. OLYMPIA SUPREME PLUGIN (ĐƯỜNG LÊN ĐỈNH TRI THỨC)
     // ══════════════════════════════════════════════════════════════════════════════
@@ -50,7 +115,7 @@ namespace AegisQuiz.Infrastructure.Arena
             var q = state.Questions.ElementAtOrDefault(state.CurrentQuestionIndex);
             if (q == null) return Task.CompletedTask;
 
-            bool isCorrect = string.Equals(answerPayload.Trim(), q.AnswerRaw.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool isCorrect = ArenaAnswerMatcher.IsMatch(answerPayload, q);
             bool isStar = state.CustomData.TryGetValue("starOfHopeActive", out var starVal) && (bool)starVal;
 
             int points = q.Points > 0 ? q.Points : 10;
@@ -150,7 +215,7 @@ namespace AegisQuiz.Infrastructure.Arena
             var q = state.Questions.ElementAtOrDefault(state.CurrentQuestionIndex);
             if (q == null) return Task.CompletedTask;
 
-            bool isCorrect = string.Equals(answerPayload.Trim(), q.AnswerRaw.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool isCorrect = ArenaAnswerMatcher.IsMatch(answerPayload, q);
             if (isCorrect)
             {
                 player.Score += 10;
@@ -301,7 +366,7 @@ namespace AegisQuiz.Infrastructure.Arena
             var q = state.Questions.ElementAtOrDefault(state.CurrentQuestionIndex);
             if (q == null) return Task.CompletedTask;
 
-            bool isCorrect = string.Equals(answerPayload.Trim(), q.AnswerRaw.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool isCorrect = ArenaAnswerMatcher.IsMatch(answerPayload, q);
 
             if (state.CurrentStage == "STARTER_QUESTION")
             {
@@ -378,7 +443,7 @@ namespace AegisQuiz.Infrastructure.Arena
             if (q == null) return Task.CompletedTask;
 
             int cluePoints = q.Points > 0 ? q.Points : 200;
-            bool isCorrect = string.Equals(answerPayload.Trim(), q.AnswerRaw.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool isCorrect = ArenaAnswerMatcher.IsMatch(answerPayload, q);
 
             if (isCorrect)
             {
@@ -442,7 +507,7 @@ namespace AegisQuiz.Infrastructure.Arena
             var q = state.Questions.ElementAtOrDefault(state.CurrentQuestionIndex);
             if (q == null) return Task.CompletedTask;
 
-            bool isCorrect = string.Equals(answerPayload.Trim(), q.AnswerRaw.Trim(), StringComparison.OrdinalIgnoreCase);
+            bool isCorrect = ArenaAnswerMatcher.IsMatch(answerPayload, q);
 
             if (isCorrect)
             {

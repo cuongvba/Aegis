@@ -165,5 +165,60 @@ namespace AegisQuiz.UnitTests
                 Assert.True(statusCode == 200 || statusCode == null, $"Failed with status {statusCode}: {((result as ObjectResult)?.Value)}");
             }
         }
+
+        [Fact]
+        public async Task DeleteTopic_SharedQuestion_OnlyUnlinksAndPreservesQuestionEntity()
+        {
+            using var db = CreateSqliteDbContext();
+            var topicA = new BankTopic { Id = Guid.NewGuid(), Code = "TOPIC_A", Name = "Topic A", CategoryCode = "TOPIC_A" };
+            var topicB = new BankTopic { Id = Guid.NewGuid(), Code = "TOPIC_B", Name = "Topic B", CategoryCode = "TOPIC_B" };
+            db.BankTopics.AddRange(topicA, topicB);
+
+            // Câu hỏi dùng chung cả TOPIC_A và TOPIC_B
+            var q = new SingleChoiceQuestion
+            {
+                Id = Guid.NewGuid(),
+                Content = "Shared question across topic A and B",
+                CategoryCode = "TOPIC_A",
+                Tags = new List<string> { "#topic:TOPIC_A", "#topic:TOPIC_B" },
+                Payload = System.Text.Json.JsonDocument.Parse("{\"linkedTopicCodes\": [\"TOPIC_A\", \"TOPIC_B\"]}")
+            };
+            db.Questions.Add(q);
+            await db.SaveChangesAsync();
+
+            var controller = new TopicsController(db, new AllowAllOwnershipGuard(), new TenantContext());
+
+            // Xóa TOPIC_A với deleteQuestions = true
+            var result = await controller.DeleteTopic(topicA.Id, true);
+            Assert.IsType<OkObjectResult>(result);
+
+            // TOPIC_A đã bị xóa
+            Assert.Null(await db.BankTopics.FindAsync(topicA.Id));
+
+            // CÂU HỎI VẪN TỒN TẠI VÌ CÒN THUỘC TOPIC_B
+            var refreshedQ = await db.Questions.FindAsync(q.Id);
+            Assert.NotNull(refreshedQ);
+            Assert.Equal("TOPIC_B", refreshedQ.CategoryCode);
+            Assert.Contains("TOPIC_B", refreshedQ.LinkedTopicCodes);
+            Assert.DoesNotContain("TOPIC_A", refreshedQ.LinkedTopicCodes);
+        }
+
+        [Fact]
+        public async Task DeleteTopic_ProtectedGeneralOrStudio_ReturnsBadRequest()
+        {
+            using var db = CreateSqliteDbContext();
+            var generalTopic = new BankTopic { Id = Guid.NewGuid(), Code = "GENERAL", Name = "General System", CategoryCode = "GENERAL" };
+            var studioTopic = new BankTopic { Id = Guid.NewGuid(), Code = "STUDIO", Name = "Studio System", CategoryCode = "STUDIO" };
+            db.BankTopics.AddRange(generalTopic, studioTopic);
+            await db.SaveChangesAsync();
+
+            var controller = new TopicsController(db, new AllowAllOwnershipGuard(), new TenantContext());
+
+            var resGeneral = await controller.DeleteTopic(generalTopic.Id, false);
+            Assert.IsType<BadRequestObjectResult>(resGeneral);
+
+            var resStudio = await controller.DeleteTopic(studioTopic.Id, false);
+            Assert.IsType<BadRequestObjectResult>(resStudio);
+        }
     }
 }

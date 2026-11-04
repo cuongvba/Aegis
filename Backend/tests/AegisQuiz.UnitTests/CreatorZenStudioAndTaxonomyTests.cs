@@ -78,5 +78,140 @@ namespace AegisQuiz.UnitTests
             Assert.Equal(hash1, hash2);
             Assert.False(string.IsNullOrEmpty(hash1));
         }
+
+        [Fact]
+        public async System.Threading.Tasks.Task SaveToBank_ShouldSavePolymorphicQuestionsAndContext_Accurately()
+        {
+            var options = new DbContextOptionsBuilder<AegisQuizDbContext>()
+                .UseInMemoryDatabase(databaseName: "ZenStudioPolymorphicTestDb_" + System.Guid.NewGuid())
+                .Options;
+            using var db = new AegisQuizDbContext(options);
+
+            var controller = new AegisQuiz.API.Controllers.CreatorStudioController(
+                _dispatcher,
+                null!,
+                null!,
+                null!,
+                _dedupEngine,
+                db,
+                null!,
+                new TestTenantContext(),
+                NullLogger<AegisQuiz.API.Controllers.CreatorStudioController>.Instance);
+
+            // Mock claims principal
+            var user = new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity(new[]
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, System.Guid.NewGuid().ToString()),
+                new System.Security.Claims.Claim("name", "Test Creator")
+            }, "TestAuth"));
+            controller.ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext
+            {
+                HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext { User = user }
+            };
+
+            var request = new AegisQuiz.Application.DTOs.SaveZenToBankRequest
+            {
+                Title = "Đề thi Đa hình Excel Kế thừa",
+                DomainCode = "EDUCATION",
+                Questions = new List<AegisQuiz.Application.DTOs.ZenQuestionPreviewDto>
+                {
+                    new()
+                    {
+                        Order = 1,
+                        Content = "Tính giới hạn của hàm số khi x -> 0",
+                        QuestionType = "SHORT_ANSWER",
+                        CorrectAnswer = "12.5",
+                        ContextTitle = "Bài toán Giải tích 12",
+                        ContextContent = "Cho hàm số f(x) xác định trên khoảng (0, 1)..."
+                    },
+                    new()
+                    {
+                        Order = 2,
+                        Content = "Chọn các số nguyên tố nhỏ hơn 10",
+                        QuestionType = "MULTI",
+                        Options = new List<string> { "2", "3", "4", "5" },
+                        CorrectAnswer = "1, 2, 4"
+                    },
+                    new()
+                    {
+                        Order = 3,
+                        Content = "Hà Nội là thủ đô của Việt Nam",
+                        QuestionType = "TRUE_FALSE",
+                        Options = new List<string> { "Đúng", "Sai" },
+                        CorrectAnswer = "Đúng"
+                    },
+                    new()
+                    {
+                        Order = 4,
+                        Content = "Thủ đô của Pháp là gì?",
+                        QuestionType = "SINGLE",
+                        Options = new List<string> { "Paris", "London", "Berlin", "Rome" },
+                        CorrectAnswer = "1"
+                    }
+                }
+            };
+
+            var result = await controller.SaveToBank(request);
+            var okResult = Assert.IsType<Microsoft.AspNetCore.Mvc.OkObjectResult>(result);
+            Assert.NotNull(okResult.Value);
+
+            // Kiểm tra các câu hỏi đã được lưu đa hình chuẩn mực
+            var questions = await db.Questions.ToListAsync();
+            Assert.Equal(4, questions.Count);
+
+            var q1 = Assert.IsType<AegisQuiz.Domain.Entities.ShortAnswerQuestion>(questions.First(q => q.Content.Contains("giới hạn")));
+            Assert.Equal("12.5", q1.CorrectOption);
+            Assert.NotNull(q1.ContextId);
+
+            var q2 = Assert.IsType<AegisQuiz.Domain.Entities.MultiChoiceQuestion>(questions.First(q => q.Content.Contains("nguyên tố")));
+            Assert.Equal(4, q2.Options.Count);
+            Assert.Equal("1, 2, 4", q2.CorrectOption);
+
+            var q3 = Assert.IsType<AegisQuiz.Domain.Entities.TrueFalseQuestion>(questions.First(q => q.Content.Contains("Hà Nội")));
+            Assert.Equal("Đúng", q3.CorrectOption);
+
+            var q4 = Assert.IsType<AegisQuiz.Domain.Entities.SingleChoiceQuestion>(questions.First(q => q.Content.Contains("Pháp")));
+            Assert.Equal("1", q4.CorrectOption);
+
+            // Kiểm tra shared context
+            var context = await db.QuestionContexts.FirstOrDefaultAsync();
+            Assert.NotNull(context);
+            Assert.Equal("Bài toán Giải tích 12", context.Title);
+            Assert.Equal(q1.ContextId, context.Id);
+        }
+
+
+        [Fact]
+        public void CreatorMarketingPolicy_CentralizedGovernance_DynamicCoffeeProDays()
+        {
+            var policy = new AegisQuiz.Domain.Entities.CreatorMarketingPolicy
+            {
+                CampaignCode = "SUMMER_PROMO_2026",
+                CampaignName = "Chương Trình Đột Phá Hè 2026",
+                TrialDays = 60,
+                RevenueShareRate = 0.85m,
+                KarmaBonusPoints = 150,
+                CoffeeProDays = 14, // Biến động linh hoạt theo cấu hình Admin Marketing (ví dụ 14 ngày)
+                CoffeePriceVnd = 30000m,
+                IsActive = true
+            };
+
+            Assert.Equal("SUMMER_PROMO_2026", policy.CampaignCode);
+            Assert.Equal(60, policy.TrialDays);
+            Assert.Equal(0.85m, policy.RevenueShareRate);
+            Assert.Equal(14, policy.CoffeeProDays); // Biến động linh hoạt theo chiến dịch tiếp thị
+            Assert.Equal(30000m, policy.CoffeePriceVnd);
+            Assert.True(policy.IsActive);
+        }
+
+        private class TestTenantContext : ITenantContext
+        {
+            public System.Guid CurrentTenantId => System.Guid.Empty;
+            public string TenantCode => "DEFAULT";
+            public bool IsSystemAdmin => true;
+            public string CurrentRole => "SUPER_ADMIN";
+            public void SetTenant(System.Guid tenantId, string code, bool isSystemAdmin = false) { }
+            public void SetRole(string role) { }
+        }
     }
 }

@@ -1,3 +1,4 @@
+import { MathRenderer } from '@/components/common/MathRenderer';
 import { useState, useEffect } from 'react';
 import { Zap, Trophy, Users, Sparkles, Brain, Shield, AlertTriangle, CheckCircle2, XCircle, ArrowRight, Flame, RefreshCw } from 'lucide-react';
 import type { ArenaRoomState, GameshowManifest } from '@/types/arena';
@@ -60,6 +61,7 @@ export function DynamicUniversalArenaView({
   const isBuzzerWinner = state.buzzerWinnerPlayerId === state.hostUserId;
   const isSomeoneBuzzed = !!state.buzzerWinnerPlayerId;
   const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; correctAnswer: string } | null>(null);
   const [hiddenOptions, setHiddenOptions] = useState<string[]>([]);
   const [aiHint, setAiHint] = useState<string | null>(null);
   const [audiencePoll, setAudiencePoll] = useState<Record<string, number> | null>(null);
@@ -70,6 +72,7 @@ export function DynamicUniversalArenaView({
     setTimeLeft(manifest.rounds?.[0]?.durationSeconds || 30);
     setHiddenOptions([]);
     setSelectedOpt(null);
+    setFeedback(null);
     setAiHint(null);
     setAudiencePoll(null);
   }, [state.currentQuestionIndex]);
@@ -83,7 +86,33 @@ export function DynamicUniversalArenaView({
   }, [timeLeft]);
 
   const handleSelectOption = (opt: string) => {
+    if (feedback !== null) return;
     setSelectedOpt(opt);
+
+    const expectedAnswer = String(currentQ.answerRaw || '').trim();
+    let isCorrect = false;
+    const cleanOpt = opt.trim().toLowerCase();
+    const cleanExpected = expectedAnswer.toLowerCase();
+
+    if (cleanOpt && cleanExpected) {
+      if (cleanOpt === cleanExpected) isCorrect = true;
+      else if (cleanOpt.startsWith(cleanExpected + '.') || cleanOpt.startsWith(cleanExpected + ')')) isCorrect = true;
+      else if (currentQ.options && currentQ.options.length > 0) {
+        const correctIdx = cleanExpected.charCodeAt(0) - 97;
+        if (correctIdx >= 0 && correctIdx < currentQ.options.length && currentQ.options[correctIdx].toLowerCase() === cleanOpt) {
+          isCorrect = true;
+        }
+      }
+    }
+
+    if (isCorrect) {
+      playArenaSfx('victory');
+      setFeedback({ isCorrect: true, correctAnswer: expectedAnswer });
+    } else {
+      playArenaSfx('drop');
+      setFeedback({ isCorrect: false, correctAnswer: expectedAnswer });
+    }
+
     onSubmitAnswer(opt);
   };
 
@@ -298,9 +327,7 @@ export function DynamicUniversalArenaView({
               <span className="text-sm font-black text-amber-400">+{currentQ.points || 10} ĐIỂM</span>
             </div>
 
-            <h4 className="text-xl sm:text-2xl font-black text-white leading-snug">
-              {currentQ.content}
-            </h4>
+            <h4 className="text-xl sm:text-2xl font-black text-white leading-snug"><MathRenderer content={currentQ.content} /></h4>
 
             {/* CÁC PHƯƠNG ÁN TRẢ LỜI */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -308,6 +335,7 @@ export function DynamicUniversalArenaView({
                 const label = String.fromCharCode(65 + idx);
                 const isHidden = hiddenOptions.includes(opt);
                 const isSelected = selectedOpt === opt;
+                const expectedAnswer = String(currentQ.answerRaw || '').trim();
 
                 if (isHidden) {
                   return (
@@ -320,24 +348,67 @@ export function DynamicUniversalArenaView({
                   );
                 }
 
+                let btnStyle = 'border-slate-800 bg-slate-900/90 text-slate-200 hover:border-amber-500/50 hover:bg-slate-850 hover:scale-[1.01]';
+
+                if (feedback) {
+                  const isThisCorrect =
+                    label.toLowerCase() === expectedAnswer.toLowerCase() ||
+                    opt.toLowerCase() === expectedAnswer.toLowerCase() ||
+                    opt.toLowerCase().startsWith(expectedAnswer.toLowerCase() + '.');
+
+                  if (isThisCorrect) {
+                    btnStyle = 'border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]';
+                  } else if (isSelected) {
+                    btnStyle = 'border-rose-500 bg-rose-500/20 text-rose-300';
+                  } else {
+                    btnStyle = 'border-slate-850 bg-slate-950/40 text-slate-600 opacity-50';
+                  }
+                } else if (isSelected) {
+                  btnStyle = 'border-amber-400 bg-amber-500/20 text-amber-200 ring-2 ring-amber-400/50 shadow-lg';
+                }
+
                 return (
                   <button
                     key={opt}
+                    disabled={feedback !== null}
                     onClick={() => handleSelectOption(opt)}
-                    className={`flex items-center gap-3.5 rounded-2xl border p-5 text-left font-bold transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-amber-400 bg-amber-500/20 text-amber-200 ring-2 ring-amber-400/50 shadow-lg'
-                        : 'border-slate-800 bg-slate-900/90 text-slate-200 hover:border-amber-500/50 hover:bg-slate-850 hover:scale-[1.01]'
-                    }`}
+                    className={`flex items-center gap-3.5 rounded-2xl border p-5 text-left font-bold transition-all cursor-pointer ${btnStyle} disabled:cursor-not-allowed`}
                   >
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-xs font-black text-amber-400">
                       {label}
                     </span>
-                    <span className="text-sm leading-snug">{opt}</span>
+                    <div className="text-sm leading-snug overflow-x-auto"><MathRenderer content={opt} /></div>
                   </button>
                 );
               })}
             </div>
+
+            {/* BANNER XÁC NHẬN KẾT QUẢ ĐÚNG / SAI */}
+            {feedback && (
+              <div className={`mt-6 p-4 rounded-2xl border-2 flex items-center justify-between gap-3 animate-fadeIn ${
+                feedback.isCorrect ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-200' : 'border-rose-500/50 bg-rose-500/15 text-rose-200'
+              }`}>
+                <div className="flex items-center gap-2.5">
+                  {feedback.isCorrect ? <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" /> : <XCircle className="w-6 h-6 text-rose-400 shrink-0" />}
+                  <div>
+                    <span className="font-black text-sm block">
+                      {feedback.isCorrect ? `🎉 CHÍNH XÁC! (+${currentQ.points || 10} ĐIỂM)` : '❌ CHƯA CHÍNH XÁC!'}
+                    </span>
+                    <span className="text-xs opacity-90">
+                      {feedback.isCorrect ? 'Bạn đã bảo toàn số điểm và tiến độ thi đấu!' : `Đáp án đúng là: ${feedback.correctAnswer || 'Xem giải thích'}.`}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onNextStage('NEXT_QUESTION')}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-slate-950 font-black text-xs hover:bg-slate-100 transition cursor-pointer shrink-0"
+                >
+                  <span>Câu Tiếp Theo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* CƠ CHẾ BẤM CHUÔNG BUZZER (NẾU CHẾ ĐỘ LÀ BUZZER_FASTEST) */}
@@ -380,7 +451,7 @@ export function DynamicUniversalArenaView({
               Chế độ tính điểm: {manifest.scoringRule?.streakMultiplier ? 'Nhân đôi chuỗi thắng 🔥' : 'Cố định'}
             </span>
             <button
-              onClick={() => onNextStage(`ROUND_${(state.currentQuestionIndex % 3) + 1}`)}
+              onClick={() => onNextStage('NEXT_QUESTION')}
               className="flex items-center gap-2 rounded-2xl bg-slate-800 border border-slate-700 px-6 py-3 text-xs font-black text-white hover:bg-slate-700 active:scale-95 transition cursor-pointer"
             >
               CÂU KẾ TIẾP ➔

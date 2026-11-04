@@ -32,7 +32,7 @@ namespace AegisQuiz.Infrastructure.Services
             { "ESSAY", "SHORT_ANSWER", "TRUE_FALSE", "MULTI", "MATCHING", "ORDERING", "SINGLE" };
 
         private const string BuiltInExamHeadingPattern = @"^(?:ĐỀ|D[E|Ê]|EXAM|TEST|MOCK\s*TEST)\s*(?:SỐ|THI(?:\s*THỬ)?|KIỂM\s*TRA|TEST|NO\.?|NUMBER|CODE|MÃ)?\s*(\d{1,3})\b";
-        private const string BuiltInTopicHeadingPattern = @"(?i)^(?:[\t\s|•\-–—;]*)(?:BÀI\s*THI\s*(?:MÔN)?|MÔN\s*THI|MÔN|HỌC\s*PHẦN|CHỦ\s*ĐỀ|CHƯƠNG|LĨNH\s*VỰC|MÃ\s*CĐ|TOPIC|SUBJECT|COURSE|MODULE)[\.\:\s\-]+([^\n\r\t|;]+)";
+        private const string BuiltInTopicHeadingPattern = @"(?i)^(?:[\t\s|•\-–—;]*)(?:BÀI\s*THI\s*(?:MÔN)?|MÔN\s*THI(?:\s*THÀNH\s*PHẦN)?|MÔN(?:\s*THI)?|HỌC\s*PHẦN|CHỦ\s*ĐỀ|CHƯƠNG|LĨNH\s*VỰC|MÃ\s*CĐ|TOPIC|SUBJECT|COURSE|MODULE)[\.\:\s\-]+([^\n\r\t|;]+)";
         private const string BuiltInSolutionPhasePattern = @"^(?:(?:PHẦN|PART|SECTION)\s+[IVXLCDM\d]+[\.\:\-\s]+)?(?:ĐÁP\s*ÁN\s*(?:VÀ|&)?\s*(?:LỜI\s*GIẢI|HƯỚNG\s*DẪN\s*(?:CHẤM|GIẢI))|HƯỚNG\s*DẪN\s*(?:CHẤM|GIẢI)\s*(?:VÀ|&)?\s*(?:BIỂU|THANG|ĐÁP)?\s*(?:ĐIỂM|ÁN)?|BIỂU\s*ĐIỂM\s*(?:VÀ|&)?\s*ĐÁP\s*ÁN|THANG\s*ĐIỂM\s*(?:VÀ|&)?\s*HƯỚNG\s*DẪN|(?:LỜI\s*GIẢI|HƯỚNG\s*DẪN\s*GIẢI)\s+(?:CHI\s*TIẾT|THAM\s*KHẢO|CÁC\s*ĐỀ|ĐỀ\s*THI)|SOLUTIONS?|EXPLANATIONS?|MARK\s*SCHEME)(?:\s+(?:THAM\s*KHẢO|CHI\s*TIẾT|DETAILS?|APPENDIX|THI))?[.\:\s\-]*$";
         private const string BuiltInAnswerPhasePattern = @"^(?:(?:PHẦN|PART|SECTION)\s+[IVXLCDM\d]+[\.\:\-\s]+)?(?:BẢNG\s*ĐÁP\s*ÁN(?:\s*TRẮC\s*NGHIỆM)?|ĐÁP\s*ÁN|D[\.\?\s]*P\s*[\.\?\s]*N|ANSWER\s*KEY|KEY|ANSWERS?)\s*(?:TRẮC\s*NGHIỆM|THAM\s*KHẢO|CHI\s*TIẾT)?[.\:\s\-]*$";
         private const string BuiltInPassageStartPattern = @"^(?:Read\s+(?:the\s+)?(?:following\s+)?(?:passage|advertisement|leaflet|text|article|announcement|sign|notice|dialogue|conversation)|Read\s+(?:and\s+)?complete.*?(?:passage|blank)|Đọc\s+(?:đoạn\s+văn|bài\s+đọc|thông\s+báo|tờ\s+rơi|biển\s*báo)\s+sau|(?:Sử\s*dụng|Dựa\s*(?:vào|trên)|Cho|Dùng)\s+(?:các\s+)?(?:thông\s*tin|ngữ\s*liệu|đoạn\s*văn|bài\s*đọc|dữ\s*kiện|bảng|hình)(?:\s+(?:cho|dưới\s*đây|sau))?.*?(?:trả\s*lời|làm\s*bài|cho)|(?:Mark|Choose)\s+the\s+letter.*(?:fits?\s+each|fill.*blank|arrangement|cohesive|coherent|exchange|meaningful|conversation|pronunciation|stress|correction|differently)|(?:Four|Three|Five|\d+)\s+(?:phrases|sentences|words)\s+have\s+been\s+removed)[\s\S]*";
@@ -677,7 +677,7 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 bool isStandaloneDirective = hasExplicitDirectiveHeader
                     || (detectedType != null && trimmed.Length <= 260 && GetOrAddRegex(
-                        @"(?i)^\[?\s*(?:Tiểu\s*phần|Chỉ\s*thị|Hướng\s*dẫn\s*làm\s*bài|Đọc\s+(?:đoạn|bài)\s*văn|Sử\s*dụng\s+thông\s*tin|Dựa\s+vào\s+thông\s*tin|Trong\s+mỗi\s+ý|Ở\s+mỗi\s+câu|Mỗi\s+câu\s+hỏi|Chọn\s+(?:tất\s+cả|các|nhiều|một|01|từ|đáp\s*án)|Sắp\s+xếp\s+các|Ghép\s+nội\s+dung|Điền\s+đáp\s+số|Trả\s+lời\s+ngắn|Read\s+(?:the\s+following|and\s+complete)|Mark\s+the\s+letter|Choose\s+(?:all|the|one|each|a\b)|Select\s+(?:all|the|one)|Odd\s+one\s+out|Circle\s+(?:the\s+)?odd|Find\s+(?:the\s+)?(?:mistake|error|word)|Indicate\s+whether|Arrange\s+the|Match\s+each|Fill\s+in\s+the\s+blank|Questions?\s+below|For\s+the\s+following\s+questions|阅读下列|请回答|多项选择|单项选择|判断题|填空题|排序题|配对题)").IsMatch(trimmed));
+                        @"(?i)^\[?\s*(?:Tiểu\s*phần|Chỉ\s*thị|Hướng\s*dẫn\s*làm\s*bài|Đọc\s+(?:đoạn|bài)\s*văn|Sử\s*dụng\s+thông\s*tin|Dựa\s+vào\s+thông\s*tin|Trong\s+mỗi\s+ý|Ở\s+mỗi\s+câu|Mỗi\s+câu\s+hỏi|Chọn\s+(?:tất\s+cả|các|nhiều|một|01|từ|đáp\s*án)|Sắp\s+xếp\s+các|Ghép\s+nội\s+dung|Điền\s+đáp\s+số|(?:câu\s+(?:hỏi\s+)?)?(?:trắc\s+nghiệm\s+)?trả\s*lời\s*ngắn|(?:câu\s+(?:hỏi\s+)?)?trắc\s+nghiệm\s+ngắn|Trả\s+lời\s+ngắn|Read\s+(?:the\s+following|and\s+complete)|Mark\s+the\s+letter|Choose\s+(?:all|the|one|each|a\b)|Select\s+(?:all|the|one)|Odd\s+one\s+out|Circle\s+(?:the\s+)?odd|Find\s+(?:the\s+)?(?:mistake|error|word)|Indicate\s+whether|Arrange\s+the|Match\s+each|Fill\s+in\s+the\s+blank|Questions?\s+below|For\s+the\s+following\s+questions|阅读下列|请回答|多项选择|单项选择|判断题|填空题|排序题|配对题)").IsMatch(trimmed));
 
                 if (!isStandaloneDirective || detectedType == null) return false;
 
@@ -966,16 +966,30 @@ namespace AegisQuiz.Infrastructure.Services
 
             foreach (var p in headerList)
             {
-                if (TryMatchTopicHeading(p, out string rawSubj) && (profile.DetectedSubject == null || profile.DetectedSubject == "GENERAL"))
+                if (TryMatchTopicHeading(p, out string rawSubj) && (profile.DetectedSubject == null || profile.DetectedSubject == "GENERAL" || profile.DetectedSubject == "KHTN" || profile.DetectedSubject == "KHXH"))
                 {
                     string cleanSubj = SanitizeSubjectHeading(rawSubj);
                     string resolved = UniversalCoordinateTaxonomyEngine.ResolveTopicCode(cleanSubj, dynamicContext);
                     if (resolved != "GENERAL" && resolved != "EDUCATION" && resolved != "THPT_NATIONAL" && resolved != "MON" && resolved != "BAI_THI")
                     {
-                        profile.DetectedSubject = resolved;
-                        if (profile.TaxonomyCoordinates != null)
+                        if (profile.DetectedSubject == "KHTN" || profile.DetectedSubject == "KHXH")
                         {
-                            profile.TaxonomyCoordinates.TopicCode = resolved;
+                            if (resolved != "KHTN" && resolved != "KHXH")
+                            {
+                                profile.DetectedSubject = resolved;
+                                if (profile.TaxonomyCoordinates != null)
+                                {
+                                    profile.TaxonomyCoordinates.TopicCode = resolved;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            profile.DetectedSubject = resolved;
+                            if (profile.TaxonomyCoordinates != null)
+                            {
+                                profile.TaxonomyCoordinates.TopicCode = resolved;
+                            }
                         }
                     }
                 }
@@ -1114,7 +1128,8 @@ namespace AegisQuiz.Infrastructure.Services
         public string SanitizeSubjectHeading(string rawSubject)
         {
             if (string.IsNullOrWhiteSpace(rawSubject)) return string.Empty;
-            return Regex.Replace(rawSubject, @"\b(?:đề|de|chính\s*thức|chinh\s*thuc|thử|thu|mã|khối|khoi|lớp|lop|năm|nam|thời\s*gian|thoi\s*gian|học\s*kỳ|hoc\s*ky)\b.*$", "", RegexOptions.IgnoreCase).Trim();
+            var s = Regex.Replace(rawSubject, @"(?i)^\s*(?:thành\s*phần|thanh\s*phan)\s*[:：\-]?\s*", "").Trim();
+            return Regex.Replace(s, @"\b(?:đề|de|chính\s*thức|chinh\s*thuc|thử|thu|mã|khối|khoi|lớp|lop|năm|nam|thời\s*gian|thoi\s*gian|học\s*kỳ|hoc\s*ky)\b.*$", "", RegexOptions.IgnoreCase).Trim();
         }
 
         /// <summary>

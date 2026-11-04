@@ -1,4 +1,4 @@
-import api from '@/services/api';
+﻿import api from '@/services/api';
 import type { LearnerQuestion, QuestionType } from '@/types/quiz';
 
 // AegisQuiz backend endpoints (trỏ về /api/quiz — proxy qua Vite → localhost:8080)
@@ -97,6 +97,18 @@ export const learnerQuizService = {
   },
 
   // MODULE 1: EXAM ROOM & ADAPTIVE PRACTICE
+  // [Dual-Branch Telemetry] Nộp bài tập về nhà theo link giáo viên
+  async submitHomework(payload: any): Promise<any> {
+    const res = await api.post('/api/creator/studio/submit-homework', payload);
+    return res.data;
+  },
+
+  // [Live Cohort Diagnostic] Lấy báo cáo nhận thức lớp học cho Giáo viên
+  async getCohortSummary(topicCode: string): Promise<any> {
+    const res = await api.get(`/api/creator/studio/cohort-summary?topicCode=${encodeURIComponent(topicCode)}`);
+    return res.data;
+  },
+
   async submitAttempt(quizId: string, payload: any): Promise<any> {
     const res = await api.post(`${QUIZ_API}/attempt`, payload);
     return res.data;
@@ -244,9 +256,9 @@ export const learnerQuizService = {
   },
 
   // TOPIC MANAGEMENT CRUD
-  async getTopics(enabledOnly = true): Promise<any[]> {
+  async getTopics(enabledOnly = true, myOnly = false): Promise<any[]> {
     try {
-      const res = await api.get(`${QUIZ_API}/topics`, { params: { enabledOnly } });
+      const res = await api.get(`${QUIZ_API}/topics`, { params: { enabledOnly, myOnly } });
       return Array.isArray(res.data) ? res.data : [];
     } catch {
       return [];

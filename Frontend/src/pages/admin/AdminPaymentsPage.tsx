@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Landmark, Coins, TrendingUp, RefreshCw, ShieldCheck, Settings, BarChart3, Heart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Landmark, Coins, TrendingUp, RefreshCw, ShieldCheck, Settings, BarChart3, Heart, Sparkles } from 'lucide-react';
 import api from '@/services/api';
 import { PaymentSettingsSection } from './components/PaymentSettingsSection';
 import { DonorsManagementSection } from './components/DonorsManagementSection';
+import { CreatorCampaignSection } from './components/CreatorCampaignSection';
 
 interface PaymentAnalytics {
   totalRevenueVnd: number;
@@ -22,7 +24,8 @@ interface PaymentAnalytics {
 }
 
 export function AdminPaymentsPage() {
-  const [activeTab, setActiveTab] = useState<'analytics' | 'settings' | 'donors'>('analytics');
+  const { t } = useTranslation('admin_payments');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'settings' | 'donors' | 'campaigns'>('analytics');
   const [loading, setLoading] = useState(false);
   const [analytics, setAnalytics] = useState<PaymentAnalytics | null>(null);
 
@@ -55,9 +58,9 @@ export function AdminPaymentsPage() {
       ];
 
   const summary = [
-    { label: 'Tổng doanh thu', value: `${totalVnd.toLocaleString('vi-VN')} VND`, detail: 'Doanh thu thực tế từ PayOS & Gateway', color: 'text-emerald-400', icon: <Landmark size={20} className="text-emerald-400" /> },
-    { label: 'Doanh thu Web3', value: totalWeb3, detail: 'Tích lũy On-chain Polygon Treasury', color: 'text-purple-400', icon: <Coins size={20} className="text-purple-400" /> },
-    { label: 'Giao dịch thành công', value: String(successCount), detail: 'Tỷ lệ thanh toán tự động: 99.4%', color: 'text-blue-400', icon: <TrendingUp size={20} className="text-blue-400" /> },
+    { label: t('summary.totalRevenue', 'Tổng doanh thu'), value: `${totalVnd.toLocaleString('vi-VN')} VND`, detail: t('summary.totalRevenueDetail', 'Doanh thu thực tế từ PayOS & Gateway'), color: 'text-emerald-400', icon: <Landmark size={20} className="text-emerald-400" /> },
+    { label: t('summary.web3Revenue', 'Doanh thu Web3'), value: totalWeb3, detail: t('summary.web3RevenueDetail', 'Tích lũy On-chain Polygon Treasury'), color: 'text-purple-400', icon: <Coins size={20} className="text-purple-400" /> },
+    { label: t('summary.successRate', 'Giao dịch thành công'), value: String(successCount), detail: t('summary.successRateDetail', 'Tỷ lệ thanh toán tự động: 99.4%'), color: 'text-blue-400', icon: <TrendingUp size={20} className="text-blue-400" /> },
   ];
 
   return (
@@ -65,10 +68,10 @@ export function AdminPaymentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 tracking-tight">
-            Quản trị Doanh thu & Quỹ Tài Trợ Cộng Đồng
+            {t('title', 'Quản trị Doanh thu & Quỹ Tài Trợ Cộng Đồng')}
           </h1>
           <p className="text-sm text-slate-400 mt-1 font-medium">
-            Trung tâm điều phối thanh toán VietQR PayOS, Quỹ Mời Cafe & Tri Ân, Thẻ Quốc Tế và Web3.
+            {t('subtitle', 'Trung tâm điều phối thanh toán VietQR PayOS, Quỹ Mời Cafe & Tri Ân, Thẻ Quốc Tế và Web3.')}
           </p>
         </div>
 
@@ -76,36 +79,47 @@ export function AdminPaymentsPage() {
         <div className="flex items-center gap-1.5 p-1 bg-slate-900/80 rounded-2xl border border-slate-800 self-start">
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'analytics'
                 ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5" />
-            Báo cáo Doanh thu
+            {t('tabs.analytics', 'Báo cáo Doanh thu')}
           </button>
           <button
             onClick={() => setActiveTab('donors')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'donors'
                 ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Heart className="w-3.5 h-3.5" />
-            Nhà Tài Trợ & Tri Ân
+            {t('tabs.donors', 'Nhà Tài Trợ & Tri Ân')}
+          </button>
+          <button
+            onClick={() => setActiveTab('campaigns')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              activeTab === 'campaigns'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md font-bold'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            {t('tabs.campaigns', 'Chính Sách Creator')}
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === 'settings'
                 ? 'bg-cyan-500 text-slate-950 shadow-md font-bold'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
-            Cấu hình Thụ hưởng
+            {t('tabs.settings', 'Cấu hình Thụ hưởng')}
           </button>
         </div>
       </div>
@@ -132,16 +146,16 @@ export function AdminPaymentsPage() {
             <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-base font-bold text-slate-200">Giao dịch Gần đây (Real-time Database)</h2>
+                <h2 className="text-base font-bold text-slate-200">{t('recentTransactions.title', 'Giao dịch Gần đây (Real-time Database)')}</h2>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={fetchAnalytics}
                   disabled={loading}
-                  className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition"
+                  className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition cursor-pointer"
                 >
                   <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin text-cyan-400' : ''}`} />
-                  Làm mới
+                  {t('recentTransactions.refresh', 'Làm mới')}
                 </button>
                 <span className="text-[10px] text-cyan-400 font-bold tracking-wider bg-cyan-950/60 border border-cyan-800/60 px-3 py-1 rounded-full uppercase">
                   Auto-Reconciled
@@ -152,12 +166,12 @@ export function AdminPaymentsPage() {
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-400 text-xs font-bold tracking-wider uppercase bg-slate-950/30">
-                    <th className="p-4">Mã Đơn / Order</th>
-                    <th className="p-4">Khách hàng</th>
-                    <th className="p-4 w-36">Cổng / Kênh</th>
-                    <th className="p-4 w-36">Số tiền</th>
-                    <th className="p-4 w-32">Trạng thái</th>
-                    <th className="p-4 w-44 text-right">Thời gian</th>
+                    <th className="p-4">{t('recentTransactions.colId', 'Mã Đơn / Order')}</th>
+                    <th className="p-4">{t('recentTransactions.colUser', 'Khách hàng')}</th>
+                    <th className="p-4 w-36">{t('recentTransactions.colProvider', 'Cổng / Kênh')}</th>
+                    <th className="p-4 w-36">{t('recentTransactions.colAmount', 'Số tiền')}</th>
+                    <th className="p-4 w-32">{t('recentTransactions.colStatus', 'Trạng thái')}</th>
+                    <th className="p-4 w-44 text-right">{t('recentTransactions.colTime', 'Thời gian')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -195,7 +209,11 @@ export function AdminPaymentsPage() {
 
       {/* TAB 3: CẤU HÌNH TÀI KHOẢN THỤ HƯỞNG & GATEWAY KEYS */}
       {activeTab === 'settings' && <PaymentSettingsSection />}
+
+      {/* TAB 4: CHÍNH SÁCH CREATOR MARKETING & MỜI 1 LY CAFE */}
+      {activeTab === 'campaigns' && <CreatorCampaignSection />}
     </div>
   );
 }
+
 export default AdminPaymentsPage;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * [RBAC SSOT] AegisQuiz — Auth Types & Role Constants
  *
  * QUAN TRỌNG: Đây là nguồn sự thật duy nhất cho tất cả role/permission trên Frontend.
@@ -173,14 +173,20 @@ export function isAdminLevel(role?: AppRoleType | null): boolean {
  */
 export function canManageResource(
   user: UserProfile | null | undefined,
-  resource: { creatorId?: string; orgUnitId?: string; scope?: string } | null | undefined
+  resource: { creatorId?: string; orgUnitId?: string; scope?: string; createdByUserId?: string } | null | undefined
 ): boolean {
   if (!user) return false;
+  // 1. Quản trị viên cấp cao trong Tenant / System
   if (user.role === AppRole.SystemAdmin || user.role === AppRole.TenantAdmin || user.role === AppRole.ContentManager) {
     return true;
   }
+  // 2. Quyền sở hữu tác giả trực tiếp (Creator / Teacher / Chủ sở hữu)
+  const creatorId = resource?.creatorId || resource?.createdByUserId;
+  if (creatorId && (creatorId === user.id || (user as any).sub === creatorId)) {
+    return true;
+  }
+  // 3. Quản lý nhóm (TeamLeader)
   if (user.role === AppRole.TeamLeader) {
-    if (resource?.creatorId && resource.creatorId === user.id) return true;
     if (user.orgUnitId && resource?.orgUnitId && resource.orgUnitId === user.orgUnitId) return true;
     if (resource?.scope === 'TEAM' || resource?.scope === 'PERSONAL') return true;
     return false;

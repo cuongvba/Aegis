@@ -9,7 +9,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bot, Menu, X, Shield, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Shield, LayoutDashboard } from 'lucide-react';
+import { AegisBrandLogo } from '@/components/common/AegisBrandLogo';
 import { useTenant } from '@/app/providers/TenantProvider';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
@@ -38,24 +39,7 @@ export function LandingHeader() {
           className="flex items-center gap-2.5 flex-shrink-0 cursor-pointer"
           aria-label={`${tenantName} — ${t('nav.features')}`}
         >
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center border-2 border-white shadow-md flex-shrink-0"
-            style={{ background: 'var(--tenant-brand-gradient)' }}
-            aria-hidden="true"
-          >
-            <Bot className="h-5 w-5 text-white" />
-          </div>
-          <span
-            className="text-lg font-extrabold tracking-tight"
-            style={{
-              backgroundImage: 'var(--tenant-brand-gradient)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}
-          >
-            {tenantName}
-          </span>
+          <AegisBrandLogo size="md" variant="compact" />
         </button>
 
         {/* Desktop nav */}

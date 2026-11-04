@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe } from 'lucide-react';
+import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink } from 'lucide-react';
 import type { LearnerQuestion } from '@/types/quiz';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
@@ -32,11 +32,12 @@ interface TopicModalProps {
   setIsEditingTopic: (v: boolean) => void;
 
   onClose: () => void;
+  onOpenQuestions?: (t: BankTopic) => void;
   onSave: (e: React.FormEvent) => void;
   onOpenAdd: () => void;
   onOpenEdit: (t: BankTopic) => void;
-  onDelete: (id: string) => void;
-  onToggleActive: (t: BankTopic) => void;
+  onDelete?: (id: string) => void;
+  onToggleActive?: (t: BankTopic) => void;
 }
 
 export function TopicModal({
@@ -46,7 +47,7 @@ export function TopicModal({
   topicDomainCode = 'GENERAL', topicScope = 'COMMUNITY',
   setTopicCode, setTopicName, setTopicDesc, setTopicCat, setTopicVisibility, setTopicParentId,
   setTopicDomainCode, setTopicScope, setIsEditingTopic,
-  onClose, onSave, onOpenAdd, onOpenEdit, onDelete, onToggleActive,
+  onClose, onSave, onOpenAdd, onOpenEdit, onOpenQuestions, onDelete, onToggleActive,
 }: TopicModalProps) {
   if (!isOpen) return null;
 
@@ -138,7 +139,15 @@ export function TopicModal({
               <div className="flex flex-col gap-1 text-xs">
                 <div className="flex justify-between items-center text-slate-300">
                   <span>Trực thuộc mã này:</span>
-                  <span className="font-mono font-black text-blue-400">{directCount} câu hỏi</span>
+                  <button
+                    type="button"
+                    onClick={() => { if (activeTopic && onOpenQuestions) { onClose(); onOpenQuestions(activeTopic); } }}
+                    className="font-mono font-black text-sky-400 hover:text-sky-300 hover:underline flex items-center gap-1 cursor-pointer"
+                    title="Bấm để xem danh sách câu hỏi thuộc chủ đề này"
+                  >
+                    <span>{directCount} câu hỏi</span>
+                    <ExternalLink size={12} />
+                  </button>
                 </div>
                 {descendantTopicCount > 0 && (
                   <div className="flex justify-between items-center text-slate-300 pt-1 border-t border-slate-800/60">
@@ -234,19 +243,37 @@ export function TopicModal({
             <div className="space-y-3 pt-4 border-t border-slate-800/80">
               {hasWritePermission ? (
                 <>
-                  <div className="grid grid-cols-4 gap-2">
-                    <button type="button" onClick={() => { onOpenAdd(); setIsEditingTopic(true); }} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-blue-450 border border-slate-850 rounded-xl font-bold transition-all text-[10px] flex flex-col items-center justify-center gap-1 cursor-pointer" title="Tạo chủ đề mới"><Plus size={14} /> Mới</button>
-                    <button type="button" onClick={() => setIsEditingTopic(true)} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-amber-450 border border-slate-850 rounded-xl font-bold transition-all text-[10px] flex flex-col items-center justify-center gap-1 cursor-pointer" title="Chỉnh sửa"><Edit size={14} /> Sửa</button>
+                  <div className={`grid ${onDelete && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" ? "grid-cols-4" : "grid-cols-3"} gap-2`}>
+                    <button type="button" onClick={() => { onOpenAdd(); setIsEditingTopic(true); }} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-blue-400 border border-slate-850 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer" title="Tạo chủ đề mới"><Plus size={15} /> Mới</button>
+                    <button type="button" onClick={() => setIsEditingTopic(true)} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-amber-400 border border-slate-850 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer" title="Chỉnh sửa"><Edit size={15} /> Sửa</button>
                     <button
                       type="button"
-                      onClick={async () => { if (editingTopicId && activeTopic) await onToggleActive(activeTopic); }}
-                      className={`py-2.5 border border-slate-850 rounded-xl font-bold transition-all text-[10px] flex flex-col items-center justify-center gap-1 cursor-pointer bg-slate-950 hover:bg-slate-850 ${activeTopic?.enabled !== false ? 'text-orange-400' : 'text-emerald-450'}`}
-                      title="Bật/Tắt Kích hoạt"
+                      onClick={() => {
+                        if (activeTopic && onOpenQuestions) {
+                          onClose();
+                          onOpenQuestions(activeTopic);
+                        }
+                      }}
+                      className="py-2.5 bg-sky-950/60 hover:bg-sky-900/80 text-sky-300 border border-sky-500/40 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm"
+                      title="Xem danh sách câu hỏi thuộc chủ đề này"
                     >
-                      {activeTopic?.enabled !== false ? <Lock size={14} /> : <Unlock size={14} />}
-                      {activeTopic?.enabled !== false ? 'Khóa' : 'Kích hoạt'}
+                      <HelpCircle size={15} className="text-sky-400" />
+                      <span>Câu hỏi ({directCount})</span>
                     </button>
-                    <button type="button" onClick={() => { if (editingTopicId) { onDelete(editingTopicId); onClose(); } }} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-red-405 border border-slate-850 rounded-xl font-bold transition-all text-[10px] flex flex-col items-center justify-center gap-1 cursor-pointer" title="Xóa chủ đề"><Trash2 size={14} /> Xóa</button>
+                    {onDelete && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onDelete(activeTopic.id);
+                        }}
+                        className="py-2.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 hover:text-rose-300 border border-rose-800/40 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm"
+                        title="Xóa chủ đề (Chủ sở hữu hoặc Quản trị viên)"
+                      >
+                        <Trash2 size={15} />
+                        <span>Xóa</span>
+                      </button>
+                    )}
                   </div>
                   <button type="button" onClick={onClose} className="w-full py-2.5 bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 rounded-xl font-bold transition-all text-xs cursor-pointer">Đóng</button>
                 </>

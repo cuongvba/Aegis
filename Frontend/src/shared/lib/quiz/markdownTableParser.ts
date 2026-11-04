@@ -10,8 +10,57 @@
  * - Header màu text-sky-300 font-semibold
  * - Căn lề tự động (text-left, text-center, text-right)
  * - Khung cuộn ngang mượt mà (overflow-x-auto) trên màn hình mobile/tablet
- * - Khử hoàn toàn xung đột với thẻ <br/> khi xuống dòng
+ * - Tách ô an toàn State-Machine (splitTableCells) chống vỡ khi trong ô có thẻ KaTeX HTML hoặc escaped pipe
  */
+
+/**
+ * Tách các cột trong dòng bảng an toàn, bảo vệ dấu | nằm trong thẻ HTML (<...>) hoặc đứng sau dấu \
+ */
+export function splitTableCells(line: string): string[] {
+  const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+  const cells: string[] = [];
+  let current = '';
+  let inTag = false;
+  let inEscape = false;
+
+  for (let i = 0; i < trimmed.length; i++) {
+    const char = trimmed[i];
+
+    if (inEscape) {
+      current += char;
+      inEscape = false;
+      continue;
+    }
+
+    if (char === '\\') {
+      inEscape = true;
+      current += char;
+      continue;
+    }
+
+    if (char === '<') {
+      inTag = true;
+      current += char;
+      continue;
+    }
+
+    if (char === '>') {
+      inTag = false;
+      current += char;
+      continue;
+    }
+
+    if (char === '|' && !inTag) {
+      cells.push(current.trim());
+      current = '';
+      continue;
+    }
+
+    current += char;
+  }
+  cells.push(current.trim());
+  return cells;
+}
 
 export function parseAndTokenizeTables(
   content: string,
@@ -28,20 +77,15 @@ export function parseAndTokenizeTables(
     if (tableBuffer.length === 0) return;
 
     // Kiểm tra xem tableBuffer có chứa dòng phân cách |--| không
-    const hasSeparator = tableBuffer.some((l) => /^[ \t]*\|[ \t]*:?[-]+:?[ \t]*\|/.test(l));
+    const hasSeparator = tableBuffer.some((l) => /^[ \t]*\|?[ \t]*:?[-]{2,}:?[ \t]*\|/.test(l));
     if (tableBuffer.length >= 2 && hasSeparator) {
-      const parseRow = (line: string): string[] => {
-        const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
-        return trimmed.split('|').map((c) => c.trim());
-      };
-
-      const sepIdx = tableBuffer.findIndex((l) => /^[ \t]*\|[ \t]*:?[-]+:?[ \t]*\|/.test(l));
+      const sepIdx = tableBuffer.findIndex((l) => /^[ \t]*\|?[ \t]*:?[-]{2,}:?[ \t]*\|/.test(l));
       const headerLines = tableBuffer.slice(0, sepIdx);
       const sepLine = tableBuffer[sepIdx];
       const dataLines = tableBuffer.slice(sepIdx + 1);
 
-      const headerCells = headerLines.length > 0 ? parseRow(headerLines[0]) : [];
-      const alignLine = parseRow(sepLine);
+      const headerCells = headerLines.length > 0 ? splitTableCells(headerLines[0]) : [];
+      const alignLine = splitTableCells(sepLine);
       const alignments = alignLine.map((col) => {
         const startsWithColon = col.startsWith(':');
         const endsWithColon = col.endsWith(':');
@@ -62,7 +106,7 @@ export function parseAndTokenizeTables(
       }
       html += '<tbody class="divide-y divide-slate-800/80">';
       dataLines.forEach((dLine, rIdx) => {
-        const cells = parseRow(dLine);
+        const cells = splitTableCells(dLine);
         const rowBg = rIdx % 2 === 0 ? 'bg-transparent' : 'bg-slate-800/30';
         html += `<tr class="${rowBg} hover:bg-slate-800/50 transition-colors">`;
         cells.forEach((cell, idx) => {
@@ -83,7 +127,7 @@ export function parseAndTokenizeTables(
   };
 
   for (const line of lines) {
-    if (/^[ \t]*\|.*\|[ \t]*$/.test(line)) {
+    if (line.includes('|')) {
       tableBuffer.push(line);
     } else {
       flushTable();
@@ -94,4 +138,3 @@ export function parseAndTokenizeTables(
 
   return resultLines.join('\n');
 }
-

@@ -174,7 +174,15 @@ namespace AegisQuiz.Domain.Entities
         [System.Text.Json.Serialization.JsonPropertyName("creatorId")]
         public string? CreatorId
         {
-            get => TryGetPayloadProperty(Payload, "creatorId", out var el) && el.ValueKind == JsonValueKind.String ? el.GetString() : null;
+            get
+        {
+            if (TryGetPayloadProperty(Payload, "creatorId", out var el) && el.ValueKind == JsonValueKind.String)
+            {
+                var val = el.GetString();
+                if (!string.IsNullOrWhiteSpace(val)) return val;
+            }
+            return CreatedBy;
+        }
         }
 
         /// <summary>[Ownership Scoping] OrgUnitId (phạm vi nhóm/lớp) sở hữu câu hỏi — dùng cho TeamLeader.</summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,6 +64,109 @@ namespace AegisQuiz.API.Controllers
             }
 
             return Guid.Empty;
+        }
+
+        // ── GET api/admin/tenants/branding ────────────────────────────────────
+        /// <summary>
+        /// [Enterprise White-Labeling] Lấy toàn bộ cấu hình bản sắc thương hiệu của Tenant.
+        /// Cho phép gọi ẩn danh để khởi tạo theme cho trang Đăng nhập / Khách vãng lai.
+        /// </summary>
+        [HttpGet("branding")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBranding()
+        {
+            try
+            {
+                var tenantId = await GetTenantIdAsync();
+                var tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantId);
+                if (tenant == null)
+                {
+                    tenant = await _db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.IsActive);
+                }
+
+                if (tenant == null)
+                {
+                    return Ok(new TenantBrandingDto());
+                }
+
+                TenantBrandingDto? dto = null;
+                if (!string.IsNullOrWhiteSpace(tenant.ConfigJson))
+                {
+                    try
+                    {
+                        dto = JsonSerializer.Deserialize<TenantBrandingDto>(tenant.ConfigJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "[Branding] Không thể parse ConfigJson của Tenant {Id}", tenant.Id);
+                    }
+                }
+
+                if (dto == null)
+                {
+                    dto = new TenantBrandingDto
+                    {
+                        OrganizationName = tenant.Name,
+                        CustomDomain = tenant.CustomDomain ?? tenant.Domain ?? "quiz.mybank.vn",
+                        LogoUrl = tenant.LogoUrl ?? "https://cdn.aegisquiz.com/tenant-demo-logo.svg",
+                        PrimaryColor = tenant.PrimaryColor ?? "#4f46e5",
+                        Slogan = "Vững bước tương lai — Nâng tầm tri thức",
+                        BrandDescription = "Hệ thống khảo thí và đánh giá năng lực chuẩn hóa toàn diện",
+                        LoginBackgroundUrl = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1920&auto=format&fit=crop",
+                        LoginOverlayOpacity = 65,
+                        EnableWatermark = true,
+                        WatermarkText = $"{tenant.Name} — Bảo Mật Nội Bộ",
+                        CopyrightText = $"© {DateTime.UtcNow.Year} {tenant.Name}. Bảo lưu mọi quyền."
+                    };
+                }
+
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Branding] Lỗi lấy cấu hình thương hiệu");
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // ── PUT api/admin/tenants/branding ────────────────────────────────────
+        /// <summary>
+        /// [Enterprise White-Labeling] Cập nhật bản sắc thương hiệu doanh nghiệp vào cơ sở dữ liệu.
+        /// </summary>
+        [HttpPut("branding")]
+        public async Task<IActionResult> UpdateBranding([FromBody] TenantBrandingDto req)
+        {
+            try
+            {
+                var tenantId = await GetTenantIdAsync();
+                var tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId);
+                if (tenant == null)
+                {
+                    tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.IsActive);
+                }
+
+                if (tenant == null)
+                {
+                    return NotFound(new { message = "Không tìm thấy khách thuê để cập nhật thương hiệu." });
+                }
+
+                if (!string.IsNullOrWhiteSpace(req.OrganizationName)) tenant.Name = req.OrganizationName.Trim();
+                if (!string.IsNullOrWhiteSpace(req.LogoUrl)) tenant.LogoUrl = req.LogoUrl.Trim();
+                if (!string.IsNullOrWhiteSpace(req.PrimaryColor)) tenant.PrimaryColor = req.PrimaryColor.Trim();
+                if (!string.IsNullOrWhiteSpace(req.CustomDomain)) tenant.CustomDomain = req.CustomDomain.Trim().ToLowerInvariant();
+
+                tenant.ConfigJson = JsonSerializer.Serialize(req, new JsonSerializerOptions { WriteIndented = false });
+
+                await _db.SaveChangesAsync();
+                _logger.LogInformation("[Branding] Đã lưu bản sắc thương hiệu cho Tenant: {Code} ({Name})", tenant.Code, tenant.Name);
+
+                return Ok(new { message = "Lưu cấu hình thương hiệu doanh nghiệp thành công.", branding = req });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[Branding] Lỗi lưu cấu hình thương hiệu");
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         // ── GET api/admin/tenants ──────────────────────────────────────────────
@@ -520,5 +624,29 @@ namespace AegisQuiz.API.Controllers
         public int? MaxUsers { get; set; }
         public bool? IsActive { get; set; }
         public DateTime? ExpiresAt { get; set; }
+    }
+
+    public class TenantBrandingDto
+    {
+        public string OrganizationName { get; set; } = string.Empty;
+        public string CustomDomain { get; set; } = string.Empty;
+        public string LogoUrl { get; set; } = string.Empty;
+        public int LogoHeightPx { get; set; } = 36;
+        public string FaviconUrl { get; set; } = string.Empty;
+        public string SquareLogoUrl { get; set; } = string.Empty;
+        public string Slogan { get; set; } = string.Empty;
+        public string BrandDescription { get; set; } = string.Empty;
+        public string LoginBackgroundUrl { get; set; } = string.Empty;
+        public int LoginOverlayOpacity { get; set; } = 60;
+        public bool EnableWatermark { get; set; } = true;
+        public string WatermarkText { get; set; } = string.Empty;
+        public string CopyrightText { get; set; } = string.Empty;
+        public string SupportHotline { get; set; } = string.Empty;
+        public string SupportEmail { get; set; } = string.Empty;
+        public string PrimaryColor { get; set; } = "#4f46e5";
+        public string SecondaryColor { get; set; } = "#0ea5e9";
+        public string AccentColor { get; set; } = "#8b5cf6";
+        public string BorderRadius { get; set; } = "0.75rem";
+        public string FontFamily { get; set; } = "Inter, system-ui, sans-serif";
     }
 }

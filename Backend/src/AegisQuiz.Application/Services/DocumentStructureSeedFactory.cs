@@ -53,11 +53,11 @@ namespace AegisQuiz.Application.Services
             },
             ["SHORT_ANSWER"] = new()
             {
-                @"(?i)(?:TRẢ\s*LỜI\s*NGẮN|TRA\s*LOI\s*NGAN|SHORT\s*ANSWER|ĐIỀN\s*(?:ĐÁP\s*SỐ|KẾT\s*QUẢ)|填空题)",
+                @"(?i)(?:TRẮC\s*NGHIỆM\s*TRẢ\s*LỜI\s*NGẮN|TRẮC\s*NGHIỆM\s*NGẮN|CÂU\s*(?:HỎI\s*)?TRẮC\s*NGHIỆM\s*NGẮN|TRẢ\s*LỜI\s*NGẮN|TRA\s*LOI\s*NGAN|SHORT\s*ANSWER|ĐIỀN\s*(?:ĐÁP\s*SỐ|KẾT\s*QUẢ)|填空题)",
                 @"^(?:PHẦN|PHAN)\s+III\b",
                 @"^(?:PART|SECTION)\s+III\b",
                 @"^(?:PHẦN|PHAN)\s+3\b",
-                @"^(?:CÂU\s*)?TRẢ\s*LỜI\s*NGẮN$",
+                @"^(?:CÂU\s*(?:HỎI\s*)?)?(?:TRẮC\s*NGHIỆM\s*)?TRẢ\s*LỜI\s*NGẮN[\.\:\s\-]*$",
                 @"^ĐIỀN\s*(?:ĐÁP\s*SỐ|KẾT\s*QUẢ)$"
             },
             ["TRUE_FALSE"] = new()
@@ -138,7 +138,7 @@ namespace AegisQuiz.Application.Services
             },
             ["SHORT_ANSWER"] = new()
             {
-                @"(?i)(?:câu\s+(?:hỏi\s+)?(?:trắc\s+nghiệm\s+)?trả\s*lời\s*ngắn|câu\s*hỏi\s*trả\s*lời\s*ngắn)",
+                @"(?i)(?:câu\s+(?:hỏi\s+)?(?:trắc\s+nghiệm\s+)?trả\s*lời\s*ngắn|câu\s*hỏi\s*trả\s*lời\s*ngắn|câu\s+(?:hỏi\s+)?trắc\s+nghiệm\s+ngắn|trắc\s+nghiệm\s+ngắn|trắc\s+nghiệm\s+trả\s*lời\s*ngắn)",
                 @"(?i)(?:(?:phần\s+iii|part\s+iii|section\s+iii).*?trả\s*lời|trả\s*lời\s*ngắn|yêu\s*cầu\s*trả\s*lời\s*ngắn|điền\s*(?:đáp\s*số|vào\s*chỗ\s*trống)|viết\s*câu\s*trả\s*lời|kết\s*quả\s*làm\s*tròn|fill\s*in\s*the\s*blank|short\s*answer|write\s*your\s*answer|填空题)"
             },
             ["ORDERING"] = new()

@@ -111,7 +111,7 @@ export const ZenQuestionEditor: React.FC<ZenQuestionEditorProps> = ({ question, 
         </button>
         <button
           type="button"
-          onClick={() => onSave({ content, options, correctAnswer: answer, explanation })}
+          onClick={() => onSave({ content, options, correctAnswer: answer, explanation, contextTitle: question.contextTitle, contextContent: question.contextContent })}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white"
         >
           <Check className="w-3.5 h-3.5" />

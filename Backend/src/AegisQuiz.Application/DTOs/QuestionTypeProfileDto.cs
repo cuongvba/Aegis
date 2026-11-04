@@ -41,7 +41,7 @@ namespace AegisQuiz.Application.DTOs
                 AliasOrder = 10, CanonicalSectionKey = "SHORT_ANSWER", DefaultDifficulty = 4,
                 Capabilities = { CapFreeText, CapNumericAnswer },
                 EquivalentTypes = { "SHORT_ANSWER" },
-                SectionAliasPatterns = { @"III", @"SHORT_ANSWER", @"TRẢ LỜI NGẮN", @"ĐIỀN SỐ", @"SHORT ANSWER" }
+                SectionAliasPatterns = { @"III", @"SHORT_ANSWER", @"TRẢ LỜI NGẮN", @"ĐIỀN SỐ", @"SHORT ANSWER", @"TRẮC NGHIỆM TRẢ LỜI NGẮN", @"TRẮC NGHIỆM NGẮN", @"CÂU HỎI TRẢ LỜI NGẮN" }
             },
             ["MULTI_TRUE_FALSE"] = new()
             {

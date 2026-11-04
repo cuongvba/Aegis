@@ -168,6 +168,76 @@ namespace AegisQuiz.UnitTests
             Assert.Equal("HEALTHCARE_PHARMACY", sniffedHealth.TopicCode);
             Assert.Equal("HEALTHCARE", sniffedHealth.DomainCode);
         }
+
+        [Fact]
+        public void RealDocx_Tnpt_Sinh_And_Hoa_Diagnosis()
+        {
+            var ctx = DynamicDomainContext.CreateDefault();
+            var sinhPath = @"D:\Cuong\DuAn\DETHI\TNPT\thuvienhoclieu.com-De-thi-TN-THPT-2026-mon-Sinh-Bo-GD-ma-de-0430.docx";
+            var hoaPath = @"D:\Cuong\DuAn\DETHI\TNPT\thuvienhoclieu.com-De-thi-TN-THPT-2026-mon-Hoa-Bo-GD-ma-de-0323.docx";
+
+            if (System.IO.File.Exists(sinhPath))
+            {
+                var parser = new DocxParserService();
+                using var fs = System.IO.File.OpenRead(sinhPath);
+
+                fs.Position = 0;
+                var qs = parser.ParseDocxFile(fs, ctx);
+                var first = qs[0];
+                System.Console.WriteLine($"[DEBUG FIRST Q CONTENT] Content='{first.Content}'");
+                System.Console.WriteLine($"[DEBUG REAL SINH] TopicCode='{first.TopicCode}', TargetLevel='{first.TargetLevel}', Canonical='{first.CanonicalTopicCode}', TreePath='{first.TreePath}'");
+                
+                using var archive = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Read, leaveOpen: true);
+                var entry = archive.GetEntry("word/document.xml");
+                var doc = System.Xml.Linq.XDocument.Load(entry.Open());
+                var headerTexts = DocxParserService.FastScanDocumentHeader(doc, 35);
+                fs.Position = 0;
+                var rawParas = DocxParserService.ExtractRawParagraphsFromDocx(fs);
+                var cig = AegisQuiz.Infrastructure.Services.DynamicQuestionIngestionEngine.Instance;
+                var parasProfile = cig.ProfileHeader(rawParas.Take(35), rawParas.Skip(35).Take(15), ctx);
+                System.Console.WriteLine($"[PARAS PROFILE] Canonical='{parasProfile.TaxonomyCoordinates.CanonicalTopicCode}', TopicCode='{parasProfile.TaxonomyCoordinates.TopicCode}'");
+                
+                var reconPatterns = ctx.StructureDictionary.TaxonomyReconPatterns;
+                for (int i = 0; i < Math.Min(35, rawParas.Count); i++)
+                {
+                    var pText = rawParas[i];
+                    foreach (var gp in reconPatterns.GradeDetectionPatterns)
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(pText, gp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        if (m.Success)
+                        {
+                            System.Console.WriteLine($"[FOUND MATCH IN PARA #{i}] Pattern='{gp}', Val='{m.Groups[1].Value}', Full='{m.Value}', Text='{pText}'");
+                        }
+                    }
+                    foreach (var t in ctx.Topics)
+                    {
+                        var m1 = System.Text.RegularExpressions.Regex.Match(pText, $@"(?i)\b{System.Text.RegularExpressions.Regex.Escape(t.Code)}[\s\-_]*(\d{{1,2}})\b");
+                        if (m1.Success)
+                        {
+                            System.Console.WriteLine($"[FOUND TOPIC CODE IN PARA #{i}] Topic={t.Code}, Val='{m1.Groups[1].Value}', Text='{pText}'");
+                        }
+                        if (!string.IsNullOrWhiteSpace(t.Name))
+                        {
+                            var m2 = System.Text.RegularExpressions.Regex.Match(pText, $@"(?i)\b{System.Text.RegularExpressions.Regex.Escape(t.Name)}[\s\-_]*(\d{{1,2}})\b");
+                            if (m2.Success)
+                            {
+                                System.Console.WriteLine($"[FOUND TOPIC NAME IN PARA #{i}] Topic={t.Name}, Val='{m2.Groups[1].Value}', Text='{pText}'");
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (System.IO.File.Exists(hoaPath))
+            {
+                var parser = new DocxParserService();
+                using var fs = System.IO.File.OpenRead(hoaPath);
+                var qs = parser.ParseDocxFile(fs, ctx);
+                var first = qs[0];
+                System.Console.WriteLine($"[REAL HOA DOCX] TopicCode={first.TopicCode}, Canonical={first.CanonicalTopicCode}, TreePath={first.TreePath}");
+                Assert.Equal("HOA_HOC_K12", first.TopicCode);
+            }
+        }
     }
 }
 

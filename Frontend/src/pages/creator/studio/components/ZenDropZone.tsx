@@ -1,16 +1,23 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FileUp, Loader2, Sparkles, FileText } from 'lucide-react';
+import { FileUp, Loader2, Sparkles, FileText, FileSpreadsheet, File } from 'lucide-react';
 
 interface ZenDropZoneProps {
   onFileSelected: (file: File) => void;
   isLoading: boolean;
 }
 
+const ALLOWED_EXTS = ['.docx', '.doc', '.xlsx', '.xls', '.pdf'];
+
 export const ZenDropZone: React.FC<ZenDropZoneProps> = ({ onFileSelected, isLoading }) => {
   const { t } = useTranslation('creator');
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isAllowedFile = (name: string) => {
+    const lower = name.toLowerCase();
+    return ALLOWED_EXTS.some((ext) => lower.endsWith(ext));
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -26,7 +33,7 @@ export const ZenDropZone: React.FC<ZenDropZoneProps> = ({ onFileSelected, isLoad
     setIsDragOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+      if (isAllowedFile(file.name)) {
         onFileSelected(file);
       }
     }
@@ -44,7 +51,7 @@ export const ZenDropZone: React.FC<ZenDropZoneProps> = ({ onFileSelected, isLoad
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={() => !isLoading && fileInputRef.current?.click()}
-      className={`relative group cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300 p-10 md:p-14 text-center ${
+      className={`relative group cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-300 p-8 sm:p-12 text-center ${
         isDragOver
           ? 'border-indigo-400 bg-indigo-950/40 shadow-2xl shadow-indigo-500/20 scale-[1.01]'
           : 'border-slate-700/80 hover:border-indigo-500/60 bg-slate-900/40 hover:bg-slate-900/70'
@@ -53,7 +60,7 @@ export const ZenDropZone: React.FC<ZenDropZoneProps> = ({ onFileSelected, isLoad
       <input
         ref={fileInputRef}
         type="file"
-        accept=".docx,.doc"
+        accept=".docx,.doc,.xlsx,.xls,.pdf"
         onChange={handleFileChange}
         className="hidden"
         disabled={isLoading}
@@ -72,19 +79,32 @@ export const ZenDropZone: React.FC<ZenDropZoneProps> = ({ onFileSelected, isLoad
           )}
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">
             {isLoading ? t('dropZone.processing') : isDragOver ? t('dropZone.dropActive') : t('dropZone.title')}
           </h3>
           <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
             {t('dropZone.hint')}
           </p>
+
+          {/* Format Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-300 border border-blue-500/20 text-xs font-semibold">
+              <FileText className="w-3.5 h-3.5 text-blue-400" /> Word (.docx)
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-xs font-semibold">
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" /> Excel (.xlsx)
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/20 text-xs font-semibold">
+              <File className="w-3.5 h-3.5 text-rose-400" /> PDF (.pdf)
+            </span>
+          </div>
         </div>
 
         {!isLoading && (
           <div className="pt-2 flex items-center gap-3">
             <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-medium text-sm shadow-lg shadow-indigo-500/20 transition-all">
-              <FileText className="w-4 h-4" />
+              <FileUp className="w-4 h-4" />
               {t('dropZone.browseButton')}
             </span>
           </div>

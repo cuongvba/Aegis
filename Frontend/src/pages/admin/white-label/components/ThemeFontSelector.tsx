@@ -9,17 +9,17 @@ interface ThemeFontSelectorProps {
 }
 
 const FONT_OPTIONS = [
-  { label: 'Inter (Quốc tế & Tối giản)', value: 'Inter, system-ui, sans-serif' },
-  { label: 'Be Vietnam Pro (Chuẩn tiếng Việt)', value: '"Be Vietnam Pro", sans-serif' },
-  { label: 'Outfit (Hiện đại & Táo bạo)', value: 'Outfit, sans-serif' },
-  { label: 'Roboto (Cổ điển & Dễ đọc)', value: 'Roboto, sans-serif' },
+  { key: 'fontInter', defaultLabel: 'Inter (Quốc tế & Tối giản)', value: 'Inter, system-ui, sans-serif' },
+  { key: 'fontVietnam', defaultLabel: 'Be Vietnam Pro (Chuẩn tiếng Việt)', value: '"Be Vietnam Pro", sans-serif' },
+  { key: 'fontOutfit', defaultLabel: 'Outfit (Hiện đại & Táo bạo)', value: 'Outfit, sans-serif' },
+  { key: 'fontRoboto', defaultLabel: 'Roboto (Cổ điển & Dễ đọc)', value: 'Roboto, sans-serif' },
 ];
 
 const RADIUS_OPTIONS = [
-  { label: 'Sắc nét (Sharp - 4px)', value: '0.25rem' },
-  { label: 'Tiêu chuẩn (Smooth - 12px)', value: '0.75rem' },
-  { label: 'Mềm mại (Curved - 16px)', value: '1rem' },
-  { label: 'Bo tròn (Pill - 24px)', value: '1.5rem' },
+  { key: 'radiusSharp', defaultLabel: 'Sắc nét (Sharp - 4px)', value: '0.25rem' },
+  { key: 'radiusSmooth', defaultLabel: 'Tiêu chuẩn (Smooth - 12px)', value: '0.75rem' },
+  { key: 'radiusCurved', defaultLabel: 'Mềm mại (Curved - 16px)', value: '1rem' },
+  { key: 'radiusPill', defaultLabel: 'Bo tròn (Pill - 24px)', value: '1.5rem' },
 ];
 
 export const ThemeFontSelector: React.FC<ThemeFontSelectorProps> = ({
@@ -34,24 +34,24 @@ export const ThemeFontSelector: React.FC<ThemeFontSelectorProps> = ({
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-sm font-bold text-white pb-2 border-b border-slate-800">
           <Type className="w-4 h-4 text-sky-400" />
-          <span>{t('fontFamily')}</span>
+          <span>{t('fontFamily', 'Phông chữ hệ thống')}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {FONT_OPTIONS.map((f) => {
             const isSelected = config.fontFamily === f.value;
             return (
               <button
-                key={f.label}
+                key={f.key}
                 type="button"
                 onClick={() => onUpdate({ fontFamily: f.value })}
-                className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
+                className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-slate-800 border-sky-500 shadow-md text-white'
                     : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
                 }`}
                 style={{ fontFamily: f.value }}
               >
-                {f.label}
+                {t(f.key, f.defaultLabel)}
               </button>
             );
           })}
@@ -62,23 +62,23 @@ export const ThemeFontSelector: React.FC<ThemeFontSelectorProps> = ({
       <div className="space-y-2 pt-2">
         <div className="flex items-center gap-2 text-sm font-bold text-white pb-2 border-b border-slate-800">
           <Square className="w-4 h-4 text-emerald-400" />
-          <span>{t('borderRadius')}</span>
+          <span>{t('borderRadius', 'Độ bo góc')}</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {RADIUS_OPTIONS.map((r) => {
             const isSelected = config.borderRadius === r.value;
             return (
               <button
-                key={r.label}
+                key={r.key}
                 type="button"
                 onClick={() => onUpdate({ borderRadius: r.value })}
-                className={`p-2 rounded-xl border text-center text-xs font-medium transition-all ${
+                className={`p-2 rounded-xl border text-center text-xs font-medium transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-slate-800 border-emerald-500 shadow-md text-white'
                     : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700'
                 }`}
               >
-                {r.label}
+                {t(r.key, r.defaultLabel)}
               </button>
             );
           })}

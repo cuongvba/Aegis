@@ -41,9 +41,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, info: ErrorInfo): void {
     console.error('[AegisQuiz ErrorBoundary]', error, info);
     this.props.onError?.(error, info);
+
+    // Auto heal stale chunk errors when new build deployed
+    const isChunkError = /Failed to fetch dynamically imported module|Loading chunk|Failed to load module script/i.test(
+      error.message || ''
+    );
+    if (isChunkError) {
+      const lastReload = sessionStorage.getItem('last_chunk_reload');
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('last_chunk_reload', now.toString());
+        window.location.reload();
+      }
+    }
   }
 
   handleRetry = (): void => {
+    const isChunkError = /Failed to fetch dynamically imported module|Loading chunk|Failed to load module script/i.test(
+      this.state.error?.message || ''
+    );
+    if (isChunkError) {
+      window.location.reload();
+      return;
+    }
     this.setState({ hasError: false, error: null });
   };
 
@@ -111,6 +131,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           {/* Error detail */}
           {this.state.error && (
             <details
+              open
               style={{
                 marginBottom: '1.5rem',
                 textAlign:    'start',

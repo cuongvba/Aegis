@@ -12,9 +12,12 @@
 @import "katex/dist/katex.min.css";
 
 /* ── Step 2: Design Token System (3 tiers — thứ tự bắt buộc) ─────── */
-@import "@/shared/design-system/tokens/primitive.css";   /* Tier 1: Raw values   */
-@import "@/shared/design-system/tokens/semantic.css";    /* Tier 2: Semantic      */
-@import "@/shared/design-system/tokens/tenant.css";      /* Tier 3: Tenant overrides */
+@import "@/shared/design-system/tokens/primitive.css";
+/* Tier 1: Raw values   */
+@import "@/shared/design-system/tokens/semantic.css";
+/* Tier 2: Semantic      */
+@import "@/shared/design-system/tokens/tenant.css";
+/* Tier 3: Tenant overrides */
 
 /* ── Step 3: Animations Library ───────────────────────────────────── */
 @import "@/shared/design-system/animations.css";
@@ -24,36 +27,39 @@
  * ══════════════════════════════════════════════════════════════════ */
 
 @layer base {
+
   /* Box sizing */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
   /* Root font & smoothing */
   html {
-    font-family:              var(--tenant-font-body, var(--font-sans));
-    font-size:                var(--text-base);
-    line-height:              var(--leading-normal);
-    -webkit-font-smoothing:   antialiased;
-    -moz-osx-font-smoothing:  grayscale;
-    text-rendering:           optimizeLegibility;
+    font-family: var(--tenant-font-body, var(--font-sans));
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     /* RTL support — direction set by I18nProvider via dir attribute */
-    direction:                ltr;
+    direction: ltr;
   }
 
   /* Body */
   body {
-    margin:           0;
+    margin: 0;
     background-color: var(--surface-page);
-    color:            var(--text-primary);
-    font-family:      var(--tenant-font-body, var(--font-sans));
+    color: var(--text-primary);
+    font-family: var(--tenant-font-body, var(--font-sans));
   }
 
   /* Focus visible — accessibility */
   :focus-visible {
-    outline:        2px solid var(--border-focus);
+    outline: 2px solid var(--border-focus);
     outline-offset: 2px;
-    border-radius:  var(--radius-sm);
+    border-radius: var(--radius-sm);
   }
 
   /* Remove focus for mouse users */
@@ -64,61 +70,88 @@
   /* Selection */
   ::selection {
     background-color: var(--palette-cyan-200);
-    color:            var(--palette-cyan-900);
+    color: var(--palette-cyan-900);
   }
 
   /* Scrollbar — thin & branded */
   ::-webkit-scrollbar {
-    width:  6px;
+    width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: var(--palette-slate-100);
   }
+
   ::-webkit-scrollbar-thumb {
-    background:    var(--palette-slate-300);
+    background: var(--palette-slate-300);
     border-radius: var(--radius-full);
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: var(--palette-slate-400);
   }
 
   /* Headings use tenant font */
-  h1, h2, h3, h4, h5, h6 {
-    font-family:  var(--tenant-font-heading, var(--font-sans));
-    font-weight:  var(--font-bold);
-    line-height:  var(--leading-tight);
-    color:        var(--text-primary);
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--tenant-font-heading, var(--font-sans));
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    color: var(--text-primary);
   }
 
   /* Links */
   a {
-    color:           var(--text-link);
+    color: var(--text-link);
     text-decoration: none;
   }
+
   a:hover {
     color: var(--text-link-hover);
   }
 
   /* Images */
-  img, video {
+  img,
+  video {
     max-width: 100%;
-    height:    auto;
+    height: auto;
   }
 
   /* Buttons reset */
   button {
-    cursor:     pointer;
+    cursor: pointer;
     font-family: inherit;
   }
 
   /* Logical properties for RTL — inline utilities */
-  .ms-auto  { margin-inline-start: auto; }
-  .me-auto  { margin-inline-end:   auto; }
-  .ps-4     { padding-inline-start: var(--spacing-4); }
-  .pe-4     { padding-inline-end:   var(--spacing-4); }
-  .text-start { text-align: start; }
-  .text-end   { text-align: end; }
+  .ms-auto {
+    margin-inline-start: auto;
+  }
+
+  .me-auto {
+    margin-inline-end: auto;
+  }
+
+  .ps-4 {
+    padding-inline-start: var(--spacing-4);
+  }
+
+  .pe-4 {
+    padding-inline-end: var(--spacing-4);
+  }
+
+  .text-start {
+    text-align: start;
+  }
+
+  .text-end {
+    text-align: end;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -136,7 +169,7 @@
   vertical-align: middle;
 }
 
-.katex .sqrt > .vlist-t {
+.katex .sqrt>.vlist-t {
   display: inline-table !important;
 }
 
@@ -153,7 +186,8 @@
 
 /* Đảm bảo dấu vectơ \overrightarrow & \overleftarrow luôn hiển thị đầy đủ, sắc nét mũi tên trên mọi trình duyệt */
 .katex .hide-tail {
-  overflow: hidden !important; /* Cắt sạch phần đuôi thừa bên trái */
+  overflow: hidden !important;
+  /* Cắt sạch phần đuôi thừa bên trái */
   position: relative !important;
   width: 100% !important;
   min-width: 0.85em !important;
@@ -166,7 +200,8 @@
   top: 0 !important;
   fill: currentColor !important;
   stroke: currentColor !important;
-  stroke-width: 0.5px !important; /* Tăng cường độ nét cho chóp mũi tên trên mọi độ phân giải */
+  stroke-width: 0.5px !important;
+  /* Tăng cường độ nét cho chóp mũi tên trên mọi độ phân giải */
   display: block !important;
 }
 
@@ -194,8 +229,8 @@
   text-align: left !important;
 }
 
-.katex .accent-body > svg,
-.katex .svg-align > svg {
+.katex .accent-body>svg,
+.katex .svg-align>svg {
   fill: currentColor !important;
 }
 
@@ -239,25 +274,70 @@ img[src^="data:image/"] {
     size: A4 portrait;
     margin: 12mm 15mm;
   }
+
   body {
     background-color: #ffffff !important;
     color: #0f172a !important;
     font-size: 11pt !important;
   }
-  nav, header, button, .print\:hidden, input, .fixed, .sticky {
+
+  nav,
+  header,
+  button,
+  .print\:hidden,
+  input,
+  .fixed,
+  .sticky {
     display: none !important;
   }
-  .p-4.rounded-2xl.border, .break-inside-avoid {
+
+  .p-4.rounded-2xl.border,
+  .break-inside-avoid {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     border-color: #cbd5e1 !important;
     background-color: #f8fafc !important;
     margin-bottom: 12px !important;
   }
-  .text-white, .text-slate-100, .text-slate-200, .text-slate-300 {
+
+  .text-white,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300 {
     color: #0f172a !important;
   }
 }
 
 
 
+
+
+/* ══════════════════════════════════════════════════════════════════
+ * AEGIS SOVEREIGN KATEX VECTOR ARROW FIX (Tỷ lệ 4em / 4.000 ViewBox)
+ * ══════════════════════════════════════════════════════════════════ */
+.katex .hide-tail {
+  width: 100% !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-width: 0.85em !important;
+}
+
+.katex .hide-tail svg.aegis-vector-arrow,
+.katex .hide-tail .aegis-vector-arrow {
+  width: 4em !important;
+  height: inherit !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  stroke-width: 0.5px !important;
+  display: block !important;
+}
+
+.katex .hide-tail svg.aegis-vector-arrow path,
+.katex .hide-tail .aegis-vector-arrow path {
+  fill: currentColor !important;
+  stroke: none !important;
+}

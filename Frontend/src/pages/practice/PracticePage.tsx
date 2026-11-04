@@ -10,7 +10,7 @@ import { ResultScreen } from '@/components/quiz/ResultScreen';
 import { calculateQuizResult, isQuestionAnswered, scoreQuestion, processBackendQuestions } from '@/lib/quiz-helpers';
 import { useLearnerI18n } from '@/lib/i18n';
 import { learnerQuizService } from '@/services/learner-quiz.service';
-import type { LearnerAnswer, LearnerQuestion, PracticeConfig } from '@/types/quiz';
+import type { LearnerAnswer, LearnerQuestion, PracticeConfig, PracticeMode } from '@/types/quiz';
 import { VERTICAL_PRESETS } from './verticals/types';
 
 
@@ -220,6 +220,9 @@ export function PracticePage() {
   const [kidMilestone, setKidMilestone] = useState('');
   const kidFeedbackTimerRef = useRef<number | null>(null);
   const kidMilestoneTimerRef = useRef<number | null>(null);
+  const [studentName, setStudentName] = useState(() => localStorage.getItem('student_display_name') || '');
+  const [studentClass, setStudentClass] = useState(() => localStorage.getItem('student_class_name') || '');
+  const [submissionFeedback, setSubmissionFeedback] = useState<string | null>(null);
 
   const kidCorrectMsgs = lang === 'vi'
     ? ['🎉 Xuất sắc! Đúng rồi bạn ơi!', '⭐ Tuyệt vời! Bạn thật thông minh!', '🏆 Chính xác! Bạn quá giỏi!', '🌟 Hay lắm! Tiếp tục phát huy!', '👏 Bravo! Bạn đang làm rất tốt!', '💯 Hoàn hảo! Thông minh ghê!', '🦁 Ngầu lắm! Đúng hoàn toàn!', '🚀 Giỏi ghê! Bay lên nào!']
@@ -245,6 +248,14 @@ export function PracticePage() {
   const [searchParams] = useSearchParams();
   const domainParam = (searchParams.get('domain') || searchParams.get('vertical') || '').toUpperCase();
   const creatorParam = searchParams.get('creator') || '';
+  const topicParam = searchParams.get('topic') || '';
+  const modeParam = (searchParams.get('mode') as PracticeMode) || 'study';
+  const timeLimitParam = parseInt(searchParams.get('timeLimit') || '0', 10);
+  const shuffleOptionsParam = searchParams.get('shuffleOptions') === '1';
+  const shuffleQuestionsParam = searchParams.get('shuffleQuestions') === '1';
+  const qTimerParam = searchParams.get('qTimer') === '1';
+  const autoNextParam = searchParams.get('autoNext') === '1';
+  const autoStartedTopicRef = useRef<string | null>(null);
   const activeVertical = VERTICAL_PRESETS[domainParam] || (creatorParam ? null : VERTICAL_PRESETS.GENERAL);
 
   const { data: topicsList = [] } = useQuery({
@@ -476,9 +487,60 @@ export function PracticePage() {
     setShowSubmitModal(true);
   };
 
-  const handleConfirmSubmit = () => {
+  const handleConfirmSubmit = async () => {
     setShowSubmitModal(false);
     setSubmitted(true);
+
+    if (sessionQuestions.length > 0) {
+      try {
+        const wrongIndexes: number[] = [];
+        const details = sessionQuestions.map((q, idx) => {
+          const ans = answers[q.id];
+          const earned = scoreQuestion(q, ans);
+          const isCorrect = earned >= (q.points || 1);
+          if (!isCorrect) wrongIndexes.push(idx + 1);
+          return {
+            questionId: q.id,
+            category: q.categoryCode || 'GENERAL',
+            selectedAnswer: ans?.selectedOption || (ans?.selectedOptions?.join(',')) || ans?.shortText || ans?.essay || '',
+            isCorrect,
+            timeSpentSeconds: 15,
+          };
+        });
+
+        const totalScore = result.earnedPoints ?? 0;
+        const correctCount = Math.round(((result.percentage ?? 0) * sessionQuestions.length) / 100);
+        const timeSpent = Math.max(1, (sessionConfig?.timeLimitSec || 1800) - secondsLeft);
+
+        const payload = {
+          topicCode: topicParam || 'GENERAL_PRACTICE',
+          studentName: studentName.trim() || currentUser?.name || 'Học sinh ẩn danh',
+          studentClass: studentClass.trim() || currentUser?.ou || '',
+          userId: currentUser?.id || null,
+          score: totalScore,
+          correctCount,
+          totalQuestions: sessionQuestions.length,
+          timeSpentSeconds: timeSpent,
+          tabSwitchCount: 0,
+          wrongQuestionIndexes: wrongIndexes,
+          details,
+        };
+
+        if (studentName.trim()) {
+          localStorage.setItem('student_display_name', studentName.trim());
+        }
+        if (studentClass.trim()) {
+          localStorage.setItem('student_class_name', studentClass.trim());
+        }
+
+        const res = await learnerQuizService.submitHomework(payload);
+        if (res && res.message) {
+          setSubmissionFeedback(res.message);
+        }
+      } catch (err) {
+        console.warn('[PracticePage] submitHomework error:', err);
+      }
+    }
   };
 
 
@@ -518,6 +580,32 @@ export function PracticePage() {
       setIsGenerating(false);
     }
   };
+
+  // [Auto-Practice] Tự động tải và bắt đầu bài làm nếu URL có ?topic=STUDIO_XXXX
+  useEffect(() => {
+    if (topicParam && !hasStarted && autoStartedTopicRef.current !== topicParam) {
+      autoStartedTopicRef.current = topicParam;
+      const validModes: PracticeMode[] = ['study', 'exam', 'kids', 'paper'];
+      const resolvedMode: PracticeMode = validModes.includes(modeParam) ? modeParam : 'study';
+
+      handleStartSession({
+        mode: resolvedMode,
+        topicConfigs: [
+          {
+            topicKey: topicParam,
+            numberOfQuestions: 100,
+            isRandom: false,
+            startIndex: 1
+          }
+        ],
+        shuffleOptions: shuffleOptionsParam,
+        shuffleQuestions: shuffleQuestionsParam,
+        timeLimitSec: timeLimitParam > 0 ? timeLimitParam * 60 : 0,
+        autoNextOnTimeout: autoNextParam,
+        enableQuestionTimer: qTimerParam
+      });
+    }
+  }, [topicParam, hasStarted, modeParam, timeLimitParam, shuffleOptionsParam, shuffleQuestionsParam, qTimerParam, autoNextParam]);
 
   return (
     <main className={`relative min-h-screen overflow-clip bg-[radial-gradient(circle_at_top_left,#a7f3d0_0%,transparent_36%),radial-gradient(circle_at_top_right,#bae6fd_0%,transparent_38%),linear-gradient(180deg,#f8fafc_0%,#e2e8f0_100%)] px-3 ${isWorkingSession ? 'py-3 md:px-4 md:py-4' : 'py-6 md:px-6 md:py-10'}`}>
@@ -724,17 +812,42 @@ export function PracticePage() {
             />
           )
         ) : submitted ? (
-          <ResultScreen
-            result={result}
-            questions={sessionQuestions}
-            answers={answers}
-            flaggedQuestions={isKidMode ? {} : flaggedQuestions}
-            isKidMode={isKidMode}
-            kidBestStreak={kidBestStreak}
-            onRestart={restart}
-            onRetestMistakes={handleRetestMistakes}
-            t={t}
-          />
+          <div className="space-y-4">
+            {submissionFeedback && (
+              <div className="mx-auto max-w-4xl p-4 rounded-3xl bg-emerald-500/15 border-2 border-emerald-500/40 text-emerald-900 flex flex-wrap items-center justify-between gap-3 shadow-lg animate-fadeIn">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-black text-sm block">{submissionFeedback}</span>
+                    <span className="text-xs text-emerald-700">
+                      {isGuest
+                        ? '💡 Em muốn lưu lại lịch sử ôn tập, mở khóa biểu đồ năng lực cá nhân? Hãy tạo tài khoản miễn phí!'
+                        : 'Điểm số và dữ liệu câu hỏi đã được cập nhật vào Bảng điều khiển năng lực của bạn.'}
+                    </span>
+                  </div>
+                </div>
+                {isGuest && (
+                  <a
+                    href={authLoginUrl}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-700 transition cursor-pointer shrink-0 shadow-md"
+                  >
+                    Đăng Ký Miễn Phí ➔
+                  </a>
+                )}
+              </div>
+            )}
+            <ResultScreen
+              result={result}
+              questions={sessionQuestions}
+              answers={answers}
+              flaggedQuestions={isKidMode ? {} : flaggedQuestions}
+              isKidMode={isKidMode}
+              kidBestStreak={kidBestStreak}
+              onRestart={restart}
+              onRetestMistakes={handleRetestMistakes}
+              t={t}
+            />
+          </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[240px,minmax(0,1fr)] xl:grid-cols-[260px,minmax(0,1fr)]">
             <div className="space-y-3 lg:sticky lg:top-3 lg:h-fit">
@@ -992,6 +1105,30 @@ export function PracticePage() {
                     <Clock3 className="h-4 w-4 text-cyan-600" /> Thời gian làm bài còn lại:
                   </span>
                   <span className="font-mono font-bold text-slate-900 text-sm">{formatCountdown(secondsLeft)}</span>
+                </div>
+              )}
+
+              {isGuest && (
+                <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-3.5 space-y-2">
+                  <span className="text-xs font-bold text-indigo-900 block">
+                    📝 Thông tin gửi Thầy/Cô:
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Họ và tên của em..."
+                      value={studentName}
+                      onChange={(e) => setStudentName(e.target.value)}
+                      className="col-span-2 rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Lớp (VD: 6A1)"
+                      value={studentClass}
+                      onChange={(e) => setStudentClass(e.target.value)}
+                      className="rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
               )}
 

@@ -14,12 +14,12 @@ namespace AegisQuiz.API.Security
     /// nguyên cụ thể (Question/Topic) sau khi đã qua cổng Role-Weight ở tầng controller.
     ///
     /// Quy tắc:
-    ///   - Role-Weight ≥ ContentManager (ContentManager/Instructor/TenantAdmin/SystemAdmin):
-    ///     toàn quyền trong phạm vi Tenant (đúng thiết kế hiện có — không đổi hành vi).
+    ///   - Người tạo (callerId == creatorId): Toàn quyền quản lý tài nguyên của chính mình!
+    ///   - Role-Weight ≥ ContentManager (ContentManager/TenantAdmin/SystemAdmin):
+    ///     toàn quyền trong phạm vi Tenant.
     ///   - TeamLeader: CHỈ được thao tác trên tài nguyên do chính mình tạo (CreatorId) hoặc
-    ///     thuộc OrgUnit mình đang quản lý (tra theo UserRoles, cùng cách TeamLeaderController
-    ///     đang dùng). Khớp đúng những gì Frontend `canManageResource()` đã giả định.
-    ///   - Vai trò khác: không có quyền vào tới đây (đã bị chặn ở [Authorize] class-level).
+    ///     thuộc OrgUnit mình đang quản lý (tra theo UserRoles).
+    ///   - Người dùng thông thường: KHÔNG được sửa/xóa tài nguyên của người khác hoặc của hệ thống.
     /// </summary>
     public interface IContentOwnershipGuard
     {
@@ -39,23 +39,20 @@ namespace AegisQuiz.API.Security
 
         public async Task<bool> CanManageAsync(ClaimsPrincipal user, string? creatorId, Guid? orgUnitId)
         {
-            var role = _tenant.CurrentRole;
-
-            // ContentManager/Instructor/TenantAdmin/SystemAdmin: toàn quyền trong Tenant.
-            if (AppRoleWeights.GetWeight(role) >= AppRoleWeights.GetWeight(AppRoles.ContentManager))
-                return true;
-
-            if (role != AppRoles.TeamLeader)
-                return false;
-
             var callerId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // 1. Sở hữu trực tiếp (là người tạo).
-            if (!string.IsNullOrEmpty(callerId) && !string.IsNullOrEmpty(creatorId) && callerId == creatorId)
+            // 1. Sở hữu trực tiếp (là người tạo): người tạo luôn có toàn quyền trên tài nguyên do mình tạo.
+            if (!string.IsNullOrEmpty(callerId) && !string.IsNullOrEmpty(creatorId) && callerId.Equals(creatorId, StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            // 2. Thuộc OrgUnit mà TeamLeader này đang quản lý.
-            if (orgUnitId.HasValue && !string.IsNullOrEmpty(callerId))
+            var role = _tenant.CurrentRole;
+
+            // 2. ContentManager / TenantAdmin / SystemAdmin: toàn quyền trong phạm vi Tenant đối với tài nguyên chung.
+            if (AppRoles.GetRoleWeight(role) >= AppRoles.GetRoleWeight(AppRoles.ContentManager))
+                return true;
+
+            // 3. TeamLeader: được thao tác trên tài nguyên thuộc OrgUnit mình đang quản lý.
+            if (role == AppRoles.TeamLeader && orgUnitId.HasValue && !string.IsNullOrEmpty(callerId))
             {
                 var myOrgUnitId = await _db.UserRoles
                     .Where(r => r.UserId == callerId
@@ -70,6 +67,7 @@ namespace AegisQuiz.API.Security
                     return true;
             }
 
+            // 4. Các trường hợp còn lại (người dùng thông thường thao tác trên nội dung của người khác hoặc của hệ thống) -> Từ chối.
             return false;
         }
     }

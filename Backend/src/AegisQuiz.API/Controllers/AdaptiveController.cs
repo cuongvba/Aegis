@@ -56,19 +56,32 @@ namespace AegisQuiz.API.Controllers
                 }
 
                 // Chuyển đổi thành tham số IRT 3PL chuẩn
+                // [Empirical Bayesian Prior IRT 3-PL Cold-Start Optimization]
                 var irtBank = eligibleQuestions.Select(q =>
                 {
-                    double diffNorm = ((q.Difficulty - 3) * 1.0); // map 1..5 thành -2.0 .. +2.0
+                    double aPrior = 1.2;
+                    var content = q.Content ?? "";
+                    bool hasMath = content.Contains("$") || content.Contains(@"\frac") || content.Contains(@"\sqrt");
+                    bool hasCodeOrData = content.Contains("```") || content.Contains("| --- |") || content.Contains("data:image");
+                    if (hasMath) aPrior += 0.35;
+                    if (hasCodeOrData) aPrior += 0.25;
+                    aPrior = Math.Clamp(aPrior, 0.8, 2.2);
+
+                    double baseDiffNorm = ((q.Difficulty - 3) * 0.9);
+                    if (content.Length > 250) baseDiffNorm += 0.2;
+                    if (hasMath && q.Difficulty >= 4) baseDiffNorm += 0.3;
+                    baseDiffNorm = Math.Clamp(baseDiffNorm, -3.0, 3.0);
+
                     int optCount = q.Options?.Count ?? 0;
-                    double guessRate = optCount >= 2 ? (1.0 / optCount) : 0.25;
-                    guessRate = Math.Clamp(guessRate, 0.05, 0.50); // Pydantic 3PL IRT: c in [0.0, 0.5]
+                    double guessRate = optCount >= 2 ? (1.0 / optCount) : 0.05;
+                    guessRate = Math.Clamp(guessRate, 0.02, 0.40);
 
                     return new QuestionIrtDto
                     {
                         QuestionId = q.Id.ToString(),
-                        A = 1.2, // Độ phân biệt mặc định
-                        B = diffNorm, // Độ khó chuẩn hóa
-                        C = guessRate, // Xác suất đoán mò
+                        A = Math.Round(aPrior, 2),
+                        B = Math.Round(baseDiffNorm, 2),
+                        C = Math.Round(guessRate, 2),
                         TopicCode = q.CategoryCode,
                         Difficulty = q.Difficulty
                     };

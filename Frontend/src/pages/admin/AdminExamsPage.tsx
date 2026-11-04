@@ -1,122 +1,206 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FileText, Plus, CheckCircle, Eye, Printer, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Layers, Sliders, Users, Trophy, ShieldCheck, RefreshCw, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import api from '@/services/api';
+import { CampaignListTab, type CampaignSummary } from './components/exams/CampaignListTab';
+import { ExamStudioTab, type ExamTrack } from './components/exams/ExamStudioTab';
+import { CandidateRosterTab } from './components/exams/CandidateRosterTab';
+import { ExamResultsTab } from './components/exams/ExamResultsTab';
+
+type ActiveTabType = 'CAMPAIGNS' | 'STUDIO' | 'ROSTER' | 'RESULTS';
 
 export function AdminExamsPage() {
-  const [exams, setExams] = useState([
-    { id: 'EXAM-01', title: 'Kiểm tra Nghiệp vụ Giao dịch viên', duration: '45 phút', totalQuestions: 40, status: 'Active', category: 'Nghiệp vụ' },
-    { id: 'EXAM-02', title: 'Quy trình Tín dụng Doanh nghiệp 2026', duration: '60 phút', totalQuestions: 50, status: 'Active', category: 'Tín dụng' },
-    { id: 'EXAM-03', title: 'Kiểm tra Kiến thức ISO 27001 Cơ bản', duration: '30 phút', totalQuestions: 20, status: 'Draft', category: 'An toàn Thông tin' },
-  ]);
+  const { t } = useTranslation('admin');
+  const [activeTab, setActiveTab] = useState<ActiveTabType>('CAMPAIGNS');
+  const [campaigns, setCampaigns] = useState<CampaignSummary[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
+  const [currentTracks, setCurrentTracks] = useState<ExamTrack[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [newTitle, setNewTitle] = useState('');
-  const [newCategory, setNewCategory] = useState('Nghiệp vụ');
-
-  const createExam = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle) return;
-    const newExam = {
-      id: `EXAM-0${exams.length + 1}`,
-      title: newTitle,
-      duration: '45 phút',
-      totalQuestions: 30,
-      status: 'Draft',
-      category: newCategory,
-    };
-    setExams([...exams, newExam]);
-    setNewTitle('');
+  const fetchCampaigns = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get('/api/exam-campaigns');
+      setCampaigns(res.data);
+      if (res.data.length > 0 && !selectedCampaignId) {
+        setSelectedCampaignId(res.data[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const fetchCampaignDetail = async (id: string) => {
+    if (!id) return;
+    try {
+      const res = await api.get(`/api/exam-campaigns/${id}`);
+      setCurrentTracks(res.data.tracks || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCampaignId) {
+      fetchCampaignDetail(selectedCampaignId);
+    }
+  }, [selectedCampaignId]);
+
+  const handleCreateCampaign = async (title: string, desc: string, trackNames: string[]) => {
+    const res = await api.post('/api/exam-campaigns', {
+      title,
+      description: desc,
+      trackNames,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 14 * 24 * 3600 * 1000)
+    });
+    await fetchCampaigns();
+    if (res.data?.id) {
+      setSelectedCampaignId(res.data.id);
+      setActiveTab('STUDIO');
+    }
+  };
+
+  const selectedCampaign = campaigns.find(c => c.id === selectedCampaignId) || campaigns[0];
+  const allAvailablePapers = currentTracks.flatMap(t => t.papers);
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 tracking-tight">
-          Quản lý Đề thi
-        </h1>
-        <p className="text-sm text-slate-400 mt-1 font-medium">Tạo lập, xuất cấu hình đề thi giấy và quản trị các phòng thi sát hạch.</p>
+    <div className="space-y-6 select-none">
+      {/* ─── HEADER BAR ─── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold">
+              <ShieldCheck size={14} className="text-cyan-400" />
+              <span>{t('exams.headerBadge', 'AEGIS ENTERPRISE EXAM SUITE • ALDS v1.0')}</span>
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 tracking-tight">
+            {t('exams.pageTitle', 'Quản Trị Chiến Dịch Khảo Thí & Kết Quả')}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium">
+            {t('exams.pageSubtitle', 'Tạo đề tự động/thủ công, phân nhánh đối tượng, điều phối thí sinh và báo cáo kết quả toàn diện.')}
+          </p>
+        </div>
+
+        {selectedCampaign && (
+          <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 px-3.5 py-2 rounded-2xl">
+            <div className="text-right">
+              <div className="text-[10px] text-slate-500 uppercase font-bold">
+                {t('exams.selectedCampaign', 'Chiến dịch đang chọn')}
+              </div>
+              <div className="text-xs font-black text-white truncate max-w-[200px]">{selectedCampaign.title}</div>
+            </div>
+            <button
+              onClick={() => fetchCampaigns()}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
+            >
+              <RefreshCw size={13} />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* CREATE FORM */}
-      <form onSubmit={createExam} className="bg-slate-900/60 border border-slate-800 p-6 md:p-8 rounded-3xl space-y-6 backdrop-blur-xl">
-        <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-          <Settings size={20} className="text-blue-400" /> Tạo Đề thi Mới (Từ Ngân hàng Câu hỏi)
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input 
-            type="text" 
-            placeholder="Tên đề thi (ví dụ: Đề thi thử Nghiệp vụ Quỹ năm 2026)" 
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            className="md:col-span-2 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-          />
-          <select 
-            value={newCategory} 
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
-          >
-            <option value="Nghiệp vụ">Nghiệp vụ</option>
-            <option value="Tín dụng">Tín dụng</option>
-            <option value="An toàn Thông tin">An toàn Thông tin</option>
-            <option value="Khác">Khác</option>
-          </select>
-        </div>
-        <button type="submit" className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-md shadow-blue-500/10 active:scale-95 text-sm cursor-pointer">
-          Generate Đề thi
+      {/* ─── 4 MAIN TABS ─── */}
+      <div className="flex items-center gap-2 overflow-x-auto p-1.5 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <button
+          onClick={() => setActiveTab('CAMPAIGNS')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer ${
+            activeTab === 'CAMPAIGNS'
+              ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-md shadow-cyan-500/20'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+          }`}
+        >
+          <Layers size={15} />
+          <span>{t('exams.tabCampaigns', '1. CHIẾN DỊCH KHẢO THÍ')}</span>
         </button>
-      </form>
 
-      {/* EXAMS LIST */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl overflow-hidden backdrop-blur-xl">
-        <div className="p-6 border-b border-slate-850 bg-slate-900/30">
-          <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-            <FileText size={20} className="text-blue-400" /> Danh sách Đề thi hiện có
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead>
-              <tr className="border-b border-slate-850 text-slate-400 text-xs font-black tracking-wider uppercase bg-slate-900/20">
-                <th className="p-4 w-24">Mã đề</th>
-                <th className="p-4">Tên đề thi</th>
-                <th className="p-4 w-36">Chủ đề</th>
-                <th className="p-4 w-28">Thời gian</th>
-                <th className="p-4 w-28 text-center">Số câu hỏi</th>
-                <th className="p-4 w-28">Trạng thái</th>
-                <th className="p-4 w-32 text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {exams.map((exam) => (
-                <tr key={exam.id} className="border-b border-slate-850/60 hover:bg-slate-800/10 transition-colors">
-                  <td className="p-4 font-mono text-xs text-slate-500">{exam.id}</td>
-                  <td className="p-4 font-bold text-slate-200 text-sm leading-snug">{exam.title}</td>
-                  <td className="p-4 text-slate-350 text-xs font-semibold">{exam.category}</td>
-                  <td className="p-4 text-slate-400 text-xs">{exam.duration}</td>
-                  <td className="p-4 text-center font-bold text-slate-200 text-sm">{exam.totalQuestions}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 w-fit
-                      ${exam.status === 'Active' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : 'bg-slate-800 text-slate-400'}`}>
-                      {exam.status === 'Active' && <CheckCircle size={10} />}
-                      {exam.status}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Link 
-                      to="/quiz/attempt/paper-sample" 
-                      className="inline-flex items-center gap-1 text-[10px] bg-slate-850 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-blue-500 transition-all font-bold cursor-pointer"
-                    >
-                      <Printer size={10} /> In PaperMode
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <button
+          onClick={() => setActiveTab('STUDIO')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer ${
+            activeTab === 'STUDIO'
+              ? 'bg-gradient-to-r from-blue-400 to-indigo-500 text-slate-950 shadow-md shadow-blue-500/20'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+          }`}
+        >
+          <Sliders size={15} />
+          <span>{t('exams.tabStudio', '2. XƯỞNG ĐỀ THI (STUDIO)')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ROSTER')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer ${
+            activeTab === 'ROSTER'
+              ? 'bg-gradient-to-r from-purple-400 to-pink-500 text-slate-950 shadow-md shadow-purple-500/20'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+          }`}
+        >
+          <Users size={15} />
+          <span>{t('exams.tabRoster', '3. ĐIỀU PHỐI THÍ SINH (ROSTER)')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('RESULTS')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition cursor-pointer ${
+            activeTab === 'RESULTS'
+              ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 shadow-md shadow-amber-500/20'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
+          }`}
+        >
+          <Trophy size={15} />
+          <span>{t('exams.tabResults', '4. KẾT QUẢ & PHỔ ĐIỂM')}</span>
+        </button>
       </div>
+
+      {/* ─── TAB CONTENT ─── */}
+      {loading ? (
+        <div className="p-16 flex flex-col items-center justify-center gap-3 text-slate-500 text-xs font-mono">
+          <Loader2 className="animate-spin text-cyan-400" size={24} />
+          <span>{t('exams.syncing', 'Đang đồng bộ dữ liệu khảo thí...')}</span>
+        </div>
+      ) : (
+        <>
+          {activeTab === 'CAMPAIGNS' && (
+            <CampaignListTab
+              campaigns={campaigns}
+              selectedCampaignId={selectedCampaignId}
+              onSelectCampaign={(id) => {
+                setSelectedCampaignId(id);
+                setActiveTab('STUDIO');
+              }}
+              onCreateCampaign={handleCreateCampaign}
+              loading={loading}
+            />
+          )}
+
+          {activeTab === 'STUDIO' && selectedCampaignId && (
+            <ExamStudioTab
+              campaignId={selectedCampaignId}
+              tracks={currentTracks}
+              onRefresh={() => fetchCampaignDetail(selectedCampaignId)}
+            />
+          )}
+
+          {activeTab === 'ROSTER' && selectedCampaignId && (
+            <CandidateRosterTab
+              campaignId={selectedCampaignId}
+              availablePapers={allAvailablePapers}
+            />
+          )}
+
+          {activeTab === 'RESULTS' && selectedCampaignId && (
+            <ExamResultsTab campaignId={selectedCampaignId} />
+          )}
+        </>
+      )}
     </div>
   );
 }
+
 export default AdminExamsPage;

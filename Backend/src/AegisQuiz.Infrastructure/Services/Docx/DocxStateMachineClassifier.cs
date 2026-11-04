@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -129,6 +129,15 @@ namespace AegisQuiz.Infrastructure.Services.Docx
 
             // [Phase 4 Enhancements - Structural Boundary Streamer via CIG]
             var flattenedLines = cig.FlattenDocument(paragraphs, languageProfile);
+
+            // [Hybrid Vision Fallback Detection]
+            // Nhận diện tài liệu Word dạng ảnh scan toàn trang (không có text chạy, chỉ có ảnh chụp)
+            int totalTextLength = paragraphs.Sum(p => System.Text.RegularExpressions.Regex.Replace(p, @"!\[.*?\]\(.*?\)|data:image\/[^\s]+", "").Trim().Length);
+            int imageCount = paragraphs.Count(p => p.Contains("data:image/") || p.Contains("!["));
+            if (totalTextLength < 80 && imageCount >= 1)
+            {
+                LastDebugLogs.Add($"[HYBRID VISION DETECTED] Scanned Image Document: TextLen={totalTextLength}, Images={imageCount}");
+            }
 
             foreach (var rawLine in flattenedLines)
             {
@@ -1022,6 +1031,31 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             }
 
             // [Taxonomy SSoT Delegation] Ủy quyền toàn bộ việc làm giàu tọa độ và taxonomy cấp đề cho UniversalCoordinateTaxonomyEngine
+            // [Short Answer / Essay Invariant Guard]: Bất kỳ câu hỏi nào không có phương án lựa chọn (Options < 2)
+            // thì TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP giữ loại SINGLE hoặc MULTI; tự động chuyển sang SHORT_ANSWER hoặc ESSAY
+            foreach (var q in results)
+            {
+                if ((q.QuestionType == "SINGLE" || q.QuestionType == "MULTI") && (q.Options == null || q.Options.Count < 2))
+                {
+                    if (cig.IsEssayQuestion(q.Content ?? "", null, q.TopicCode))
+                    {
+                        q.QuestionType = "ESSAY";
+                        if (string.IsNullOrWhiteSpace(q.SuggestedAnswer) || q.SuggestedAnswer.Contains("Điền đáp số"))
+                        {
+                            q.SuggestedAnswer = "Tự luận chấm theo barem điểm từng bước.";
+                        }
+                    }
+                    else
+                    {
+                        q.QuestionType = "SHORT_ANSWER";
+                        if (string.IsNullOrWhiteSpace(q.SuggestedAnswer))
+                        {
+                            q.SuggestedAnswer = "Điền đáp số / giá trị số.";
+                        }
+                    }
+                }
+            }
+
             UniversalCoordinateTaxonomyEngine.EnrichExamTaxonomy(results, dynamicContext);
 
             return results;

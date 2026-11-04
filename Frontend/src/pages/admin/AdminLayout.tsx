@@ -16,8 +16,9 @@ import { useEntitlement } from '@/shared/hooks/useEntitlement';
 import { FeatureBadge } from '@/shared/components/entitlement';
 import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
 import { UserProfileDropdown } from '@/widgets/app-header/UserProfileDropdown';
+import { AegisBrandLogo } from '@/components/common/AegisBrandLogo';
 import { AegisCoPilotSidecar, CoPilotTriggerOrb } from '@/features/copilot';
-import { ADMIN_NAV_ITEMS } from './adminNavConfig';
+import { ADMIN_NAV_GROUPS, ADMIN_NAV_ITEMS } from './adminNavConfig';
 
 export function AdminLayout() {
   const { t, i18n } = useTranslation('admin');
@@ -30,6 +31,17 @@ export function AdminLayout() {
   const [isCoPilotOpen, setIsCoPilotOpen] = useState(false);
 
   const isRtl = i18n.dir() === 'rtl' || i18n.language === 'ar';
+
+  const navGroups = ADMIN_NAV_GROUPS.map((group) => ({
+    ...group,
+    title: t(group.titleKey, group.defaultTitle),
+    items: group.items
+      .filter((item) => !isTeamLeader || !item.adminOnly)
+      .map((item) => ({
+        ...item,
+        label: t(item.i18nKey, item.defaultLabel),
+      })),
+  })).filter((group) => group.items.length > 0);
 
   const menuItems = ADMIN_NAV_ITEMS
     .filter(item => !isTeamLeader || !item.adminOnly)
@@ -67,63 +79,60 @@ export function AdminLayout() {
 
         {/* Brand / Logo */}
         <div 
-          className="mb-8 flex items-center gap-3 cursor-pointer" 
+          className="mb-8 flex items-center justify-between cursor-pointer group" 
           onClick={() => { navigate('/admin'); if (window.innerWidth < 768) setIsSidebarOpen(false); }}
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-400 to-blue-500 shadow-md flex items-center justify-center shrink-0 border-2 border-white">
-            <Bot className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-              Aegis Global
-            </h1>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
-                {plan}
-              </span>
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
-                {isTeamLeader ? t('header.teamLeader', 'Leader') : t('header.admin', 'Portal')}
-              </span>
-            </div>
+          <AegisBrandLogo size="md" variant="compact" />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+              {plan}
+            </span>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            const isLocked = item.feature ? !hasFeature(item.feature) : false;
+        {/* Navigation Links Grouped into 4 Cognitive Pillars */}
+        <nav className="flex-1 space-y-4 overflow-y-auto pr-1 scrollbar-thin">
+          {navGroups.map((group) => (
+            <div key={group.id} className="space-y-1">
+              <div className="text-[10px] font-black uppercase tracking-wider text-slate-500 px-3 pt-1 pb-0.5 select-none">
+                {group.title}
+              </div>
+              {group.items.map((item) => {
+                const isActive = location.pathname === item.href;
+                const isLocked = item.feature ? !hasFeature(item.feature) : false;
 
-            return (
-              <Link
-                key={item.href}
-                to={isLocked ? '#' : item.href}
-                onClick={(e) => {
-                  if (isLocked && item.feature) {
-                    e.preventDefault();
-                    openPaywall(item.feature);
-                    return;
-                  }
-                  if (window.innerWidth < 768) setIsSidebarOpen(false);
-                }}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all group
-                  ${isActive 
-                    ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20 shadow-sm' 
-                    : isLocked
-                    ? 'text-gray-500 hover:text-gray-300 hover:bg-slate-800/60 opacity-75'
-                    : 'text-gray-400 hover:bg-slate-800 hover:text-white'
-                  }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className={isLocked ? 'text-gray-500' : ''}>{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-                {isLocked && item.feature && (
-                  <FeatureBadge feature={item.feature} size="sm" />
-                )}
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.href}
+                    to={isLocked ? '#' : item.href}
+                    onClick={(e) => {
+                      if (isLocked && item.feature) {
+                        e.preventDefault();
+                        openPaywall(item.feature);
+                        return;
+                      }
+                      if (window.innerWidth < 768) setIsSidebarOpen(false);
+                    }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all group ${
+                      isActive
+                        ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-sm'
+                        : isLocked
+                        ? 'text-gray-500 hover:text-gray-300 hover:bg-slate-800/60 opacity-75'
+                        : 'text-gray-400 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className={`shrink-0 ${isLocked ? 'text-gray-500' : ''}`}>{item.icon}</span>
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {isLocked && item.feature && (
+                      <FeatureBadge feature={item.feature} size="sm" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Footer Navigation */}

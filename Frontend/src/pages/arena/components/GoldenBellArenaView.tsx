@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { Bell, HeartHandshake, Award, ShieldAlert, Check, X, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MathRenderer } from '@/components/common/MathRenderer';
+import { CheckCircle2, XCircle, ArrowRight, Clock } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import type { ArenaRoomState, ArenaPlayer, ArenaQuestionItem } from '@/types/arena';
 import { playArenaSfx } from '@/services/arena.service';
+import { GoldenBellSeatsGrid } from './GoldenBellSeatsGrid';
+import { GoldenBellHeaderBar } from './GoldenBellHeaderBar';
 
 interface Props {
   state: ArenaRoomState;
@@ -12,197 +16,223 @@ interface Props {
 
 export function GoldenBellArenaView({ state, onSubmitAnswer, onAction, onNextStage }: Props) {
   const [writtenAnswer, setWrittenAnswer] = useState('');
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [selectedOpt, setSelectedOpt] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; correctAnswer: string } | null>(null);
+  const [myStatus, setMyStatus] = useState<'ACTIVE' | 'ELIMINATED'>('ACTIVE');
+  const [myScore, setMyScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(15);
 
-  const questions: ArenaQuestionItem[] = state.questions || state.Questions || [];
-  const qIndex = state.currentQuestionIndex ?? state.CurrentQuestionIndex ?? 0;
+  const questions: ArenaQuestionItem[] = state.questions || (state as any).Questions || [];
+  const qIndex = state.currentQuestionIndex ?? (state as any).CurrentQuestionIndex ?? 0;
   const currentQ: ArenaQuestionItem = questions[qIndex] || questions[0] || {
-    id: 'q0',
-    content: 'Đang tải câu hỏi...',
-    questionType: 'MULTIPLE_CHOICE',
-    options: [],
-    answerRaw: '',
-    explanation: '',
-    points: 10,
-    timeLimitSeconds: 15,
-    category: 'ĐỊA LÝ - VĂN HÓA'
+    id: 'q0', content: 'Đang tải câu hỏi...', questionType: 'MULTIPLE_CHOICE',
+    options: [], answerRaw: '', points: 10, timeLimitSeconds: 15, category: 'RUNG CHUÔNG VÀNG',
   };
 
-  const rawPlayers = state.players || state.Players || {};
+  const rawPlayers = state.players || (state as any).Players || {};
   const players: ArenaPlayer[] = Object.values(rawPlayers);
+  const activeCount = players.filter((p: any) => (p.status || p.Status) === 'ACTIVE').length || (myStatus === 'ACTIVE' ? 85 : 84);
 
-  // Giả lập 100 ghế số trên sàn đấu Rung Chuông Vàng
-  const TOTAL_SEATS = 100;
-  const activeCount = players.filter((p: any) => (p.status || p.Status) === 'ACTIVE').length || 85;
-  const eliminatedCount = TOTAL_SEATS - activeCount;
+  const qCategory = currentQ.category || (currentQ as any).Category || 'RUNG CHUÔNG VÀNG';
+  const qContent = currentQ.content || (currentQ as any).Content || '';
+  const options: string[] = currentQ.options || (currentQ as any).Options || [];
+  const expectedAnswer = String(currentQ.answerRaw || (currentQ as any).AnswerRaw || '').trim();
+
+  useEffect(() => {
+    setSelectedOpt(null);
+    setWrittenAnswer('');
+    setFeedback(null);
+    setTimeLeft(currentQ.timeLimitSeconds > 0 ? currentQ.timeLimitSeconds : 15);
+  }, [qIndex, currentQ]);
+
+  useEffect(() => {
+    if (feedback !== null || timeLeft <= 0) return;
+    const timer = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(timer);
+          handleAnswerSubmit('');
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, feedback]);
 
   const handleRescue = () => {
     playArenaSfx('victory');
+    setMyStatus('ACTIVE');
     onAction('TEACHER_RESCUE', '');
+    confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 } });
   };
 
-  const handleSendAnswer = () => {
-    if (writtenAnswer.trim()) {
-      setHasSubmitted(true);
-      onSubmitAnswer(writtenAnswer.trim());
+  const handleAnswerSubmit = (chosen: string) => {
+    if (feedback !== null) return;
+    setSelectedOpt(chosen);
+
+    let isCorrect = false;
+    const cleanChosen = chosen.trim().toLowerCase();
+    const cleanExpected = expectedAnswer.trim().toLowerCase();
+
+    if (cleanChosen && cleanExpected) {
+      if (cleanChosen === cleanExpected) isCorrect = true;
+      else if (cleanChosen.startsWith(cleanExpected + '.') || cleanChosen.startsWith(cleanExpected + ')')) isCorrect = true;
+      else if (options.length > 0) {
+        const correctIdx = cleanExpected.charCodeAt(0) - 97;
+        if (correctIdx >= 0 && correctIdx < options.length && options[correctIdx].toLowerCase() === cleanChosen) {
+          isCorrect = true;
+        }
+      }
     }
-  };
 
-  const qCategory = currentQ.category || currentQ.Category || 'ĐỊA LÝ - VĂN HÓA';
-  const qContent = currentQ.content || currentQ.Content || '';
-  const options: string[] = currentQ.options || currentQ.Options || [];
+    if (isCorrect) {
+      playArenaSfx('victory');
+      setMyScore((s) => s + 10);
+      setFeedback({ isCorrect: true, correctAnswer: expectedAnswer });
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } });
+    } else {
+      playArenaSfx('drop');
+      setMyStatus('ELIMINATED');
+      setFeedback({ isCorrect: false, correctAnswer: expectedAnswer });
+    }
+
+    onSubmitAnswer(chosen);
+  };
 
   return (
-    <div className="space-y-6">
-      {/* ─── HEADER BAR ─── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-600 p-5 text-white shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-inner backdrop-blur-sm animate-bounce">
-            🔔
-          </div>
+    <div className="space-y-4">
+      <GoldenBellHeaderBar
+        qIndex={qIndex}
+        totalQuestions={questions.length}
+        myStatus={myStatus}
+        myScore={myScore}
+        onRescue={handleRescue}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* CỘT CHÍNH (8/12): CÂU HỎI HERO STAGE & 4 NÚT TRẢ LỜI */}
+        <div className="lg:col-span-8 flex flex-col justify-between rounded-3xl border-2 border-slate-800 bg-slate-900/95 p-5 sm:p-6 text-white shadow-2xl space-y-4">
           <div>
-            <span className="text-xs font-black uppercase tracking-widest text-yellow-100">
-              Battle Royale Tri Thức
-            </span>
-            <h2 className="text-xl font-black text-white">
-              Đấu Trường Rung Chuông Vàng — Câu Số {qIndex + 1}/50
-            </h2>
-          </div>
-        </div>
-
-        {/* Stats on Floor */}
-        <div className="flex items-center gap-2">
-          <div className="rounded-xl bg-white/20 px-3 py-1.5 text-center backdrop-blur-sm">
-            <span className="block text-xs text-yellow-100 font-semibold">Trên Sàn Đấu</span>
-            <span className="font-black text-lg text-white">{activeCount} Thí Sinh</span>
-          </div>
-          <div className="rounded-xl bg-black/20 px-3 py-1.5 text-center backdrop-blur-sm">
-            <span className="block text-xs text-rose-200 font-semibold">Đã Bị Loại</span>
-            <span className="font-black text-lg text-rose-300">{eliminatedCount}</span>
-          </div>
-          <button
-            onClick={handleRescue}
-            className="flex items-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs font-black text-amber-700 shadow-md hover:bg-yellow-50 active:scale-95 transition"
-          >
-            <HeartHandshake className="h-4 w-4 text-rose-600" />
-            Thầy Cô Cứu Trợ 🎈
-          </button>
-        </div>
-      </div>
-
-      {/* ─── MEGA-GRID 100 GHẾ SỐ MA TRẬN SÀN ĐẤU ─── */}
-      <div className="rounded-3xl border-2 border-amber-400/30 bg-slate-950 p-5 text-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
-            <h3 className="font-black text-sm text-slate-200 uppercase tracking-wider">
-              Sơ Đồ 100 Vị Trí Sàn Đấu Trực Tiếp
-            </h3>
-          </div>
-          <div className="flex gap-4 text-xs font-bold text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> Đang Thi Đấu
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-rose-600" /> Đã Bị Loại
-            </span>
-          </div>
-        </div>
-
-        {/* 10x10 Matrix Seats */}
-        <div className="grid grid-cols-10 gap-1.5 sm:gap-2">
-          {Array.from({ length: TOTAL_SEATS }).map((_, idx) => {
-            const seatNo = idx + 1;
-            // Cho một số ghế minh họa trạng thái loại
-            const isEliminated = seatNo % 7 === 0;
-            return (
-              <div
-                key={seatNo}
-                className={`relative flex aspect-square flex-col items-center justify-center rounded-xl border text-center transition-all ${
-                  isEliminated
-                    ? 'border-rose-900 bg-rose-950/40 text-rose-400/50 opacity-40'
-                    : 'border-emerald-500/40 bg-emerald-950/30 text-emerald-300 shadow-sm hover:scale-110 hover:border-amber-400'
-                }`}
-                title={`Vị trí ghế số ${seatNo}`}
-              >
-                <span className="text-[10px] sm:text-xs font-black">{seatNo}</span>
-                <span className="text-[9px] hidden sm:block opacity-70">
-                  {isEliminated ? 'Rời sàn' : '🎓'}
-                </span>
+            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-3">
+              <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-400 border border-amber-500/30">
+                {qCategory}
+              </span>
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border font-mono font-black text-xs ${
+                timeLeft <= 5 ? 'border-rose-500 bg-rose-500/20 text-rose-400 animate-pulse' : 'border-amber-400/40 bg-amber-500/10 text-amber-300'
+              }`}>
+                <Clock className="w-3.5 h-3.5" />
+                <span>{timeLeft}s</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
 
-      {/* ─── DIGITAL SLATE: BẢNG VIẾT ĐIỆN TỬ CỦA THÍ SINH ─── */}
-      <div className="rounded-3xl border-2 border-slate-700 bg-slate-900 p-6 text-white shadow-2xl">
-        <div className="text-center max-w-2xl mx-auto">
-          <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-400 border border-amber-500/30">
-            {qCategory}
-          </span>
-          <p className="mt-4 text-xl sm:text-2xl font-black text-slate-100 leading-relaxed">
-            {qContent}
-          </p>
-        </div>
-
-        {/* Multiple choices or writing slate */}
-        {options.length > 0 ? (
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
-            {options.map((opt: string, i: number) => (
-              <button
-                key={i}
-                onClick={() => {
-                  setWrittenAnswer(opt);
-                  setHasSubmitted(true);
-                  onSubmitAnswer(opt);
-                }}
-                className={`flex items-center gap-3 rounded-2xl border p-4 text-left font-bold transition ${
-                  writtenAnswer === opt
-                    ? 'border-amber-400 bg-amber-500/20 text-white'
-                    : 'border-slate-700 bg-slate-800 text-slate-300 hover:border-slate-500'
-                }`}
-              >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-700 font-black text-xs">
-                  {String.fromCharCode(65 + i)}
-                </span>
-                <span className="text-sm">{opt}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-6 max-w-md mx-auto">
-            <div className="rounded-2xl border-2 border-amber-400/40 bg-slate-950 p-4 shadow-inner">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block mb-2">
-                ✍️ Viết đáp án lên bảng Mica điện tử:
-              </label>
-              <input
-                type="text"
-                value={writtenAnswer}
-                onChange={(e) => setWrittenAnswer(e.target.value)}
-                placeholder="Gõ đáp án của bạn..."
-                className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 font-black text-amber-300 placeholder:text-slate-500 focus:outline-none focus:border-amber-400 text-center text-lg uppercase"
-                onKeyDown={(e) => e.key === 'Enter' && handleSendAnswer()}
-              />
-              <button
-                onClick={handleSendAnswer}
-                className="mt-3 w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 py-3 font-black text-slate-950 shadow-md hover:opacity-95 transition"
-              >
-                {hasSubmitted ? '✓ ĐÃ GIƠ BẢNG ĐÁP ÁN' : 'GIƠ BẢNG NỘP ĐÁP ÁN ➔'}
-              </button>
+            <div className="text-lg sm:text-2xl font-black text-slate-100 leading-relaxed py-2">
+              <MathRenderer content={qContent} />
             </div>
           </div>
-        )}
 
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => onNextStage('FLOOR_BATTLE')}
-            className="rounded-xl border border-slate-700 bg-slate-800/80 px-6 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-700 transition"
-          >
-            Chuyển Sang Câu Hỏi Tiếp Theo ➔
-          </button>
+          {/* 4 Lựa chọn A, B, C, D hoặc Bảng Viết Mica */}
+          {options.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {options.map((opt: string, i: number) => {
+                const optLetter = String.fromCharCode(65 + i);
+                const isSelected = selectedOpt === opt || selectedOpt === optLetter;
+                let btnStyle = 'border-slate-800 bg-slate-950/70 hover:border-slate-700 text-slate-200';
+
+                if (feedback) {
+                  const isThisCorrect =
+                    optLetter.toLowerCase() === expectedAnswer.toLowerCase() ||
+                    opt.toLowerCase() === expectedAnswer.toLowerCase() ||
+                    opt.toLowerCase().startsWith(expectedAnswer.toLowerCase() + '.');
+
+                  if (isThisCorrect) {
+                    btnStyle = 'border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]';
+                  } else if (isSelected) {
+                    btnStyle = 'border-rose-500 bg-rose-500/20 text-rose-300';
+                  } else {
+                    btnStyle = 'border-slate-850 bg-slate-950/40 text-slate-600 opacity-50';
+                  }
+                } else if (isSelected) {
+                  btnStyle = 'border-amber-400 bg-amber-500/20 text-white';
+                }
+
+                return (
+                  <button
+                    key={i}
+                    disabled={feedback !== null || myStatus === 'ELIMINATED'}
+                    onClick={() => handleAnswerSubmit(opt)}
+                    className={`flex items-center gap-3 rounded-2xl border-2 p-3.5 sm:p-4 text-left font-bold transition cursor-pointer active:scale-98 ${btnStyle} disabled:cursor-not-allowed`}
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-800 font-black text-sm text-amber-400 border border-slate-700">
+                      {optLetter}
+                    </span>
+                    <div className="text-sm overflow-x-auto"><MathRenderer content={opt} /></div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border-2 border-amber-400/40 bg-slate-950 p-4">
+              <label className="text-xs font-bold text-amber-400 block mb-2">✍️ Gõ đáp án lên bảng Mica:</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={writtenAnswer}
+                  disabled={feedback !== null || myStatus === 'ELIMINATED'}
+                  onChange={(e) => setWrittenAnswer(e.target.value)}
+                  placeholder="Nhập câu trả lời..."
+                  className="flex-1 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 font-bold text-white focus:outline-hidden focus:border-amber-400 text-center"
+                  onKeyDown={(e) => e.key === 'Enter' && writtenAnswer.trim() && handleAnswerSubmit(writtenAnswer.trim())}
+                />
+                <button
+                  onClick={() => writtenAnswer.trim() && handleAnswerSubmit(writtenAnswer.trim())}
+                  disabled={feedback !== null || myStatus === 'ELIMINATED'}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 font-black text-slate-950 text-xs transition cursor-pointer"
+                >
+                  Giơ Bảng ➔
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* BANNER XÁC NHẬN KẾT QUẢ ĐÚNG / SAI */}
+          {feedback && (
+            <div className={`p-4 rounded-2xl border-2 flex items-center justify-between gap-3 animate-fadeIn ${
+              feedback.isCorrect ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-200' : 'border-rose-500/50 bg-rose-500/15 text-rose-200'
+            }`}>
+              <div className="flex items-center gap-2.5">
+                {feedback.isCorrect ? <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" /> : <XCircle className="w-6 h-6 text-rose-400 shrink-0" />}
+                <div>
+                  <span className="font-black text-sm block">
+                    {feedback.isCorrect ? '🎉 CHÍNH XÁC! (+10 ĐIỂM)' : '❌ CHƯA CHÍNH XÁC!'}
+                  </span>
+                  <span className="text-xs opacity-90">
+                    {feedback.isCorrect ? 'Bạn giữ vững vị trí thi đấu trên sàn!' : `Đáp án đúng là: ${feedback.correctAnswer || 'Xem giải thích'}. Bạn tạm thời rời sàn đấu.`}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onNextStage('NEXT_QUESTION')}
+                className="flex items-center gap-1 px-4 py-2 rounded-xl bg-white text-slate-950 font-black text-xs hover:bg-slate-100 transition cursor-pointer shrink-0"
+              >
+                <span>Câu Tiếp Theo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* CỘT PHỤ (4/12): SƠ ĐỒ 100 VỊ TRÍ MINI-MAP */}
+        <div className="lg:col-span-4">
+          <GoldenBellSeatsGrid
+            activeCount={activeCount}
+            eliminatedCount={100 - activeCount}
+            myStatus={myStatus}
+          />
         </div>
       </div>
     </div>
   );
 }
+export default GoldenBellArenaView;

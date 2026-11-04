@@ -1,5 +1,5 @@
 {
-  "title": "クリエイター Zen Studio",
+  "title": "クリエイターZenスタジオ (Creator Zen Studio)",
   "subtitle": "教育者および研修専門家のために設計されたミニマリストデジタル空間",
   "trialBanner": {
     "title": "教育者パートナーシップ — 90日間完全無料トライアル",
@@ -69,5 +69,6 @@
     "jumpTo": "問題番号へ…",
     "perPage": "表示数",
     "edited": "{{count}} 問編集済み"
-  }
+  },
+  "ecosystemTag": "Aegis クリエイターエコシステム • 著作権保護"
 }

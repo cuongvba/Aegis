@@ -8,6 +8,7 @@ WORKDIR /src
 
 # Copy solution và tất cả csproj (cache layer cho dotnet restore)
 COPY AegisQuiz.sln ./
+COPY Directory.Build.props ./
 COPY src/AegisQuiz.Domain/AegisQuiz.Domain.csproj             src/AegisQuiz.Domain/
 COPY src/AegisQuiz.Application/AegisQuiz.Application.csproj   src/AegisQuiz.Application/
 COPY src/AegisQuiz.Infrastructure/AegisQuiz.Infrastructure.csproj src/AegisQuiz.Infrastructure/

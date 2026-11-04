@@ -30,6 +30,8 @@ d:/Cuong/DuAn/mybank/AegisQuiz/docs/
 ├── ARENA_GAMESHOW_USER_MANUAL.md                     <-- Cẩm nang người dùng & luật chơi 6 Gameshow
 │
 ├── 🏛️ architecture/ (Kiến Trúc Phân Tầng)
+│   ├── AEGIS_GLOBAL_STRATEGIC_HEGEMONY_AND_WORLD_CLASS_BENCHMARK.md <-- [FLAGSHIP 2026] Báo Cáo Phân Tích Khoa Học, Đối Sách Toàn Cầu & Kiểm Toán Điểm Nghẽn Nâng Cấp Hoàn Thiện
+│   ├── AEGIS_DUAL_MODE_ASSESSMENT_AND_INGESTION_SOVEREIGNTY.md <-- [NEW 2026] Kiến Trúc Khảo Thí Đa Phương Thức (Zen Studio -> Live Arena RAM Prewarm & Knowledge Bank COW)
 │   ├── DOCX_STATE_MACHINE_CLASSIFIER_DEEP_DIVE.md   <-- [DEEP DIVE 2026] Báo Cáo Chuyên Sâu Máy Trạng Thái FSM Phân Loại Đề Thi Word, CIG Grammar, Sentinel Boundaries & Kiểm Thử 53 Đề Thực Chiến
 │   ├── AEGIS_WORLD_CLASS_FRONTEND_ELEVATION_MASTER_PLAN.md <-- [SUPREME 2026] Kế Hoạch Hành Động Chiến Lược Nâng Tầm Frontend Đạt Đẳng Cấp Top 1 Thế Giới (Zero-Monolith, OCP Registry, 60fps)
 │   ├── AEGIS_UNIVERSAL_INGESTION_ENGINE_AND_GLOBAL_EXPANSION_STRATEGY.md <-- [SUPREME 2026] Bản Thiết Kế Kiến Trúc Phân Hệ Nhập Đề Thông Minh & Kế Hoạch Vươn Tầm Quốc Tế (CIG, MTEF Reverse, Multiline Accumulator)
@@ -57,9 +59,18 @@ d:/Cuong/DuAn/mybank/AegisQuiz/docs/
 │   └── WEBSOCKET_SIGNALR_PROTOCOLS.md                <-- Đặc tả giao thức SignalR WebSockets Real-time
 │
 ├── 📖 manuals/ (Cẩm Nang Dành Cho Người Dùng)
+│   ├── AEGIS_ENTERPRISE_WHITE_LABEL_AND_BRAND_SOVEREIGNTY_GUIDE.md <-- [FLAGSHIP ALDS v1.0 2026] Cẩm Nang Quản Trị Bản Sắc Thương Hiệu Doanh Nghiệp (Logo Đa Thể Thức, Slogan, Wallpaper, Watermark Chống Chụp Trộm & Live 0ms Preview)
+│   ├── AEGIS_ENTERPRISE_EXAM_MANAGEMENT_STANDARD.md  <-- [FLAGSHIP ALDS v1.0 2026] Tiêu Chuẩn Quản Trị Chiến Dịch Khảo Thí Doanh Nghiệp (Phân Nhánh Nghiệp Vụ, Ma Trận Đề Thi Bloom, Điều Phối Thí Sinh O(1))
+│   ├── AEGIS_COMPREHENSIVE_CREATOR_AND_ARENA_GUIDE.md <-- [FLAGSHIP ALDS v1.0 2026] Cẩm Nang Toàn Diện: Sáng Tạo Đề Thi Creator Zen Studio & Đấu Trường Thực Chiến Arena (Tối Ưu 2 Cột, Chuẩn Luật 6 Gameshow, Cây Phân Cấp MaterializedPath)
+│   ├── TEACHER_CREATOR_ZEN_STUDIO_GUIDE.md           <-- [ALDS v2.0] Cẩm Nang Sư Phạm Giáo Viên (Tiểu Học -> Đại Học): Nạp Đề 3 Chạm, Live Cohort Heatmap Báo Động Điểm Nghẽn, Lan Tỏa Flex Card & Học Từ Sai Lầm
+│   ├── STUDENT_ARENA_AND_PRACTICE_GUIDE.md           <-- [NEW 2026] Cẩm Nang Học Sinh: Vào Thi 1 Chạm Không Cần Nick, Bấm Chuông <2ms & Tự Luyện
 │   ├── ARENA_GAMESHOW_MANUAL.md                      <-- Hướng dẫn tổ chức & luật thi đấu 6 Gameshow kinh điển
 │   ├── LEARNER_USER_MANUAL.md                        <-- Cẩm nang học sinh/sinh viên luyện thi, thi thử, bảng thành tích
 │   └── ADMIN_OPERATION_GUIDE.md                      <-- Cẩm nang quản trị viên: duyệt câu hỏi, quản lý kỳ thi & doanh thu
+│
+├── 🏛️ standards/ (Tiêu Chuẩn Kiến Trúc & Thương Hiệu)
+│   ├── AEGIS_GLOBAL_BRAND_POSITIONING_CHARTER.md     <-- [STANDARD ALDS v1.0] Hiến Chương Định Vị Thương Hiệu Toàn Cầu & Chuẩn Mực Hạ Tầng Tri Thức Thế Hệ Mới
+│   └── AEGIS_LIVING_DOCUMENTATION_STANDARD.md        <-- [STANDARD ALDS v1.0] Tiêu Chuẩn Tài Liệu Sống & 5 Trụ Cột Kiểm Chứng Tri Thức Thực Nghiệm
 │
 └── 🚀 devops/ (Triển Khai & Vận Hành)
     └── DEPLOYMENT_AND_OPERATIONS.md                  <-- Cấu hình Docker Compose, Nginx, PostgreSQL, Redis, CI/CD

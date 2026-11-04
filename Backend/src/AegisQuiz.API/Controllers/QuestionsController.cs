@@ -27,9 +27,8 @@ namespace AegisQuiz.API.Controllers
     /// Role-Weight ≥ TeamLeader (ngưỡng thấp nhất trong nhóm "staff" — bảo toàn tính
     /// năng TeamLeader tự quản lý câu hỏi phạm vi TEAM đang hoạt động ở Frontend
     /// admin/questions). Learner/GuestViewer/ẩn danh vẫn bị chặn hoàn toàn.
-    /// [KNOWN GAP — theo dõi riêng]: Backend chưa lọc theo creatorId/OrgUnitId khi
-    /// Update/Delete, chỉ Frontend (canManageResource) đang tự giới hạn phạm vi TEAM;
-    /// cần bổ sung kiểm tra sở hữu ở tầng API trong một đợt hardening kế tiếp.
+    /// [OWNERSHIP SOVEREIGNTY]: Mọi thao tác Update/Delete/BulkDelete đều được bảo vệ bởi
+    /// IContentOwnershipGuard (Owner, TeamLeader theo OrgUnitId, và Admin/TenantAdmin giám sát).
     /// </summary>
     [ApiController]
     [Route("api/quiz")]
@@ -154,6 +153,20 @@ namespace AegisQuiz.API.Controllers
                 // [FIX P0 & High Scale Engine] Load all items matching DB filters với AsNoTracking() hiệu năng cao
                 var allItems = await q.ToListAsync();
                 var enabledItems = allItems.Where(IsQuestionEnabled).ToList();
+
+                // [Ownership & Creator Filtering]
+                if (query.MyOnly)
+                {
+                    var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrWhiteSpace(callerId))
+                    {
+                        enabledItems = enabledItems.Where(x => string.Equals(x.CreatorId, callerId, StringComparison.OrdinalIgnoreCase)).ToList();
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(query.CreatorId))
+                {
+                    enabledItems = enabledItems.Where(x => string.Equals(x.CreatorId, query.CreatorId.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+                }
 
                 // Lọc thêm theo các trục tọa độ trong Payload nếu có
                 if (query.Year.HasValue)
@@ -289,6 +302,15 @@ namespace AegisQuiz.API.Controllers
             try
             {
                 var question = BuildQuestion(dto);
+                var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(callerId) && string.IsNullOrEmpty(question.CreatedBy))
+                {
+                    question.CreatedBy = callerId;
+                }
+                if (_tenantContext.CurrentTenantId != Guid.Empty && question.TenantId == Guid.Empty)
+                {
+                    question.TenantId = _tenantContext.CurrentTenantId;
+                }
                 _db.Questions.Add(question);
                 await _db.SaveChangesAsync();
                 return Created($"api/quiz/questions/{question.Id}", question);

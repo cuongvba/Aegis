@@ -1,17 +1,18 @@
 {
-  "title": "Creator Zen Studio",
+  "title": "Xưởng Sáng Tạo Sư Phạm Zen",
   "subtitle": "Không gian số tối giản dành riêng cho Thầy Cô và Chuyên gia Đào tạo",
   "trialBanner": {
-    "title": "Gói Đối Tác Giáo Viên — Dùng Thử 90 Ngày Miễn Phí",
+    "title": "{{campaign}} — Dùng Thử {{days}} Ngày Toàn Năng",
+    "defaultCampaign": "Gói Đối Tác Giáo Viên Sư Phạm",
     "daysLeft": "Còn {{days}} ngày trải nghiệm trọn vẹn đặc quyền",
     "referralLabel": "Mã giới thiệu đồng nghiệp:",
     "copyReferral": "Sao chép mã",
     "copied": "Đã sao chép!",
-    "revShare": "Chính sách chia sẻ doanh thu 80/20 & Karma tích lũy"
+    "revShare": "Chính sách chia sẻ doanh thu {{share}}/{{remainder}} & Karma tích lũy"
   },
   "dropZone": {
-    "title": "Kéo & Thả Đề Thi Word (.docx) Vào Đây",
-    "hint": "Hỗ trợ định dạng đề thi Word tự nhiên, công thức MathType/LaTeX và hình ảnh",
+    "title": "Kéo & Thả Đề Thi Word, Excel Hoặc PDF Vào Đây",
+    "hint": "Hỗ trợ tự động bóc tách từ file Word (.docx), Bảng tính Excel (.xlsx, .xls), Tài liệu PDF (.pdf), công thức MathType/LaTeX và hình ảnh",
     "processing": "Đang bóc tách đề thi và phân tích ma trận tri thức...",
     "browseButton": "Hoặc bấm để chọn tệp từ máy tính",
     "dropActive": "Thả tệp để bắt đầu khởi tạo phòng thi!"
@@ -34,18 +35,22 @@
     "confidence": "Độ tin cậy:"
   },
   "launcher": {
-    "launchButton": "Kích Hoạt Phòng Thi Realtime 1-Chạm",
+    "launchButton": "Kích hoạt Phòng thi",
     "modalTitle": "Phòng Thi Realtime Đã Sẵn Sàng!",
     "modalSubtitle": "Học sinh quét mã QR hoặc nhập mã PIN 6 số trên điện thoại để tham gia ngay",
     "pinLabel": "MÃ PIN THAM GIA",
     "copyPin": "Sao chép PIN",
     "copyLink": "Sao chép đường dẫn",
     "openArena": "Vào Màn Hình Giám Sát Lớp Học",
-    "close": "Đóng"
+    "close": "Đóng",
+    "downloadQrText": "Tải ảnh mã QR in ra giấy",
+    "changeHost": "Đổi IP WiFi",
+    "domainOrIp": "Tên miền/IP",
+    "lanHint": "Nhập IP máy tính trong mạng WiFi (Ví dụ: 192.168.1.15:3000):"
   },
   "actions": {
     "reset": "Tải đề khác",
-    "errorUpload": "Tải tệp thất bại, vui lòng kiểm tra lại định dạng Word (.docx)"
+    "errorUpload": "Tải tệp thất bại, vui lòng kiểm tra lại định dạng Word (.docx), Excel (.xlsx) hoặc PDF (.pdf)"
   },
   "editor": {
     "edit": "Sửa",
@@ -68,6 +73,92 @@
     "range": "Câu {{from}}–{{to}} / {{total}}",
     "jumpTo": "Đến câu số…",
     "perPage": "Mỗi trang",
-    "edited": "{{count}} câu đã sửa"
+    "edited": "{{count}} câu đã sửa",
+    "saveAndAssign": "Lưu & Giao bài",
+    "saving": "Đang lưu...",
+    "launchRoom": "Kích hoạt Phòng thi",
+    "configTooltip": "Cấu hình Giao bài tập về nhà"
+  },
+  "bankSave": {
+    "modalTitle": "Đã Lưu Vào Ngân Hàng Câu Hỏi Vĩnh Viễn!",
+    "modalSubtitle": "Đã lưu thành công {{count}} câu hỏi vào Ngân hàng Tri thức!",
+    "topicCode": "Mã Chủ Đề / Giao Bài:",
+    "questionCount": "Số Lượng Câu Hỏi:",
+    "storageMode": "Cơ chế Lưu trữ:",
+    "storageDesc": "CAS Content-Addressed + COW",
+    "practiceMode": "Chế độ giao bài:",
+    "duration": "Thời gian làm bài:",
+    "unlimitedTime": "Không giới hạn",
+    "minutes": "{{count}} phút",
+    "shuffleOptions": "Đảo phương án:",
+    "yes": "Có",
+    "no": "Không",
+    "copyLink": "Sao chép link",
+    "copied": "Đã chép",
+    "downloadQr": "Tải ảnh mã QR",
+    "changeHost": "Đổi IP WiFi",
+    "domainOrIp": "Tên miền/IP",
+    "lanHint": "Nhập IP máy tính trong mạng WiFi (Ví dụ: 192.168.1.15:3000):",
+    "openPractice": "Mở Trang Luyện Tập (Theo Cấu Hình)",
+    "close": "Đóng"
+  },
+  "homeworkConfig": {
+    "title": "Thiết Lập Bài Tập Giao Về Nhà",
+    "subtitle": "Tùy chỉnh chế độ trải nghiệm, thời gian và cách hiển thị phù hợp với đối tượng học sinh",
+    "modeTitle": "1. Chọn Chế Độ Giao Diện Làm Bài",
+    "modeStudy": "Luyện Tập Tự Do (Study Mode)",
+    "modeStudyDesc": "Học sinh xem được lời giải chi tiết và căn cứ ngay sau mỗi câu",
+    "modeExam": "Khảo Thí Tập Trung (Exam Mode)",
+    "modeExamDesc": "Tính giờ nghiêm túc, không hiện đáp án trước khi nộp bài",
+    "modeKids": "Đấu Sĩ Nhí (Kid Mode)",
+    "modeKidsDesc": "Hoạt họa sinh động, âm thanh hiệu ứng & streak động viên trẻ em",
+    "modePaper": "Phiếu Trắc Nghiệm (Paper Mode)",
+    "modePaperDesc": "Mô phỏng phiếu trả lời trắc nghiệm chuẩn kỳ thi quốc gia",
+    "timeTitle": "2. Thời Lượng Làm Bài",
+    "timeUnlimited": "Tự do (Không giới hạn)",
+    "timeCustom": "Tùy chỉnh (phút):",
+    "advancedTitle": "3. Tùy Chọn Trộn Đề & Đếm Ngược",
+    "shuffleOptions": "Xáo trộn thứ tự các phương án (A, B, C, D)",
+    "shuffleOptionsHint": "Mỗi học sinh sẽ nhận được thứ tự phương án khác nhau",
+    "shuffleQuestions": "Xáo trộn thứ tự các câu hỏi",
+    "shuffleQuestionsHint": "Khuyên dùng tắt khi đề có bài đọc hiểu chung",
+    "enableQuestionTimer": "Bật đếm ngược thời gian cho từng câu",
+    "questionTimeLimit": "Thời gian mỗi câu:",
+    "seconds": "{{count}} giây",
+    "autoNext": "Tự động chuyển câu khi hết thời gian câu",
+    "saveAndAssignBtn": "Lưu & Sinh Mã QR Giao Bài",
+    "cancel": "Hủy"
+  },
+  "ecosystemTag": "Hệ Sinh Thái Sáng Tạo Aegis • Bảo Vệ Bản Quyền Nhận Thức",
+  "topBar": {
+    "quotaLabel": "Hạn Mức Sư Phạm:",
+    "unlimited": "∞ Vô Hạn",
+    "examsPerDay": "Đề/Ngày",
+    "securityNote": "(Bảo mật bản quyền MathType WMF & Ký số Zero-Width)"
+  },
+  "coffee": {
+    "buttonLabel": "Mời 1 Ly Cafe ({{price}}đ)",
+    "badge": "Mô Hình Đồng Hành Sư Phạm",
+    "title": "Mời 1 Ly Cafe — Tiếp Lửa Tri Thức ☕",
+    "subtitle": "Không phí ẩn, không ép buộc thuê bao. Mỗi ly cafe của Thầy/Cô tiếp lửa duy trì máy chủ tính toán bóc tách công thức Toán học đỉnh cao.",
+    "planCoffeeTitle": "Mời 1 Ly Cafe",
+    "planCoffeeDesc": "Mở khóa trọn vẹn {{days}} ngày Full Pro",
+    "planHeartTitle": "Đồng Hành Vùng Cao",
+    "planHeartFree": "0đ Miễn Phí",
+    "planHeartDesc": "Tài trợ 100% vĩnh viễn cho địa bàn khó khăn",
+    "qrTitle": "Quét VietQR Napas 24/7 (Mọi Ngân Hàng)",
+    "stk": "STK:",
+    "amount": "Số tiền:",
+    "msg": "Nội dung:",
+    "autoDetect": "Tự động nhận diện sau khi quét App ngân hàng",
+    "copied": "Đã sao chép!",
+    "copyText": "Sao chép",
+    "heartNoticeTitle": "Sứ Mệnh Bảo Trợ Giáo Viên Vùng Sâu, Vùng Xa & Hải Đảo",
+    "heartNoticeDesc": "Aegis Global tài trợ 100% tài nguyên tính toán và AI vĩnh viễn cho Thầy/Cô công tác tại các địa bàn khó khăn. Thầy/Cô bấm xác nhận để kích hoạt ngay!",
+    "btnSuccess": "ĐÃ KÍCH HOẠT THÀNH CÔNG!",
+    "btnHeartConfirm": "Xác Nhận Kích Hoạt Gói Vùng Cao Vĩnh Viễn",
+    "btnCoffeeConfirm": "Tôi Đã Mời Cafe (Mở Khóa Pro {{days}} Ngày)",
+    "securityFooter": "Bảo mật bản quyền nhận thức & Chống trộm cắp chất xám đề thi",
+    "daysProSuffix": "Ngày Pro"
   }
 }

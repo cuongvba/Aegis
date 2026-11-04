@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="aegis-shield-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="aegis-core" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <radialGradient id="aegis-ambient" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#06B6D4" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
+    </radialGradient>
+    <filter id="aegis-blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="50" cy="50" r="46" fill="url(#aegis-ambient)" />
+
+  <!-- Outer Sovereign Shield Rim -->
+  <path
+    d="M 50 6 L 88 22 C 88 54 74 78 50 94 C 26 78 12 54 12 22 Z"
+    fill="#090D1A"
+    stroke="url(#aegis-shield-glow)"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+
+  <!-- Inner Protective Mantle -->
+  <path
+    d="M 50 13 L 81 27 C 81 52 69 73 50 86 C 31 73 19 52 19 27 Z"
+    fill="#0F172A"
+    fill-opacity="0.9"
+    stroke="url(#aegis-shield-glow)"
+    stroke-width="1.2"
+    stroke-opacity="0.6"
+  />
+
+  <!-- Left Facet Shade -->
+  <path
+    d="M 50 13 L 19 27 C 19 52 31 73 50 86 Z"
+    fill="#0284C7"
+    fill-opacity="0.12"
+  />
+
+  <!-- Ascending Alpha / Cognitive Chevron -->
+  <path
+    d="M 50 24 L 72 64 L 61 64 L 50 42 L 39 64 L 28 64 Z"
+    fill="url(#aegis-shield-glow)"
+  />
+
+  <!-- Quantum Verification Prism (Central Diamond) -->
+  <path
+    d="M 50 34 L 60 49 L 50 64 L 40 49 Z"
+    fill="url(#aegis-core)"
+    filter="url(#aegis-blur)"
+  />
+
+  <!-- Core Light Spark -->
+  <circle cx="50" cy="49" r="3" fill="#FFFFFF" />
+</svg>
+

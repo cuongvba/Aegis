@@ -10,6 +10,7 @@ namespace AegisQuiz.Infrastructure.Arena
     public class ArenaRoomManager
     {
         private readonly ConcurrentDictionary<string, ArenaRoomState> _rooms = new();
+        private readonly ConcurrentDictionary<string, string> _pinToRoomId = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, IArenaGamePlugin> _plugins = new(StringComparer.OrdinalIgnoreCase);
         private readonly ConcurrentDictionary<string, GameshowManifest> _dynamicTemplates = new(StringComparer.OrdinalIgnoreCase);
 
@@ -242,14 +243,74 @@ namespace AegisQuiz.Infrastructure.Arena
             return state;
         }
 
-        public ArenaRoomState? GetRoom(string roomId) =>
-            _rooms.TryGetValue(roomId, out var room) ? room : null;
+                public ArenaRoomState CreateRoomWithCustomQuestions(
+            string gameCode,
+            string roomName,
+            string hostUserId,
+            string hostName,
+            string pinCode,
+            List<ArenaQuestionItem> customQuestions,
+            string? customRoomId = null)
+        {
+            var plugin = GetPlugin(gameCode) ?? GetPlugin("OLYMPIA") ?? throw new InvalidOperationException($"Không tìm thấy plugin game: {gameCode}");
+            var roomId = string.IsNullOrWhiteSpace(customRoomId) ? Guid.NewGuid().ToString("N")[..8].ToUpperInvariant() : customRoomId;
+
+            var state = new ArenaRoomState
+            {
+                RoomId = roomId,
+                PinCode = pinCode,
+                GameCode = plugin.GameCode,
+                RoomName = string.IsNullOrWhiteSpace(roomName) ? $"{plugin.DisplayName} #{roomId}" : roomName,
+                HostUserId = hostUserId,
+                CurrentStage = "LOBBY",
+                StageStartTimeUtc = DateTime.UtcNow
+            };
+
+            plugin.InitializeRoomAsync(state).GetAwaiter().GetResult();
+
+            state.Questions = (customQuestions != null && customQuestions.Count > 0)
+                ? customQuestions
+                : GenerateDefaultArenaQuestions(plugin.GameCode);
+
+            var hostPlayer = new ArenaPlayer
+            {
+                Id = hostUserId,
+                Name = string.IsNullOrWhiteSpace(hostName) ? "Host Giáo Viên" : hostName,
+                Avatar = "👑",
+                SeatNumber = 1,
+                Status = "ACTIVE",
+                Score = 0,
+                TeamName = "Team A"
+            };
+            state.Players[hostUserId] = hostPlayer;
+
+            _rooms[roomId] = state;
+            if (!string.IsNullOrWhiteSpace(pinCode))
+            {
+                _pinToRoomId[pinCode] = roomId;
+            }
+
+            return state;
+        }
+
+        public ArenaRoomState? GetRoom(string idOrPin)
+        {
+            if (string.IsNullOrWhiteSpace(idOrPin)) return null;
+            if (_rooms.TryGetValue(idOrPin, out var room)) return room;
+            if (_pinToRoomId.TryGetValue(idOrPin, out var roomId) && _rooms.TryGetValue(roomId, out var roomByPin))
+            {
+                return roomByPin;
+            }
+            return null;
+        }
+
 
         public IEnumerable<ArenaRoomState> ListActiveRooms() => _rooms.Values.ToList();
 
-        public bool JoinRoom(string roomId, ArenaPlayer player)
+        public bool JoinRoom(string idOrPin, ArenaPlayer player)
         {
-            if (!_rooms.TryGetValue(roomId, out var room)) return false;
+            var room = GetRoom(idOrPin);
+            if (room == null) return false;
             var plugin = GetPlugin(room.GameCode);
             if (plugin != null && room.Players.Count >= plugin.MaxPlayers)
             {
@@ -266,13 +327,18 @@ namespace AegisQuiz.Infrastructure.Arena
             return true;
         }
 
-        public bool LeaveRoom(string roomId, string playerId)
+        public bool LeaveRoom(string idOrPin, string playerId)
         {
-            if (!_rooms.TryGetValue(roomId, out var room)) return false;
+            var room = GetRoom(idOrPin);
+            if (room == null) return false;
             room.Players.TryRemove(playerId, out _);
             if (room.Players.IsEmpty)
             {
-                _rooms.TryRemove(roomId, out _);
+                _rooms.TryRemove(room.RoomId, out _);
+                if (!string.IsNullOrEmpty(room.PinCode))
+                {
+                    _pinToRoomId.TryRemove(room.PinCode, out _);
+                }
             }
             return true;
         }

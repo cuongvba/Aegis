@@ -38,6 +38,7 @@ namespace AegisQuiz.Application.Interfaces
     public class ArenaRoomState
     {
         public string RoomId { get; set; } = string.Empty;
+        public string PinCode { get; set; } = string.Empty;
         public string GameCode { get; set; } = string.Empty;
         public string RoomName { get; set; } = string.Empty;
         public string HostUserId { get; set; } = string.Empty;

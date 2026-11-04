@@ -174,7 +174,7 @@ namespace AegisQuiz.Application.DTOs
             },
             ["SHORT_ANSWER"] = new()
             {
-                @"(?i)(?:(?:câu\s+(?:hỏi\s+)?(?:trắc\s+nghiệm\s+)?|thí\s+sinh\s+)?trả\s+lời\s+ngắn(?:\s+gọn)?|điền\s+(?:đáp\s+số|kết\s+quả|số\s+thích\s+hợp)|ghi\s+kết\s+quả(?:\s+cuối\s+cùng)?)",
+                @"(?i)(?:(?:câu\s+(?:hỏi\s+)?(?:trắc\s+nghiệm\s+)?|thí\s+sinh\s+)?trả\s+lời\s+ngắn(?:\s+gọn)?|câu\s+(?:hỏi\s+)?trắc\s+nghiệm\s+ngắn|trắc\s+nghiệm\s+ngắn|trắc\s+nghiệm\s+trả\s+lời\s+ngắn|điền\s+(?:đáp\s+số|kết\s+quả|số\s+thích\s+hợp)|ghi\s+kết\s+quả(?:\s+cuối\s+cùng)?)",
                 @"(?i)(?:write\s+your\s+(?:short\s+)?answer|fill\s+in\s+the\s+(?:blank|box)\s+with\s+a\s+number|grid[\-\s]*in\s+questions?|short\s+answer\s+questions?|填空题)"
             },
             ["ORDERING"] = new()

@@ -538,5 +538,74 @@ namespace AegisQuiz.Infrastructure.Payments
                 Message = $"Số tài khoản cú pháp hợp lệ thuộc mạng lưới {bankName}."
             };
         }
+        public async Task<PaymentTransaction?> ReconcileVietQrTransferAsync(decimal amount, string transferDescription)
+        {
+            if (string.IsNullOrWhiteSpace(transferDescription)) return null;
+
+            var numbersMatch = System.Text.RegularExpressions.Regex.Match(transferDescription, @"\d{8,14}");
+            if (numbersMatch.Success && long.TryParse(numbersMatch.Value, out var parsedOrderCode))
+            {
+                var exactTx = await _db.PaymentTransactions
+                    .FirstOrDefaultAsync(t => t.OrderCode == parsedOrderCode && t.AmountRequired == amount);
+                if (exactTx != null) return exactTx;
+            }
+
+            var recentPending = await _db.PaymentTransactions
+                .Where(t => t.Status == PaymentStatus.Pending && Math.Abs(t.AmountRequired - amount) <= 1000)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+
+            var cleanDesc = NormalizeTransferString(transferDescription);
+
+            foreach (var tx in recentPending)
+            {
+                var expectedCode = NormalizeTransferString($"CAFE{tx.OrderCode}");
+                if (cleanDesc.Contains(expectedCode)) return tx;
+
+                if (ComputeLevenshteinDistance(cleanDesc, expectedCode) <= 2)
+                {
+                    return tx;
+                }
+            }
+
+            return null;
+        }
+
+        private static int ComputeLevenshteinDistance(string s, string t)
+        {
+            int n = s.Length;
+            int m = t.Length;
+            int[,] d = new int[n + 1, m + 1];
+
+            if (n == 0) return m;
+            if (m == 0) return n;
+
+            for (int i = 0; i <= n; d[i, 0] = i++) { }
+            for (int j = 0; j <= m; d[0, j] = j++) { }
+
+            for (int i = 1; i <= n; i++)
+            {
+                for (int j = 1; j <= m; j++)
+                {
+                    int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            return d[n, m];
+        }
+
+        private static string NormalizeTransferString(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            return input.ToUpperInvariant()
+                .Replace(" ", "")
+                .Replace("-", "")
+                .Replace("_", "")
+                .Replace("O", "0")
+                .Replace("I", "1");
+        }
     }
 }

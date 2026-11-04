@@ -133,7 +133,35 @@ graph TD
 
 ---
 
-## V. KẾT LUẬN & CAM KẾT HÀNH ĐỘNG
+## V. HẠ TẦNG QUẢN TRỊ BẢN SẮC THƯƠNG HIỆU DOANH NGHIỆP & WHITE-LABELING (ENTERPRISE BRAND SOVEREIGNTY)
+
+Để hiện thực hóa triết lý kiến trúc **Cognitive Dual-Space Architecture (CDSA)**, hệ sinh thái thiết lập chuẩn mực **Chủ Quyền Thương Hiệu Doanh Nghiệp (Enterprise Brand Sovereignty)**: mỗi Khách thuê Doanh nghiệp / Ngân hàng (Tenant) được toàn quyền sở hữu và kiểm soát 100% không gian thị giác của mình mà không để lộ dấu vết của nền tảng bên thứ ba:
+
+### 1. Ma Trận Căn Cước Thị Giác 5 Tầng (5-Layer Brand Architecture)
+Chi tiết kỹ thuật và sổ tay vận hành được quy định tại [Cẩm Nang Quản Trị Bản Sắc Thương Hiệu Doanh Nghiệp](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/manuals/AEGIS_ENTERPRISE_WHITE_LABEL_AND_BRAND_SOVEREIGNTY_GUIDE.md):
+* **Tầng 1 — Căn cước Thị giác Cốt lõi (Visual Identity Core)**:
+  - *Logo chính (Horizontal Topbar Logo)*: Tỉ lệ ngang, nền trong suốt SVG/PNG, chiều cao điều chỉnh linh hoạt $24\text{px} - 64\text{px}$.
+  - *Biểu tượng vuông (Favicon & Mobile App Icon)*: Tỉ lệ 1:1 ($32\times 32\text{px}$, $192\times 192\text{px}$) cho Tab trình duyệt và PWA.
+  - *Khẩu hiệu doanh nghiệp (Corporate Slogan / Tagline)*: Định vị linh hồn văn hóa tổ chức (VD: Agribank *"Mang phồn thịnh đến khách hàng"*, Vietcombank *"Chung niềm tin, vững tương lai"*).
+* **Tầng 2 — Không gian Hình nền & Watermark Bảo mật (Surfaces & Security)**:
+  - *Login Hero Wallpaper*: Hình nền Trụ sở Tòa nhà / Công nghệ số kèm thanh trượt độ mờ lớp phủ tối ($10\% - 95\%$) bảo đảm tương phản WCAG AAA.
+  - *Watermark Chống chụp trộm đề thi*: Lưới văn bản chìm nghiêng $25^\circ$, độ mờ $6\%$ chạy mờ sau bài thi (`Tên tổ chức • SBD • IP`).
+* **Tầng 3 — Hệ Thống Bảng Màu HSL & Tokens (Design System)**:
+  - Tỷ lệ phân bổ màu thị giác chuẩn thế giới **60-30-10 Rule**: 60% Nền trung tính tối `#020617`, 30% Bề mặt Component `#0f172a`, 10% Màu điểm nhấn chủ đạo (`--tenant-primary`).
+  - Tiêm động biến CSS vào `:root` với độ trễ $< 1\mu\text{s}$, 0ms Hot-Reload không cần biên dịch lại mã nguồn.
+* **Tầng 4 — Pháp lý Chân trang & Điểm Chạm Hỗ trợ (Legal & Support Touchpoints)**:
+  - Tuyên bố bản quyền chính thức của đơn vị sở hữu.
+  - Hotline kỹ thuật nội bộ và Email tiếp nhận sự cố khẩn cấp.
+* **Tầng 5 — Khung Xem Trước Đa Chiều 0ms (Multi-Surface Live 0ms Preview)**:
+  - Xem trước tức thì 3 không gian trọng yếu: Màn hình Đăng nhập (Login View), Phòng thi Sát hạch (Exam Arena View), và Giấy Chứng nhận Tốt nghiệp (Digital Certificate View).
+
+### 2. Live Source Links & Database Contract
+* Controller Quản trị Thương hiệu: [`TenantsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TenantsController.cs) (`GET/PUT /api/admin/tenants/branding`).
+* UI Quản Trị Đạt Chuẩn Zero-Monolith ($\le 250$ LOC): [`TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx), [`BrandIdentityHub.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/BrandIdentityHub.tsx), [`SurfaceBackgroundConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/SurfaceBackgroundConfig.tsx), [`MultiSurfaceLivePreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/MultiSurfaceLivePreview.tsx), [`FooterAndLegalConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/FooterAndLegalConfig.tsx).
+
+---
+
+## VI. KẾT LUẬN & CAM KẾT HÀNH ĐỘNG
 
 Khi Aegis được định vị là **A Global Standard**, mọi dòng code, mọi giao diện, mọi báo cáo kỹ thuật từ nay về sau đều mang tinh thần của một công trình kỹ nghệ đẳng cấp thế giới:
 1. **Mã nguồn là minh chứng (Code is the Proof)**.

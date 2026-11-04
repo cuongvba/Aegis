@@ -45,9 +45,17 @@ namespace AegisQuiz.Infrastructure.Data
 
         // ── Question Bank ─────────────────────────────────────────────────────
         public DbSet<BankTopic> BankTopics { get; set; } = null!;
+        public DbSet<HomeworkSubmission> HomeworkSubmissions { get; set; } = null!;
 
         // ── Exam Session (Proctoring) ──────────────────────────────────────────
         public DbSet<ExamSession> ExamSessions { get; set; } = null!;
+
+        // ── Assessment Campaigns (Enterprise Exam Suite) ──────────────────────
+        public DbSet<AssessmentCampaign> AssessmentCampaigns { get; set; } = null!;
+        public DbSet<ExamTrack> ExamTracks { get; set; } = null!;
+        public DbSet<ExamPaper> ExamPapers { get; set; } = null!;
+        public DbSet<ExamPaperItem> ExamPaperItems { get; set; } = null!;
+        public DbSet<CampaignCandidate> CampaignCandidates { get; set; } = null!;
 
         // ── Gamification ──────────────────────────────────────────────────────
         public DbSet<LearnerLeaderboardEntry> LeaderboardEntries { get; set; } = null!;
@@ -64,6 +72,7 @@ namespace AegisQuiz.Infrastructure.Data
 
         // ── Creator Economy & Educator Strategic Partners (90-Day Trial, Rev-Share) ──
         public DbSet<EducatorPartnership> EducatorPartnerships { get; set; } = null!;
+        public DbSet<CreatorMarketingPolicy> CreatorMarketingPolicies { get; set; } = null!;
 
         // ── Cognitive Intelligence (FSRS Spaced Repetition) ────────────────────
         public DbSet<QuestionNeuralState> QuestionNeuralStates { get; set; } = null!;
@@ -106,7 +115,50 @@ namespace AegisQuiz.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<HomeworkSubmission>(entity =>
+            {
+                entity.ToTable("homework_submissions");
+                entity.Property(e => e.TopicCode).HasColumnName("topic_code");
+                entity.Property(e => e.StudentName).HasColumnName("student_name");
+                entity.Property(e => e.StudentClass).HasColumnName("student_class");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.IsGuest).HasColumnName("is_guest");
+                entity.Property(e => e.Score).HasColumnName("score");
+                entity.Property(e => e.CorrectCount).HasColumnName("correct_count");
+                entity.Property(e => e.TotalQuestions).HasColumnName("total_questions");
+                entity.Property(e => e.TimeSpentSeconds).HasColumnName("time_spent_seconds");
+                entity.Property(e => e.TabSwitchCount).HasColumnName("tab_switch_count");
+                entity.Property(e => e.WrongQuestionIndexes).HasColumnName("wrong_question_indexes").HasColumnType("jsonb");
+                entity.Property(e => e.GroupCategory).HasColumnName("group_category");
+                entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
+                entity.Property(e => e.TeacherUserId).HasColumnName("teacher_user_id");
+                entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            });
+
             // Bỏ qua các POCO / JSONB payload models không phải bảng DB
+            
+            modelBuilder.Entity<CreatorMarketingPolicy>(entity =>
+            {
+                entity.ToTable("creator_marketing_policies");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CampaignCode).HasColumnName("campaign_code");
+                entity.Property(e => e.CampaignName).HasColumnName("campaign_name");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.TrialDays).HasColumnName("trial_days");
+                entity.Property(e => e.RevenueShareRate).HasColumnName("revenue_share_rate");
+                entity.Property(e => e.KarmaBonusPoints).HasColumnName("karma_bonus_points");
+                entity.Property(e => e.CoffeeProDays).HasColumnName("coffee_pro_days");
+                entity.Property(e => e.CoffeePriceVnd).HasColumnName("coffee_price_vnd");
+                entity.Property(e => e.CoffeeBankBin).HasColumnName("coffee_bank_bin");
+                entity.Property(e => e.CoffeeAccountNumber).HasColumnName("coffee_account_number");
+                entity.Property(e => e.CoffeeAccountName).HasColumnName("coffee_account_name");
+                entity.Property(e => e.IsActive).HasColumnName("is_active");
+                entity.Property(e => e.StartDate).HasColumnName("start_date");
+                entity.Property(e => e.EndDate).HasColumnName("end_date");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
             modelBuilder.Ignore<ProvenanceAppearance>();
             modelBuilder.Ignore<ExamClusterMatch>();
 

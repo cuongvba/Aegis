@@ -21,6 +21,9 @@ export const ZenTrialBanner: React.FC<ZenTrialBannerProps> = ({ partnership }) =
     }
   };
 
+  const share = Math.round((partnership.revenueShareRate || 0.8) * 100);
+  const remainder = 100 - share;
+
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600/15 via-teal-500/10 to-indigo-600/15 border border-emerald-500/30 p-4 mb-6 backdrop-blur-md">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -31,14 +34,17 @@ export const ZenTrialBanner: React.FC<ZenTrialBannerProps> = ({ partnership }) =
           <div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-emerald-300 text-sm md:text-base">
-                {t('trialBanner.title')}
+                {t('trialBanner.title', { 
+                  campaign: partnership.campaignName || t('trialBanner.defaultCampaign'), 
+                  days: partnership.trialDays || 90 
+                })}
               </span>
               <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500/30 text-emerald-300 border border-emerald-400/30">
                 {t('trialBanner.daysLeft', { days: partnership.daysRemaining })}
               </span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
-              {t('trialBanner.revShare')} • <span className="text-amber-300 font-semibold">{partnership.karmaPoints} Karma</span>
+              {t('trialBanner.revShare', { share, remainder })} • <span className="text-amber-300 font-semibold">{partnership.karmaPoints} Karma</span>
             </p>
           </div>
         </div>

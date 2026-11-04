@@ -145,6 +145,7 @@ namespace AegisQuiz.Infrastructure.Services
                 ?? new TaxonomyReconnaissancePatternsDto();
 
             // PASS 1: Quét tìm nhãn MÔN THI / BÀI THI / CHỦ ĐỀ đa ngôn ngữ từ TaxonomyReconPatterns (Zero-Hardcode & MultiLang)
+            string? fallbackComposite = null;
             foreach (var banner in banners)
             {
                 if (string.IsNullOrWhiteSpace(banner)) continue;
@@ -155,14 +156,25 @@ namespace AegisQuiz.Infrastructure.Services
                     if (m.Success)
                     {
                         string raw = m.Groups[1].Value.Trim();
+                        raw = Regex.Replace(raw, @"(?i)^\s*(?:thành\s*phần|thanh\s*phan)\s*[:：\-]?\s*", "").Trim();
                         raw = Regex.Replace(raw, @"(?i)\s*(?:Thời\s*gian|Thời\s*lượng|Mã\s*đề|Time|Duration|Code|Exam\s*Code).*$", "").Trim();
                         var resolved = ResolveTopicCode(raw, dynamicContext);
                         if (resolved != "GENERAL" && resolved != "EDUCATION" && resolved != "THPT_NATIONAL")
                         {
+                            if (resolved == "KHTN" || resolved == "KHXH")
+                            {
+                                fallbackComposite ??= resolved;
+                                continue;
+                            }
                             return resolved;
                         }
                     }
                 }
+            }
+
+            if (!string.IsNullOrEmpty(fallbackComposite))
+            {
+                return fallbackComposite;
             }
 
             // PASS 2: Chỉ khi không có dòng nào chứa nhãn "Môn thi / Bài thi", mới quét tên môn học đầy đủ (t.Name)
@@ -1456,6 +1468,10 @@ namespace AegisQuiz.Infrastructure.Services
             string gradeCode = "GENERAL";
             string gradeDisplay = "";
             int gradeNum = 0;
+            var lowerText = text.ToLowerInvariant();
+            bool isTnptExam = lowerText.Contains("tốt nghiệp thpt")
+                || lowerText.Contains("tốt nghiệp trung học phổ thông")
+                || Regex.IsMatch(text, @"(?i)\b(?:tnpt|thpt\s*nat|thpt_nat)\b");
 
             // 3a. Quét từ TargetLevel đã nhận diện trước
             if (!string.IsNullOrWhiteSpace(result.TargetLevel))
@@ -1465,6 +1481,7 @@ namespace AegisQuiz.Infrastructure.Services
                     var mLevel = Regex.Match(result.TargetLevel, gp, RegexOptions.IgnoreCase);
                     if (mLevel.Success && int.TryParse(mLevel.Groups[1].Value, out var g1) && g1 >= 1 && g1 <= 12)
                     {
+                        if (isTnptExam && g1 < 10) continue;
                         gradeNum = g1;
                         break;
                     }
@@ -1476,18 +1493,21 @@ namespace AegisQuiz.Infrastructure.Services
             {
                 foreach (var t in effectiveCtx.Topics)
                 {
-                    var mTopicCodeGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Code)}[\s\-_]*(\d{{1,2}})\b");
+                    if (t.Code == "GENERAL" || t.Code == "EDUCATION") continue;
+                    var mTopicCodeGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Code)}[\s\-_]+(?:lớp|k|grade|class)?[\s\-_]*(\d{{1,2}})\b(?!\s*(?:phút|mã|câu))");
                     if (mTopicCodeGrade.Success && int.TryParse(mTopicCodeGrade.Groups[1].Value, out var g3) && g3 >= 1 && g3 <= 12)
                     {
+                        if (isTnptExam && g3 < 10) continue;
                         gradeNum = g3;
                         break;
                     }
 
-                    if (!string.IsNullOrWhiteSpace(t.Name))
+                    if (!string.IsNullOrWhiteSpace(t.Name) && t.Name.Length >= 4)
                     {
-                        var mTopicNameGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Name)}[\s\-_]*(\d{{1,2}})\b");
+                        var mTopicNameGrade = Regex.Match(text, $@"(?i)\b{Regex.Escape(t.Name)}[\s\-_]+(?:lớp|k|grade|class)?[\s\-_]*(\d{{1,2}})\b(?!\s*(?:phút|mã|câu))");
                         if (mTopicNameGrade.Success && int.TryParse(mTopicNameGrade.Groups[1].Value, out var g4) && g4 >= 1 && g4 <= 12)
                         {
+                            if (isTnptExam && g4 < 10) continue;
                             gradeNum = g4;
                             break;
                         }
@@ -1503,10 +1523,17 @@ namespace AegisQuiz.Infrastructure.Services
                     var mGrade = Regex.Match(text, gp, RegexOptions.IgnoreCase);
                     if (mGrade.Success && int.TryParse(mGrade.Groups[1].Value, out var g2) && g2 >= 1 && g2 <= 12)
                     {
+                        if (isTnptExam && g2 < 10) continue;
                         gradeNum = g2;
                         break;
                     }
                 }
+            }
+
+            // 3d. Nếu là Kỳ thi tốt nghiệp THPT mà chưa có khối lớp hoặc bị bắt nhầm < 10, tự động suy luận K12
+            if (isTnptExam && (gradeNum == 0 || gradeNum < 10))
+            {
+                gradeNum = 12;
             }
 
             if (gradeNum >= 1 && gradeNum <= 12)

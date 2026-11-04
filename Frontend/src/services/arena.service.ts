@@ -2,11 +2,28 @@ import api from '@/services/api';
 import type { ArenaGameCode, ArenaRoomState } from '@/types/arena';
 
 // ─── Web Audio Synthesizer Cho Đấu Trường Gameshow ──────────────────────────
-export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' | 'clock') {
+let sharedAudioCtx: AudioContext | null = null;
+
+function getSharedAudioContext(): AudioContext | null {
   try {
     const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+    if (!AudioCtx) return null;
+    if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+      sharedAudioCtx = new AudioCtx();
+    }
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' | 'clock') {
+  try {
+    const ctx = getSharedAudioContext();
+    if (!ctx) return;
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -14,7 +31,6 @@ export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' 
     gain.connect(ctx.destination);
 
     if (type === 'buzzer') {
-      // Tiếng chuông bấm giật quyền trả lời vang dội
       osc.type = 'square';
       osc.frequency.setValueAtTime(880, now);
       osc.frequency.setValueAtTime(1760, now + 0.08);
@@ -23,7 +39,6 @@ export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' 
       osc.start(now);
       osc.stop(now + 0.35);
     } else if (type === 'wheel_tick') {
-      // Tiếng gõ lách cách nan nón
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(1200, now);
       gain.gain.setValueAtTime(0.15, now);
@@ -31,18 +46,16 @@ export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' 
       osc.start(now);
       osc.stop(now + 0.04);
     } else if (type === 'victory') {
-      // Tiếng chuông vàng chiến thắng
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, now); // C5
-      osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-      osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
-      osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.1);
+      osc.frequency.setValueAtTime(783.99, now + 0.2);
+      osc.frequency.setValueAtTime(1046.50, now + 0.3);
       gain.gain.setValueAtTime(0.25, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
       osc.start(now);
       osc.stop(now + 0.8);
     } else if (type === 'drop') {
-      // Tiếng tụt dốc Nhanh như chớp
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(440, now);
       osc.frequency.exponentialRampToValueAtTime(110, now + 0.4);
@@ -51,7 +64,6 @@ export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' 
       osc.start(now);
       osc.stop(now + 0.42);
     } else if (type === 'clock') {
-      // Đếm ngược tích tắc
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1000, now);
       gain.gain.setValueAtTime(0.1, now);
@@ -65,6 +77,24 @@ export function playArenaSfx(type: 'buzzer' | 'wheel_tick' | 'victory' | 'drop' 
 }
 
 export const arenaService = {
+  async getTournaments(): Promise<any[]> {
+    try {
+      const res = await api.get('/api/arena/tournaments');
+      return res.data?.tournaments || [];
+    } catch {
+      return [];
+    }
+  },
+
+  async getAvailableTopics(): Promise<any[]> {
+    try {
+      const res = await api.get('/api/arena/available-topics');
+      return res.data?.topics || [];
+    } catch {
+      return [];
+    }
+  },
+
   async getGames() {
     try {
       const res = await api.get('/api/arena/games');
@@ -83,12 +113,20 @@ export const arenaService = {
     }
   },
 
-  async createRoom(gameCode: ArenaGameCode, roomName: string, hostName?: string): Promise<ArenaRoomState> {
+  async createRoom(
+    gameCode: ArenaGameCode | string,
+    roomName: string,
+    hostName?: string,
+    topicCode?: string,
+    questionCount?: number
+  ): Promise<ArenaRoomState> {
     const res = await api.post('/api/arena/rooms', {
       gameCode,
       roomName,
       hostUserId: `player-${Math.floor(Math.random() * 10000)}`,
       hostName: hostName || 'Kiện Tướng Tri Thức',
+      topicCode,
+      questionCount: questionCount || 15,
     });
     return res.data;
   },
@@ -138,4 +176,3 @@ export const arenaService = {
     }
   },
 };
-

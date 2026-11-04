@@ -733,9 +733,16 @@ namespace AegisQuiz.Infrastructure.Services
                 {
                     q.QuestionType = "MULTI_TRUE_FALSE";
                 }
-                else if (q.QuestionType == "SINGLE" && q.Options.Count == 0 && !string.IsNullOrWhiteSpace(q.SuggestedAnswer) && Regex.IsMatch(q.SuggestedAnswer, @"^[\-\+]?\d+[\,\.]?\d*$"))
+                else if (q.QuestionType == "SINGLE" && q.Options.Count == 0)
                 {
-                    q.QuestionType = "SHORT_ANSWER";
+                    if (IsEssayQuestion(q.Content ?? "", null, q.TopicCode))
+                    {
+                        q.QuestionType = "ESSAY";
+                    }
+                    else
+                    {
+                        q.QuestionType = "SHORT_ANSWER";
+                    }
                 }
             }
 
@@ -1822,6 +1829,7 @@ namespace AegisQuiz.Infrastructure.Services
                 }
                 else
                 {
+
                     q.QuestionType = "SHORT_ANSWER";
                     q.Difficulty = Math.Max(q.Difficulty, 4);
                     if (string.IsNullOrWhiteSpace(q.SuggestedAnswer))

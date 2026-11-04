@@ -4,7 +4,7 @@
  * 100% MultiLang Sovereignty & Zero-Monolith Architecture
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { HelpCircle, Layers, Cpu, UploadCloud, ChevronDown, Plus, FolderOpen, Network, FileSpreadsheet, FileUp, Brain, ArrowUpDown, Columns } from 'lucide-react';
+import { HelpCircle, Cpu, UploadCloud, ChevronDown, Plus, Network, FileSpreadsheet, FileUp, Brain, ArrowUpDown, Columns } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { learnerQuizService } from '@/services/learner-quiz.service';
@@ -13,22 +13,18 @@ import { useAuthContext } from '@/app/providers/AuthProvider';
 import { canManageResource } from '@/types/auth';
 import type { BankTopic } from './types';
 import { useQuestionFilters } from './hooks/useQuestionFilters';
-import { useTopicFilters } from './hooks/useTopicFilters';
 import { useExcelDocxImport } from './hooks/useExcelDocxImport';
 import { QuestionModal } from './components/QuestionModal';
-import { TopicModal } from './components/TopicModal';
 import { DocxPreviewModal } from './components/DocxPreviewModal';
 import { AiGenerateModal } from './components/AiGenerateModal';
 import { BatchContextModal } from './components/BatchContextModal';
 import { BatchTagModal } from './components/BatchTagModal';
 import { TenantGovernanceModal } from './components/TenantGovernanceModal';
 import { ExcelIngestionStudioModal } from './components/ExcelIngestionStudioModal';
-import { DeleteTopicConfirmModal } from './components/DeleteTopicConfirmModal';
 import { UniversalContextModal } from './components/UniversalContextModal';
 import { ExcelPreviewModal } from './components/ExcelPreviewModal';
 import { BatchActionBar } from './components/BatchActionBar';
 import { QuestionTableSection } from './components/QuestionTableSection';
-import { TopicTableSection } from './components/TopicTableSection';
 import { TaxonomyPivotDrawer } from './components/TaxonomyPivotDrawer';
 import { TaxonomyMatrixModal } from './components/TaxonomyMatrixModal';
 
@@ -40,7 +36,7 @@ function Pagination({ page, totalPages, onChange }: { page: number; totalPages: 
       {Array.from({ length: totalPages }).map((_, idx) => {
         const pNum = idx + 1;
         if (pNum === 1 || pNum === totalPages || Math.abs(pNum - page) <= 1) {
-          return <button key={pNum} onClick={() => onChange(pNum)} className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${page === pNum ? 'bg-blue-650 border-blue-500 text-white shadow' : 'bg-slate-950 border-slate-850 text-slate-400 hover:bg-slate-850 hover:text-white'}`}>{pNum}</button>;
+          return <button key={pNum} onClick={() => onChange(pNum)} className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${page === pNum ? 'bg-blue-650 border-blue-500 text-white shadow' : 'bg-slate-950 border-slate-855 text-slate-400 hover:bg-slate-850 hover:text-white'}`}>{pNum}</button>;
         }
         if (pNum === 2 || pNum === totalPages - 1) return <span key={pNum} className="text-slate-600 text-xs px-1 select-none">...</span>;
         return null;
@@ -55,7 +51,6 @@ export function AdminQuestionsPage() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const isTeamLeader = user?.role === 'TeamLeader';
-  const [activeTab, setActiveTab] = useState<'questions' | 'topics'>('questions');
   const [questions, setQuestions] = useState<LearnerQuestion[]>([]);
   const [topics, setTopics] = useState<BankTopic[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,21 +81,6 @@ export function AdminQuestionsPage() {
   const [formIssuingOrg, setFormIssuingOrg] = useState('');
   const [formBenchmarkYear, setFormBenchmarkYear] = useState<number | undefined>(2025);
 
-  // Topic Modal state
-  const [isTopicModalOpen, setIsTopicModalOpen] = useState(false);
-  const [isEditingTopic, setIsEditingTopic] = useState(false);
-  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
-  const [topicCode, setTopicCode] = useState('');
-  const [topicName, setTopicName] = useState('');
-  const [topicDesc, setTopicDesc] = useState('');
-  const [topicCat, setTopicCat] = useState('');
-  const [topicVisibility, setTopicVisibility] = useState('PUBLIC');
-  const [topicParentId, setTopicParentId] = useState('');
-  const [topicDomainCode, setTopicDomainCode] = useState('GENERAL');
-  const [topicScope, setTopicScope] = useState('COMMUNITY');
-  const [topicToDelete, setTopicToDelete] = useState<BankTopic | null>(null);
-  const [isDeletingTopicLoading, setIsDeletingTopicLoading] = useState(false);
-
   // Batch & Context state
   const [showAiGenerateModal, setShowAiGenerateModal] = useState(false);
   const [selectedContext, setSelectedContext] = useState<{ title: string; content: string } | null>(null);
@@ -125,7 +105,6 @@ export function AdminQuestionsPage() {
 
   // Custom Hooks
   const qFilters = useQuestionFilters(questions, topics, user);
-  const tFilters = useTopicFilters(topics);
 
   const fetchData = async () => {
     setLoading(true);
@@ -151,7 +130,7 @@ export function AdminQuestionsPage() {
     </span>
   );
 
-  // Handlers CRUD
+  // Handlers CRUD Questions
   const openAddModal = () => {
     setEditingId(null); setContent(''); setQuestionType('SINGLE'); setDifficulty(1);
     setCategoryCode(topics.length > 0 ? topics[0].code : ''); setDurationSeconds(60);
@@ -271,16 +250,6 @@ export function AdminQuestionsPage() {
     finally { setIsCleaningOrphans(false); }
   };
 
-  const confirmDeleteTopic = async (delQ: boolean) => {
-    if (!topicToDelete) return;
-    setIsDeletingTopicLoading(true);
-    try {
-      await learnerQuizService.deleteTopic(topicToDelete.id, delQ);
-      setTopicToDelete(null); fetchData();
-    } catch (err: any) { alert(err.response?.data?.message || 'Delete failed'); }
-    finally { setIsDeletingTopicLoading(false); }
-  };
-
   return (
     <div className="space-y-6 font-sans">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 pb-1">
@@ -288,7 +257,6 @@ export function AdminQuestionsPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight">{t('title')}</h1>
             <span className="px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700/60 font-mono text-xs font-semibold">{t('stats.questionsCount', { count: questions.length })}</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700/60 font-mono text-xs font-semibold">{t('stats.topicsCount', { count: topics.length })}</span>
             {qFilters.missingAnswersCount > 0 && (
               <button type="button" onClick={() => qFilters.setShowMissingOnly(!qFilters.showMissingOnly)} className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border cursor-pointer bg-amber-500/10 text-amber-400 border-amber-500/30">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
@@ -307,7 +275,7 @@ export function AdminQuestionsPage() {
           {hasWritePermission && (
             <>
               <button type="button" onClick={() => setShowGovernanceModal(true)} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl font-semibold text-xs border border-slate-800"><Network size={14} className="text-sky-400" /> {t('actions.hierarchyAndDomain')}</button>
-              <button type="button" onClick={() => { setEditingTopicId(null); setTopicCode(''); setTopicName(''); setIsEditingTopic(true); setIsTopicModalOpen(true); }} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl font-semibold text-xs border border-slate-800"><FolderOpen size={14} className="text-amber-400" /> {t('actions.addTopic')}</button>
+              <button type="button" onClick={() => navigate('/admin/topics')} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl font-bold text-xs"><Network size={14} className="text-amber-400" /> Cây Phân Cấp Chủ Đề &rarr;</button>
               <div className="relative group">
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl font-bold text-xs"><UploadCloud size={14} className="text-emerald-400" /> {t('actions.importExam')} <ChevronDown size={12} /></button>
                 <div className="absolute right-0 mt-1.5 w-60 bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 hidden group-hover:block z-50 backdrop-blur-xl">
@@ -342,16 +310,25 @@ export function AdminQuestionsPage() {
         </div>
       )}
 
-      <div className="flex items-center justify-between border-b border-slate-800 pb-0">
-        <div className="flex gap-6">
-          <button onClick={() => setActiveTab('questions')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'questions' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.questions')} ({questions.length})</button>
-          <button onClick={() => setActiveTab('topics')} className={`pb-3 text-sm font-black tracking-wide border-b-2 uppercase ${activeTab === 'topics' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-500'}`}>{t('tabs.topics')} ({topics.length})</button>
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-black tracking-wide text-blue-400 uppercase">
+            {t('tabs.questions')} ({questions.length})
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate('/admin/topics')}
+            className="text-xs font-bold text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-1.5 bg-slate-900/60 hover:bg-slate-800 px-3 py-1 rounded-xl border border-slate-800 cursor-pointer"
+          >
+            <Network size={13} className="text-amber-400" />
+            <span>Quản Lý Cây Chủ Đề ({topics.length}) &rarr;</span>
+          </button>
         </div>
         {user?.role !== 'Learner' && user?.role !== 'GuestViewer' && (
           <button
             type="button"
             onClick={() => navigate('/admin/parsing-rules')}
-            className="mb-2 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-950/40 text-purple-300 border border-purple-500/30 font-bold text-xs hover:bg-purple-900/50 hover:text-white transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-950/40 text-purple-300 border border-purple-500/30 font-bold text-xs hover:bg-purple-900/50 hover:text-white transition-all cursor-pointer shadow-sm"
             title="Chỉ Admin mới có quyền cấu hình ParsingRules"
           >
             <Cpu size={13} className="text-purple-400" />
@@ -361,54 +338,40 @@ export function AdminQuestionsPage() {
       </div>
 
       <div className="bg-slate-900/60 rounded-3xl border border-slate-800 overflow-hidden backdrop-blur-xl">
-          <div className="p-6 border-b border-slate-850 bg-slate-900/30 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2">{activeTab === 'questions' ? <><HelpCircle size={20} className="text-purple-400" /> {t('tabs.questionsCardTitle')}</> : <><Layers size={20} className="text-blue-400" /> {t('tabs.topicsCardTitle')}</>}</h2>
-            <button onClick={fetchData} className="text-xs text-slate-400 hover:text-white font-bold tracking-wider uppercase bg-slate-950/60 border border-slate-850 px-3.5 py-1.5 rounded-full cursor-pointer">{t('actions.refresh')}</button>
-          </div>
-          {activeTab === 'questions' ? (
-            <QuestionTableSection
-              questions={questions} topics={topics} filteredQuestions={qFilters.filteredQuestions} pagedQuestions={qFilters.pagedQuestions}
-              user={user} hasWritePermission={hasWritePermission} selectedQuestionIds={selectedQuestionIds}
-              rangeFrom={rangeFrom} rangeTo={rangeTo} setRangeFrom={setRangeFrom} setRangeTo={setRangeTo}
-              handleSelectRange={handleSelectRange} handleToggleSelect={id => setSelectedQuestionIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
-              handleToggleSelectAll={() => setSelectedQuestionIds(qFilters.filteredQuestions.every(q => selectedQuestionIds.includes(q.id)) ? [] : qFilters.filteredQuestions.map(q => q.id))}
-              qSearch={qFilters.qSearch} setQSearch={qFilters.setQSearch} qDomainFilter={qFilters.qDomainFilter} setQDomainFilter={qFilters.setQDomainFilter}
-              qTopicFilter={qFilters.qTopicFilter} setQTopicFilter={qFilters.setQTopicFilter} qTypeFilter={qFilters.qTypeFilter} setQTypeFilter={qFilters.setQTypeFilter}
-              showMissingOnly={qFilters.showMissingOnly} setShowMissingOnly={qFilters.setShowMissingOnly} qTagFilter={qFilters.qTagFilter} setQTagFilter={qFilters.setQTagFilter}
-              qGradeFilter={qFilters.qGradeFilter} setQGradeFilter={qFilters.setQGradeFilter}
-              qTreePathFilter={qFilters.qTreePathFilter} setQTreePathFilter={qFilters.setQTreePathFilter}
-              qCanonicalTopicFilter={qFilters.qCanonicalTopicFilter} setQCanonicalTopicFilter={qFilters.setQCanonicalTopicFilter}
-              qExamFilter={qFilters.qExamFilter} setQExamFilter={qFilters.setQExamFilter}
-              availableExams={qFilters.availableExams}
-              qViewMode={qFilters.qViewMode} setQViewMode={qFilters.setQViewMode}
-              onOpenPivotDrawer={() => setShowPivotDrawer(true)}
-              onOpenMatrixModal={() => setShowMatrixModal(true)}
-              qPage={qFilters.qPage} setQPage={qFilters.setQPage} qPageSize={qFilters.qPageSize} qTotalPages={qFilters.qTotalPages}
-              qSortField={qFilters.qSortField} setQSortField={qFilters.setQSortField} qSortAsc={qFilters.qSortAsc} setQSortAsc={qFilters.setQSortAsc}
-              renderSortIcon={renderSortIcon} setSelectedContext={setSelectedContext} openEditModal={openEditModal} setIsEditing={setIsEditing}
-              handleSuggestAnswer={async q => { try { const res = await learnerQuizService.suggestQuestionAnswer(q.id); openEditModal(q); setIsEditing(true); setCorrectAnswer(res.suggestedAnswer || ''); setCitation(res.aiExplanation || ''); } catch { alert('AI error'); } }}
-              handleToggleActive={handleToggleActive} handleDelete={handleDelete} handleContributeToTenant={handleContributeToTenant}
-              isCleaningOrphans={isCleaningOrphans} handleCleanupOrphans={handleCleanupOrphans} Pagination={Pagination}
-            />
-          ) : (
-            <TopicTableSection
-              topics={topics} pagedTopics={tFilters.pagedTopics} filteredTopics={tFilters.filteredTopics}
-              tSearch={tFilters.tSearch} setTSearch={tFilters.setTSearch} tPage={tFilters.tPage} setTPage={tFilters.setTPage}
-              tPageSize={tFilters.tPageSize} tTotalPages={tFilters.tTotalPages} tSortField={tFilters.tSortField} setTSortField={tFilters.setTSortField}
-              tSortAsc={tFilters.tSortAsc} setTSortAsc={tFilters.setTSortAsc} hasWritePermission={hasWritePermission}
-              openEditTopicModal={top => { setEditingTopicId(top.id); setTopicCode(top.code); setTopicName(top.name); setIsEditingTopic(false); setIsTopicModalOpen(true); }}
-              handleToggleActiveTopic={async top => { try { await learnerQuizService.updateTopic(top.id, { ...top, enabled: top.enabled === false }); fetchData(); } catch { alert('Toggle failed'); } }}
-              handleDeleteTopic={id => setTopicToDelete(topics.find(top => top.id === id) || null)} renderSortIcon={renderSortIcon} Pagination={Pagination}
-            />
-          )}
+        <div className="p-6 border-b border-slate-850 bg-slate-900/30 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-200 flex items-center gap-2"><HelpCircle size={20} className="text-purple-400" /> {t('tabs.questionsCardTitle')}</h2>
+          <button onClick={fetchData} className="text-xs text-slate-400 hover:text-white font-bold tracking-wider uppercase bg-slate-950/60 border border-slate-855 px-3.5 py-1.5 rounded-full cursor-pointer">{t('actions.refresh')}</button>
         </div>
+        <QuestionTableSection
+          questions={questions} topics={topics} filteredQuestions={qFilters.filteredQuestions} pagedQuestions={qFilters.pagedQuestions}
+          user={user} hasWritePermission={hasWritePermission} selectedQuestionIds={selectedQuestionIds}
+          rangeFrom={rangeFrom} rangeTo={rangeTo} setRangeFrom={setRangeFrom} setRangeTo={setRangeTo}
+          handleSelectRange={handleSelectRange} handleToggleSelect={id => setSelectedQuestionIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
+          handleToggleSelectAll={() => setSelectedQuestionIds(qFilters.filteredQuestions.every(q => selectedQuestionIds.includes(q.id)) ? [] : qFilters.filteredQuestions.map(q => q.id))}
+          qSearch={qFilters.qSearch} setQSearch={qFilters.setQSearch} qDomainFilter={qFilters.qDomainFilter} setQDomainFilter={qFilters.setQDomainFilter}
+          qTopicFilter={qFilters.qTopicFilter} setQTopicFilter={qFilters.setQTopicFilter} qTypeFilter={qFilters.qTypeFilter} setQTypeFilter={qFilters.setQTypeFilter}
+          showMissingOnly={qFilters.showMissingOnly} setShowMissingOnly={qFilters.setShowMissingOnly} qTagFilter={qFilters.qTagFilter} setQTagFilter={qFilters.setQTagFilter}
+          qGradeFilter={qFilters.qGradeFilter} setQGradeFilter={qFilters.setQGradeFilter}
+          qTreePathFilter={qFilters.qTreePathFilter} setQTreePathFilter={qFilters.setQTreePathFilter}
+          qCanonicalTopicFilter={qFilters.qCanonicalTopicFilter} setQCanonicalTopicFilter={qFilters.setQCanonicalTopicFilter}
+          qExamFilter={qFilters.qExamFilter} setQExamFilter={qFilters.setQExamFilter}
+          availableExams={qFilters.availableExams}
+          qViewMode={qFilters.qViewMode} setQViewMode={qFilters.setQViewMode}
+          onOpenPivotDrawer={() => setShowPivotDrawer(true)}
+          onOpenMatrixModal={() => setShowMatrixModal(true)}
+          qPage={qFilters.qPage} setQPage={qFilters.setQPage} qPageSize={qFilters.qPageSize} qTotalPages={qFilters.qTotalPages}
+          qSortField={qFilters.qSortField} setQSortField={qFilters.setQSortField} qSortAsc={qFilters.qSortAsc} setQSortAsc={qFilters.setQSortAsc}
+          renderSortIcon={renderSortIcon} setSelectedContext={setSelectedContext} openEditModal={openEditModal} setIsEditing={setIsEditing}
+          handleSuggestAnswer={async q => { try { const res = await learnerQuizService.suggestQuestionAnswer(q.id); openEditModal(q); setIsEditing(true); setCorrectAnswer(res.suggestedAnswer || ''); setCitation(res.aiExplanation || ''); } catch { alert('AI error'); } }}
+          handleToggleActive={handleToggleActive} handleDelete={handleDelete} handleContributeToTenant={handleContributeToTenant}
+          isCleaningOrphans={isCleaningOrphans} handleCleanupOrphans={handleCleanupOrphans} Pagination={Pagination}
+        />
+      </div>
 
       {/* Modals */}
       <QuestionModal isOpen={isModalOpen} isEditing={isEditing} editingId={editingId} hasWritePermission={hasWritePermission} currentUser={user} scope={formScope} setScope={setFormScope} questions={questions} topics={topics} content={content} questionType={questionType} difficulty={difficulty} categoryCode={categoryCode} durationSeconds={durationSeconds} options={options} citation={citation} correctAnswer={correctAnswer} contentType={contentType} optionType={optionType} setContent={setContent} setQuestionType={setQuestionType} setDifficulty={setDifficulty} setCategoryCode={setCategoryCode} setDurationSeconds={setDurationSeconds} setOptions={setOptions} setCitation={setCitation} setCorrectAnswer={setCorrectAnswer} setContentType={setContentType} setOptionType={setOptionType} setIsEditing={setIsEditing} contexts={availableContexts} contextId={currentContextId} contextTitle={currentContextTitle} contextContent={currentContextContent} setContextId={setCurrentContextId} setContextTitle={setCurrentContextTitle} setContextContent={setCurrentContextContent} isStickyContext={isStickyContext} setIsStickyContext={setIsStickyContext} stickyCount={stickyCount} setStickyCount={setStickyCount} onSaveAndContinue={handleSaveAndContinue} domainCode={formDomainCode} setDomainCode={setFormDomainCode} tags={formTags} setTags={setFormTags} targetLevel={formTargetLevel} setTargetLevel={setFormTargetLevel} assessmentPurpose={formAssessmentPurpose} setAssessmentPurpose={setFormAssessmentPurpose} issuingOrg={formIssuingOrg} setIssuingOrg={setFormIssuingOrg} benchmarkYear={formBenchmarkYear} setBenchmarkYear={setFormBenchmarkYear} onClose={() => setIsModalOpen(false)} onSave={handleSave} onOpenAdd={openAddModal} onOpenEdit={openEditModal} onDelete={handleDelete} onToggleActive={handleToggleActive} />
-      <TopicModal isOpen={isTopicModalOpen} isEditingTopic={isEditingTopic} editingTopicId={editingTopicId} hasWritePermission={hasWritePermission} topics={topics} questions={questions} topicCode={topicCode} topicName={topicName} topicDesc={topicDesc} topicCat={topicCat} topicVisibility={topicVisibility} topicParentId={topicParentId} topicDomainCode={topicDomainCode} topicScope={topicScope} setTopicCode={setTopicCode} setTopicName={setTopicName} setTopicDesc={setTopicDesc} setTopicCat={setTopicCat} setTopicVisibility={setTopicVisibility} setTopicParentId={setTopicParentId} setTopicDomainCode={setTopicDomainCode} setTopicScope={setTopicScope} setIsEditingTopic={setIsEditingTopic} onClose={() => setIsTopicModalOpen(false)} onSave={async e => { e.preventDefault(); try { if (editingTopicId) await learnerQuizService.updateTopic(editingTopicId, { code: topicCode, name: topicName, description: topicDesc, categoryCode: topicCat || topicCode, parentId: topicParentId || null, visibilityScope: topicVisibility, domainCode: topicDomainCode, scope: topicScope }); else await learnerQuizService.createTopic({ code: topicCode, name: topicName, description: topicDesc, categoryCode: topicCat || topicCode, parentId: topicParentId || null, visibilityScope: topicVisibility, domainCode: topicDomainCode, scope: topicScope }); setIsTopicModalOpen(false); fetchData(); } catch { alert('Save failed'); } }} onOpenAdd={() => { setEditingTopicId(null); setTopicCode(''); setTopicName(''); setIsEditingTopic(true); setIsTopicModalOpen(true); }} onOpenEdit={top => { setEditingTopicId(top.id); setTopicCode(top.code); setTopicName(top.name); setIsEditingTopic(false); setIsTopicModalOpen(true); }} onDelete={id => setTopicToDelete(topics.find(top => top.id === id) || null)} onToggleActive={async top => { try { await learnerQuizService.updateTopic(top.id, { ...top, enabled: top.enabled === false }); fetchData(); } catch { alert('Update failed'); } }} />
       <DocxPreviewModal isOpen={importEngine.showDocxPreviewModal} onClose={() => importEngine.setShowDocxPreviewModal(false)} docxPreviewList={importEngine.docxPreviewList} setDocxPreviewList={importEngine.setDocxPreviewList} topics={topics} loading={loading} onConfirmImport={async () => { try { await learnerQuizService.confirmImportQuestionsDocx(importEngine.docxPreviewList); importEngine.setShowDocxPreviewModal(false); fetchData(); } catch (err: any) { const errDetail = err?.response?.data?.message || err?.message || 'Lỗi không xác định'; console.error('[DocxImport] Error:', err); alert(`Import thất bại: ${errDetail}`); } }} isProcessing={importEngine.isDocxProcessing} processingFileName={importEngine.processingFileName} processingDurationMs={importEngine.processingDurationMs} ingestionSource={importEngine.ingestionEngineSource} />
       <AiGenerateModal isOpen={showAiGenerateModal} onClose={() => setShowAiGenerateModal(false)} topics={topics} onSuccess={fetchData} />
-      <DeleteTopicConfirmModal topicToDelete={topicToDelete} topics={topics} questions={questions} isDeletingTopicLoading={isDeletingTopicLoading} onClose={() => setTopicToDelete(null)} onConfirm={confirmDeleteTopic} />
       <ExcelPreviewModal isOpen={importEngine.showExcelPreviewModal} excelPreviewData={importEngine.excelPreviewData} excelSelectedSheets={importEngine.excelSelectedSheets} setExcelSelectedSheets={importEngine.setExcelSelectedSheets} isExcelImporting={importEngine.isExcelImporting} onClose={() => importEngine.setShowExcelPreviewModal(false)} onConfirm={importEngine.handleConfirmExcelImport} />
       <ExcelIngestionStudioModal isOpen={importEngine.showExcelStudioModal} isProcessing={importEngine.isExcelImporting} inspectionData={importEngine.excelPreviewData} topics={topics} onClose={() => importEngine.setShowExcelStudioModal(false)} onConfirmImport={importEngine.handleConfirmStudioImport} onLoadSampleData={importEngine.handleLoadStudioSample} />
       <UniversalContextModal context={selectedContext} onClose={() => setSelectedContext(null)} />

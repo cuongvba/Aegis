@@ -175,9 +175,6 @@ namespace AegisQuiz.Infrastructure.AI
                 return new List<string>();
             }
 
-            List<string> ResolveKeysForProvider(AiProviderType providerType)
-                => ResolveKeysForProviderCode(WellKnownAiProviders.ToCode(providerType));
-
             var providers = new List<AiProviderEndpointConfig>();
 
             // 1. Nạp danh mục động trực tiếp từ PostgreSQL AiModelRegistries
