@@ -18,6 +18,7 @@ import { GameshowSection }   from './components/GameshowSection';
 import { SegmentsSection }   from './components/SegmentsSection';
 import { PricingSection }    from './components/PricingSection';
 import { TrustSection }      from './components/TrustSection';
+import { LandingAiDocsQaSection } from './components/LandingAiDocsQaSection';
 import { FinalCtaSection }   from './components/FinalCtaSection';
 import { LandingFooter }     from './components/LandingFooter';
 
@@ -33,9 +34,11 @@ export function LandingPage() {
         <SegmentsSection />
         <PricingSection />
         <TrustSection />
+        <LandingAiDocsQaSection />
         <FinalCtaSection />
       </main>
       <LandingFooter />
     </div>
   );
 }
+export default LandingPage;
