@@ -10,6 +10,11 @@ import { DeleteTopicConfirmModal } from '@/pages/admin/questions/components/Dele
 import { TopicQuestionsModal } from '@/pages/admin/topics/components/TopicQuestionsModal';
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { useZenTopics } from './hooks/useZenTopics';
+import { useZenLauncher } from '../studio/hooks/useZenLauncher';
+import { ZenArenaGameSelectorModal } from '../studio/components/ZenArenaGameSelectorModal';
+import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigModal';
+import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
+import { ZenBankSaveModal } from '../studio/components/ZenBankSaveModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -34,6 +39,7 @@ export const ZenTopicsPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const state = useZenTopics(user);
+  const launcher = useZenLauncher();
 
   const directOwnedCount = state.topics.filter(
     top => top.createdByUserId && String(top.createdByUserId) === String(user?.id)
@@ -142,6 +148,8 @@ export const ZenTopicsPage: React.FC = () => {
             openEditTopicModal={state.openEditTopicModal}
             openAddChildTopicModal={(parentId: string) => state.openAddTopicModal(parentId)}
             onOpenQuestions={state.openQuestionsModal}
+            onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions)}
+            onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions)}
             renderSortIcon={(field, currentField, isAsc) => (
               <span className={`inline-flex ml-1.5 ${field === currentField ? 'text-amber-400' : 'text-slate-600'}`}>
                 <Network size={11} className={field === currentField && !isAsc ? 'rotate-180 transform' : ''} />
@@ -183,6 +191,8 @@ export const ZenTopicsPage: React.FC = () => {
           onDelete={handleDeleteTopic}
           onContributeCommunity={state.handleContributeCommunity}
           isContributing={state.isContributing}
+          onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions)}
+          onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions)}
         />
 
         <TopicQuestionsModal
@@ -202,6 +212,34 @@ export const ZenTopicsPage: React.FC = () => {
           onClose={() => state.setTopicToDelete(null)}
           onConfirm={state.confirmDeleteTopic}
         />
+
+        {/* Realtime Arena & Homework Practice Modals */}
+        <ZenArenaGameSelectorModal
+          isOpen={launcher.isArenaSelectorOpen}
+          isLoading={launcher.isLaunching}
+          totalQuestions={launcher.stagedArenaPayload?.totalQuestions ?? 0}
+          onClose={launcher.closeArenaSelector}
+          onConfirm={(code, dur) => launcher.confirmLaunchArena(code, dur)}
+        />
+        <ZenHomeworkConfigModal
+          isOpen={launcher.isHomeworkModalOpen}
+          isLoading={launcher.isSavingHomework}
+          initialConfig={launcher.homeworkConfig}
+          onClose={launcher.closeHomeworkModal}
+          onConfirm={(cfg) => launcher.confirmHomework(cfg)}
+        />
+        {launcher.launchResult && (
+          <ZenRoomLauncherModal
+            room={launcher.launchResult}
+            onClose={launcher.closeRoomLauncher}
+          />
+        )}
+        {launcher.bankSaveResult && (
+          <ZenBankSaveModal
+            result={launcher.bankSaveResult}
+            onClose={launcher.closeBankSaveModal}
+          />
+        )}
       </div>
     </div>
   );

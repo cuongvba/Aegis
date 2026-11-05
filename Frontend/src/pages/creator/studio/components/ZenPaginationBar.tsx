@@ -169,10 +169,14 @@ export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
           {/* 4. NÚT HỦY BỎ (Hủy bỏ thao tác đọc đề và làm mới trạng thái) */}
           {onCancel && (
             <button
-              onClick={onCancel}
+              onClick={() => {
+                if (window.confirm('Thầy/Cô có chắc chắn muốn hủy bỏ thao tác đọc đề hiện tại và làm mới?')) {
+                  onCancel();
+                }
+              }}
               type="button"
               title="Hủy bỏ thao tác đọc đề và làm mới"
-              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-bold bg-slate-800/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700/80 hover:border-rose-500/40 transition active:scale-95 cursor-pointer shadow-md"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-bold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 hover:border-rose-500/60 shadow-lg shadow-rose-950/30 transition active:scale-95 cursor-pointer"
             >
               <X className="w-3.5 h-3.5 text-rose-400" />
               <span>Hủy Bỏ</span>

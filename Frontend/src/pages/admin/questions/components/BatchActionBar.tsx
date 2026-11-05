@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, CheckCircle2, Tag, Trash2, Unlink } from 'lucide-react';
+import { BookOpen, CheckCircle2, Tag, Trash2, Unlink, Send, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface BatchActionBarProps {
@@ -10,6 +10,8 @@ interface BatchActionBarProps {
   onBatchRemoveContext: () => void;
   onBulkDelete: () => void;
   onDeselectAll: () => void;
+  onAssignHomework?: () => void;
+  onLaunchArena?: () => void;
 }
 
 export const BatchActionBar: React.FC<BatchActionBarProps> = ({
@@ -20,6 +22,8 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
   onBatchRemoveContext,
   onBulkDelete,
   onDeselectAll,
+  onAssignHomework,
+  onLaunchArena,
 }) => {
   const { t } = useTranslation('admin_questions');
   if (selectedCount === 0) return null;
@@ -31,6 +35,24 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
         <span>{t('batch.selectedCount', { count: selectedCount })}</span>
       </span>
       <div className="h-4 w-px bg-slate-750" />
+      {onAssignHomework && (
+        <button
+          type="button"
+          onClick={onAssignHomework}
+          className="px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-600/30 active:scale-95 transition-all whitespace-nowrap"
+        >
+          <Send size={13} /> Giao Bài Tập
+        </button>
+      )}
+      {onLaunchArena && (
+        <button
+          type="button"
+          onClick={onLaunchArena}
+          className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-lg shadow-indigo-600/30 active:scale-95 transition-all whitespace-nowrap"
+        >
+          <Play size={13} /> Kích Hoạt Đấu Trường
+        </button>
+      )}
       <button
         type="button"
         onClick={onOpenBatchContext}

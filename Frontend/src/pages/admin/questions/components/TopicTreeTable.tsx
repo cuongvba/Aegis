@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight, ChevronDown, Folder, FolderOpen, FileText,
-  Calendar, User, Eye, ToggleLeft, ToggleRight, Trash2, FolderPlus, HelpCircle
+  Calendar, User, Eye, ToggleLeft, ToggleRight, Trash2, FolderPlus, HelpCircle, Send, Play
 } from 'lucide-react';
 import type { BankTopic } from '../types';
 
@@ -21,6 +21,8 @@ interface TopicTreeTableProps {
   onOpenQuestions?: (topic: BankTopic) => void;
   onToggleActive?: (topic: BankTopic) => void;
   onDelete?: (id: string) => void;
+  onAssignHomework?: (topic: BankTopic) => void;
+  onLaunchArena?: (topic: BankTopic) => void;
 }
 
 export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
@@ -33,6 +35,8 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
   onOpenQuestions,
   onToggleActive,
   onDelete,
+  onAssignHomework,
+  onLaunchArena,
 }) => {
   const { t } = useTranslation('admin_questions');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -251,6 +255,28 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
                           </span>
                         )}
                       </button>
+                      {onAssignHomework && (
+                        <button
+                          type="button"
+                          onClick={() => onAssignHomework(node)}
+                          className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title={`Giao bài tập về nhà cho học sinh từ chủ đề "${node.name}"`}
+                        >
+                          <Send size={11} />
+                          <span>Giao bài</span>
+                        </button>
+                      )}
+                      {onLaunchArena && (
+                        <button
+                          type="button"
+                          onClick={() => onLaunchArena(node)}
+                          className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title={`Kích hoạt Đấu trường trực tiếp từ chủ đề "${node.name}"`}
+                        >
+                          <Play size={11} />
+                          <span>Đấu trường</span>
+                        </button>
+                      )}
                       {hasWritePermission && (
                         <button
                           type="button"

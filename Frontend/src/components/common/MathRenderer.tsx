@@ -234,7 +234,15 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
       return token;
     });
 
-    // Trường hợp 5b: Hỗ trợ mã code markdown inline `code`
+    // Trường hợp 5b: Hỗ trợ mã code block Markdown ```lang ... ``` hoặc ``` ... ``` cho Đề Tin học
+    processed = processed.replace(/```(?:[a-zA-Z0-9_+-]*\n)?([\s\S]+?)```/g, (_match, code) => {
+      const token = `__AEGIS_CODE_BLOCK_${tokenCounter++}__`;
+      const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      mediaTokens[token] = `<pre class="my-2.5 p-3 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-mono text-xs overflow-x-auto leading-relaxed whitespace-pre-wrap select-text"><code>${escapedCode}</code></pre>`;
+      return token;
+    });
+
+    // Trường hợp 5c: Hỗ trợ mã code markdown inline `code`
     processed = processed.replace(/`([^`\n]+)`/g, (_match, code) => {
       const token = `__AEGIS_CODE_TOKEN_${tokenCounter++}__`;
       const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');

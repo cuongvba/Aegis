@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink } from 'lucide-react';
+import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink, Send, Play } from 'lucide-react';
 import type { LearnerQuestion } from '@/types/quiz';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
@@ -40,6 +40,8 @@ interface TopicModalProps {
   onToggleActive?: (t: BankTopic) => void;
   onContributeCommunity?: (t: BankTopic) => void;
   isContributing?: boolean;
+  onAssignHomework?: (t: BankTopic) => void;
+  onLaunchArena?: (t: BankTopic) => void;
 }
 
 export function TopicModal({
@@ -51,6 +53,7 @@ export function TopicModal({
   setTopicDomainCode, setTopicScope, setIsEditingTopic,
   onClose, onSave, onOpenAdd, onOpenEdit, onOpenQuestions, onDelete, onToggleActive,
   onContributeCommunity, isContributing,
+  onAssignHomework, onLaunchArena,
 }: TopicModalProps) {
   if (!isOpen) return null;
 
@@ -290,6 +293,38 @@ export function TopicModal({
                       </button>
                     )}
                   </div>
+                  {(onAssignHomework || onLaunchArena) && activeTopic && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {onAssignHomework && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onAssignHomework(activeTopic);
+                          }}
+                          className="py-2.5 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-600/30 active:scale-95"
+                          title="Giao bài tập về nhà cho học sinh từ chủ đề này"
+                        >
+                          <Send size={14} />
+                          <span>Giao Bài Tập</span>
+                        </button>
+                      )}
+                      {onLaunchArena && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onLaunchArena(activeTopic);
+                          }}
+                          className="py-2.5 px-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-indigo-600/30 active:scale-95"
+                          title="Kích hoạt phòng thi Đấu trường trực tiếp từ chủ đề này"
+                        >
+                          <Play size={14} />
+                          <span>Kích Hoạt Đấu Trường</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <button type="button" onClick={onClose} className="w-full py-2.5 bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-800 rounded-xl font-bold transition-all text-xs cursor-pointer">Đóng</button>
                 </>
               ) : (

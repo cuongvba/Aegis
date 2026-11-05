@@ -13,6 +13,11 @@ import { BatchTagModal } from '@/pages/admin/questions/components/BatchTagModal'
 import { UniversalContextModal } from '@/pages/admin/questions/components/UniversalContextModal';
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { useZenQuestions } from './hooks/useZenQuestions';
+import { useZenLauncher } from '../studio/hooks/useZenLauncher';
+import { ZenArenaGameSelectorModal } from '../studio/components/ZenArenaGameSelectorModal';
+import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigModal';
+import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
+import { ZenBankSaveModal } from '../studio/components/ZenBankSaveModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -37,6 +42,12 @@ export const ZenQuestionsPage: React.FC = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
   const state = useZenQuestions(user);
+  const launcher = useZenLauncher();
+
+  const selectedQuestions = React.useMemo(
+    () => state.questions.filter(q => state.selectedQuestionIds.includes(q.id)),
+    [state.questions, state.selectedQuestionIds]
+  );
 
   const renderSortIcon = (field: string, currentField: string, isAsc: boolean) => (
     <span className={`inline-flex ml-1.5 transition-colors ${field === currentField ? 'text-emerald-400' : 'text-slate-600 group-hover:text-slate-400'}`}>
@@ -213,9 +224,52 @@ export const ZenQuestionsPage: React.FC = () => {
         <QuestionModal isOpen={state.isModalOpen} isEditing={state.isEditing} editingId={state.editingId} hasWritePermission={true} currentUser={user} scope={state.formScope} setScope={state.setFormScope} questions={state.questions} topics={state.topics} content={state.content} questionType={state.questionType} difficulty={state.difficulty} categoryCode={state.categoryCode} durationSeconds={state.durationSeconds} options={state.options} citation={state.citation} correctAnswer={state.correctAnswer} contentType={state.contentType} optionType={state.optionType} setContent={state.setContent} setQuestionType={state.setQuestionType} setDifficulty={state.setDifficulty} setCategoryCode={state.setCategoryCode} setDurationSeconds={state.setDurationSeconds} setOptions={state.setOptions} setCitation={state.setCitation} setCorrectAnswer={state.setCorrectAnswer} setContentType={state.setContentType} setOptionType={state.setOptionType} setIsEditing={state.setIsEditing} contexts={state.availableContexts} contextId={state.currentContextId} contextTitle={state.currentContextTitle} contextContent={state.currentContextContent} setContextId={state.setCurrentContextId} setContextTitle={state.setCurrentContextTitle} setContextContent={state.setCurrentContextContent} isStickyContext={state.isStickyContext} setIsStickyContext={state.setIsStickyContext} stickyCount={state.stickyCount} setStickyCount={state.setStickyCount} onSaveAndContinue={state.handleSaveAndContinue} domainCode={state.formDomainCode} setDomainCode={state.setFormDomainCode} tags={state.formTags} setTags={state.setFormTags} targetLevel={state.formTargetLevel} setTargetLevel={state.setFormTargetLevel} assessmentPurpose={state.formAssessmentPurpose} setAssessmentPurpose={state.setFormAssessmentPurpose} issuingOrg={state.formIssuingOrg} setIssuingOrg={state.setFormIssuingOrg} benchmarkYear={state.formBenchmarkYear} setBenchmarkYear={state.setFormBenchmarkYear} onClose={() => state.setIsModalOpen(false)} onSave={state.handleSave} onOpenAdd={state.openAddModal} onOpenEdit={state.openEditModal} onDelete={state.handleDelete} onToggleActive={state.handleToggleActive} />
         <AiGenerateModal isOpen={state.showAiGenerateModal} onClose={() => state.setShowAiGenerateModal(false)} topics={state.topics} onSuccess={state.fetchZenQuestionsData} />
         <UniversalContextModal context={state.selectedContext} onClose={() => state.setSelectedContext(null)} />
-        <BatchActionBar selectedCount={state.selectedQuestionIds.length} isBulkDeleting={state.isBulkDeleting} onOpenBatchContext={() => state.setShowBatchContextModal(true)} onOpenBatchTag={() => state.setShowBatchTagModal(true)} onBatchRemoveContext={async () => { if (!window.confirm('Gỡ bỏ bài đọc hiểu khỏi các câu đã chọn?')) return; await learnerQuizService.batchRemoveContext(state.selectedQuestionIds); state.setSelectedQuestionIds([]); state.fetchZenQuestionsData(); }} onBulkDelete={state.handleBulkDeleteQuestions} onDeselectAll={() => state.setSelectedQuestionIds([])} />
+        <BatchActionBar
+          selectedCount={state.selectedQuestionIds.length}
+          isBulkDeleting={state.isBulkDeleting}
+          onOpenBatchContext={() => state.setShowBatchContextModal(true)}
+          onOpenBatchTag={() => state.setShowBatchTagModal(true)}
+          onAssignHomework={() => launcher.openHomeworkForQuestions(selectedQuestions, "Bài tập chọn lọc")}
+          onLaunchArena={() => launcher.openArenaForQuestions(selectedQuestions, "Đấu trường chọn lọc")}
+          onBatchRemoveContext={async () => {
+            if (!window.confirm('Gỡ bỏ bài đọc hiểu khỏi các câu đã chọn?')) return;
+            await learnerQuizService.batchRemoveContext(state.selectedQuestionIds);
+            state.setSelectedQuestionIds([]);
+            state.fetchZenQuestionsData();
+          }}
+          onBulkDelete={state.handleBulkDeleteQuestions}
+          onDeselectAll={() => state.setSelectedQuestionIds([])}
+        />
         <BatchContextModal isOpen={state.showBatchContextModal} onClose={() => state.setShowBatchContextModal(false)} selectedCount={state.selectedQuestionIds.length} contexts={state.availableContexts} onConfirm={async data => { state.setIsBatchAssigning(true); try { await learnerQuizService.batchAssignContext({ questionIds: state.selectedQuestionIds, ...data }); state.setSelectedQuestionIds([]); state.setShowBatchContextModal(false); state.fetchZenQuestionsData(); } catch { alert('Gán ngữ cảnh thất bại'); } finally { state.setIsBatchAssigning(false); } }} isAssigning={state.isBatchAssigning} />
         <BatchTagModal isOpen={state.showBatchTagModal} onClose={() => state.setShowBatchTagModal(false)} selectedCount={state.selectedQuestionIds.length} selectedQuestionIds={state.selectedQuestionIds} onApply={async data => { state.setIsBatchTagging(true); try { await learnerQuizService.batchAssignTags({ questionIds: state.selectedQuestionIds, ...data }); state.setSelectedQuestionIds([]); state.setShowBatchTagModal(false); state.fetchZenQuestionsData(); } catch { alert('Gắn thẻ thất bại'); } finally { state.setIsBatchTagging(false); } }} isSubmitting={state.isBatchTagging} />
+
+        {/* Realtime Arena & Homework Practice Modals */}
+        <ZenArenaGameSelectorModal
+          isOpen={launcher.isArenaSelectorOpen}
+          isLoading={launcher.isLaunching}
+          totalQuestions={launcher.stagedArenaPayload?.totalQuestions ?? 0}
+          onClose={launcher.closeArenaSelector}
+          onConfirm={(code, dur) => launcher.confirmLaunchArena(code, dur)}
+        />
+        <ZenHomeworkConfigModal
+          isOpen={launcher.isHomeworkModalOpen}
+          isLoading={launcher.isSavingHomework}
+          initialConfig={launcher.homeworkConfig}
+          onClose={launcher.closeHomeworkModal}
+          onConfirm={(cfg) => launcher.confirmHomework(cfg)}
+        />
+        {launcher.launchResult && (
+          <ZenRoomLauncherModal
+            room={launcher.launchResult}
+            onClose={launcher.closeRoomLauncher}
+          />
+        )}
+        {launcher.bankSaveResult && (
+          <ZenBankSaveModal
+            result={launcher.bankSaveResult}
+            onClose={launcher.closeBankSaveModal}
+          />
+        )}
       </div>
     </div>
   );

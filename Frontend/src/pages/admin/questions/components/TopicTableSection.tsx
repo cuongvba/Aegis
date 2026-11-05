@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Eye, ToggleLeft, ToggleRight, Trash2, ListTree, TableProperties, Plus, HelpCircle } from 'lucide-react';
+import { Eye, ToggleLeft, ToggleRight, Trash2, ListTree, TableProperties, Plus, HelpCircle, Send, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
@@ -26,6 +26,8 @@ interface TopicTableSectionProps {
   onOpenQuestions?: (topic: BankTopic) => void;
   handleToggleActiveTopic?: (topic: BankTopic) => void;
   handleDeleteTopic?: (id: string) => void;
+  onAssignHomework?: (topic: BankTopic) => void;
+  onLaunchArena?: (topic: BankTopic) => void;
   renderSortIcon: (field: string, currentField: string, isAsc: boolean) => React.ReactNode;
   Pagination: React.ComponentType<{ page: number; totalPages: number; onChange: (p: number) => void }>;
 }
@@ -51,6 +53,8 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
   onOpenQuestions,
   handleToggleActiveTopic,
   handleDeleteTopic,
+  onAssignHomework,
+  onLaunchArena,
   renderSortIcon,
   Pagination,
 }) => {
@@ -128,6 +132,8 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
           onOpenQuestions={onOpenQuestions}
           onToggleActive={handleToggleActiveTopic}
           onDelete={handleDeleteTopic}
+          onAssignHomework={onAssignHomework}
+          onLaunchArena={onLaunchArena}
         />
       ) : (
         /* RENDER CHẾ ĐỘ BẢNG PHẲNG TRUYỀN THỐNG */
@@ -194,6 +200,28 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
                       >
                         <Eye size={14} />
                       </button>
+                      {onAssignHomework && (
+                        <button
+                          type="button"
+                          onClick={() => onAssignHomework(topicItem)}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title="Giao bài tập cho học sinh từ chủ đề này"
+                        >
+                          <Send size={12} />
+                          <span>Giao bài</span>
+                        </button>
+                      )}
+                      {onLaunchArena && (
+                        <button
+                          type="button"
+                          onClick={() => onLaunchArena(topicItem)}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title="Kích hoạt phòng thi Đấu trường trực tiếp"
+                        >
+                          <Play size={12} />
+                          <span>Đấu trường</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
