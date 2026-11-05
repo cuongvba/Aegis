@@ -11,7 +11,7 @@ import { ZenHomeworkConfigModal } from './components/ZenHomeworkConfigModal';
 import { ZenArenaGameSelectorModal } from './components/ZenArenaGameSelectorModal';
 import { ZenPureBankSuccessModal } from './components/ZenPureBankSuccessModal';
 import { TeacherCoffeeModal } from './components/TeacherCoffeeModal';
-import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
+import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { antiScrapingGuardService, IngestionQuotaStatus } from '@/services/antiScrapingGuard.service';
 
 export const CreatorZenStudioPage: React.FC = () => {
@@ -68,7 +68,10 @@ export const CreatorZenStudioPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-4 sm:py-6 px-3 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
-        {/* Top Control Bar: Hạn mức bảo vệ bản quyền, Language Switcher & Nút Mời Cafe */}
+        {/* Thanh điều hướng Hệ sinh thái Creator: Zen Studio | ZenTopics | ZenQuestions | Đội Nhóm & Học Viên */}
+        <CreatorWorkspaceNav />
+
+        {/* Top Control Bar: Hạn mức bảo vệ bản quyền & Nút Mời Cafe */}
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-md">
           <div className="flex items-center gap-2 text-xs">
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
@@ -91,8 +94,6 @@ export const CreatorZenStudioPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <LanguageSwitcher />
-
             <button
               type="button"
               onClick={() => setShowCoffeeModal(true)}

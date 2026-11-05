@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -32,7 +32,7 @@ namespace AegisQuiz.API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/quiz")]
-    [Authorize(Policy = RoleWeightPolicies.TeamLeader)]
+    [Authorize(Policy = RoleWeightPolicies.Learner)]
     public class QuestionsController : ControllerBase
     {
         private readonly AegisQuizDbContext                  _db;
@@ -157,10 +157,40 @@ namespace AegisQuiz.API.Controllers
                 // [Ownership & Creator Filtering]
                 if (query.MyOnly)
                 {
-                    var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                ?? User.FindFirst("sub")?.Value;
                     if (!string.IsNullOrWhiteSpace(callerId))
                     {
-                        enabledItems = enabledItems.Where(x => string.Equals(x.CreatorId, callerId, StringComparison.OrdinalIgnoreCase)).ToList();
+                        var ownedTopicCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        if (Guid.TryParse(callerId, out var userGuid))
+                        {
+                            var partner = await _db.EducatorPartnerships.AsNoTracking()
+                                .FirstOrDefaultAsync(p => p.UserId == userGuid);
+                            var crtCode = partner != null && !string.IsNullOrWhiteSpace(partner.ReferralCode)
+                                ? ("CRT" + partner.ReferralCode.Replace("TEACH-", "").Replace("TEACH_", "").Replace("CRT", "").Replace("-", "").Replace("_", "").Trim().ToUpperInvariant())
+                                : ("CRT" + userGuid.ToString("N")[..6].ToUpperInvariant());
+
+                            var myTopics = await _db.BankTopics.AsNoTracking()
+                                .Where(t => t.CreatedByUserId == userGuid
+                                         || t.Code.Contains(crtCode)
+                                         || (t.MaterializedPath != null && t.MaterializedPath.Contains(crtCode)))
+                                .Select(t => t.Code)
+                                .ToListAsync();
+                            foreach (var tc in myTopics)
+                            {
+                                if (!string.IsNullOrWhiteSpace(tc)) ownedTopicCodes.Add(tc);
+                            }
+                        }
+
+                        enabledItems = enabledItems.Where(x =>
+                            string.Equals(x.CreatorId, callerId, StringComparison.OrdinalIgnoreCase)
+                            || (!string.IsNullOrEmpty(x.CategoryCode) && ownedTopicCodes.Contains(x.CategoryCode))
+                            || (x.Tags != null && x.Tags.Any(tag => ownedTopicCodes.Contains(tag)))
+                        ).ToList();
+                    }
+                    else
+                    {
+                        enabledItems = new List<QuestionBase>();
                     }
                 }
                 else if (!string.IsNullOrWhiteSpace(query.CreatorId))

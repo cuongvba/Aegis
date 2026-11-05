@@ -1,4 +1,4 @@
-﻿import { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
 import { FullScreenSpinner } from '@/components/ui/FullScreenSpinner';
@@ -54,6 +54,8 @@ const ArenaStudioPage = lazyRetry(() => import('@/pages/arena/ArenaStudioPage').
 const TeamDashboard = lazyRetry(() => import('@/pages/team-leader/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
 const UniversalSymposiumPage = lazyRetry(() => import('@/pages/symposium/UniversalSymposiumPage').then(m => ({ default: m.UniversalSymposiumPage })));
 const CreatorZenStudioPage = lazyRetry(() => import('@/pages/creator/studio/CreatorZenStudioPage'));
+const ZenTopicsPage = lazyRetry(() => import('@/pages/creator/topics/ZenTopicsPage'));
+const ZenQuestionsPage = lazyRetry(() => import('@/pages/creator/questions/ZenQuestionsPage'));
 
 // Admin Lazy Pages
 const AdminLayout = lazyRetry(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -106,7 +108,6 @@ export default function App() {
                 <Route path="achievements" element={<AchievementsPage />} />
                 <Route path="paths" element={<PathExplorer />} />
                 <Route path="arena" element={<ArenaHubPage />} />
-                <Route path="team" element={<TeamDashboard />} />
                 <Route path="symposium" element={<UniversalSymposiumPage />} />
               </Route>
 
@@ -154,6 +155,10 @@ export default function App() {
               {/* Practice/Exam is full screen so it stays separate from MainLayout */}
               <Route path="/practice" element={<PracticePage />} />
               <Route path="/creator/studio" element={<ProtectedRoute><CreatorZenStudioPage /></ProtectedRoute>} />
+              <Route path="/creator/topics" element={<ProtectedRoute><ZenTopicsPage /></ProtectedRoute>} />
+              <Route path="/creator/questions" element={<ProtectedRoute><ZenQuestionsPage /></ProtectedRoute>} />
+              <Route path="/creator/team" element={<ProtectedRoute><TeamDashboard /></ProtectedRoute>} />
+              <Route path="/team" element={<ProtectedRoute><TeamDashboard /></ProtectedRoute>} />
               <Route
                 path="/admin/studio"
                 element={

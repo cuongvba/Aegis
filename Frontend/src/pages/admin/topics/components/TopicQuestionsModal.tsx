@@ -9,6 +9,7 @@ interface TopicQuestionsModalProps {
   topic: BankTopic | null;
   questions: LearnerQuestion[];
   allTopics?: BankTopic[];
+  questionBankBasePath?: string;
   onClose: () => void;
 }
 
@@ -17,6 +18,7 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
   topic,
   questions,
   allTopics = [],
+  questionBankBasePath = '/admin/questions',
   onClose,
 }) => {
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
 
   const handleOpenInQuestionBank = () => {
     onClose();
-    navigate('/admin/questions');
+    navigate(`${questionBankBasePath}?topicCode=${encodeURIComponent(topic.code)}`);
   };
 
   return (

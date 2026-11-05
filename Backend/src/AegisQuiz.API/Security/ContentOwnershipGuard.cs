@@ -39,16 +39,22 @@ namespace AegisQuiz.API.Security
 
         public async Task<bool> CanManageAsync(ClaimsPrincipal user, string? creatorId, Guid? orgUnitId)
         {
-            var callerId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var callerId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
 
             // 1. Sở hữu trực tiếp (là người tạo): người tạo luôn có toàn quyền trên tài nguyên do mình tạo.
             if (!string.IsNullOrEmpty(callerId) && !string.IsNullOrEmpty(creatorId) && callerId.Equals(creatorId, StringComparison.OrdinalIgnoreCase))
                 return true;
 
             var role = _tenant.CurrentRole;
+            if (string.IsNullOrWhiteSpace(role))
+            {
+                role = user.FindFirst(ClaimTypes.Role)?.Value ?? user.FindFirst("role")?.Value ?? string.Empty;
+            }
 
-            // 2. ContentManager / TenantAdmin / SystemAdmin: toàn quyền trong phạm vi Tenant đối với tài nguyên chung.
-            if (AppRoles.GetRoleWeight(role) >= AppRoles.GetRoleWeight(AppRoles.ContentManager))
+            // 2. TenantAdmin / SystemAdmin: quyền giám sát tối cao trong phạm vi Tenant/System.
+            if (AppRoles.GetRoleWeight(role) >= AppRoles.GetRoleWeight(AppRoles.TenantAdmin)
+                || user.IsInRole(AppRoles.SystemAdmin)
+                || user.IsInRole(AppRoles.TenantAdmin))
                 return true;
 
             // 3. TeamLeader: được thao tác trên tài nguyên thuộc OrgUnit mình đang quản lý.

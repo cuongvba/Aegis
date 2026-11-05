@@ -1,4 +1,4 @@
-﻿/**
+/**
  * [RBAC SSOT] AegisQuiz — Auth Types & Role Constants
  *
  * QUAN TRỌNG: Đây là nguồn sự thật duy nhất cho tất cả role/permission trên Frontend.
@@ -61,21 +61,18 @@ const ROLE_PERMISSIONS: Record<AppRoleType, PermissionType[]> = {
     Permission.ExamsCreate,    Permission.ExamsAssign,
     Permission.TeamViewMembers,Permission.TeamViewProgress,
     Permission.ReportsTeam,    Permission.PracticeAccess,
-    Permission.AdminAccess,
   ],
   [AppRole.Instructor]: [
     Permission.QuestionsWrite, Permission.QuestionsRead,
     Permission.ExamsCreate,    Permission.ExamsAssign,
     Permission.TeamViewMembers,Permission.TeamViewProgress,
     Permission.ReportsTeam,    Permission.PracticeAccess,
-    Permission.AdminAccess,
   ],
   [AppRole.OrgUnitManager]: [
     Permission.ExamsAssign,
     Permission.TeamViewMembers,Permission.TeamViewProgress,
     Permission.TeamManageMembers,Permission.UsersManage,
     Permission.ReportsTeam,    Permission.PracticeAccess,
-    Permission.AdminAccess,
   ],
   // ★ TeamLeader: quản lý nhóm được assign, giao đề luyện tập, xem tiến độ/báo cáo nhóm.
   // [SSOT FIX] Trước đây danh sách này bị copy-paste từ Instructor (cấp nhầm
@@ -148,14 +145,10 @@ export interface UserProfile {
   lastLoginAt?: string;
 }
 
-// ── Admin Panel access check ──────────────────────────────────────────────────
+// ── Admin Panel access check (Strict Sovereign Guard: ONLY SystemAdmin & TenantAdmin) ──
 export const ADMIN_PANEL_ROLES: AppRoleType[] = [
   AppRole.SystemAdmin,
   AppRole.TenantAdmin,
-  AppRole.ContentManager,
-  AppRole.Instructor,
-  AppRole.OrgUnitManager,
-  AppRole.TeamLeader,
 ];
 
 export function canAccessAdminPanel(role?: AppRoleType | null): boolean {

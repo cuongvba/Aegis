@@ -216,6 +216,20 @@ export const ZenBankSaveModal: React.FC<ZenBankSaveModalProps> = ({ result, onCl
             <span>{t('bankSave.openPractice')}</span>
             <ExternalLink className="w-3.5 h-3.5 opacity-80" />
           </a>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href="/creator/topics"
+              className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5"
+            >
+              <span>🗂️ ZenTopics</span>
+            </a>
+            <a
+              href={`/team?topicCode=${encodeURIComponent(result.topicCode)}`}
+              className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5"
+            >
+              <span>👥 Quản Lý Học Viên</span>
+            </a>
+          </div>
           <button
             onClick={onClose}
             className="w-full py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"

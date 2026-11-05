@@ -47,7 +47,7 @@ namespace AegisQuiz.API.Controllers
         // ── GET api/quiz/topics ────────────────────────────────────────────────
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetTopics([FromQuery] bool enabledOnly = false)
+        public async Task<IActionResult> GetTopics([FromQuery] bool enabledOnly = false, [FromQuery] bool myOnly = false)
         {
             try
             {
@@ -57,6 +57,49 @@ namespace AegisQuiz.API.Controllers
                 if (enabledOnly) q = q.Where(t => t.Enabled);
 
                 var topics = await q.OrderBy(t => t.Code).ToListAsync();
+
+                if (myOnly)
+                {
+                    var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                ?? User.FindFirst("sub")?.Value;
+                    if (string.IsNullOrWhiteSpace(callerId) || !Guid.TryParse(callerId, out var userGuid))
+                    {
+                        return Ok(new List<BankTopic>());
+                    }
+
+                    var partner = await _db.EducatorPartnerships.AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.UserId == userGuid);
+                    var crtCode = partner != null && !string.IsNullOrWhiteSpace(partner.ReferralCode)
+                        ? FormatCreatorCode(partner.ReferralCode)
+                        : FormatCreatorCode(userGuid.ToString("N")[..6]);
+
+                    var topicById = topics.ToDictionary(t => t.Id);
+                    var ownedOrAncestors = new HashSet<Guid>();
+
+                    foreach (var t in topics)
+                    {
+                        bool isOwned = t.CreatedByUserId == userGuid
+                            || (!string.IsNullOrEmpty(crtCode) && (
+                                t.Code.Contains(crtCode, StringComparison.OrdinalIgnoreCase)
+                                || (!string.IsNullOrEmpty(t.MaterializedPath) && t.MaterializedPath.Contains(crtCode, StringComparison.OrdinalIgnoreCase))
+                            ));
+
+                        if (isOwned)
+                        {
+                            var curr = t;
+                            while (curr != null && ownedOrAncestors.Add(curr.Id))
+                            {
+                                if (curr.ParentId.HasValue && topicById.TryGetValue(curr.ParentId.Value, out var parentTopic))
+                                    curr = parentTopic;
+                                else
+                                    break;
+                            }
+                        }
+                    }
+
+                    topics = topics.Where(t => ownedOrAncestors.Contains(t.Id)).ToList();
+                }
+
                 return Ok(topics);
             }
             catch (Exception ex)

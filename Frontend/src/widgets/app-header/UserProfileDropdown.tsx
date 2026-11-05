@@ -9,7 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings, LogOut, Shield, Users, BookOpen } from 'lucide-react';
+import { Settings, LogOut, Shield, Users, BookOpen, Sparkles, FolderTree, FileQuestion } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 
 export function UserProfileDropdown() {
@@ -140,22 +140,53 @@ export function UserProfileDropdown() {
                            hover:bg-purple-500/10 rounded-xl transition-colors cursor-pointer"
               >
                 <Shield className="w-4 h-4 text-purple-400" aria-hidden="true" />
-                {t('userMenu.systemAdminPortal')}
+                {t('userMenu.systemAdminPortal', 'Quản trị Hệ thống (Admin)')}
               </button>
             )}
 
-            {user.role === 'TeamLeader' && (
-              <button
-                role="menuitem"
-                onClick={() => { setIsOpen(false); navigate('/team'); }}
-                className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                           text-sm font-medium text-amber-400
-                           hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
-              >
-                <Users className="w-4 h-4 text-amber-400" aria-hidden="true" />
-                {t('userMenu.teamLeaderArea')}
-              </button>
-            )}
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); navigate('/creator/studio'); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-sm font-medium text-indigo-400
+                         hover:bg-indigo-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-400" aria-hidden="true" />
+              {t('userMenu.creatorStudio', 'Zen Studio (Soạn Đề)')}
+            </button>
+
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); navigate('/creator/topics'); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-sm font-medium text-amber-400
+                         hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <FolderTree className="w-4 h-4 text-amber-400" aria-hidden="true" />
+              {t('userMenu.zenTopics', 'ZenTopics (Chủ đề của tôi)')}
+            </button>
+
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); navigate('/creator/questions'); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-sm font-medium text-emerald-400
+                         hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <FileQuestion className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+              {t('userMenu.zenQuestions', 'ZenQuestions (Câu hỏi của tôi)')}
+            </button>
+
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); navigate('/team'); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-sm font-medium text-teal-400
+                         hover:bg-teal-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <Users className="w-4 h-4 text-teal-400" aria-hidden="true" />
+              {t('userMenu.teamLeaderArea', 'Đội Nhóm & Học Viên')}
+            </button>
 
             {/* Profile */}
             <button

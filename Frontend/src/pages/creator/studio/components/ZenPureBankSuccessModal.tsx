@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, CheckCircle2, Database, FolderTree, ExternalLink } from 'lucide-react';
 import { ZenBankSaveResult } from '../types/zen-studio.types';
@@ -51,18 +51,18 @@ export const ZenPureBankSuccessModal: React.FC<ZenPureBankSuccessModalProps> = (
         <div className="flex flex-col gap-2.5">
           <div className="grid grid-cols-2 gap-2">
             <a
-              href="/admin/questions"
+              href={`/creator/questions?topicCode=${encodeURIComponent(result.topicCode)}`}
               className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition"
             >
               <Database className="w-4 h-4 text-emerald-400" />
-              <span>Ngân Hàng Câu Hỏi</span>
+              <span>ZenQuestions (Câu hỏi)</span>
             </a>
             <a
-              href="/admin/topics"
+              href="/creator/topics"
               className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition"
             >
               <FolderTree className="w-4 h-4 text-amber-400" />
-              <span>Cây Chủ Đề</span>
+              <span>ZenTopics (Chủ đề)</span>
             </a>
           </div>
 
