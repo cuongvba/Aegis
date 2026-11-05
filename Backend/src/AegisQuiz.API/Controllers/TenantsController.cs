@@ -110,14 +110,52 @@ namespace AegisQuiz.API.Controllers
                         CustomDomain = tenant.CustomDomain ?? tenant.Domain ?? "quiz.mybank.vn",
                         LogoUrl = tenant.LogoUrl ?? "https://cdn.aegisquiz.com/tenant-demo-logo.svg",
                         PrimaryColor = tenant.PrimaryColor ?? "#4f46e5",
-                        Slogan = "Vững bước tương lai — Nâng tầm tri thức",
-                        BrandDescription = "Hệ thống khảo thí và đánh giá năng lực chuẩn hóa toàn diện",
+                        Slogan = "The Cognitive Intelligence & Verification Standard",
+                        BrandDescription = "Hệ sinh thái Hạ tầng Nhận thức, Khảo thí Thích ứng IRT 3-PL & Trí tuệ Nhân tạo Biện chứng Toàn cầu.",
                         LoginBackgroundUrl = "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1920&auto=format&fit=crop",
                         LoginOverlayOpacity = 65,
                         EnableWatermark = true,
                         WatermarkText = $"{tenant.Name} — Bảo Mật Nội Bộ",
                         CopyrightText = $"© {DateTime.UtcNow.Year} {tenant.Name}. Bảo lưu mọi quyền."
                     };
+                }
+
+                if (string.IsNullOrWhiteSpace(dto.SupportHotline)) dto.SupportHotline = "1900 558818 • (+84) 24 3868 9999";
+                if (string.IsNullOrWhiteSpace(dto.SupportEmail)) dto.SupportEmail = "enterprise@aegisglobal.io";
+                if (string.IsNullOrWhiteSpace(dto.HeadquartersAddress)) dto.HeadquartersAddress = "Tòa nhà Trung tâm Đổi mới Sáng tạo & Tài chính Số, Hà Nội / TP. Hồ Chí Minh / Singapore";
+                if (string.IsNullOrWhiteSpace(dto.TaxOrRegistrationCode)) dto.TaxOrRegistrationCode = "ISO/IEC 27001:2022 • NIST SP 800-63B Certified";
+                if (string.IsNullOrWhiteSpace(dto.WorkingHours)) dto.WorkingHours = "Hỗ trợ Kỹ thuật & AI Co-Pilot 24/7/365 (SLA 99.99%)";
+                if (string.IsNullOrWhiteSpace(dto.AboutUsContent))
+                {
+                    dto.AboutUsContent =
+                        $"### 🏛️ Về {dto.OrganizationName} (AEGIS GLOBAL COGNITIVE INFRASTRUCTURE)\n" +
+                        "Aegis Global là hạ tầng trí tuệ nhận thức và khảo thí chuẩn quốc tế, hợp nhất **Không gian Sáng tạo Giáo viên (Zen Studio PLG)** và **Pháo đài Quản trị Doanh nghiệp & Ngân hàng (Enterprise Multi-Tenant Fortress)**.\n\n" +
+                        "- **Sứ mệnh Giáo dục**: Giúp mọi giáo viên từ Mầm non, Tiểu học đến Đại học số hóa học liệu trong 3 chạm (10 giây), thu âm giọng nói trực tiếp, giải mã nhị phân MathType OLE sang LaTeX trong `<2ms` và giao bài qua mã QR Zalo không cần tài khoản.\n" +
+                        "- **Sứ mệnh Ngân hàng & Tập đoàn**: Chuẩn hóa đánh giá năng lực nhân sự bằng mô hình tâm trắc học **IRT 3-PL**, Hội đồng AI Bầy sói chống ảo giác (`SCI = 98.4%`), cô lập dữ liệu 3 tầng (`PostgreSQL RLS`) và ký số PKI USB Token.";
+                }
+                if (string.IsNullOrWhiteSpace(dto.PrivacyPolicyContent))
+                {
+                    dto.PrivacyPolicyContent =
+                        "### 🛡️ Chính Sách Bảo Mật & Chủ Quyền Dữ Liệu (Privacy & Data Sovereignty)\n" +
+                        "1. **Cô lập dữ liệu 3 tầng (3-Layer Multi-Tenant Isolation)**: Toàn bộ dữ liệu đề thi, câu hỏi và kết quả học tập của từng Tổ chức/Giáo viên được cô lập tuyệt đối tại tầng Middleware, Entity Framework Global Query Filter và PostgreSQL Row-Level Security (RLS).\n" +
+                        "2. **Bảo vệ Bản quyền Học liệu Creator (Scoped Ownership)**: Các chủ đề và câu hỏi do Giáo viên khởi tạo (`PERSONAL` / `TENANT`) thuộc chủ quyền riêng biệt, không bị chia sẻ trái phép.\n" +
+                        "3. **Mã hóa Khóa AI & Thông tin định danh**: Mật khẩu băm chuẩn `PBKDF2-SHA256`, khóa BYOK API mã hóa `AES-256-GCM`, tuân thủ Nghị định 13/2023/NĐ-CP về Bảo vệ Dữ liệu Cá nhân và tiêu chuẩn GDPR quốc tế.";
+                }
+                if (string.IsNullOrWhiteSpace(dto.TermsOfServiceContent))
+                {
+                    dto.TermsOfServiceContent =
+                        "### ⚖️ Điều Khoản Sử Dụng & Cam Kết Chất Lượng Dịch Vụ (Terms of Service & SLA)\n" +
+                        "1. **Quyền sử dụng Nền tảng**: Người dùng cá nhân, Giáo viên và Tổ chức được cấp quyền truy cập theo ma trận phân quyền 4 tầng (`Tenant ∩ Domain ∩ Group ∩ User`).\n" +
+                        "2. **Tính chính xác & Liêm chính Học thuật**: Mọi biên bản chấm thi, điểm số lũy tiến và nhật ký khảo thí đều được niêm phong bằng chuỗi băm bất biến **SHA-256 Merkle Audit Chain**.\n" +
+                        "3. **Cam kết SLA 99.9% & Tự phục hồi**: Hệ thống vận hành với kiến trúc Zero-DB-Hit RAM Prewarm cho phòng thi lớn và hỗ trợ đa cổng thanh toán minh bạch (VietQR EMVCo, PayOS, Stripe, Web3).";
+                }
+                if (string.IsNullOrWhiteSpace(dto.SecurityComplianceContent))
+                {
+                    dto.SecurityComplianceContent =
+                        "### 🔐 Tiêu Chuẩn An Ninh Mật Mã & Kiểm Toán Khảo Thí\n" +
+                        "- **NIST SP 800-63B & TOTP 2FA**: Xác thực đa nhân tố cho các tác vụ quản trị trọng yếu.\n" +
+                        "- **PKI USB Token Digital Signature**: Ký số biên bản thi sát hạch ngân hàng & chứng chỉ nghề nghiệp.\n" +
+                        "- **SHA-256 Merkle Audit Trail**: Chống can thiệp sửa điểm trái phép trong cơ sở dữ liệu.";
                 }
 
                 return Ok(dto);
@@ -643,6 +681,13 @@ namespace AegisQuiz.API.Controllers
         public string CopyrightText { get; set; } = string.Empty;
         public string SupportHotline { get; set; } = string.Empty;
         public string SupportEmail { get; set; } = string.Empty;
+        public string HeadquartersAddress { get; set; } = string.Empty;
+        public string TaxOrRegistrationCode { get; set; } = string.Empty;
+        public string WorkingHours { get; set; } = string.Empty;
+        public string AboutUsContent { get; set; } = string.Empty;
+        public string PrivacyPolicyContent { get; set; } = string.Empty;
+        public string TermsOfServiceContent { get; set; } = string.Empty;
+        public string SecurityComplianceContent { get; set; } = string.Empty;
         public string PrimaryColor { get; set; } = "#4f46e5";
         public string SecondaryColor { get; set; } = "#0ea5e9";
         public string AccentColor { get; set; } = "#8b5cf6";

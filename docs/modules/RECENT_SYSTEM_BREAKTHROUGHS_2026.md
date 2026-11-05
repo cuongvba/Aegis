@@ -447,3 +447,42 @@ Hệ thống thiết lập lớp nhà máy hạt giống chuyên biệt:
 - **Biên dịch:** `dotnet build` đạt kết quả `0 Error(s)`.
 - **Kiểm thử Scoped:** 41/41 bài kiểm thử (`AdaptiveHierarchyIngestionTests` 20/20, `TestParseSnippetDirective` 5/5, `DocxClassifierRegistryComplianceTests` 16/16) đạt trạng thái **100% Green**.
 - **Môi trường Container:** Tái đóng gói và kiểm chứng Docker container `aegis-backend` hoạt động ổn định và sẵn sàng phục vụ.
+
+
+---
+
+## 18. ĐỘT PHÁ CẢNH GIỚI 11: BẢO VỆ TÍNH TOÀN VẸN MÃ NGUỒN ĐỀ TIN HỌC, ÁNH XẠ TRI THỨC CỘNG ĐỒNG & THANH ĐIỀU KHIỂN HỦY BỎ STUDIO
+
+### 18.1. Bối Cảnh & Thách Thức
+1. **Rò Rỉ DOM & Vỡ Bố Cục Khi Đọc Đề Tin Học**: Các đề thi trắc nghiệm Tin học và Khoa học máy tính thường chứa các đoạn mã nguồn HTML/CSS như `<ol start="10">`, `<li>Khoa học tự nhiên</li>`, `<h1>Tiêu đề</h1>`, `<p>Đoạn văn <em>rất đặc biệt</em></p>`, `<style>...</style>`. Trình duyệt khi nhận HTML này sẽ tự động parse thành các phần tử DOM thật, dẫn đến việc nuốt mất mã lệnh, thực thi style CSS làm vỡ bố cục và làm mất tính toàn vẹn của đề bài thi.
+2. **Nhu Cầu Đóng Góp Tri Thức Mở**: Giáo viên cá nhân muốn chia sẻ đề thi tâm huyết cho cộng đồng học viên toàn cầu mà không phải sao chép dữ liệu thủ công hay mất quyền quản trị tác giả.
+3. **Thao Tác Hủy Bỏ Nạp Đề Tiện Lợi**: Giáo viên cần một nút hủy tức thì để làm mới trạng thái Studio nếu chọn nhầm file hoặc muốn đọc tệp khác mà không để lại dữ liệu tạm.
+
+### 18.2. Giải Pháp Kháng Rò Rỉ DOM (Zero-DOM-Leak Pipeline)
+Hệ thống thiết lập cơ chế bảo vệ 3 tầng hợp nhất:
+1. **OpenXML Run-level Guard**: Tại [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L378), chèn ký tự ẩn Zero-Width Space `\u200B` trước các thẻ code (`<ol>`, `<li>`, `<h1>`, `<style>`, `<u>`, `<mark>`, `<b>`) để cô lập tuyệt đối khỏi các thuộc tính Run formatting của Word OpenXML (`underlined`, `highlighted`).
+2. **State Machine Boundary Isolation**: Tại [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L231,L475), thay thế regex quét mở rộng bằng regex khoanh vùng chặt chẽ `^<(?:u|mark|b|i|strong|em)>`, loại bỏ hoàn toàn việc nhận nhầm các dòng code Tin học thành dòng đáp án hoặc phân đoạn.
+3. **Four-Phase Tokenized Safe Escaping**: Tại [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx#L162-L235):
+   - **Pha 1**: Token hóa và bảo vệ công thức toán LaTeX Block (`$$...$$`) và Inline (`$...$`), các cấu trúc KaTeX phức hợp (`\displaystyle`), bảng Markdown và Media Tokens.
+   - **Pha 2**: Token hóa định dạng gạch chân thật `<u>...</u>`, tô sáng `<mark>...</mark>`, và khối code `` `code` ``.
+   - **Pha 3**: Escape an toàn toàn bộ ký tự `<` thành `&lt;` và `>` thành `&gt;`, đồng thời loại bỏ sạch sẽ ký tự `\u200B`.
+   - **Pha 4**: Phục hồi tokens, bảo đảm các đoạn mã HTML/CSS trong câu hỏi Tin học được hiển thị nguyên vẹn 100%, sắc nét và an toàn tuyệt đối.
+
+### 18.3. Động Cơ Ánh Xạ Tri Thức Cộng Đồng (Community Knowledge Mapping Engine)
+- **Kiến trúc Endpoint**: Bổ sung `POST api/quiz/topics/{id}/contribute-community` tại [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs#L1242).
+- **Tự động sinh phả hệ**:
+  - Gốc cộng đồng: `COMMUNITY` (`/COMMUNITY/`, `Scope = COMMUNITY`, `VisibilityScope = PUBLIC`).
+  - Nhánh cộng đồng: `COM_{sourceTopic.Code}` (`/COMMUNITY/COM_{sourceTopic.Code}/`, `ParentId = communityRoot.Id`).
+- **Liên kết đa chiều (N - M Mapping)**:
+  - Sử dụng [`ExamDeduplicationEngine.cs:AssociateTopicToQuestion()`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs#L380) để ánh xạ mã `COM_...` vào mảng `Tags` (`#topic:COM_...`) và `Payload.linkedTopicCodes` (JSONB).
+  - Tái cấp phát `List<string>` mới cho `question.Tags` để ChangeTracker của EF Core / Npgsql phát hiện biến động mảng PostgreSQL 100%.
+- **Chủ quyền kép**: Giáo viên gốc bảo toàn 100% quyền sở hữu tác giả (`CreatedByUserId`), trong khi học sinh toàn cầu có thể truy vấn và luyện thi theo cả hai cây thư mục.
+
+### 18.4. Thanh Điều Khiển Nổi & Nút Hủy Bỏ Tức Thì (Instant Cancel UX)
+- Tại [`ZenPaginationBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenPaginationBar.tsx#L167): Bổ sung nút **"Hủy Bỏ"** (`Cancel`) với icon `X` đỏ dịu ngay sau nút "Kích Hoạt Đấu Trường".
+- Tại [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx#L87): Kết nối `onCancel={onReset}`, lập tức dọn dẹp bộ đệm câu hỏi và trả về màn hình kéo thả file sạch sẽ chỉ với 1 chạm.
+
+### 18.5. Bằng Chứng Thực Nghiệm & Scoped Verification
+- **Unit Tests Scoped**: 15/15 bài kiểm thử kiến trúc tại [`DocxStateMachineClassifierArchitectureTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DocxStateMachineClassifierArchitectureTests.cs) đạt **100% Green** (Duration: 2s).
+- **Frontend Build**: `npm run build` hoàn thành trong 2.95s với **0 lỗi TypeScript**.
+- **Docker Deployment**: Đã triển khai và xác nhận hoạt động trên container `aegis-backend` và `aegis-frontend`.

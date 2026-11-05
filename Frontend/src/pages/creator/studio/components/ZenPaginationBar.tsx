@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, Database, Loader2, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Database, Loader2, Send, X } from 'lucide-react';
 import { ZEN_PAGE_SIZES } from '../hooks/useZenPagination';
 
 interface ZenPaginationBarProps {
@@ -19,12 +19,14 @@ interface ZenPaginationBarProps {
   onPureSaveToBank?: () => void;
   isPureSavingToBank?: boolean;
   onOpenHomeworkConfig?: () => void;
+  onCancel?: () => void;
 }
 
 /** Thanh điều khiển nổi (sticky) luôn hiển thị ở đáy màn hình — gom đầy đủ các nút tác vụ cốt lõi. */
 export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
   page, totalPages, pageSize, total, rangeStart, rangeEnd, pageWindow, editedCount, isLaunching,
   onGoTo, onPageSize, onOpenArenaSelector, onPureSaveToBank, isPureSavingToBank, onOpenHomeworkConfig,
+  onCancel,
 }) => {
   const { t } = useTranslation('creator');
   const [jump, setJump] = useState('');
@@ -163,6 +165,19 @@ export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Kích Hoạt Đấu Trường</span>
           </button>
+
+          {/* 4. NÚT HỦY BỎ (Hủy bỏ thao tác đọc đề và làm mới trạng thái) */}
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              type="button"
+              title="Hủy bỏ thao tác đọc đề và làm mới"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-bold bg-slate-800/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700/80 hover:border-rose-500/40 transition active:scale-95 cursor-pointer shadow-md"
+            >
+              <X className="w-3.5 h-3.5 text-rose-400" />
+              <span>Hủy Bỏ</span>
+            </button>
+          )}
         </div>
       </nav>
     </div>

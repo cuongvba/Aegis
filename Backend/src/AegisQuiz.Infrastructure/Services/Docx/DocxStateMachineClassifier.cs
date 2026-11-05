@@ -228,7 +228,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                 bool isAnsTableMatch = cig.TryMatchAnswerTablePhase(line);
 
                 // 0a2. Nhận diện dòng Đáp án inline ngay dưới câu hỏi (chỉ khi KHÔNG PHẢI Tiêu đề Phase)
-                var cleanLinePre = Regex.Replace(line, @"^<[a-z0-9]+>", "", RegexOptions.IgnoreCase).Trim();
+                var cleanLinePre = Regex.Replace(line, @"^<(?:u|mark|b|i|strong|em)>", "", RegexOptions.IgnoreCase).Trim();
                 if (!isSolPhaseMatch && !isAnsTableMatch && currentQuestion != null && !isSolutionPhase && (cig.IsAnswerLine(cleanLinePre, currentMatchedRule, out string inlineAnsPre) || LinguisticMatch(cig, LinguisticKeys.ChoiceAnswerLine, cleanLinePre).Success))
                 {
                     if (string.IsNullOrEmpty(inlineAnsPre))
@@ -472,7 +472,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                 }
 
                 // 2d. Nhận diện dòng Đáp án inline ngay dưới câu hỏi
-                var cleanLine = Regex.Replace(line, @"^<[a-z0-9]+>", "", RegexOptions.IgnoreCase).Trim();
+                var cleanLine = Regex.Replace(line, @"^<(?:u|mark|b|i|strong|em)>", "", RegexOptions.IgnoreCase).Trim();
                 if (currentQuestion != null && !isSolutionPhase && (cig.IsAnswerLine(cleanLine, currentMatchedRule, out string inlineAns) || LinguisticMatch(cig, LinguisticKeys.ChoiceAnswerLine, cleanLine).Success))
                 {
                     if (string.IsNullOrEmpty(inlineAns))
@@ -731,7 +731,9 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                         HierarchyIndex = scopeManager.GetHierarchyIndex(),
                         QuestionType = determinedQuestionType,
                         TopicCode = inferredTopic,
-                        TopicName = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(inferredTopic, StringComparison.OrdinalIgnoreCase))?.Name ?? (inferredTopic == "MATH" || inferredTopic == "TOAN" ? "Toán học" : null),
+                        TopicName = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(inferredTopic, StringComparison.OrdinalIgnoreCase))?.Name 
+                            ?? headerTaxonomy.FriendlyTopicName 
+                            ?? (inferredTopic?.StartsWith("MATH") == true || inferredTopic?.StartsWith("TOAN") == true ? "Toán học" : (inferredTopic?.StartsWith("HOA") == true ? "Hóa học" : inferredTopic)),
                         Difficulty = isFatal ? 5 : cig.GetDefaultDifficulty(determinedQuestionType),
                         ContentType = questionBody.Contains("data:image/") ? "image" : "text",
                         OptionType = "text",

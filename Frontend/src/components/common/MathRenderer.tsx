@@ -176,7 +176,9 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
           throwOnError: false,
           strict: false,
         });
-        return `<div class="block-math my-2 text-[1.1em] overflow-x-auto overflow-y-hidden py-1 tracking-wide">${normalizeVectorSvg(rendered)}</div>`;
+        const token = `__AEGIS_KATEX_BLOCK_${tokenCounter++}__`;
+        mediaTokens[token] = `<div class="block-math my-2 text-[1.1em] overflow-x-auto overflow-y-hidden py-1 tracking-wide">${normalizeVectorSvg(rendered)}</div>`;
+        return token;
       } catch {
         return `<span class="text-rose-400 font-mono text-xs">[Lỗi công thức: ${equation}]</span>`;
       }
@@ -196,7 +198,6 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
           .replace(/[\u20D7⃗]/g, '');
 
         // Tự động nâng cấp lên \displaystyle cho các cấu trúc đa tầng (phân số, căn thức, tích phân, tổng, giới hạn...)
-        // Giúp các ký tự (a, b, c...) giữ nguyên 100% kích thước font chuẩn, không bị co nhỏ (70% scriptstyle) so với font chữ chung
         const hasComplexStructures = /\\(?:frac|dfrac|cfrac|sqrt|int|iint|iiint|oint|sum|prod|lim|matrix|pmatrix|bmatrix|vmatrix|cases)/.test(normalized);
         const formulaToRender = hasComplexStructures && !normalized.includes('\\displaystyle')
           ? `{\\displaystyle ${normalized}}`
@@ -207,7 +208,9 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
           throwOnError: false,
           strict: false,
         });
-        return `<span class="inline-math font-medium tracking-wide mx-0.5">${normalizeVectorSvg(rendered)}</span>`;
+        const token = `__AEGIS_KATEX_INLINE_${tokenCounter++}__`;
+        mediaTokens[token] = `<span class="inline-math font-medium tracking-wide mx-0.5">${normalizeVectorSvg(rendered)}</span>`;
+        return token;
       } catch {
         return `<span class="text-rose-400 font-mono text-xs">[Lỗi công thức: ${equation}]</span>`;
       }
@@ -217,9 +220,35 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     processed = parseAndTokenizeTables(processed, mediaTokens);
 
     // Trường hợp 5: Hỗ trợ gạch chân cho Đề thi Ngoại ngữ (Phát âm, Trọng âm, Tìm lỗi sai)
-    processed = processed.replace(/<u[\s\S]*?>([\s\S]+?)<\/u>/gi, (_match, text) => {
-      return `<u class="underline decoration-2 decoration-sky-400 underline-offset-4 font-bold text-sky-300">${text}</u>`;
+    // Bảo vệ thẻ <u> định dạng thật (không có ký tự ẩn \u200B từ mã code tin học)
+    processed = processed.replace(/<u(?:\s+[^>]*)?>([\s\S]+?)<\/u>/gi, (_match, text) => {
+      const token = `__AEGIS_U_TOKEN_${tokenCounter++}__`;
+      mediaTokens[token] = `<u class="underline decoration-2 decoration-sky-400 underline-offset-4 font-bold text-sky-300">${text}</u>`;
+      return token;
     });
+
+    // Hỗ trợ thẻ <mark> highlight
+    processed = processed.replace(/<mark(?:\s+[^>]*)?>([\s\S]+?)<\/mark>/gi, (_match, text) => {
+      const token = `__AEGIS_MARK_TOKEN_${tokenCounter++}__`;
+      mediaTokens[token] = `<mark class="bg-amber-400/20 text-amber-200 px-1 py-0.5 rounded font-semibold border-b border-amber-400/50">${text}</mark>`;
+      return token;
+    });
+
+    // Trường hợp 5b: Hỗ trợ mã code markdown inline `code`
+    processed = processed.replace(/`([^`\n]+)`/g, (_match, code) => {
+      const token = `__AEGIS_CODE_TOKEN_${tokenCounter++}__`;
+      const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      mediaTokens[token] = `<code class="font-mono bg-slate-800 text-amber-300 px-1.5 py-0.5 rounded text-[0.9em] border border-slate-700/60">${escapedCode}</code>`;
+      return token;
+    });
+
+    // [BẢO VỆ TÍNH TOÀN VẸN ĐỀ TIN HỌC / HTML / CSS / XML TAGS]
+    // Toàn bộ các thẻ HTML/CSS trong đề thi (ví dụ: <ol start="10">, <li>, <h1>, <style>, <p>, <em>...)
+    // sẽ được escape sang thực thể an toàn &lt;...&gt; để browser hiển thị nguyên vẹn mã nguồn, không bị parse nhầm thành DOM
+    processed = processed
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\u200B/g, '');
 
     // In đậm markdown **text**
     processed = processed.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
@@ -227,11 +256,11 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     // Chuyển ký tự xuống dòng thành thẻ <br/> nếu không nằm trong thẻ block
     processed = processed.replace(/\n/g, '<br/>');
 
-    // Dọn dẹp thẻ <br/> thừa bao bọc trước và sau Token khối bảng/ảnh
-    processed = processed.replace(/(?:<br\/>)+(?=(?:__AEGIS_TABLE_TOKEN_))/g, '');
-    processed = processed.replace(/(?<=__AEGIS_TABLE_TOKEN_\d+__)(?:<br\/>)+/g, '');
+    // Dọn dẹp thẻ <br/> thừa bao bọc trước và sau Token khối bảng/ảnh/toán
+    processed = processed.replace(/(?:<br\/>)+(?=(?:__AEGIS_TABLE_TOKEN_|__AEGIS_KATEX_BLOCK_))/g, '');
+    processed = processed.replace(/(?<=(?:__AEGIS_TABLE_TOKEN_\d+__|__AEGIS_KATEX_BLOCK_\d+__))(?:<br\/>)+/g, '');
 
-    // Phục hồi nguyên vẹn các Media Token (ảnh, audio, bảng)
+    // Phục hồi nguyên vẹn các Media & Formula Tokens (ảnh, audio, video, bảng, KaTeX, format)
     for (const [token, html] of Object.entries(mediaTokens)) {
       processed = processed.split(token).join(html);
     }

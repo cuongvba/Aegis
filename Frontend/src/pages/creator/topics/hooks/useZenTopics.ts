@@ -29,6 +29,7 @@ export function useZenTopics(user: any) {
   // Delete Confirm State
   const [topicToDelete, setTopicToDelete] = useState<BankTopic | null>(null);
   const [isDeletingTopicLoading, setIsDeletingTopicLoading] = useState(false);
+  const [isContributing, setIsContributing] = useState(false);
 
   const tFilters = useTopicFilters(topics);
 
@@ -128,6 +129,23 @@ export function useZenTopics(user: any) {
     }
   };
 
+  const handleContributeCommunity = async (top: BankTopic) => {
+    if (!window.confirm(`Thầy/Cô có chắc chắn muốn đóng góp chủ đề "${top.name}" và toàn bộ câu hỏi liên quan vào kho tri thức Cộng Đồng (Community)?\n\nHệ sinh thái sẽ tạo nhánh COM_${top.code} và tự động ánh xạ toàn bộ câu hỏi để học viên toàn cầu có thể tiếp cận.`)) {
+      return;
+    }
+    setIsContributing(true);
+    try {
+      const res = await learnerQuizService.contributeTopicToCommunity(top.id);
+      alert(res.message || 'Đã đóng góp chủ đề vào Cộng Đồng thành công!');
+      setIsTopicModalOpen(false);
+      fetchZenTopicsData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Lỗi đóng góp chủ đề vào Cộng Đồng');
+    } finally {
+      setIsContributing(false);
+    }
+  };
+
   const confirmDeleteTopic = async (delQ: boolean) => {
     if (!topicToDelete) return;
     setIsDeletingTopicLoading(true);
@@ -181,6 +199,8 @@ export function useZenTopics(user: any) {
     handleSaveTopic,
     handleToggleActiveTopic,
     confirmDeleteTopic,
+    isContributing,
+    handleContributeCommunity,
   };
 }
 

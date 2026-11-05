@@ -152,6 +152,62 @@ flowchart TD
 
 ---
 
+## V-B. KIẾN TRÚC MỞ RỘNG V3.0: CÂY TRI THỨC CỘNG ĐỒNG, BẢO TOÀN MÃ NGUỒN TIN HỌC & THANH ĐIỀU KHIỂN NỔI
+
+### 1. Kiến Trúc Cây Tri Thức Cộng Đồng & Ánh Xạ Đa Liên Kết (Community Knowledge Mapping)
+Nhằm hiện thực hóa tầm nhìn xây dựng **Kho tàng Tri thức Khảo thí Mở Toàn Cầu**, hệ thống bổ sung cơ chế chia sẻ 1 chạm từ không gian cá nhân của Giáo viên sang Cây Tri Thức Cộng Đồng:
+
+```mermaid
+flowchart TD
+    subgraph TEACHER["TỦ HỒ SƠ RIÊNG CỦA GIÁO VIÊN (/creator/topics)"]
+        T1["Chủ đề: CRT_TIN12_HK2<br/>Tên: 'Tin học 12 - Học kỳ 2'<br/>Scope: PERSONAL | Path: /PERSONAL/CRT_TIN12_HK2/"]
+        Q1["Câu hỏi #1: HTML Lists & Tags"]
+        Q2["Câu hỏi #2: CSS Selectors & Styles"]
+        T1 --- Q1
+        T1 --- Q2
+    end
+
+    BTN["NÚT 'CỘNG ĐỒNG' (COMMUNITY CONTRIBUTION)<br/>POST api/quiz/topics/{id}/contribute-community"]
+    
+    subgraph COMMUNITY["CÂY TRI THỨC CỘNG ĐỒNG TOÀN CẦU (PUBLIC COMMUNITY TREE)"]
+        C_ROOT["Gốc: COMMUNITY (/COMMUNITY/)<br/>Scope: COMMUNITY | Visibility: PUBLIC"]
+        C_CHILD["Nhánh: COM_TIN12_HK2<br/>Path: /COMMUNITY/COM_TIN12_HK2/<br/>Tên: 'Tin học 12 - Học kỳ 2 (Cộng đồng)'"]
+        C_ROOT --> C_CHILD
+    end
+
+    T1 --> BTN
+    BTN -->|"Tự động sinh nhánh nếu chưa có"| C_CHILD
+    BTN -->|"AssociateTopicToQuestion()"| MAP["ÁNH XẠ ĐA LIÊN KẾT (N - M MAPPING)"]
+    MAP -->|"Bổ sung #topic:COM_... vào Tags[] & linkedTopicCodes (JSONB)"| Q1
+    MAP -->|"Bổ sung #topic:COM_... vào Tags[] & linkedTopicCodes (JSONB)"| Q2
+```
+
+* **Điểm neo mã nguồn (Source Anchors)**:
+  - Controller Endpoint: [`TopicsController.cs:ContributeToCommunity()`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs#L1242)
+  - Engine liên kết: [`ExamDeduplicationEngine.cs:AssociateTopicToQuestion()`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs#L380)
+  - Giao diện thao tác: [`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicModal.tsx#L266) & [`useZenTopics.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/topics/hooks/useZenTopics.ts#L131)
+* **Bảo toàn Bản quyền**: Giáo viên gốc vẫn giữ 100% quyền sở hữu tác giả (`CreatedByUserId`), có thể sửa đổi hoặc rút lại bất kỳ lúc nào mà không làm ảnh hưởng các nhánh liên kết khác.
+
+---
+
+### 2. Bộ Lọc Bảo Vệ Tính Toàn Vẹn Mã Nguồn Tin Học (Zero-DOM-Leak Pipeline)
+Khi giáo viên nạp các đề thi môn Tin học hoặc Khoa học máy tính chứa mã code HTML/CSS (ví dụ: `<ol start="10">`, `<li>...</li>`, `<h1>`, `<style>...</style>`), hệ thống kích hoạt ma trận xử lý 3 tầng:
+
+1. **OpenXML Run-level Guard**: Tại [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L378), chèn ký tự ẩn Zero-Width Space `\u200B` trước các thẻ code mở nhằm cô lập hoàn toàn với định dạng Run của Word (`<u>`, `<mark>`, `<b>`).
+2. **State Machine Boundary Guard**: Tại [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L231), tinh chỉnh regex nhận diện đáp án, ngăn chặn việc nuốt dòng lệnh code.
+3. **Four-Phase Tokenized Safe Escaping**: Tại [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx#L162), token hóa độc lập KaTeX và Media, sau đó chuyển toàn bộ `<` thành `&lt;` và `>` thành `&gt;`, ngăn chặn 100% hiện tượng rò rỉ DOM (DOM Injection / CSS Distortion).
+
+---
+
+### 3. Vòng Đời Thanh Điều Khiển Nổi (Zen Pagination Action Bar)
+Thanh điều khiển nổi [`ZenPaginationBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenPaginationBar.tsx) tích hợp 4 tác vụ cốt lõi:
+1. **Lưu Ngân Hàng** (`onPureSaveToBank`): Lưu trữ vĩnh viễn vào Ngân hàng Tri thức cá nhân.
+2. **Giao Bài Tập** (`onOpenHomeworkConfig`): Mở modal cấu hình Kids/Paper/Exam và sinh link/QR Code.
+3. **Kích Hoạt Đấu Trường** (`onOpenArenaSelector`): Mở modal chọn thể thức Gameshow thời gian thực.
+4. **Hủy Bỏ** (`onCancel`): Hủy bỏ ngay lập tức phiên nạp đề hiện tại, giải phóng bộ nhớ và khôi phục màn hình chọn tệp tin sạch sẽ.
+
+---
+
 ## VI. LỜI KẾT VÀ BẢO CHỨNG THÀNH CÔNG
 
 Sức mạnh thực sự của một kiến trúc phần mềm đẳng cấp thế giới không phải là khoe khoang sự phức tạp, mà là **khả năng nuốt trọn sự phức tạp vào tầng sâu Backend để giải phóng cho người dùng cuối một trải nghiệm thanh thoát, tinh tế và đầy quyền năng (Zen Simplicity)**.

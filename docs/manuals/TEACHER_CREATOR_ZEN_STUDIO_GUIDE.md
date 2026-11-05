@@ -61,10 +61,15 @@ flowchart LR
 ### Thao tác 3 bước cực dễ:
 1. **Bước 1 (Thả file)**: Thầy/Cô bấm vào khung nét đứt giữa màn hình rồi chọn file Word (`.docx`), Excel (`.xlsx`) hoặc PDF trên máy tính.
 2. **Bước 2 (Xem lại)**: Máy tự động đọc và hiện danh sách câu hỏi ngay trên màn hình. Nếu thấy chữ nào chưa ưng ý, Thầy/Cô bấm thẳng vào chữ đó để sửa ngay!
-3. **Bước 3 (Chọn 1 trong 3 nút ở dưới đáy màn hình)**:
+3. **Bước 3 (Chọn 1 trong 4 nút ở thanh điều khiển nổi dưới đáy màn hình)**:
    - Nút **💾 Lưu Ngân Hàng**: Cất đề này vào tủ riêng (`ZenTopics` & `ZenQuestions`) để dành hôm sau dùng.
    - Nút **📤 Giao Bài Tập**: Tạo ra **Mã QR** (hình vuông đen trắng) và **Đường link** để gửi vào Zalo cho phụ huynh/học sinh làm ở nhà.
    - Nút **⚡ Kích Hoạt Đấu Trường**: Mở ngay trò chơi **Rung Chuông Vàng** hoặc **Nhanh Như Chớp** chiếu lên Tivi/Máy chiếu cho cả lớp cùng chơi!
+   - Nút **❌ Hủy Bỏ (Cancel)**: Hủy bỏ ngay lượt đọc đề hiện tại để quay về màn hình chọn file khác mà không lưu bất kỳ dữ liệu rác nào vào hệ thống.
+
+> [!NOTE]
+> **Hỗ trợ đặc biệt cho Đề thi Tin học & Lập trình**:  
+> Nếu đề thi chứa các đoạn mã code HTML, CSS, XML (ví dụ: `<ol start="10">`, `<li>...</li>`, `<h1>`, `<style>...</style>`), hệ thống tự động nhận diện và giữ nguyên vẹn 100% từng dòng code để hiển thị sắc nét cho học sinh, tuyệt đối không bị mất nội dung hay vỡ giao diện!
 
 ---
 
@@ -86,11 +91,15 @@ Hãy tưởng tượng **ZenTopics** giống như chiếc tủ gỗ có nhiều 
    - Bấm vào nút này, một cửa sổ sẽ hiện ra ngay lập tức cho Thầy/Cô xem **tất cả các câu hỏi đang nằm trong chủ đề đó** kèm đáp án đúng màu xanh lá cây!
    - Trong cửa sổ này có nút **`Mở trong Ngân Hàng`** — bấm vào là chuyển thẳng sang phòng `ZenQuestions` đúng ngay chủ đề đó để Thầy/Cô thêm/sửa câu hỏi.
 3. **Nút `👁️ Xem chi tiết` (biểu tượng con mắt trên từng dòng chủ đề)**:
-   - Mở bảng thông tin chi tiết của chủ đề. Tại đáy bảng có 4 nút rõ ràng:
+   - Mở bảng thông tin chi tiết của chủ đề. Tại đáy bảng có các nút tác vụ trực quan:
      - **`+ Mới`**: Tạo thêm chủ đề mới.
      - **`✏️ Sửa`**: Đổi lại tên chủ đề hoặc mô tả rồi bấm Lưu.
-     - **`🔒 Khóa`**: Tạm ẩn chủ đề chưa muốn cho học sinh làm.
-     - **`🗑️ Xóa`**: Xóa chủ đề không dùng nữa.
+     - **`🌐 Cộng đồng` (Đóng góp tri thức cho cộng đồng)**:
+       - Khi Thầy/Cô có một chủ đề hoặc bộ đề chất lượng và muốn chia sẻ, lan tỏa đến hàng triệu học viên và đồng nghiệp cả nước, hãy bấm nút **`Cộng đồng`**.
+       - Hệ thống sẽ tự động tạo một nhánh đề mở mang mã `COM_{mã_chủ_đề}` trong cây Tri thức Cộng đồng của Aegis Global, đồng thời tự động ánh xạ (map) toàn bộ các câu hỏi trong chủ đề sang nhánh cộng đồng này.
+       - *Thầy/Cô vẫn giữ nguyên 100% quyền sở hữu tác giả trong tủ hồ sơ riêng của mình!*
+     - **`💬 Câu hỏi`**: Mở danh sách câu hỏi thuộc chủ đề.
+     - **`🗑️ Xóa`**: Xóa chủ đề không dùng nữa (chỉ áp dụng cho chủ đề do chính Thầy/Cô tạo).
 
 > [!TIP]
 > **Cơ chế Xóa Thông Minh Bảo Vệ Công Sức Thầy/Cô**:
@@ -236,6 +245,9 @@ Khi mở cửa sổ **Tạo/Sửa Câu Hỏi** trong **`ZenQuestions` (`/creator
 4. **📊 Copy Bảng Biểu & Công Thức Toán Học Từ Word / Excel Dán Thẳng Vào Ô (`Ctrl + V`)**:
    - Nếu câu hỏi có **Bảng số liệu phức tạp**, **Chỉ số trên/dưới (`x²`, `H₂O`)**, **Gạch chân ngữ âm Tiếng Anh (`<u>...</u>`)** hoặc **Công thức Toán học (`√`, phân số, hệ phương trình)**: Thầy/Cô chỉ cần bôi đen trong file Word/Excel, bấm **`Ctrl + C`** rồi qua ô câu hỏi bấm **`Ctrl + V`**.
    - Hệ thống tự động chuyển đổi cấu trúc HTML của Word sang **Bảng Markdown chuẩn (`| A | B |`)**, **Công thức Vector LaTeX (`$...$`)** và **Ảnh Base64** mà không bị vỡ dòng!
+5. **💻 Đề Thi Tin Học & Mã Code Lập Trình (HTML, CSS, XML, Python, C++, Pascal)**:
+   - Nếu đề thi có chứa các đoạn mã lệnh HTML/CSS như `<ol start="10">`, `<li>Khoa học tự nhiên</li>`, `<h1>Tiêu đề trang</h1>`, `<style>p {font-size: 2em;}</style>`, Thầy/Cô cứ để nguyên trong file Word.
+   - Hệ thống được trang bị **Bộ lọc bảo vệ cấu trúc mã nguồn thông minh**, tự động nhận diện và hiển thị từng dòng code nguyên vẹn, sắc nét cho học sinh mà không bị trình duyệt phân tích nhầm thành thẻ trang web!
 
 ---
 

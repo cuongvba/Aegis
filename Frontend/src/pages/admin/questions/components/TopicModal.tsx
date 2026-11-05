@@ -38,6 +38,8 @@ interface TopicModalProps {
   onOpenEdit: (t: BankTopic) => void;
   onDelete?: (id: string) => void;
   onToggleActive?: (t: BankTopic) => void;
+  onContributeCommunity?: (t: BankTopic) => void;
+  isContributing?: boolean;
 }
 
 export function TopicModal({
@@ -48,6 +50,7 @@ export function TopicModal({
   setTopicCode, setTopicName, setTopicDesc, setTopicCat, setTopicVisibility, setTopicParentId,
   setTopicDomainCode, setTopicScope, setIsEditingTopic,
   onClose, onSave, onOpenAdd, onOpenEdit, onOpenQuestions, onDelete, onToggleActive,
+  onContributeCommunity, isContributing,
 }: TopicModalProps) {
   if (!isOpen) return null;
 
@@ -243,7 +246,7 @@ export function TopicModal({
             <div className="space-y-3 pt-4 border-t border-slate-800/80">
               {hasWritePermission ? (
                 <>
-                  <div className={`grid ${onDelete && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" ? "grid-cols-4" : "grid-cols-3"} gap-2`}>
+                  <div className={`grid ${onDelete && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" ? (onContributeCommunity ? "grid-cols-5" : "grid-cols-4") : (onContributeCommunity ? "grid-cols-4" : "grid-cols-3")} gap-2`}>
                     <button type="button" onClick={() => { onOpenAdd(); setIsEditingTopic(true); }} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-blue-400 border border-slate-850 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer" title="Tạo chủ đề mới"><Plus size={15} /> Mới</button>
                     <button type="button" onClick={() => setIsEditingTopic(true)} className="py-2.5 bg-slate-950 hover:bg-slate-850 text-amber-400 border border-slate-850 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer" title="Chỉnh sửa"><Edit size={15} /> Sửa</button>
                     <button
@@ -260,6 +263,18 @@ export function TopicModal({
                       <HelpCircle size={15} className="text-sky-400" />
                       <span>Câu hỏi ({directCount})</span>
                     </button>
+                    {onContributeCommunity && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" && !activeTopic.code.startsWith("COM_") && (
+                      <button
+                        type="button"
+                        onClick={() => onContributeCommunity(activeTopic)}
+                        disabled={isContributing}
+                        className="py-2.5 bg-emerald-950/50 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-500/40 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center gap-1 cursor-pointer shadow-sm disabled:opacity-60"
+                        title="Đóng góp chủ đề và ánh xạ câu hỏi vào kho tri thức Cộng đồng"
+                      >
+                        <Globe size={15} className="text-emerald-400" />
+                        <span>{isContributing ? 'Đang gửi...' : 'Cộng đồng'}</span>
+                      </button>
+                    )}
                     {onDelete && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" && (
                       <button
                         type="button"

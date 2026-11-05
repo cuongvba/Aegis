@@ -181,6 +181,8 @@ export const ZenTopicsPage: React.FC = () => {
           onOpenEdit={state.openEditTopicModal}
           onOpenQuestions={state.openQuestionsModal}
           onDelete={handleDeleteTopic}
+          onContributeCommunity={state.handleContributeCommunity}
+          isContributing={state.isContributing}
         />
 
         <TopicQuestionsModal

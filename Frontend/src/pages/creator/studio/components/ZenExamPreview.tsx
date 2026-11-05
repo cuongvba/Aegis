@@ -84,6 +84,7 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
         onPureSaveToBank={onPureSaveToBank}
         isPureSavingToBank={isPureSavingToBank}
         onOpenHomeworkConfig={onOpenHomeworkConfig}
+        onCancel={onReset}
       />
     </div>
   );

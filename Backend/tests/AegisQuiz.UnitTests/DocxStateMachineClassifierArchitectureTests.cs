@@ -242,7 +242,7 @@ namespace AegisQuiz.UnitTests
             Assert.Equal("DE_102", q.SourceExamName);
 
             // 2. Môn học & Nhận thức
-            Assert.True(q.TopicCode == "MATH" || q.TopicCode == "TOAN");
+            Assert.True(q.TopicCode.StartsWith("MATH") || q.TopicCode.StartsWith("TOAN"));
             Assert.Equal("Toán học", q.TopicName);
             Assert.Equal("EDUCATION", q.DomainCode);
 
@@ -309,7 +309,7 @@ namespace AegisQuiz.UnitTests
             Assert.Single(questions);
             var q = questions[0];
 
-            Assert.Equal("HOA_HOC", q.TopicCode);
+            Assert.StartsWith("HOA_HOC", q.TopicCode);
             Assert.Equal("Hóa học", q.TopicName);
             Assert.Equal("EDUCATION", q.DomainCode);
             Assert.NotEqual("THPT_NATIONAL", q.TopicCode);

@@ -702,8 +702,8 @@ namespace AegisQuiz.API.Controllers
                 if (!_tenant.IsSystemAdmin && topic.TenantId != Guid.Empty && topic.TenantId != _tenant.CurrentTenantId)
                     return NotFound(new { message = "Không tìm thấy chủ đề" });
 
-                // Bảo vệ chủ đề hệ thống bất biến (STUDIO, GENERAL)
-                var protectedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GENERAL", "STUDIO" };
+                // Bảo vệ chủ đề hệ thống bất biến (STUDIO, GENERAL, COMMUNITY)
+                var protectedCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "GENERAL", "STUDIO", "COMMUNITY" };
                 if (protectedCodes.Contains(topic.Code))
                 {
                     return BadRequest(new { message = "Không thể xóa chủ đề gốc bảo vệ của hệ thống." });
@@ -1236,6 +1236,149 @@ namespace AegisQuiz.API.Controllers
             {
                 return StatusCode(500, new { message = $"Lỗi tổng hợp ma trận tri thức: {ex.Message}" });
             }
+        }
+
+        /// <summary>
+        /// [COMMUNITY KNOWLEDGE MAPPING] Đóng góp chủ đề cá nhân vào cây Tri thức Cộng đồng.
+        /// Sinh nhánh chủ đề tương ứng dưới gốc COMMUNITY và liên kết (add map) mã chủ đề cộng đồng vào toàn bộ câu hỏi.
+        /// </summary>
+        [HttpPost("{id}/contribute-community")]
+        [Authorize(Policy = RoleWeightPolicies.Learner)]
+        public async Task<IActionResult> ContributeToCommunity(Guid id)
+        {
+            var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                        ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrWhiteSpace(callerId) || !Guid.TryParse(callerId, out var userGuid))
+            {
+                return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ hoặc đã hết hạn." });
+            }
+
+            var sourceTopic = await _db.BankTopics.FirstOrDefaultAsync(t => t.Id == id);
+            if (sourceTopic == null)
+            {
+                return NotFound(new { message = "Không tìm thấy chủ đề cần đóng góp." });
+            }
+
+            // 1. Kiểm tra quyền sở hữu chủ đề (hoặc Admin/SuperAdmin)
+            var partner = await _db.EducatorPartnerships.AsNoTracking().FirstOrDefaultAsync(p => p.UserId == userGuid);
+            var crtCode = partner != null && !string.IsNullOrWhiteSpace(partner.ReferralCode)
+                ? FormatCreatorCode(partner.ReferralCode)
+                : FormatCreatorCode(userGuid.ToString("N")[..6]);
+
+            bool isOwner = sourceTopic.CreatedByUserId == userGuid
+                || User.IsInRole("Admin")
+                || User.IsInRole("SuperAdmin")
+                || (!string.IsNullOrEmpty(crtCode) && (
+                    sourceTopic.Code.Contains(crtCode, StringComparison.OrdinalIgnoreCase)
+                    || (sourceTopic.MaterializedPath ?? "").Contains(crtCode, StringComparison.OrdinalIgnoreCase)
+                ));
+
+            if (!isOwner)
+            {
+                return StatusCode(403, new { message = "Thầy/Cô chỉ có thể đóng góp các chủ đề do chính mình khởi tạo." });
+            }
+
+            // 2. Bảo đảm Root Topic "COMMUNITY" tồn tại
+            var communityRoot = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == "COMMUNITY");
+            if (communityRoot == null)
+            {
+                communityRoot = new BankTopic
+                {
+                    Id = Guid.NewGuid(),
+                    Code = "COMMUNITY",
+                    Name = "Cộng Đồng (Community)",
+                    Description = "Kho tàng tri thức mở đóng góp từ cộng đồng nhà giáo và chuyên gia",
+                    CategoryCode = "COMMUNITY",
+                    DomainCode = "GENERAL",
+                    MaterializedPath = "/COMMUNITY/",
+                    DepthLevel = 0,
+                    Scope = "COMMUNITY",
+                    VisibilityScope = TopicVisibility.Public,
+                    Enabled = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _db.BankTopics.Add(communityRoot);
+                await _db.SaveChangesAsync();
+            }
+
+            // 3. Chuẩn hóa mã chủ đề Cộng đồng: COM_{sourceCode}
+            var cleanSourceCode = sourceTopic.Code.Trim().TrimStart('#');
+            var rawComCode = cleanSourceCode.StartsWith("COM_", StringComparison.OrdinalIgnoreCase)
+                ? cleanSourceCode
+                : $"COM_{cleanSourceCode}";
+            var comCode = cleanSourceCode.StartsWith("CRT", StringComparison.OrdinalIgnoreCase) && cleanSourceCode.Length > 9
+                ? $"COM_{cleanSourceCode[9..].TrimStart('_')}"
+                : rawComCode;
+            if (string.IsNullOrWhiteSpace(comCode) || comCode == "COM_") comCode = $"COM_{cleanSourceCode}";
+
+            var comName = sourceTopic.Name.EndsWith("(Cộng đồng)", StringComparison.OrdinalIgnoreCase)
+                ? sourceTopic.Name
+                : $"{sourceTopic.Name} (Cộng đồng)";
+
+            var communityTopic = await _db.BankTopics.FirstOrDefaultAsync(t => t.Code == comCode);
+            if (communityTopic == null)
+            {
+                communityTopic = new BankTopic
+                {
+                    Id = Guid.NewGuid(),
+                    Code = comCode,
+                    Name = comName,
+                    Description = $"Chủ đề được đóng góp bởi nhà giáo vào kho tri thức Cộng đồng.",
+                    CategoryCode = comCode,
+                    DomainCode = string.IsNullOrWhiteSpace(sourceTopic.DomainCode) ? "GENERAL" : sourceTopic.DomainCode,
+                    ParentId = communityRoot.Id,
+                    MaterializedPath = $"/COMMUNITY/{comCode}/",
+                    DepthLevel = 1,
+                    Scope = "COMMUNITY",
+                    VisibilityScope = TopicVisibility.Public,
+                    Enabled = true,
+                    CreatedByUserId = userGuid,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _db.BankTopics.Add(communityTopic);
+            }
+            else
+            {
+                communityTopic.Name = comName;
+                communityTopic.Enabled = true;
+                communityTopic.VisibilityScope = TopicVisibility.Public;
+                communityTopic.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _db.SaveChangesAsync();
+
+            // 4. Tìm toàn bộ câu hỏi tương ứng của chủ đề nguồn và map thêm mã chủ đề Cộng đồng
+            var sourceCode = sourceTopic.Code.Trim();
+            var sourceTag = "#" + sourceCode;
+            var sourceTopicTag = "#topic:" + sourceCode;
+
+            var questions = await _db.Questions
+                .Where(q => q.CategoryCode == sourceCode || q.Tags.Contains(sourceCode) || q.Tags.Contains(sourceTag) || q.Tags.Contains(sourceTopicTag))
+                .ToListAsync();
+
+            int mappedQuestionsCount = 0;
+            foreach (var q in questions)
+            {
+                _deduplicationEngine.AssociateTopicToQuestion(q, comCode, communityTopic.Name);
+                mappedQuestionsCount++;
+            }
+
+            communityTopic.QuestionCountCached = mappedQuestionsCount;
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = $"Đã đóng góp chủ đề '{sourceTopic.Name}' vào Cộng đồng thành công với {mappedQuestionsCount} câu hỏi được ánh xạ!",
+                communityTopic = new
+                {
+                    id = communityTopic.Id,
+                    code = communityTopic.Code,
+                    name = communityTopic.Name,
+                    materializedPath = communityTopic.MaterializedPath,
+                    questionCount = mappedQuestionsCount
+                }
+            });
         }
 
         // ── Private helpers ────────────────────────────────────────────────────

@@ -289,6 +289,11 @@ export const learnerQuizService = {
     return res.data;
   },
 
+  async contributeTopicToCommunity(id: string): Promise<any> {
+    const res = await api.post(`${QUIZ_API}/topics/${id}/contribute-community`);
+    return res.data;
+  },
+
   // DOCX & PDF IMPORT WITH AI PREDICT SOLVER (Kịch bản A)
   async importQuestionsDocx(file: File, useAi = false): Promise<any[]> {
     const formData = new FormData();

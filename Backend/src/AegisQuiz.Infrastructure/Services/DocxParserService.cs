@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -375,6 +375,7 @@ namespace AegisQuiz.Infrastructure.Services
                 var text = runText.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
+                    if (text.Contains('<')) text = Regex.Replace(text, @"<(\/?(?:u|mark|b)\b)", "<\u200B$1", RegexOptions.IgnoreCase);
                     if (vertAlign == "subscript") text = "$_{" + text + "}$";
                     else if (vertAlign == "superscript") text = "$^{" + text + "}$";
                     if (underlined) text = "<u>" + text + "</u>";

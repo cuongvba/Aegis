@@ -102,9 +102,21 @@ namespace AegisQuiz.Infrastructure.Services
             result.TopicCode = DetectTopicFromHeader(bannerList, fileName, sheetName, dynamicContext);
             if (!string.IsNullOrEmpty(result.TopicCode) && result.TopicCode != "GENERAL")
             {
+                var baseTopicCode = result.TopicCode.Contains('_') ? result.TopicCode.Split('_')[0] : result.TopicCode;
                 var matched = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(result.TopicCode, StringComparison.OrdinalIgnoreCase))
-                    ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(result.TopicCode, StringComparison.OrdinalIgnoreCase));
-                result.TopicName = matched?.Name ?? result.TopicCode;
+                    ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(result.TopicCode, StringComparison.OrdinalIgnoreCase))
+                    ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(baseTopicCode, StringComparison.OrdinalIgnoreCase));
+                result.TopicName = matched?.Name 
+                    ?? (result.TopicCode.StartsWith("MATH") || result.TopicCode.StartsWith("TOAN") ? "Toán học" 
+                        : (result.TopicCode.StartsWith("HOA") ? "Hóa học" 
+                        : (result.TopicCode.StartsWith("TIN") ? "Tin học" 
+                        : (result.TopicCode.StartsWith("LY") || result.TopicCode.StartsWith("VAT_LY") ? "Vật lý" 
+                        : (result.TopicCode.StartsWith("SINH") ? "Sinh học" 
+                        : (result.TopicCode.StartsWith("VAN") || result.TopicCode.StartsWith("NGU_VAN") ? "Ngữ văn" 
+                        : (result.TopicCode.StartsWith("SU") || result.TopicCode.StartsWith("LICH_SU") ? "Lịch sử" 
+                        : (result.TopicCode.StartsWith("DIA") || result.TopicCode.StartsWith("DIA_LY") ? "Địa lý" 
+                        : (result.TopicCode.StartsWith("ANH") || result.TopicCode.StartsWith("TIENG_ANH") ? "Tiếng Anh" 
+                        : (result.TopicCode.StartsWith("GDCD") ? "Giáo dục công dân" : result.TopicCode))))))))));
 
                 if (matched != null && !string.IsNullOrWhiteSpace(matched.DomainCode) && matched.DomainCode != "GENERAL")
                 {
@@ -1313,9 +1325,20 @@ namespace AegisQuiz.Infrastructure.Services
                 if (dominantTopicGroup.Count() >= results.Count * 0.4 || isSingleSubjectExam)
                 {
                     string domCode = dominantTopicGroup.Key;
-                    var matchedTopic = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase))
-                        ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase));
-                    string domName = matchedTopic?.Name ?? domCode;
+                    var baseDomCode = Regex.Replace(domCode, @"_K\d+$", "", RegexOptions.IgnoreCase);
+                    var matchedTopic = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase) || t.Code.Equals(baseDomCode, StringComparison.OrdinalIgnoreCase))
+                        ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase) || t.Code.Equals(baseDomCode, StringComparison.OrdinalIgnoreCase));
+                    string domName = matchedTopic?.Name 
+                        ?? (domCode.StartsWith("MATH") || domCode.StartsWith("TOAN") ? "Toán học"
+                            : (domCode.StartsWith("HOA") ? "Hóa học"
+                            : (domCode.StartsWith("TIN") ? "Tin học"
+                            : (domCode.StartsWith("LY") || domCode.StartsWith("VAT_LY") ? "Vật lý"
+                            : (domCode.StartsWith("SINH") ? "Sinh học"
+                            : (domCode.StartsWith("VAN") || domCode.StartsWith("NGU_VAN") ? "Ngữ văn"
+                            : (domCode.StartsWith("SU") || domCode.StartsWith("LICH_SU") ? "Lịch sử"
+                            : (domCode.StartsWith("DIA") || domCode.StartsWith("DIA_LY") ? "Địa lý"
+                            : (domCode.StartsWith("ANH") || domCode.StartsWith("TIENG_ANH") ? "Tiếng Anh"
+                            : (domCode.StartsWith("GDCD") ? "Giáo dục công dân" : domCode))))))))));
 
                     foreach (var q in results)
                     {

@@ -72,8 +72,9 @@ namespace AegisQuiz.Infrastructure.Services
             cleaned = Regex.Replace(cleaned, @"^(?i)(?:câu|cau|bài|bai|question|item|q)\s*\d+[\.\:\s\-]*", "", RegexOptions.Compiled);
             cleaned = Regex.Replace(cleaned, @"^\d+[\.\:\)\-]\s*", "", RegexOptions.Compiled);
 
-            // 2. Loại bỏ các thẻ HTML và markdown formatting (không xóa dấu * nhân toán học đơn lẻ)
-            cleaned = Regex.Replace(cleaned, @"<[^>]+>", " ", RegexOptions.Compiled);
+            // 2. Loại bỏ các thẻ định dạng Word (<u>, <mark>) và markdown formatting (bảo toàn các thẻ code HTML trong đề Tin học như <ol>, <li>, <h1>, <style>...)
+            cleaned = Regex.Replace(cleaned, @"<\/?(?:u|mark)\s*>", " ", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            cleaned = cleaned.Replace("\u200B", "");
             cleaned = Regex.Replace(cleaned, @"\*{2,}", "", RegexOptions.Compiled);
             cleaned = Regex.Replace(cleaned, @"_{2,}", "", RegexOptions.Compiled);
             cleaned = Regex.Replace(cleaned, @"[`~]+", "", RegexOptions.Compiled);
@@ -383,16 +384,21 @@ namespace AegisQuiz.Infrastructure.Services
             var topicTag = "#topic:" + cleanCode;
             var simpleTag = "#" + cleanCode;
 
-            // 1. Cập nhật Tags (text[])
-            question.Tags ??= new List<string>();
-            if (!question.Tags.Any(t => string.Equals(t, topicTag, StringComparison.OrdinalIgnoreCase)))
+            // 1. Cập nhật Tags (text[]) — khởi tạo List mới để EF Core Npgsql ChangeTracker nhận diện 100%
+            var updatedTags = new List<string>(question.Tags ?? new List<string>());
+            if (!updatedTags.Any(t => string.Equals(t, cleanCode, StringComparison.OrdinalIgnoreCase)))
             {
-                question.Tags.Add(topicTag);
+                updatedTags.Add(cleanCode);
             }
-            if (!question.Tags.Any(t => string.Equals(t, simpleTag, StringComparison.OrdinalIgnoreCase)))
+            if (!updatedTags.Any(t => string.Equals(t, topicTag, StringComparison.OrdinalIgnoreCase)))
             {
-                question.Tags.Add(simpleTag);
+                updatedTags.Add(topicTag);
             }
+            if (!updatedTags.Any(t => string.Equals(t, simpleTag, StringComparison.OrdinalIgnoreCase)))
+            {
+                updatedTags.Add(simpleTag);
+            }
+            question.Tags = updatedTags;
 
             // 2. Cập nhật linkedTopicCodes trong Payload (JSONB)
             try
@@ -443,14 +449,16 @@ namespace AegisQuiz.Infrastructure.Services
                 cleanCode = cleanCode.Substring(6).Trim();
             }
 
-            // 1. Gỡ bỏ khỏi Tags
+            // 1. Gỡ bỏ khỏi Tags — khởi tạo List mới để EF Core Npgsql ChangeTracker nhận diện 100%
             if (question.Tags != null && question.Tags.Count > 0)
             {
-                question.Tags.RemoveAll(t => 
+                var updatedTags = new List<string>(question.Tags);
+                updatedTags.RemoveAll(t => 
                     string.Equals(t, cleanCode, StringComparison.OrdinalIgnoreCase) 
                     || string.Equals(t, "#" + cleanCode, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(t, "#topic:" + cleanCode, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(t, "topic:" + cleanCode, StringComparison.OrdinalIgnoreCase));
+                question.Tags = updatedTags;
             }
 
             // 2. Gỡ bỏ khỏi linkedTopicCodes trong Payload
