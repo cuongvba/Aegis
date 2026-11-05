@@ -182,6 +182,100 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             }
         }
 
+        /// <summary>
+        /// Phân tích hình học điểm ảnh (Computational Geometry Guard) trong < 1ms để phát hiện Đồ thị hàm số (Oxy),
+        /// Bảng biến thiên, Hình học phẳng/không gian hoặc Biểu đồ (ngay cả khi đã có lề trắng):
+        /// - Đồ thị hàm số / Hình vẽ luôn có hộp bao (Bounding Box) cao (bboxH >= 80..115px), tỷ lệ khung hình gần vuông (bboxW/bboxH < 2.35),
+        ///   mật độ nét mực thưa (inkRatio < 9.5%) và/hoặc có trục tọa độ Ox ⊥ Oy chạy xuyên suốt chiều rộng & chiều cao.
+        /// </summary>
+        public static bool IsGraphicalDiagramOrPlot(byte[] rawBytes)
+        {
+            if (rawBytes == null || rawBytes.Length == 0) return false;
+            try
+            {
+                using var bmp = SKBitmap.Decode(rawBytes);
+                if (bmp == null || bmp.Width < 16 || bmp.Height < 16) return false;
+
+                int w = bmp.Width;
+                int h = bmp.Height;
+                int minX = w, maxX = -1, minY = h, maxY = -1;
+                int inkCount = 0;
+                int colorfulCount = 0;
+                int maxHorizRun = 0;
+                var vertRuns = new int[w];
+                int maxVertRun = 0;
+
+                for (int y = 0; y < h; y++)
+                {
+                    int hRun = 0;
+                    for (int x = 0; x < w; x++)
+                    {
+                        var c = bmp.GetPixel(x, y);
+                        bool isBg = c.Alpha < 55 || (c.Red > 225 && c.Green > 225 && c.Blue > 225);
+                        if (!isBg)
+                        {
+                            int maxC = Math.Max(c.Red, Math.Max(c.Green, c.Blue));
+                            int minC = Math.Min(c.Red, Math.Min(c.Green, c.Blue));
+                            if (maxC - minC > 45) colorfulCount++;
+
+                            if (c.Red < 205 || c.Green < 205 || c.Blue < 205)
+                            {
+                                inkCount++;
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+
+                                hRun++;
+                                if (hRun > maxHorizRun) maxHorizRun = hRun;
+
+                                vertRuns[x]++;
+                                if (vertRuns[x] > maxVertRun) maxVertRun = vertRuns[x];
+                                continue;
+                            }
+                        }
+                        hRun = 0;
+                        vertRuns[x] = 0;
+                    }
+                }
+
+                if (maxX <= minX || maxY <= minY) return false;
+
+                int bboxW = maxX - minX + 1;
+                int bboxH = maxY - minY + 1;
+                double bboxAspect = (double)bboxW / Math.Max(1, bboxH);
+                double bboxInkRatio = (double)inkCount / Math.Max(1, bboxW * bboxH);
+                double colorfulRatio = (double)colorfulCount / Math.Max(1, w * h);
+
+                // 1. Ảnh nhiều màu sắc (tranh minh họa, biểu đồ màu) -> Giữ nguyên ảnh
+                if (colorfulRatio >= 0.06) return true;
+
+                // 2. Có trục tọa độ giao nhau Ox ⊥ Oy hoặc khung bảng biến thiên (đường thẳng đứng >= 58% chiều cao VÀ đường ngang >= 55% chiều rộng trên vùng cao >= 75px)
+                if (bboxH >= 75 && maxVertRun >= bboxH * 0.58 && maxHorizRun >= bboxW * 0.55)
+                {
+                    return true;
+                }
+
+                // 3. Đồ thị hàm số / Hình học không gian / Hình vẽ minh họa: Chiều cao hộp mực >= 110px, khung hình gần vuông (aspect < 2.35) và mật độ nét mảnh thưa (< 9.5%)
+                if (bboxH >= 110 && bboxAspect < 2.35 && bboxInkRatio < 0.095)
+                {
+                    return true;
+                }
+
+                // 4. Chiều cao hộp mực quá lớn (> 220px với tỷ lệ < 3.0) không phải công thức MathType rời
+                if (bboxH > 220 && bboxAspect < 3.0)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static async Task<string?> DecodeFormulaImageViaVisionAsync(
             string? imageDataUri,
             IHttpClientFactory httpClientFactory)
@@ -198,11 +292,23 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             var rawMimeType = mimeMatch.Success ? mimeMatch.Groups[1].Value : "image/png";
 
             // Tra cứu Cache SHA-256 (0ms nếu công thức đã từng được dán)
-            var hashKey = "V2_" + ComputeSha256(rawBase64Data);
+            var hashKey = "V3_" + ComputeSha256(rawBase64Data);
             if (VisionFormulaCache.TryGetValue(hashKey, out var cached))
             {
                 return cached == "IMAGE_KEEP" ? null : cached;
             }
+
+            // Lớp bảo vệ Hình học (0ms): Nếu là Đồ thị hàm số Oxy, Bảng biến thiên hoặc Hình học không gian -> Giữ nguyên là Hình ảnh!
+            try
+            {
+                byte[] rawBytes = Convert.FromBase64String(rawBase64Data);
+                if (IsGraphicalDiagramOrPlot(rawBytes))
+                {
+                    VisionFormulaCache[hashKey] = "IMAGE_KEEP";
+                    return null;
+                }
+            }
+            catch { /* continue */ }
 
             // Chuẩn hóa ảnh công thức (Khử nền trong suốt -> nền trắng #FFFFFF + Padding 28px + Super-Resolution Upscale)
             var (mimeType, base64Data, processedDataUri) = PreprocessFormulaImageForOcr(rawMimeType, rawBase64Data, imageDataUri);
@@ -224,12 +330,11 @@ namespace AegisQuiz.Infrastructure.Services.Docx
 
             const string systemPrompt =
                 "You are a deterministic MathType-to-LaTeX optical character recognition (OCR) engine. " +
-                "Transcribe ONLY the exact mathematical or chemical characters, symbols, fractions, radicals, integrals, limits, vectors, angles, matrices, or system of equations visually shown in the image into pure LaTeX wrapped in $...$ " +
-                "(for example: $\\cos(2x) = 1 - 2\\sin^2 x$ or $\\frac{-b \\pm \\sqrt{\\Delta}}{2a}$ or $\\overrightarrow{AB}$). " +
-                "CRITICAL RULES: " +
-                "1. NEVER solve, simplify, evaluate, expand into series, or add any terms not visually present in the image. Transcribe character-for-character! " +
-                "2. Output ONLY the LaTeX string wrapped in $...$, with NO markdown code blocks, NO backticks, and NO explanation. " +
-                "3. Only if the image is a photograph, geometric shape diagram without a formula, or decorative picture that cannot be represented as LaTeX, output EXACTLY: IMAGE_KEEP";
+                "CRITICAL CLASSIFICATION RULE FIRST: " +
+                "If the image is a coordinate function graph (đồ thị hàm số with x/y axes, origin O, plotted curves), a variation table (bảng biến thiên with arrows), a geometric figure (triangle, circle, 3D pyramid, prism, cylinder, cone, sphere), a chart, a number line, a physics circuit/diagram, or a general illustration — EVEN IF it contains mathematical labels like x, y, O, f(x), f'(x), A, B, C, -3, -2, 0 — you MUST NOT convert it to LaTeX! You MUST output EXACTLY: IMAGE_KEEP\n" +
+                "ONLY if the image is purely a standalone mathematical or chemical formula, equation, expression, fraction, radical, integral, limit, vector, matrix, or system of equations (without coordinate plots or geometric drawings), transcribe the exact characters into pure LaTeX wrapped in $...$ " +
+                "(for example: $\\cos(2x) = 1 - 2\\sin^2 x$ or $\\frac{-b \\pm \\sqrt{\\Delta}}{2a}$ or $y = f(x)$). " +
+                "NEVER solve, simplify, evaluate, expand into series, or add any terms not visually present. Output ONLY the LaTeX string wrapped in $...$ or IMAGE_KEEP.";
 
             string? rawResult = null;
 

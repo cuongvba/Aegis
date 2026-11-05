@@ -198,10 +198,14 @@ export async function handleSmartRichPaste(
   ) {
     e.preventDefault();
     onNotify?.('⏳ Đang giải mã đối tượng MathType từ Word sang công thức LaTeX ($...$)...');
-    const imageDataUri =
-      clipboardFile && clipboardFile.type.startsWith('image/')
-        ? await compressImageToDataUri(clipboardFile)
-        : undefined;
+    let imageDataUri: string | undefined;
+    if (clipboardFile && clipboardFile.type.startsWith('image/')) {
+      const compressedUri = await compressImageToDataUri(clipboardFile);
+      const sig = await inspectImageMathSignature(clipboardFile, compressedUri);
+      if (sig.isLikelyFormula) {
+        imageDataUri = sig.formulaReadyDataUri || compressedUri;
+      }
+    }
 
     const mtRes = await transpileClipboardMathTypeViaApi({
       rtfHexChunks,

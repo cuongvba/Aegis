@@ -23,11 +23,11 @@ const SUB_MAP: Record<string, string> = {
 export function unwrapWordConditionalMathHtml(html: string): string {
   if (!html) return '';
   return html
-    // Bảo toàn vị trí của các đối tượng OLE MathType (<v:shape ... o:ole=""> / .wmz) bằng token __AEGIS_MT_SLOT__
+    // Bảo toàn vị trí của các đối tượng OLE MathType (<v:shape ... o:ole=""> / Equation.DSMT) bằng token __AEGIS_MT_SLOT__
     .replace(
       /<!--\[if\s+gte\s+vml\s+\d+\]>([\s\S]*?)<!\[endif\]-->(?:\s*<!\[if\s+!vml\]>[\s\S]*?<!\[endif\]>)?/gi,
       (_full, vmlInner) =>
-        /\bo:ole\b|\.(?:wmz|wmf|emz)\b|Equation\.DSMT/i.test(vmlInner)
+        /\bo:ole\b|Equation\.DSMT/i.test(vmlInner)
           ? '<span data-mathtype-slot="true"> __AEGIS_MT_SLOT__ </span>'
           : ''
     )

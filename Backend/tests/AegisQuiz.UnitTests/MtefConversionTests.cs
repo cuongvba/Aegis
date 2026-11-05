@@ -190,5 +190,29 @@ namespace AegisQuiz.UnitTests
             Assert.Equal(255, corner.Blue);
             Assert.Equal(255, corner.Alpha);
         }
+
+        [Fact]
+        public void Clipboard_IsGraphicalDiagramOrPlot_ShouldDetectFunctionGraphAndKeepFormula()
+        {
+            // 1. Tạo ảnh Đồ thị hàm số Oxy (269x201) có trục hoành Ox và trục tung Oy giao nhau
+            using var graphBmp = new SkiaSharp.SKBitmap(269, 201, SkiaSharp.SKColorType.Rgba8888, SkiaSharp.SKAlphaType.Opaque);
+            graphBmp.Erase(SkiaSharp.SKColors.White);
+            for (int x = 10; x < 255; x++) graphBmp.SetPixel(x, 100, SkiaSharp.SKColors.Black); // Trục Ox
+            for (int y = 8; y < 195; y++) graphBmp.SetPixel(180, y, SkiaSharp.SKColors.Black);  // Trục Oy
+            using var gImg = SkiaSharp.SKImage.FromBitmap(graphBmp);
+            using var gData = gImg.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            Assert.True(ClipboardMathTranspilerService.IsGraphicalDiagramOrPlot(gData.ToArray()));
+
+            // 2. Tạo ảnh Công thức toán học đơn dòng (200x42) không có trục Oy xuyên suốt
+            using var eqBmp = new SkiaSharp.SKBitmap(200, 42, SkiaSharp.SKColorType.Rgba8888, SkiaSharp.SKAlphaType.Opaque);
+            eqBmp.Erase(SkiaSharp.SKColors.White);
+            for (int x = 20; x < 160; x += 4)
+            {
+                for (int y = 14; y < 28; y++) eqBmp.SetPixel(x, y, SkiaSharp.SKColors.Black);
+            }
+            using var eImg = SkiaSharp.SKImage.FromBitmap(eqBmp);
+            using var eData = eImg.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+            Assert.False(ClipboardMathTranspilerService.IsGraphicalDiagramOrPlot(eData.ToArray()));
+        }
     }
 }
