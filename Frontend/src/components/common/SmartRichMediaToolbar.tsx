@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Image as ImageIcon, Mic, Square, Volume2, Video, Table, Sigma } from 'lucide-react';
+import { Image as ImageIcon, Mic, Square, Volume2, Video, Table, Sigma, Sparkles } from 'lucide-react';
 import { compressImageToDataUri, readBlobAsDataUri } from '@/shared/lib/quiz/smartClipboardMedia';
+import { transpileClipboardMathTypeViaApi } from '@/shared/lib/quiz/mathtypeClipboardClient';
 
 interface SmartRichMediaToolbarProps {
   value: string;
@@ -108,11 +109,45 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
     appendSnippet('$\\frac{a}{b} + \\sqrt{x^{2}}$', true);
   };
 
+  const [isConvertingMathImg, setIsConvertingMathImg] = useState(false);
+  const hasEmbeddedImage = /!\[[^\]]*\]\((data:image\/[^)]+)\)/.test(value || '');
+
+  const handleConvertEmbeddedImageToLatex = async () => {
+    const match = (value || '').match(/!\[[^\]]*\]\((data:image\/[^)]+)\)/);
+    if (!match) return;
+    setIsConvertingMathImg(true);
+    onNotify?.('⏳ Đang nhận diện và chuyển đổi ảnh công thức sang LaTeX ($...$)...');
+    try {
+      const res = await transpileClipboardMathTypeViaApi({ imageDataUri: match[1] });
+      if (res.success && res.singleLatex) {
+        onChange((value || '').replace(match[0], res.singleLatex));
+        onNotify?.('Đã chuyển đổi ảnh công thức sang chuẩn Vector LaTeX ($...$)!');
+      } else {
+        onNotify?.('Ảnh này là hình minh họa (không phải công thức toán đơn thuần), hệ thống giữ nguyên ảnh.');
+      }
+    } finally {
+      setIsConvertingMathImg(false);
+    }
+  };
+
   return (
     <div className="inline-flex flex-wrap items-center gap-1">
       <input ref={imgInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageFile} />
       <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioFile} />
       <input ref={videoInputRef} type="file" accept="video/mp4,video/webm,video/ogg" className="hidden" onChange={handleVideoFile} />
+
+      {hasEmbeddedImage && (
+        <button
+          type="button"
+          disabled={isConvertingMathImg}
+          onClick={handleConvertEmbeddedImageToLatex}
+          title="Chuyển đổi ảnh công thức Toán đang có trong ô này thành mã LaTeX ($...$) siêu nhẹ"
+          className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[11px] font-bold transition-all cursor-pointer animate-pulse"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <span>{isConvertingMathImg ? 'Đang dịch LaTeX...' : '✨ Đổi Ảnh -> LaTeX'}</span>
+        </button>
+      )}
 
       <button
         type="button"

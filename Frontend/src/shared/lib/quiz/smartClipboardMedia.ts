@@ -6,6 +6,12 @@ import {
   htmlTableToMarkdown,
   tsvToMarkdownTable,
 } from './clipboardMathTableTranspiler';
+import {
+  extractMathTypeRtfHexChunks,
+  extractWordMathTypeHtmlMetadata,
+  inspectImageMathSignature,
+  transpileClipboardMathTypeViaApi,
+} from './mathtypeClipboardClient';
 
 export { normalizeUnicodeMathToLatex };
 
@@ -63,17 +69,16 @@ export function readBlobAsDataUri(blob: Blob): Promise<string> {
 export function convertWordHtmlToRichMarkdown(rawHtml: string): string | null {
   if (!rawHtml) return null;
   const html = unwrapWordConditionalMathHtml(rawHtml);
-  const hasRichStructure = /<(table|m:omath|m:omathpara|math|mml:math|sup|sub|u|img)\b|katex|data-latex/i.test(html);
+  const hasRichStructure =
+    /<(table|m:omath|m:omathpara|math|mml:math|sup|sub|u|img)\b|katex|data-latex|__AEGIS_MT_SLOT__/i.test(html);
   if (!hasRichStructure) return null;
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   doc.querySelectorAll('style, script, meta, link, xml, title, head').forEach(el => el.remove());
 
-  // 1. Convert KaTeX / MathJax / Office MathML (m:oMath) / W3C MathML (mml:math) -> LaTeX ($...$)
   const mathSelectors = 'm\\:oMathPara, m\\:oMath, oMathPara, oMath, math, mml\\:math, .katex-mathml, [data-latex]';
   doc.querySelectorAll(mathSelectors).forEach(mathEl => {
-    // Skip nested oMath if parent oMathPara is already being processed
     if (mathEl.tagName.toLowerCase().endsWith('omath') && mathEl.parentElement?.tagName.toLowerCase().endsWith('omathpara')) {
       return;
     }
@@ -83,7 +88,6 @@ export function convertWordHtmlToRichMarkdown(rawHtml: string): string | null {
     }
   });
 
-  // 2. Convert <sup>, <sub>, <u> BEFORE table extraction so cells retain LaTeX/underline
   doc.querySelectorAll('sup').forEach(el => {
     const t = el.textContent?.trim();
     if (t && !/^\[\d+\]$/.test(t)) el.replaceWith(doc.createTextNode(`$^{${t}}$`));
@@ -97,13 +101,11 @@ export function convertWordHtmlToRichMarkdown(rawHtml: string): string | null {
     if (t) el.replaceWith(doc.createTextNode(`<u>${t}</u>`));
   });
 
-  // 3. Convert <table> -> Markdown Table (| A | B |)
   doc.querySelectorAll('table').forEach(tableEl => {
     const mdTable = htmlTableToMarkdown(tableEl);
     if (mdTable) tableEl.replaceWith(doc.createTextNode(mdTable));
   });
 
-  // 4. Handle <img>: Convert formula-alt images to LaTeX; keep only genuine data/http illustrations
   doc.querySelectorAll('img').forEach(imgEl => {
     const latexAlt = imgEl.getAttribute('data-latex') || imgEl.getAttribute('alt') || '';
     if (latexAlt && /\\[a-zA-Z]+|[\^_{}=]/.test(latexAlt) && latexAlt.length < 300) {
@@ -156,39 +158,78 @@ export function convertPlainTextToSmartMedia(text: string): string | null {
   return null;
 }
 
-export function insertAtCursor(
-  targetEl: HTMLTextAreaElement | HTMLInputElement | null,
-  currentVal: string,
-  snippet: string,
-  onChange: (nextVal: string) => void
-) {
-  if (!targetEl) {
-    onChange(currentVal ? `${currentVal}\n${snippet}` : snippet);
-    return;
-  }
-  const start = targetEl.selectionStart ?? currentVal.length;
-  const end = targetEl.selectionEnd ?? currentVal.length;
-  const nextVal = `${currentVal.slice(0, start)}${snippet}${currentVal.slice(end)}`;
-  onChange(nextVal);
-}
-
 export async function handleSmartRichPaste(
   e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>,
   currentVal: string,
   onChange: (nextVal: string) => void,
   onNotify?: (msg: string) => void
 ) {
+  // Đọc đồng bộ toàn bộ dữ liệu Clipboard trong tick sự kiện đầu tiên
   const targetEl = e.currentTarget;
+  const start = targetEl?.selectionStart ?? currentVal.length;
+  const end = targetEl?.selectionEnd ?? currentVal.length;
+  const insertSnippet = (snippet: string) => {
+    onChange(`${currentVal.slice(0, start)}${snippet}${currentVal.slice(end)}`);
+  };
+
+  const rtf = e.clipboardData?.getData('text/rtf') || e.clipboardData?.getData('application/rtf') || '';
   const html = e.clipboardData?.getData('text/html') || '';
   const plain = e.clipboardData?.getData('text/plain') || '';
+  const items = Array.from(e.clipboardData?.items || []);
+  const fileItem = items.find(it => it.kind === 'file' && /^(image|audio|video)\//i.test(it.type));
+  const clipboardFile = fileItem ? fileItem.getAsFile() : null;
 
-  // LUỒNG 1 (ƯU TIÊN SỐ 1): Phân tích cấu trúc HTML từ Word / Excel / Web
-  // Chuyển Bảng biểu -> Markdown Table (| A | B |), Công thức OMML/MathML -> LaTeX ($...$).
-  // Tuyệt đối KHÔNG lấy ảnh preview (image/png) mà Word/Excel tự sinh kèm trong Clipboard!
+  const rtfHexChunks = extractMathTypeRtfHexChunks(rtf);
+  const mtMeta = extractWordMathTypeHtmlMetadata(html);
   const convertedHtml = convertWordHtmlToRichMarkdown(html);
-  if (convertedHtml) {
+
+  // LUỒNG 1A (ĐỐI TƯỢNG MATHTYPE TỪ MICROSOFT WORD - RTF MTEF / OLE / WMZ):
+  if (
+    rtfHexChunks.length > 0 ||
+    mtMeta.hasMathTypeOle ||
+    (convertedHtml && convertedHtml.includes('__AEGIS_MT_SLOT__'))
+  ) {
     e.preventDefault();
-    insertAtCursor(targetEl, currentVal, convertedHtml, onChange);
+    onNotify?.('⏳ Đang giải mã đối tượng MathType từ Word sang công thức LaTeX ($...$)...');
+    const imageDataUri =
+      clipboardFile && clipboardFile.type.startsWith('image/')
+        ? await readBlobAsDataUri(clipboardFile)
+        : undefined;
+
+    const mtRes = await transpileClipboardMathTypeViaApi({
+      rtfHexChunks,
+      localWmzPaths: mtMeta.localWmzPaths,
+      imageDataUri,
+    });
+
+    if (convertedHtml && convertedHtml.includes('__AEGIS_MT_SLOT__')) {
+      let slotIdx = 0;
+      const merged = convertedHtml
+        .replace(/__AEGIS_MT_SLOT__/g, () => {
+          const f = mtRes.formulas[slotIdx] ?? mtRes.singleLatex ?? '';
+          slotIdx++;
+          return f;
+        })
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (merged) {
+        insertSnippet(merged);
+        onNotify?.('Đã giải mã chính xác đối tượng MathType từ Word sang chuẩn LaTeX ($...$)!');
+        return;
+      }
+    }
+
+    if (mtRes.success && mtRes.singleLatex) {
+      insertSnippet(mtRes.formulas.length > 1 ? mtRes.formulas.join(' ') : mtRes.singleLatex);
+      onNotify?.('Đã giải mã đối tượng MathType từ Word sang chuẩn LaTeX ($...$)!');
+      return;
+    }
+  }
+
+  // LUỒNG 1B (BẢNG BIỂU & CÔNG THỨC OMML/MATHML TỪ WORD / EXCEL / WEB):
+  if (convertedHtml && !convertedHtml.includes('__AEGIS_MT_SLOT__')) {
+    e.preventDefault();
+    insertSnippet(convertedHtml);
     const hasTable = /\|\s*---/.test(convertedHtml);
     const hasMath = convertedHtml.includes('$');
     if (hasTable && hasMath) {
@@ -203,11 +244,11 @@ export async function handleSmartRichPaste(
     return;
   }
 
-  // LUỒNG 2 (ƯU TIÊN SỐ 2): Phân tích Plain Text (Bảng TSV từ Excel, Công thức Unicode, Link Media)
+  // LUỒNG 2: Plain Text (Bảng TSV từ Excel, Công thức Unicode, Link Media)
   const convertedPlain = convertPlainTextToSmartMedia(plain);
   if (convertedPlain) {
     e.preventDefault();
-    insertAtCursor(targetEl, currentVal, convertedPlain, onChange);
+    insertSnippet(convertedPlain);
     if (/\|\s*---/.test(convertedPlain)) {
       onNotify?.('Đã chuyển đổi Bảng dữ liệu -> Chuẩn Markdown Table!');
     } else if (convertedPlain.includes('$')) {
@@ -218,34 +259,39 @@ export async function handleSmartRichPaste(
     return;
   }
 
-  // Nếu Clipboard có chứa văn bản thuần (copy chữ bình thường từ Word/Excel/Web),
-  // giữ nguyên hành vi dán văn bản mặc định của trình duyệt, KHÔNG đọc fileItem ảnh preview của Office!
   if (plain.trim().length > 0) {
     return;
   }
 
-  // LUỒNG 3 (CHỈ KHI CLIPBOARD LÀ MEDIA THUẦN TÚY): Chụp màn hình Win+Shift+S, Copy Image, Audio, Video
-  const items = Array.from(e.clipboardData?.items || []);
-  const fileItem = items.find(it => it.kind === 'file' && /^(image|audio|video)\//i.test(it.type));
-  if (fileItem) {
+  // LUỒNG 3: Clipboard chỉ chứa File nhị phân (Khi click trực tiếp vào hộp MathType hoặc chụp ảnh màn hình)
+  if (clipboardFile) {
     e.preventDefault();
-    const file = fileItem.getAsFile();
-    if (!file) return;
-    if (file.type.startsWith('image/')) {
-      const uri = await compressImageToDataUri(file);
-      insertAtCursor(targetEl, currentVal, `![Hình minh họa](${uri})`, onChange);
+    if (clipboardFile.type.startsWith('image/')) {
+      const uri = await compressImageToDataUri(clipboardFile);
+      // Kiểm tra xem ảnh chụp/copy này có phải là ảnh công thức MathType không
+      const { isLikelyFormula } = await inspectImageMathSignature(clipboardFile, uri);
+      if (isLikelyFormula) {
+        onNotify?.('⏳ Phát hiện ảnh công thức Toán học, đang chuyển đổi sang chuẩn LaTeX ($...$)...');
+        const mtRes = await transpileClipboardMathTypeViaApi({ imageDataUri: uri });
+        if (mtRes.success && mtRes.singleLatex) {
+          insertSnippet(mtRes.singleLatex);
+          onNotify?.('Đã chuyển đổi ảnh công thức MathType sang chuẩn Vector LaTeX ($...$)!');
+          return;
+        }
+      }
+      insertSnippet(`![Hình minh họa](${uri})`);
       onNotify?.('Đã dán và nén tối ưu Hình ảnh trực tiếp vào câu hỏi!');
       return;
     }
-    if (file.type.startsWith('audio/')) {
-      const uri = await readBlobAsDataUri(file);
-      insertAtCursor(targetEl, currentVal, `[Audio](${uri})`, onChange);
+    if (clipboardFile.type.startsWith('audio/')) {
+      const uri = await readBlobAsDataUri(clipboardFile);
+      insertSnippet(`[Audio](${uri})`);
       onNotify?.('Đã dán Âm thanh trực tiếp vào câu hỏi!');
       return;
     }
-    if (file.type.startsWith('video/')) {
-      const uri = await readBlobAsDataUri(file);
-      insertAtCursor(targetEl, currentVal, `[Video](${uri})`, onChange);
+    if (clipboardFile.type.startsWith('video/')) {
+      const uri = await readBlobAsDataUri(clipboardFile);
+      insertSnippet(`[Video](${uri})`);
       onNotify?.('Đã dán Video trực tiếp vào câu hỏi!');
       return;
     }

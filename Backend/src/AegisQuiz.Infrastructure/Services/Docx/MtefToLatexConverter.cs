@@ -35,12 +35,27 @@ namespace AegisQuiz.Infrastructure.Services.Docx
 
             try
             {
-                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF
+                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF hoặc EQNOLEFILEHDR (0x1C 0x00) trong OLE \objdata
+                int mtefStart = -1;
                 int tagIdx = FindBytePattern(wmfBytes, MathTypeTag);
-                if (tagIdx < 0) return false;
-
-                int mtefStart = tagIdx + MathTypeTag.Length;
-                if (mtefStart + 15 >= wmfBytes.Length) return false;
+                if (tagIdx >= 0)
+                {
+                    mtefStart = tagIdx + MathTypeTag.Length;
+                }
+                else
+                {
+                    for (int i = 0; i < wmfBytes.Length - 40; i++)
+                    {
+                        if (wmfBytes[i] == 0x1C && wmfBytes[i + 1] == 0x00 &&
+                            (wmfBytes[i + 28] == 5 || wmfBytes[i + 28] == 3) &&
+                            wmfBytes[i + 29] <= 1 && wmfBytes[i + 30] <= 5)
+                        {
+                            mtefStart = i + 28;
+                            break;
+                        }
+                    }
+                }
+                if (mtefStart < 0 || mtefStart + 15 >= wmfBytes.Length) return false;
 
                 byte mtefVer = wmfBytes[mtefStart];
                 if (mtefVer != 5 && mtefVer != 3) return false;

@@ -2327,6 +2327,68 @@ namespace AegisQuiz.API.Controllers
             }
         }
 
+        // ── POST api/quiz/questions/clipboard-mathtype ────────────────────────
+        [HttpPost("questions/clipboard-mathtype")]
+        public async Task<IActionResult> TranspileClipboardMathType(
+            [FromBody] ClipboardMathTypeRequest request,
+            [FromServices] System.Net.Http.IHttpClientFactory httpClientFactory)
+        {
+            if (request == null)
+                return BadRequest(new { success = false });
+
+            // Tier 1: Giải mã trực tiếp luồng nhị phân MTEF v5 / WMF từ RTF Clipboard (\objdata & \wmetafile)
+            var rtfFormulas = AegisQuiz.Infrastructure.Services.Docx.ClipboardMathTranspilerService.DecodeRtfHexChunksToLatex(request.RtfHexChunks);
+            if (rtfFormulas.Count > 0)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    source = "MTEF_RTF",
+                    formulas = rtfFormulas,
+                    singleLatex = rtfFormulas[0]
+                });
+            }
+
+            // Tier 2: Giải mã tệp tạm .wmz/.wmf từ Word Clipboard (khi chạy cùng máy)
+            var wmzFormulas = AegisQuiz.Infrastructure.Services.Docx.ClipboardMathTranspilerService.TryDecodeLocalWmzPaths(request.LocalWmzPaths);
+            if (wmzFormulas.Count > 0)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    source = "MTEF_WMZ",
+                    formulas = wmzFormulas,
+                    singleLatex = wmzFormulas[0]
+                });
+            }
+
+            // Tier 3: Giải mã ảnh bitmap công thức MathType qua Multimodal Vision OCR
+            if (!string.IsNullOrWhiteSpace(request.ImageDataUri))
+            {
+                var visionLatex = await AegisQuiz.Infrastructure.Services.Docx.ClipboardMathTranspilerService.DecodeFormulaImageViaVisionAsync(
+                    request.ImageDataUri,
+                    httpClientFactory);
+                if (!string.IsNullOrWhiteSpace(visionLatex))
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        source = "VISION_OCR",
+                        formulas = new List<string> { visionLatex },
+                        singleLatex = visionLatex
+                    });
+                }
+            }
+
+            return Ok(new
+            {
+                success = false,
+                source = "NONE",
+                formulas = new List<string>(),
+                singleLatex = (string?)null
+            });
+        }
+
         private static bool IsQuestionEnabled(QuestionBase q)
         {
             if (q.Payload == null) return true;
@@ -2351,5 +2413,12 @@ namespace AegisQuiz.API.Controllers
         public string RawHeader { get; set; } = string.Empty;
         public string? DomainScope { get; set; } = "ALL";
         public string? LanguageCode { get; set; } = "any";
+    }
+
+    public class ClipboardMathTypeRequest
+    {
+        public List<string>? RtfHexChunks { get; set; }
+        public List<string>? LocalWmzPaths { get; set; }
+        public string? ImageDataUri { get; set; }
     }
 }
