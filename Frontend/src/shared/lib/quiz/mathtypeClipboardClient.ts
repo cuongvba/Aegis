@@ -19,8 +19,8 @@ export function extractMathTypeRtfHexChunks(rtf: string): string[] {
   const wmfChunks: string[] = [];
   const objDataChunks: string[] = [];
 
-  // 1. Trích xuất khối \wmetafile8 (cho phép các control word kích thước \picw...\pich...\picwgoal... đứng trước chuỗi Hex)
-  const wmfRegex = /\\wmetafile\d*(?:\\[a-zA-Z]+-?\d*\s*)*[\s\r\n]+([0-9a-fA-F\s\r\n]{128,})/g;
+  // 1. Trích xuất khối \wmetafile8 (cho phép các control word kích thước \picw...\pich...\bliptag... và nhóm {\*\blipuid ...} đứng trước chuỗi Hex)
+  const wmfRegex = /\\wmetafile\d*(?:\\[a-zA-Z]+-?\d*\s*|\{\\\*[^{}]*\}\s*)*[\s\r\n]+([0-9a-fA-F\s\r\n]{128,})/g;
   let match: RegExpExecArray | null;
   while ((match = wmfRegex.exec(rtf)) !== null) {
     const cleanHex = match[1].replace(/[^0-9a-fA-F]/g, '');

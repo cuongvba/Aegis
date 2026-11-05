@@ -25,6 +25,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
         private static readonly byte[] MathTypeTag = Encoding.ASCII.GetBytes("Design Science, Inc.\0");
         private static readonly byte[] DsmtSignature = Encoding.ASCII.GetBytes("DSMT");
         private static readonly byte[] MtWinSignature = Encoding.ASCII.GetBytes("MTWin");
+        private static readonly byte[] Ole2Signature = { 0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1 };
 
         /// <summary>
         /// Thử giải mã tệp WMF nhị phân hoặc luồng OLE \objdata sang KaTeX thông qua MTEF v5 AST.
@@ -37,7 +38,14 @@ namespace AegisQuiz.Infrastructure.Services.Docx
 
             try
             {
-                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF, hoặc chữ ký অ্যাপ 'DSMT'/'MTWin' / EQNOLEFILEHDR (0x1C 0x00) trong OLE \objdata
+                // 0. Nếu đầu vào là luồng OLE2 Compound File (\objdata từ Word RTF), trích xuất & ghép nối liền mạch các Mini-Sector của stream "Equation Native"
+                // (loại bỏ hoàn toàn lỗi bị cắt cụt công thức như y=f(x) -> y=f khi Sector Directory "Equation Native" xen vào giữa các Mini-Sector!)
+                if (TryExtractOleEquationNativeStream(wmfBytes, out var contiguousOleStream) && contiguousOleStream.Length >= 32)
+                {
+                    wmfBytes = contiguousOleStream;
+                }
+
+                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF, hoặc chữ ký 'DSMT'/'MTWin' / EQNOLEFILEHDR (0x1C 0x00) trong OLE \objdata
                 int mtefStart = LocateMtefHeaderStart(wmfBytes);
                 if (mtefStart < 0 || mtefStart + 15 >= wmfBytes.Length) return false;
 
@@ -67,6 +75,122 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                 // Fail-safe: Nếu gặp lỗi trong quá trình đọc nhị phân MTEF, an toàn chuyển về pipeline tiếp theo
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Giải nén và ghép nối liền mạch luồng "Equation Native" từ cấu trúc OLE2 Compound Document (D0 CF 11 E0 A1 B1 1A E1)
+        /// trong khối \objdata của RTF Clipboard. Khắc phục triệt để hiện tượng phân mảnh Mini-Sector (64 bytes) bị chèn ngang bởi Sector Directory.
+        /// </summary>
+        private static bool TryExtractOleEquationNativeStream(byte[] rawBytes, out byte[] equationStream)
+        {
+            equationStream = Array.Empty<byte>();
+            int oleStart = FindBytePattern(rawBytes, Ole2Signature);
+            if (oleStart < 0 || oleStart + 512 > rawBytes.Length) return false;
+
+            try
+            {
+                ushort sectorShift = BitConverter.ToUInt16(rawBytes, oleStart + 30);
+                ushort miniShift = BitConverter.ToUInt16(rawBytes, oleStart + 32);
+                if (sectorShift < 7 || sectorShift > 12 || miniShift < 4 || miniShift > 8) return false;
+
+                int sectorSize = 1 << sectorShift;
+                int miniSectorSize = 1 << miniShift;
+                int firstDirSect = BitConverter.ToInt32(rawBytes, oleStart + 48);
+                int miniStreamCutoff = BitConverter.ToInt32(rawBytes, oleStart + 56);
+                int firstMiniFatSect = BitConverter.ToInt32(rawBytes, oleStart + 60);
+
+                // Đọc bảng FAT từ 109 DIFAT entries đầu tiên trong OLE2 Header (offset 76..511)
+                var fatList = new List<int>();
+                for (int i = 0; i < 109; i++)
+                {
+                    int fatSect = BitConverter.ToInt32(rawBytes, oleStart + 76 + i * 4);
+                    if (fatSect < 0) break;
+                    int fatOffset = oleStart + (fatSect + 1) * sectorSize;
+                    if (fatOffset + sectorSize > rawBytes.Length) break;
+                    for (int j = 0; j < sectorSize; j += 4)
+                    {
+                        fatList.Add(BitConverter.ToInt32(rawBytes, fatOffset + j));
+                    }
+                }
+                if (fatList.Count == 0) return false;
+
+                byte[] ReadSectorChain(int startSect, int expectedSize)
+                {
+                    using var ms = new MemoryStream();
+                    int sect = startSect;
+                    int guard = 0;
+                    while (sect >= 0 && sect < fatList.Count && guard++ < 4096)
+                    {
+                        int pos = oleStart + (sect + 1) * sectorSize;
+                        if (pos < 0 || pos + sectorSize > rawBytes.Length) break;
+                        ms.Write(rawBytes, pos, sectorSize);
+                        if (expectedSize > 0 && ms.Length >= expectedSize) break;
+                        sect = fatList[sect];
+                    }
+                    var arr = ms.ToArray();
+                    if (expectedSize > 0 && arr.Length > expectedSize)
+                    {
+                        var trimmed = new byte[expectedSize];
+                        Array.Copy(arr, 0, trimmed, 0, expectedSize);
+                        return trimmed;
+                    }
+                    return arr;
+                }
+
+                byte[] dirBytes = ReadSectorChain(firstDirSect, -1);
+                if (dirBytes.Length < 256) return false;
+
+                int rootStartSect = BitConverter.ToInt32(dirBytes, 116);
+                int rootSize = BitConverter.ToInt32(dirBytes, 120);
+
+                for (int entryOff = 128; entryOff + 128 <= dirBytes.Length; entryOff += 128)
+                {
+                    ushort nameLen = BitConverter.ToUInt16(dirBytes, entryOff + 64);
+                    if (nameLen <= 2 || nameLen > 64) continue;
+                    string name = Encoding.Unicode.GetString(dirBytes, entryOff, nameLen - 2);
+                    if (!name.Contains("Equation Native", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Contains("DSMT", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    int eqStartSect = BitConverter.ToInt32(dirBytes, entryOff + 116);
+                    int eqSize = BitConverter.ToInt32(dirBytes, entryOff + 120);
+                    if (eqStartSect < 0 || eqSize <= 28) continue;
+
+                    if (eqSize < miniStreamCutoff && rootStartSect >= 0)
+                    {
+                        byte[] miniStream = ReadSectorChain(rootStartSect, rootSize);
+                        byte[] miniFatBytes = firstMiniFatSect >= 0 ? ReadSectorChain(firstMiniFatSect, -1) : Array.Empty<byte>();
+                        var miniFat = new List<int>();
+                        for (int k = 0; k + 4 <= miniFatBytes.Length; k += 4)
+                            miniFat.Add(BitConverter.ToInt32(miniFatBytes, k));
+
+                        using var eqMs = new MemoryStream();
+                        int mSect = eqStartSect;
+                        int mGuard = 0;
+                        while (mSect >= 0 && eqMs.Length < eqSize && mGuard++ < 4096)
+                        {
+                            int mPos = mSect * miniSectorSize;
+                            if (mPos < 0 || mPos >= miniStream.Length) break;
+                            int copyLen = Math.Min(miniSectorSize, Math.Min(miniStream.Length - mPos, eqSize - (int)eqMs.Length));
+                            eqMs.Write(miniStream, mPos, copyLen);
+                            mSect = (mSect < miniFat.Count) ? miniFat[mSect] : (mSect + 1);
+                        }
+                        equationStream = eqMs.ToArray();
+                        return equationStream.Length >= 32;
+                    }
+                    else
+                    {
+                        equationStream = ReadSectorChain(eqStartSect, eqSize);
+                        return equationStream.Length >= 32;
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore OLE2 parse error and fallback to pattern scan
+            }
+
+            return false;
         }
 
         /// <summary>
