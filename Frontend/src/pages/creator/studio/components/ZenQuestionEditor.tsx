@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, X, Plus, Trash2 } from 'lucide-react';
 import { MathRenderer } from '@/components/common/MathRenderer';
+import { SmartRichMediaToolbar } from '@/components/common/SmartRichMediaToolbar';
+import { handleSmartRichPaste, hasRichPreviewContent } from '@/shared/lib/quiz/smartClipboardMedia';
 import { ZenQuestionPatch, ZenQuestionPreview } from '../types/zen-studio.types';
 import {
   isChoiceAnswerForm,
@@ -25,6 +27,12 @@ export const ZenQuestionEditor: React.FC<ZenQuestionEditorProps> = ({ question, 
   const [options, setOptions] = useState<string[]>(question.options ?? []);
   const [answer, setAnswer] = useState(question.correctAnswer ?? '');
   const [explanation, setExplanation] = useState(question.explanation ?? '');
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const notify = (msg: string) => {
+    setNotice(msg);
+    window.setTimeout(() => setNotice(prev => (prev === msg ? null : prev)), 3500);
+  };
 
   const choiceMode = isChoiceAnswerForm(answer, options.length);
   const multi = isMultiAnswerType(question.questionType);
@@ -35,40 +43,74 @@ export const ZenQuestionEditor: React.FC<ZenQuestionEditorProps> = ({ question, 
 
   return (
     <div className="space-y-4">
-      <label className="block space-y-1.5">
-        <span className="text-xs font-semibold text-indigo-300">{t('editor.content')}</span>
-        <textarea rows={4} value={content} onChange={(e) => setContent(e.target.value)} className={fieldClass} />
+      {notice && (
+        <div className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-semibold">
+          ✨ {notice}
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-indigo-300">{t('editor.content')}</span>
+          <SmartRichMediaToolbar value={content} onChange={setContent} onNotify={notify} />
+        </div>
+        <textarea
+          rows={4}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onPaste={(e) => handleSmartRichPaste(e, content, setContent, notify)}
+          placeholder="Nhập nội dung hoặc bấm Ctrl+V dán Ảnh / Bảng Word / Công thức..."
+          className={fieldClass}
+        />
         <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-sm">
           <MathRenderer content={content} />
         </div>
-      </label>
+      </div>
 
       <div className="space-y-2">
         <span className="text-xs font-semibold text-indigo-300">{t('editor.options')}</span>
         {options.map((opt, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <button
-              type="button"
-              disabled={!choiceMode}
-              onClick={() => setAnswer(toggleCorrectIndex(answer, options.length, i, multi))}
-              title={t('editor.markCorrect')}
-              className={`w-8 h-8 shrink-0 rounded-lg font-bold text-xs border transition-colors ${
-                correct.includes(i)
-                  ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200'
-                  : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-emerald-500/60'
-              }`}
-            >
-              {String.fromCharCode(65 + i)}
-            </button>
-            <input value={opt} onChange={(e) => updateOption(i, e.target.value)} className={fieldClass} />
-            <button
-              type="button"
-              onClick={() => setOptions((prev) => prev.filter((_, idx) => idx !== i))}
-              className="p-2 text-slate-500 hover:text-rose-400"
-              aria-label={t('editor.removeOption')}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+          <div key={i} className="space-y-1">
+            <div className="flex items-start gap-2">
+              <button
+                type="button"
+                disabled={!choiceMode}
+                onClick={() => setAnswer(toggleCorrectIndex(answer, options.length, i, multi))}
+                title={t('editor.markCorrect')}
+                className={`w-8 h-8 shrink-0 rounded-lg font-bold text-xs border transition-colors ${
+                  correct.includes(i)
+                    ? 'bg-emerald-500/30 border-emerald-400 text-emerald-200'
+                    : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-emerald-500/60'
+                }`}
+              >
+                {String.fromCharCode(65 + i)}
+              </button>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center justify-end">
+                  <SmartRichMediaToolbar compact value={opt} onChange={(v) => updateOption(i, v)} onNotify={notify} />
+                </div>
+                <input
+                  value={opt}
+                  onChange={(e) => updateOption(i, e.target.value)}
+                  onPaste={(e) => handleSmartRichPaste(e, opt, (v) => updateOption(i, v), notify)}
+                  placeholder={`Phương án ${String.fromCharCode(65 + i)} (hỗ trợ Ctrl+V dán Ảnh / Công thức)`}
+                  className={fieldClass}
+                />
+                {hasRichPreviewContent(opt) && (
+                  <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                    <MathRenderer content={opt} />
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setOptions((prev) => prev.filter((_, idx) => idx !== i))}
+                className="p-2 text-slate-500 hover:text-rose-400"
+                aria-label={t('editor.removeOption')}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         ))}
         {options.length < 8 && (
@@ -90,15 +132,24 @@ export const ZenQuestionEditor: React.FC<ZenQuestionEditorProps> = ({ question, 
         </label>
       )}
 
-      <label className="block space-y-1.5">
-        <span className="text-xs font-semibold text-indigo-300">{t('editor.explanation')}</span>
-        <textarea rows={4} value={explanation} onChange={(e) => setExplanation(e.target.value)} className={fieldClass} />
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-indigo-300">{t('editor.explanation')}</span>
+          <SmartRichMediaToolbar compact value={explanation} onChange={setExplanation} onNotify={notify} />
+        </div>
+        <textarea
+          rows={4}
+          value={explanation}
+          onChange={(e) => setExplanation(e.target.value)}
+          onPaste={(e) => handleSmartRichPaste(e, explanation, setExplanation, notify)}
+          className={fieldClass}
+        />
         {explanation && (
           <div className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800 text-sm">
             <MathRenderer content={explanation} />
           </div>
         )}
-      </label>
+      </div>
 
       <div className="flex justify-end gap-2">
         <button

@@ -111,14 +111,29 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
       return `<div class="my-2 p-2 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center gap-2"><audio controls class="w-full h-8"><source src="${trimmed}" /></audio></div>`;
     }
 
-    // Bản đồ token hóa bảo vệ các phần tử media (Ảnh Markdown, Audio, Raw Data URI)
+    // Bản đồ token hóa bảo vệ các phần tử media (Ảnh Markdown, Audio, Video, Raw Data URI)
     const mediaTokens: Record<string, string> = {};
     let tokenCounter = 0;
+
+    const buildVideoHtml = (src: string) => {
+      const ytMatch = src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+      if (ytMatch) {
+        return `<div class="my-3 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-lg max-w-xl mx-auto aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" title="Video bài học" class="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+      }
+      return `<div class="my-3 p-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col gap-1.5 max-w-xl mx-auto"><span class="text-[11px] font-bold text-amber-400">🎬 Video trực quan:</span><video controls preload="metadata" class="w-full max-h-80 rounded-xl bg-black"><source src="${src}" /></video></div>`;
+    };
 
     // Hỗ trợ link audio nhúng dạng [Audio](url)
     let processed = sanitizedContent.replace(/\[Audio(?:\s+Listening)?\]\(((?:data:audio\/|http)[^)]+)\)/gi, (_match, src) => {
       const token = `__AEGIS_AUDIO_TOKEN_${tokenCounter++}__`;
       mediaTokens[token] = `<div class="my-2 p-2.5 bg-slate-900/90 border border-slate-800 rounded-xl flex flex-col gap-1"><span class="text-[11px] font-bold text-sky-400">🎧 Bài nghe Audio:</span><audio controls class="w-full h-8"><source src="${src}" /></audio></div>`;
+      return token;
+    });
+
+    // Hỗ trợ link video nhúng dạng [Video](url) hoặc data:video/...
+    processed = processed.replace(/\[Video(?:\s+[^\]]*)?\]\(((?:data:video\/|http)[^)]+)\)/gi, (_match, src) => {
+      const token = `__AEGIS_VIDEO_TOKEN_${tokenCounter++}__`;
+      mediaTokens[token] = buildVideoHtml(src);
       return token;
     });
 

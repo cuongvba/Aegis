@@ -220,6 +220,25 @@ Lời giải: Khi đèn giao thông màu Đỏ bật sáng, mọi phương tiệ
 
 ---
 
+## 8B. TUYỆT CHIÊU DÁN HÌNH ẢNH, THU ÂM GIỌNG CÔ, VIDEO HOẠT HÌNH & COPY BẢNG/CÔNG THỨC TỪ WORD (DÀNH CHO MẦM NON, TIỂU HỌC & TOÁN/KHOA HỌC)
+
+Khi mở cửa sổ **Tạo/Sửa Câu Hỏi** trong **`ZenQuestions` (`/creator/questions`)** hoặc bấm **Sửa** trong **`Zen Studio` (`/creator/studio`)**, ngay phía trên mỗi ô nhập liệu (Bài đọc hiểu, Nội dung câu hỏi, Phương án A-B-C-D, Lời giải) đều có **Thanh Công Cụ Đa Phương Tiện 1 Chạm** và bộ nhận diện **`Ctrl + V` Thông Minh**:
+
+1. **🖼️ Dán Hình Ảnh Trực Tiếp (`Ctrl + V`) hoặc Chọn Ảnh**:
+   - Thầy/Cô chụp màn hình máy tính (`Win + Shift + S`), hoặc chuột phải **Copy ảnh** từ Word / Zalo / Google, rồi đặt chuột vào ô Câu hỏi (hoặc ô Phương án A, B, C, D) và bấm **`Ctrl + V`**.
+   - Hệ thống **tự động nén ảnh sắc nét** và lưu thẳng vào câu hỏi (`![Hình minh họa](data:image/...)`) kèm khung xem trước ngay lập tức!
+2. **🎙️ Thu Âm Giọng Đọc Của Cô Ngay Trên Trình Duyệt (Cực kỳ thu hút các bé Mầm non & Tiểu học)**:
+   - Với các bé chưa biết đọc chữ hoặc học Tiếng Anh, cô chỉ cần bấm nút **`🎙️ Thu âm giọng cô`**, đọc to câu hỏi (*"Đố các con, con vật nào trong hình dưới đây kêu Meo meo?"*), rồi bấm **`Dừng thu`**.
+   - Giọng đọc ấm áp của cô sẽ biến thành **Thanh phát nhạc `🎧 Bài nghe Audio`** gắn ngay trong câu hỏi hoặc từng phương án A, B, C, D để các con bấm nghe!
+3. **🎬 Nhúng Video Hoạt Hình YouTube hoặc File Video `.mp4`**:
+   - Bấm nút **`🎬 Video / YouTube`** (hoặc dán thẳng đường link YouTube vào ô câu hỏi bằng `Ctrl + V`).
+   - Hệ thống tự động biến đường link thành **Màn hình phát Video trực quan** ngay trong bài tập của học sinh!
+4. **📊 Copy Bảng Biểu & Công Thức Toán Học Từ Word / Excel Dán Thẳng Vào Ô (`Ctrl + V`)**:
+   - Nếu câu hỏi có **Bảng số liệu phức tạp**, **Chỉ số trên/dưới (`x²`, `H₂O`)**, **Gạch chân ngữ âm Tiếng Anh (`<u>...</u>`)** hoặc **Công thức Toán học (`√`, phân số, hệ phương trình)**: Thầy/Cô chỉ cần bôi đen trong file Word/Excel, bấm **`Ctrl + C`** rồi qua ô câu hỏi bấm **`Ctrl + V`**.
+   - Hệ thống tự động chuyển đổi cấu trúc HTML của Word sang **Bảng Markdown chuẩn (`| A | B |`)**, **Công thức Vector LaTeX (`$...$`)** và **Ảnh Base64** mà không bị vỡ dòng!
+
+---
+
 ## 9. GIẢI ĐÁP THẮC MẮC THƯỜNG GẶP CỦA THẦY/CÔ (HỎI NHANH - ĐÁP GỌN)
 
 **❓ Câu hỏi 1: Giáo viên khác cùng trường có tự ý vào xóa mất Chủ đề hay Câu hỏi của tôi được không?**

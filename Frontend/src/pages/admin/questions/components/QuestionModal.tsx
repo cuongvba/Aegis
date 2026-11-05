@@ -3,6 +3,8 @@ import { X, Plus, Trash2, Save, Edit, Lock, Unlock, BookOpen, Sparkles, Check, U
 import type { LearnerQuestion, QuestionType } from '@/types/quiz';
 import { LETTERS, getCorrectAnswerPlaceholder, type BankTopic, isOptionSelectedAsCorrect, getTopicFullPath } from '../types';
 import { MathRenderer } from '@/components/common/MathRenderer';
+import { SmartRichMediaToolbar } from '@/components/common/SmartRichMediaToolbar';
+import { handleSmartRichPaste, hasRichPreviewContent } from '@/shared/lib/quiz/smartClipboardMedia';
 import { canManageResource, type UserProfile } from '@/types/auth';
 import { parseMultiTfAnswer, serializeMultiTfAnswer, serializeMultiTfVector, formatMultiTfDisplay, convertMultiToMultiTf, convertMultiTfToMulti } from '@/shared/lib/quiz/normalizers';
 
@@ -104,6 +106,12 @@ export function QuestionModal({
 }: QuestionModalProps) {
   const [contextMode, setContextMode] = useState<'new' | 'existing'>('new');
   const [modalTagInput, setModalTagInput] = useState('');
+  const [pasteNotice, setPasteNotice] = useState<string | null>(null);
+
+  const notifySmartMedia = (msg: string) => {
+    setPasteNotice(msg);
+    window.setTimeout(() => setPasteNotice(prev => (prev === msg ? null : prev)), 4000);
+  };
 
   // Hỗ trợ phím tắt Ctrl + Enter để Lưu & Thêm câu tiếp theo
   useEffect(() => {
@@ -282,13 +290,34 @@ export function QuestionModal({
                         onChange={e => setContextTitle && setContextTitle(e.target.value)}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                       />
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="text-[10px] text-slate-400">Hỗ trợ Ctrl+V dán Ảnh / Bảng Word / Công thức hoặc chọn công cụ:</span>
+                        {setContextContent && (
+                          <SmartRichMediaToolbar
+                            value={contextContent}
+                            onChange={val => setContextContent(val)}
+                            onNotify={notifySmartMedia}
+                          />
+                        )}
+                      </div>
                       <textarea
-                        placeholder="Dán toàn văn nội dung bài đọc hiểu / tình huống dùng chung cho các câu hỏi tại đây..."
+                        placeholder="Dán toàn văn nội dung bài đọc hiểu / tình huống / bảng biểu / hình ảnh / audio / video dùng chung tại đây (hỗ trợ Ctrl+V trực tiếp từ Word/Ảnh)..."
                         value={contextContent}
                         onChange={e => setContextContent && setContextContent(e.target.value)}
+                        onPaste={e => {
+                          if (setContextContent) {
+                            handleSmartRichPaste(e, contextContent, val => setContextContent(val), notifySmartMedia);
+                          }
+                        }}
                         rows={3}
                         className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none"
                       />
+                      {hasRichPreviewContent(contextContent) && (
+                        <div className="p-2.5 bg-slate-950/90 border border-indigo-500/30 rounded-xl text-xs text-slate-200 space-y-1">
+                          <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider block">Xem trước Bài đọc / Đa phương tiện:</span>
+                          <MathRenderer content={contextContent} />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -308,19 +337,35 @@ export function QuestionModal({
                 </div>
               ) : null}
 
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Nội dung câu hỏi</label>
+              {pasteNotice && (
+                <div className="px-3 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center justify-between animate-fade-in">
+                  <span>✨ {pasteNotice}</span>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nội dung câu hỏi (Hỗ trợ Ctrl+V Ảnh / Bảng Word / Công thức / Audio / Video)</label>
+                  {isEditing && (
+                    <SmartRichMediaToolbar
+                      value={content}
+                      onChange={setContent}
+                      onNotify={notifySmartMedia}
+                    />
+                  )}
+                </div>
                 <textarea
                   required
-                  placeholder="Điền nội dung câu hỏi sát hạch (hỗ trợ KaTeX $...$, hình ảnh Base64, ngữ âm <u>...</u>)..."
+                  placeholder="Nhập câu hỏi hoặc bấm Ctrl+V để dán trực tiếp Hình ảnh chụp màn hình, Bảng biểu/Công thức từ file Word, hoặc bấm nút Thu âm giọng cô / Video ở trên..."
                   value={content}
                   onChange={e => setContent(e.target.value)}
+                  onPaste={e => handleSmartRichPaste(e, content, setContent, notifySmartMedia)}
                   disabled={!isEditing}
                   className="w-full h-24 bg-slate-950/80 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-colors resize-none disabled:opacity-75 disabled:cursor-not-allowed"
                 />
-                {(content.includes('$') || content.includes('data:image/') || content.includes('<u>') || content.includes('**')) && (
+                {hasRichPreviewContent(content) && (
                   <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 space-y-1">
-                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Trực quan hóa Nội dung (KaTeX / Ảnh / Ngữ âm):</span>
+                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Trực quan hóa Nội dung (Ảnh / Audio / Video / Bảng / KaTeX):</span>
                     <MathRenderer content={content} />
                   </div>
                 )}
@@ -443,13 +488,40 @@ export function QuestionModal({
                             )}
                           </div>
                           <div className="flex-1 flex flex-col gap-1">
+                            {isEditing && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] text-slate-500">Hỗ trợ Ctrl+V Ảnh / Công thức / Audio cho phương án:</span>
+                                <SmartRichMediaToolbar
+                                  compact
+                                  value={opt}
+                                  onChange={nextOpt => {
+                                    const next = [...options];
+                                    next[idx] = nextOpt;
+                                    setOptions(next);
+                                  }}
+                                  onNotify={notifySmartMedia}
+                                />
+                              </div>
+                            )}
                             <textarea
-                              placeholder={questionType === 'MATCHING' ? `Cặp ${idx + 1} (Ví dụ: Chó => Sủa)` : `Phương án ${LETTERS[idx] ?? String(idx + 1)}`}
+                              placeholder={questionType === 'MATCHING' ? `Cặp ${idx + 1} (Ví dụ: Chó => Sủa)` : `Phương án ${LETTERS[idx] ?? String(idx + 1)} (có thể gõ chữ, Ctrl+V dán ảnh hoặc bấm nút Ảnh/Thu âm)`}
                               value={opt}
                               onChange={e => {
                                 const next = [...options];
                                 next[idx] = e.target.value;
                                 setOptions(next);
+                              }}
+                              onPaste={e => {
+                                handleSmartRichPaste(
+                                  e,
+                                  opt,
+                                  nextOpt => {
+                                    const next = [...options];
+                                    next[idx] = nextOpt;
+                                    setOptions(next);
+                                  },
+                                  notifySmartMedia
+                                );
                               }}
                               disabled={!isEditing}
                               className={`w-full border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none resize-none h-14 disabled:opacity-90 disabled:cursor-not-allowed transition-colors ${
@@ -458,7 +530,7 @@ export function QuestionModal({
                                   : 'bg-slate-950/60 border-slate-800 focus:border-blue-500'
                               }`}
                             />
-                            {(opt.includes('$') || opt.includes('data:image/') || opt.includes('<u>') || opt.includes('**')) && (
+                            {hasRichPreviewContent(opt) && (
                               <div className="p-2 bg-slate-950/90 border border-slate-850 rounded-xl text-xs text-slate-300">
                                 <MathRenderer content={opt} />
                               </div>
@@ -739,18 +811,29 @@ export function QuestionModal({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Trích dẫn nguồn câu hỏi</label>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Lời giải / Trích dẫn nguồn (Hỗ trợ Ctrl+V Ảnh / Công thức)</label>
+                    {isEditing && (
+                      <SmartRichMediaToolbar
+                        compact
+                        value={citation}
+                        onChange={setCitation}
+                        onNotify={notifySmartMedia}
+                      />
+                    )}
+                  </div>
                   <textarea
-                    placeholder="Ví dụ: Điều 12 Luật Doanh nghiệp hoặc TT 39/2016/TT-NHNN..."
+                    placeholder="Giải thích đáp án, dán ảnh lời giải chi tiết hoặc trích dẫn nguồn..."
                     value={citation}
                     onChange={e => setCitation(e.target.value)}
+                    onPaste={e => handleSmartRichPaste(e, citation, setCitation, notifySmartMedia)}
                     rows={2}
                     disabled={!isEditing}
                     className="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 resize-none h-14 disabled:opacity-75 disabled:cursor-not-allowed"
                   />
-                  {(citation.includes('$') || citation.includes('data:image/') || citation.includes('<u>') || citation.includes('**')) && (
+                  {hasRichPreviewContent(citation) && (
                     <div className="p-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300">
-                      <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block mb-1">Trực quan hóa Trích dẫn:</span>
+                      <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block mb-1">Trực quan hóa Lời giải / Trích dẫn:</span>
                       <MathRenderer content={citation} />
                     </div>
                   )}
