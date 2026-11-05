@@ -20,45 +20,258 @@
   "socialProof": {
     "title": "Trusted by the most demanding organizations",
     "stats": [
-      { "value": "3,500+", "label": "Questions in the item bank" },
-      { "value": "6", "label": "Academic gameshow formats" },
-      { "value": "<2ms", "label": "Arena buzzer latency" },
-      { "value": "99.9%", "label": "Enterprise infrastructure uptime" }
+      {
+        "value": "3,500+",
+        "label": "Questions in the item bank"
+      },
+      {
+        "value": "6",
+        "label": "Academic gameshow formats"
+      },
+      {
+        "value": "<2ms",
+        "label": "Arena buzzer latency"
+      },
+      {
+        "value": "99.9%",
+        "label": "Enterprise infrastructure uptime"
+      }
     ],
-    "segments": ["Banking & Finance", "Multi-branch Enterprises", "Universities & Education", "Driving Test Centers"]
+    "segments": [
+      "Banking & Finance",
+      "Multi-branch Enterprises",
+      "Universities & Education",
+      "Driving Test Centers"
+    ]
   },
   "features": {
-    "title": "6 Breakthrough Technologies, Only at Aegis",
-    "subtitle": "Not just a quiz tool — a next-generation competence assessment ecosystem.",
+    "badge": "AEGIS GLOBAL COGNITIVE INFRASTRUCTURE (AGCI v5.0)",
+    "title": "9 Breakthrough Technologies — Leading the Global Cognitive Standard",
+    "subtitle": "Where the simplicity of Preschool & K-12 teachers meets Epistemic Multi-Agent AI, IRT 3-PL Psychometrics, and Military-Grade Banking Security.",
+    "personas": {
+      "all": "🌐 All Breakthroughs (9)",
+      "teacher": "👩‍🏫 Teachers & Creators (Zen PLG)",
+      "enterprise": "🏦 Enterprise, Banks & Universities",
+      "learner": "🎓 Adaptive Learners & Gameshow"
+    },
     "items": [
-      { "title": "AI Brain-Adaptive Testing", "desc": "A CAT/IRT 3-PL engine that adjusts difficulty after every answer, measuring true competence instead of rote memorization." },
-      { "title": "Live Gameshow Arena Studio", "desc": "Sub-2-millisecond buzzer arbitration across 6 fully reproduced classic TV gameshow formats." },
-      { "title": "Military-Grade Secure Exam Room", "desc": "Real-time AI anti-cheating proctoring and PKI USB Token digital signatures for high-stakes exams." },
-      { "title": "1-Second Passwordless Login", "desc": "QR code scan or Google Identity Services — enter the exam room instantly, no password to remember." },
-      { "title": "1-Click Question Bank Digitization", "desc": "Auto-import from Word/MathType, Excel, or PDF — turn paper archives into a digital item bank in minutes." },
-      { "title": "Socrates AI Tutor", "desc": "A personalized study companion that explains every step using the Socratic method, available 24/7." }
-    ]
+      {
+        "title": "Zen Studio 3-Touch & Multimodal Paste",
+        "desc": "Build exams in 10 seconds! Record teacher voice directly in browser, paste images/videos, and share via QR link — students join instantly with zero account required.",
+        "metric": "3 Touches • 10s",
+        "badge": "ZEN PLG",
+        "personas": [
+          "teacher"
+        ]
+      },
+      {
+        "title": "Tri-Tier MathType OLE & Word Table Engine",
+        "desc": "Exclusively decodes binary MTEF v5 (Equation.DSMT4), WMZ/WMF and AI Vision directly from Clipboard into crisp Vector LaTeX & Markdown Tables, saving 99.2% DB storage.",
+        "metric": "-99.2% DB • <2ms",
+        "badge": "WORLD FIRST",
+        "personas": [
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "Epistemic Triad AI & Wolf Pack Swarm",
+        "desc": "Replaces single-LLM hallucination with a 3-tier architecture: Universal AI Router -> Wolf Pack Swarm Consensus (SCI) -> 6-Phase Academic Symposium.",
+        "metric": "SCI 98.4% • 0 Hallucination",
+        "badge": "EPISTEMIC AI",
+        "personas": [
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "IRT 3-PL, DKT & FSRS v5 Psychometrics",
+        "desc": "Measures real competence (a, b, c parameters), traces deep knowledge (DKT), schedules FSRS v5 spaced repetition, and grades 9 item types including Progressive Multi-True/False.",
+        "metric": "IRT 3-PL + FSRS v5",
+        "badge": "PSYCHOMETRICS",
+        "personas": [
+          "learner",
+          "enterprise",
+          "teacher"
+        ]
+      },
+      {
+        "title": "AegisNotebook Sovereign & ACSE Micro-Course",
+        "desc": "Detects cross-document policy/legal conflicts and transforms dry explanations into 4 cognitive learning slices: Clue -> Concept -> Step -> Hook.",
+        "metric": "4 Cognitive Slices",
+        "badge": "COGNITIVE SCIENCE",
+        "personas": [
+          "learner",
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "6 TV Gameshow Arenas (<2ms RAM Buzzer)",
+        "desc": "Faithfully reproduces Road to Olympia, Wheel of Fortune, Golden Bell, Jeopardy, University Challenge & Lightning Fast with sub-2ms in-memory buzzer arbitration.",
+        "metric": "<2ms Buzzer • 60fps",
+        "badge": "LIVE ARENA",
+        "personas": [
+          "learner",
+          "teacher"
+        ]
+      },
+      {
+        "title": "5D Orthogonal Taxonomy & Universal Transpiler",
+        "desc": "Classifies knowledge across 5 orthogonal axes with O(1) Pivot rotation and cross-compiles seamlessly between Docx, Excel (27 roles), QTI 3.0, Moodle XML & GIFT.",
+        "metric": "5 Axes • O(1) Pivot",
+        "badge": "INTEROPERABILITY",
+        "personas": [
+          "enterprise",
+          "teacher"
+        ]
+      },
+      {
+        "title": "3-Layer Isolation, PKI Token & SHA-256 Merkle",
+        "desc": "Absolute data sovereignty via Middleware -> EF Global Filter -> PostgreSQL RLS, Scoped RBAC, PKI USB Token signatures, and tamper-proof SHA-256 Merkle audit chains.",
+        "metric": "3-Layer RLS + SHA-256",
+        "badge": "MILITARY GRADE",
+        "personas": [
+          "enterprise"
+        ]
+      },
+      {
+        "title": "Global FinOps Treasury & CAS/COW Deduplication",
+        "desc": "Multi-rail global checkout (PayOS, Offline EMVCo VietQR, Stripe, Web3 Polygon), AegisCoin economy, and SHA-256 Copy-On-Write storage deduplication.",
+        "metric": "5 Payment Rails • COW",
+        "badge": "GLOBAL FINOPS",
+        "personas": [
+          "enterprise",
+          "teacher"
+        ]
+      }
+    ],
+    "lab": {
+      "eyebrow": "INTERACTIVE TECHNOLOGY SANDBOX",
+      "title": "Experience Aegis Core Technologies Live",
+      "subtitle": "Click to test how Aegis processes MathType binary streams, runs AI Swarm debates, calculates progressive IRT scores, and locks Arena buzzers in <2ms.",
+      "tabs": {
+        "zen": "⚡ Smart Paste & MathType OLE",
+        "ai": "🐺 Wolf Pack AI Swarm (SCI)",
+        "irt": "📐 Progressive Scoring & IRT 3-PL",
+        "arena": "🔔 <2ms Buzzer & Merkle Security"
+      }
+    },
+    "matrix": {
+      "eyebrow": "GLOBAL CATEGORY-KING BENCHMARK",
+      "title": "Why Aegis Global Outperforms Legacy Platforms",
+      "subtitle": "Aegis unifies the engagement of Kahoot, the enterprise rigor of Moodle/Canvas, and multi-agent epistemic intelligence beyond standalone LLMs.",
+      "columns": {
+        "criteria": "Core Capability & Architecture",
+        "aegis": "AEGIS GLOBAL (AGCI)",
+        "kahoot": "Kahoot! / Quizizz",
+        "lms": "Moodle / Canvas LMS",
+        "ai": "ChatGPT / NotebookLM"
+      },
+      "rows": [
+        {
+          "criteria": "Copy-Paste MathType OLE & Word Tables",
+          "aegis": "✅ 3-Tier Binary MTEF v5 -> Vector LaTeX & Markdown (-99.2% DB)",
+          "kahoot": "❌ Manual retyping or blurry PNG images",
+          "lms": "⚠️ Complex plugins, prone to broken formulas",
+          "ai": "⚠️ Loses layout & equation structure on paste"
+        },
+        {
+          "criteria": "Preschool / K-12 Voice & Zero-Account Join",
+          "aegis": "✅ 1-Click Browser Voice Record + Instant QR/Zalo Link (10s)",
+          "kahoot": "✅ PIN code join (Paid audio features)",
+          "lms": "❌ Mandatory student account & complex enrollment",
+          "ai": "❌ Not an interactive exam/classroom platform"
+        },
+        {
+          "criteria": "AI Accuracy & Hallucination Defense",
+          "aegis": "✅ Epistemic Triad: Wolf Pack Swarm + 6-Phase Symposium (SCI)",
+          "kahoot": "⚠️ Single-LLM wrapper, unverified answers",
+          "lms": "❌ No native multi-agent epistemic engine",
+          "ai": "⚠️ Single-model output, prone to subtle hallucinations"
+        },
+        {
+          "criteria": "Psychometrics & Progressive True/False Scoring",
+          "aegis": "✅ IRT 3-PL + DKT + FSRS v5 + Progressive 0.1 -> 0.25 -> 0.5 -> 1.0",
+          "kahoot": "❌ Simple raw points & speed bonus only",
+          "lms": "⚠️ Basic classical test theory (CTT)",
+          "ai": "❌ No psychometric calibration engine"
+        },
+        {
+          "criteria": "Live TV Gameshow Arena",
+          "aegis": "✅ 6 Authentic Formats (Olympia, Golden Bell, Wheel...) <2ms RAM",
+          "kahoot": "⚠️ 1 basic arcade quiz format",
+          "lms": "❌ Static web forms only",
+          "ai": "❌ Text chat interface only"
+        },
+        {
+          "criteria": "Banking & Enterprise Security",
+          "aegis": "✅ 3-Layer PostgreSQL RLS + PKI USB Token + SHA-256 Merkle Audit",
+          "kahoot": "❌ Consumer-grade cloud sharing",
+          "lms": "⚠️ Single-tenant or heavy manual setup",
+          "ai": "❌ No exam proctoring or cryptographic audit trail"
+        }
+      ]
+    }
   },
   "gameshows": {
     "title": "6 Academic Gameshows — Learn Through Play",
     "subtitle": "Full rule sets faithfully reproduced from classic TV gameshows, applied directly to knowledge review.",
     "items": [
-      { "name": "Road to Olympia", "desc": "4 rounds — Warm-up, Obstacle Course, Acceleration, Finish Line — exactly as broadcast." },
-      { "name": "Wheel of Fortune", "desc": "Physics-based 60fps spinning wheel, solve the full puzzle board with Lucky, Lose-a-Turn and Double slots." },
-      { "name": "University Challenge", "desc": "4-vs-4 inter-university face-off with a Starter buzzer and 3-question Bonus rounds with team huddles." },
-      { "name": "Jeopardy! American Matrix", "desc": "A 30-cell point matrix, answers required in the classic question-form structure." },
-      { "name": "Lightning Fast", "desc": "A 10-step climbing machine — correct answers climb one step, one wrong answer resets to zero." },
-      { "name": "Golden Bell", "desc": "Large-scale group competition, ring the bell to earn the right to answer the deciding question." }
+      {
+        "name": "Road to Olympia",
+        "desc": "4 rounds — Warm-up, Obstacle Course, Acceleration, Finish Line — exactly as broadcast."
+      },
+      {
+        "name": "Wheel of Fortune",
+        "desc": "Physics-based 60fps spinning wheel, solve the full puzzle board with Lucky, Lose-a-Turn and Double slots."
+      },
+      {
+        "name": "University Challenge",
+        "desc": "4-vs-4 inter-university face-off with a Starter buzzer and 3-question Bonus rounds with team huddles."
+      },
+      {
+        "name": "Jeopardy! American Matrix",
+        "desc": "A 30-cell point matrix, answers required in the classic question-form structure."
+      },
+      {
+        "name": "Lightning Fast",
+        "desc": "A 10-step climbing machine — correct answers climb one step, one wrong answer resets to zero."
+      },
+      {
+        "name": "Golden Bell",
+        "desc": "Large-scale group competition, ring the bell to earn the right to answer the deciding question."
+      }
     ]
   },
   "segments": {
     "title": "Solutions Built for Every Industry",
     "subtitle": "Every organization has a different challenge — Aegis adapts to exactly what you need.",
     "tabs": [
-      { "id": "banking", "label": "Banking & Finance", "painPoint": "Standardizing recruitment exams, periodic professional certification, and AML compliance across tens of thousands of staff.", "solution": "Absolute multi-tenant data isolation per branch, tamper-proof SHA-256 audit logs, and legally valid PKI digital signatures." },
-      { "id": "enterprise", "label": "Multi-branch Enterprises", "painPoint": "Internal training scattered across many locations, hard to measure consistently.", "solution": "Team leaders manage their own question banks with real-time progress reporting per unit." },
-      { "id": "university", "label": "Universities & Education", "painPoint": "Massive paper exam archives, difficult to personalize learning paths for every student.", "solution": "1-click digitization from Word/MathType, AI adaptive testing personalized to real ability." },
-      { "id": "driving", "label": "Driving Test Centers", "painPoint": "Need to simulate theory tests to the national transport authority's standard, including instant-fail critical questions.", "solution": "Automatic critical-question (fail-instantly) logic, plus AI-simulated road-scenario practice." }
+      {
+        "id": "banking",
+        "label": "Banking & Finance",
+        "painPoint": "Standardizing recruitment exams, periodic professional certification, and AML compliance across tens of thousands of staff.",
+        "solution": "Absolute multi-tenant data isolation per branch, tamper-proof SHA-256 audit logs, and legally valid PKI digital signatures."
+      },
+      {
+        "id": "enterprise",
+        "label": "Multi-branch Enterprises",
+        "painPoint": "Internal training scattered across many locations, hard to measure consistently.",
+        "solution": "Team leaders manage their own question banks with real-time progress reporting per unit."
+      },
+      {
+        "id": "university",
+        "label": "Universities & Education",
+        "painPoint": "Massive paper exam archives, difficult to personalize learning paths for every student.",
+        "solution": "1-click digitization from Word/MathType, AI adaptive testing personalized to real ability."
+      },
+      {
+        "id": "driving",
+        "label": "Driving Test Centers",
+        "painPoint": "Need to simulate theory tests to the national transport authority's standard, including instant-fail critical questions.",
+        "solution": "Automatic critical-question (fail-instantly) logic, plus AI-simulated road-scenario practice."
+      }
     ]
   },
   "pricing": {
@@ -70,7 +283,12 @@
         "price": "Free",
         "period": "",
         "description": "For individual learners studying on their own.",
-        "features": ["Access to the Community question bank", "Basic AI adaptive practice", "Join the Gameshow Arena", "Track your leaderboard ranking"],
+        "features": [
+          "Access to the Community question bank",
+          "Basic AI adaptive practice",
+          "Join the Gameshow Arena",
+          "Track your leaderboard ranking"
+        ],
         "cta": "Start for free",
         "highlighted": false
       },
@@ -79,7 +297,12 @@
         "price": "Contact us",
         "period": "/ month",
         "description": "For Team Leaders managing a small team.",
-        "features": ["Everything in Community", "Your own team question bank", "Assign exams & track team progress", "1-click import from Word/Excel"],
+        "features": [
+          "Everything in Community",
+          "Your own team question bank",
+          "Assign exams & track team progress",
+          "1-click import from Word/Excel"
+        ],
         "cta": "Try Pro",
         "highlighted": true
       },
@@ -88,7 +311,12 @@
         "price": "Custom quote",
         "period": "",
         "description": "For large Banks, Corporations and Universities.",
-        "features": ["Multi-tenant data isolation", "SSO / PKI USB Token login", "Tamper-proof SHA-256 audit log", "Dedicated SLA & support"],
+        "features": [
+          "Multi-tenant data isolation",
+          "SSO / PKI USB Token login",
+          "Tamper-proof SHA-256 audit log",
+          "Dedicated SLA & support"
+        ],
         "cta": "Book a demo",
         "highlighted": false
       }
@@ -97,10 +325,22 @@
   "trust": {
     "title": "International-Grade Security & Compliance",
     "badges": [
-      { "label": "NIST SP 800-63B", "desc": "Password & authentication standard" },
-      { "label": "PBKDF2 / SHA-256", "desc": "Password hashing & audit logging" },
-      { "label": "PKI USB Token", "desc": "Enterprise-grade digital signatures" },
-      { "label": "Multi-Tenant Isolation", "desc": "Absolute data isolation" }
+      {
+        "label": "NIST SP 800-63B",
+        "desc": "Password & authentication standard"
+      },
+      {
+        "label": "PBKDF2 / SHA-256",
+        "desc": "Password hashing & audit logging"
+      },
+      {
+        "label": "PKI USB Token",
+        "desc": "Enterprise-grade digital signatures"
+      },
+      {
+        "label": "Multi-Tenant Isolation",
+        "desc": "Absolute data isolation"
+      }
     ]
   },
   "finalCta": {

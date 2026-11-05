@@ -1,43 +1,192 @@
 {
   "nav": {
-    "features": "Tính năng",
-    "gameshows": "Gameshow",
+    "features": "Tính năng Đột phá",
+    "gameshows": "6 Gameshow",
     "pricing": "Bảng giá",
     "login": "Đăng nhập",
-    "cta": "Dùng thử miễn phí",
+    "cta": "Trải nghiệm miễn phí",
     "adminPortal": "Khu Quản trị",
-    "enterLearning": "Vào Học tập"
+    "enterLearning": "Vào Không gian Chính"
   },
   "hero": {
-    "eyebrow": "Aegis Enterprise AI Engine v4.0",
-    "headline": "Đo lường năng lực thực chất",
-    "headlineHighlight": "Bùng nổ cảm hứng học tập đỉnh cao",
-    "subheadline": "Nền tảng khảo thí thích ứng AI (IRT 3-PL), 6 Gameshow học thuật kinh điển và kiến trúc Multi-Tenant chuẩn Enterprise — dành cho cá nhân, trường học, doanh nghiệp và ngân hàng trên toàn thế giới.",
-    "ctaPrimary": "Học viên cá nhân — Bắt đầu miễn phí",
-    "ctaSecondary": "Doanh nghiệp / Ngân hàng — Đặt lịch Demo",
-    "previewCaption": "Xem AI cá nhân hóa ma trận câu hỏi theo thời gian thực"
+    "eyebrow": "Aegis Global Cognitive Infrastructure v5.0",
+    "headline": "Đo lường năng lực thực chất —",
+    "headlineHighlight": "Bùng nổ cảm hứng học tập & khảo thí đỉnh cao",
+    "subheadline": "Hệ sinh thái duy nhất hợp nhất Không gian Sáng tạo Giáo viên 3 chạm (Zen Studio), Giải mã nhị phân MathType/Word sang LaTeX <2ms, Hội đồng AI Bầy Sói chống ảo giác, Tâm trắc học IRT 3-PL, 6 Gameshow truyền hình <2ms và Bảo mật Cấp Ngân hàng.",
+    "ctaPrimary": "Khám phá & Bắt đầu miễn phí",
+    "ctaSecondary": "Ngân hàng / Tập đoàn — Xem Giải pháp",
+    "previewCaption": "Động cơ AI & Tâm trắc học IRT 3-PL cá nhân hóa ma trận năng lực theo thời gian thực"
   },
   "socialProof": {
-    "title": "Được tin tưởng bởi các tổ chức khắt khe nhất",
+    "title": "Chuẩn mực Khảo thí & Trí tuệ Nhận thức được tin dùng toàn cầu",
     "stats": [
-      { "value": "3,500+", "label": "Câu hỏi trong ngân hàng đề" },
-      { "value": "6", "label": "Thể loại Gameshow học thuật" },
-      { "value": "<2ms", "label": "Độ trễ buzzer Đấu trường" },
-      { "value": "99.9%", "label": "Uptime hạ tầng Enterprise" }
+      { "value": "<2ms", "label": "Giải mã MathType → LaTeX & Chuông Arena" },
+      { "value": "99.2%", "label": "Tiết kiệm lưu trữ DB (Bảng/Toán → MD/LaTeX)" },
+      { "value": "9 Dạng", "label": "Câu hỏi Đa phương tiện & GDPT 2025" },
+      { "value": "13 Ngôn ngữ", "label": "Đa quốc gia & Tự động RTL" }
     ],
-    "segments": ["Ngân hàng & Tài chính", "Tập đoàn Đa chi nhánh", "Đại học & Giáo dục", "Trung tâm Sát hạch GPLX"]
+    "segments": ["Mầm non & Phổ thông K-12", "Đại học & Học viện", "Ngân hàng & Tài chính", "Tập đoàn Đa chi nhánh"]
   },
   "features": {
-    "title": "6 Đột phá công nghệ chỉ có tại Aegis",
-    "subtitle": "Không chỉ là công cụ thi trắc nghiệm — đây là hệ sinh thái đánh giá năng lực thế hệ mới.",
+    "badge": "The Cognitive Intelligence & Verification Standard",
+    "title": "9 Đột Phá Công Nghệ Độc Bản Chỉ Có Tại Aegis Global",
+    "subtitle": "Thay thế 5 phần mềm rời rạc bằng một siêu hạ tầng nhận thức duy nhất: Từ cô giáo Mầm non thu âm giọng đọc 5 giây đến kỳ thi sát hạch chục nghìn nhân sự Ngân hàng.",
+    "tryNow": "Trải nghiệm trực tiếp ngay",
+    "personas": {
+      "all": "🌐 Toàn bộ Hệ sinh thái (9 Đột phá)",
+      "teacher": "👩‍🏫 Giáo viên & Nhà trường (Mầm non → Đại học)",
+      "enterprise": "🏦 Ngân hàng & Tập đoàn Đa chi nhánh",
+      "learner": "🎓 Học sinh, Sinh viên & Tự luyện thi"
+    },
     "items": [
-      { "title": "Khảo thí Thích ứng Não bộ AI", "desc": "Động cơ CAT/IRT 3-PL tự động điều chỉnh độ khó theo từng câu trả lời, đo lường năng lực thực chất thay vì học vẹt." },
-      { "title": "Đấu trường Gameshow Live Studio", "desc": "Tốc độ tranh chuông dưới 2 mili-giây, 6 định dạng gameshow truyền hình kinh điển được tái hiện hoàn chỉnh." },
-      { "title": "Phòng thi Bảo mật Cấp Quân sự", "desc": "Giám sát AI chống gian lận theo thời gian thực, ký số PKI bằng USB Token cho các kỳ thi quan trọng." },
-      { "title": "Đăng nhập 1 giây Không mật khẩu", "desc": "Quét mã QR hoặc Google Identity Services — vào phòng thi trong tích tắc, không cần nhớ mật khẩu." },
-      { "title": "Số hóa Ngân hàng đề 1-Click", "desc": "Tự động nhập đề từ file Word/MathType, Excel, PDF — biến kho đề giấy thành ngân hàng số chỉ trong vài phút." },
-      { "title": "Gia sư AI Socrates", "desc": "Trợ lý học tập cá nhân hóa, giải thích từng bước theo phương pháp Socratic, đồng hành 24/7." }
-    ]
+      {
+        "title": "Không gian Giáo viên Zen 4-Trong-1 (3 Chạm / 10 Giây)",
+        "desc": "Tích hợp trọn vẹn Zen Studio (kéo thả đề Word), ZenTopics, ZenQuestions và Đội nhóm Lớp học. Giao bài qua Zalo / Mã QR cho học sinh làm ngay không cần tạo tài khoản.",
+        "tag": "3 Chạm / 10 Giây • PLG",
+        "route": "/creator/studio",
+        "cta": "Mở Zen Studio ngay"
+      },
+      {
+        "title": "Giải mã Nhị phân MathType OLE & Bảng Word → LaTeX / Markdown",
+        "desc": "Độc quyền giải mã cây cú pháp MTEF v5 (Equation.DSMT4) và OMML sang Vector LaTeX ($...$) trong <2ms, chuyển bảng Word/Excel sang Markdown Table tiết kiệm 99.2% dung lượng Database.",
+        "tag": "MTEF v5 → LaTeX <2ms",
+        "route": "/creator/questions",
+        "cta": "Thử dán Ctrl+V ngay"
+      },
+      {
+        "title": "Đa phương tiện Trực quan: Thu âm Giọng cô, Video & Ảnh 1 Chạm",
+        "desc": "Thu âm trực tiếp giọng đọc ấm áp của cô giáo ngay trên trình duyệt, nhúng Video hoạt hình YouTube/MP4 và nén ảnh WebP sắc nét — cuốn hút tuyệt đối học sinh Mầm non & Tiểu học.",
+        "tag": "🎙️ Voice + Video + Ảnh",
+        "route": "/creator/questions",
+        "cta": "Khám phá Thanh Đa phương tiện"
+      },
+      {
+        "title": "Hệ Ba Ngôi AI Biện Chứng: UAR → Bầy Sói WPSE → Hội Thảo 6 Pha",
+        "desc": "Chấm dứt hoàn toàn tật ảo giác (hallucination) của AI đơn lẻ bằng Hội đồng Tác tử Bầy sói phản biện Popperian, đo chỉ số đồng thuận toán học SCI = 98.4% và AegisNotebook đa nguồn.",
+        "tag": "Wolf Pack Swarm • SCI 98.4%",
+        "route": "/symposium",
+        "cta": "Vào Đại Hội Thảo AI"
+      },
+      {
+        "title": "Tâm trắc học Quốc tế IRT 3-PL, DKT, FSRS v5 & 9 Dạng Đề",
+        "desc": "Đo năng lực thực θ bằng mô hình xác suất IRT 3 tham số, truy vết kiến thức sâu DKT, chống quên FSRS v5 và chấm điểm lũy tiến 9 dạng câu hỏi (Đúng/Sai 4 ý GDPT 2025, Nối cặp, Kéo thả, Tự luận).",
+        "tag": "IRT 3-PL • DKT • FSRS v5",
+        "route": "/practice",
+        "cta": "Vào Phòng Luyện tập Thích ứng"
+      },
+      {
+        "title": "Đấu trường Gameshow Truyền hình Live (<2ms RAM Buzzer)",
+        "desc": "Tái hiện hoàn chỉnh 6 Gameshow kinh điển (Đường Lên Đỉnh Olympia, Chiếc Nón Kỳ Diệu, Jeopardy!, University Challenge, Nhanh Như Chớp, Rung Chuông Vàng) với khóa chuông nguyên tử <2ms.",
+        "tag": "6 Gameshow • <2ms Buzzer",
+        "route": "/arena",
+        "cta": "Vào Đấu trường Arena"
+      },
+      {
+        "title": "Kiến trúc Chủ quyền Kép (CDSA) & Pháo đài Bảo mật 3 Tầng",
+        "desc": "Cô lập dữ liệu tuyệt đối qua Middleware → EF Global Filter → PostgreSQL RLS. Bảo vệ độc quyền Chủ đề/Câu hỏi của từng Creator kết hợp chuỗi kiểm toán bất biến SHA-256 Merkle Chain & PKI USB Token.",
+        "tag": "3-Layer RLS • SHA-256 • PKI",
+        "route": "/login",
+        "cta": "Kiểm chứng Bảo mật"
+      },
+      {
+        "title": "Đăng nhập 1 Giây Không Mật Khẩu & 13 Ngôn ngữ Toàn cầu",
+        "desc": "Xác thực QR tức thì, Google Identity, TOTP 2FA Step-Up và giao diện thích ứng bản địa hóa 13 ngôn ngữ quốc tế (Việt, Anh, Trung, Nhật, Hàn, Pháp, Ả Rập RTL...).",
+        "tag": "1-Sec QR • 13 Ngôn ngữ",
+        "route": "/login",
+        "cta": "Đăng nhập Siêu tốc"
+      },
+      {
+        "title": "Ngân khố Thanh toán Toàn cầu & Văn hóa Tri ân Cộng đồng",
+        "desc": "Từ gói 'Mời Cô 1 Ly Cafe (25.000đ VietQR Napas 24/7)' mở khóa đặc quyền không ràng buộc thuê bao cho Giáo viên, đến cổng thanh toán quốc tế Stripe, Alipay/WeChatPay và Web3 Polygon.",
+        "tag": "VietQR 25k • Stripe • Web3",
+        "route": "/paywall",
+        "cta": "Xem Ngân khố Toàn cầu"
+      }
+    ],
+    "lab": {
+      "badge": "Phòng Thí Nghiệm Công Nghệ Tương Tác Trực Tiếp",
+      "title": "Chạm & Kiểm Chứng Sức Mạnh Lõi Của Aegis Global Ngay Tại Đây",
+      "tabs": {
+        "zen": "1. Zen & Clipboard <2ms",
+        "ai": "2. Hội Đồng AI Bầy Sói",
+        "irt": "3. Tâm Trắc IRT & 9 Dạng Đề",
+        "arena": "4. Arena <2ms & Bảo Mật"
+      },
+      "zen": {
+        "heading": "Biến Mọi Nguồn Tài Liệu Thành Học Liệu Sống Trong 3 Chạm",
+        "desc": "Giải mã trực tiếp nhị phân MathType OLE (MTEF v5) sang Vector LaTeX trong <2ms, chuyển bảng Word/Excel sang Markdown tiết kiệm 99.2% dung lượng DB, thu âm giọng cô và phát mã QR Zalo không cần tài khoản.",
+        "cta": "Mở Zen Studio Trải Nghiệm Ngay"
+      },
+      "ai": {
+        "heading": "Hệ Ba Ngôi Nhận Thức: UAR → Bầy Sói WPSE → Đại Hội Thảo 6 Pha",
+        "desc": "Loại bỏ hoàn toàn hiện tượng ảo giác (hallucination) của AI đơn lẻ. Nhiều tác tử AI độc lập đối chiếu chéo tài liệu gốc trong AegisNotebook, tranh biện 6 pha Popperian và chỉ xuất bản khi Chỉ số Đồng thuận Bầy sói (SCI) đạt ngưỡng.",
+        "cta": "Khám Phá Đại Hội Thảo AI Symposium"
+      },
+      "irt": {
+        "heading": "9 Dạng Câu Hỏi Hiện Đại & Chấm Điểm Thích Ứng IRT 3-PL",
+        "desc": "Hỗ trợ trọn vẹn Đúng/Sai 4 ý (thang điểm lũy tiến 0.1 - 0.25 - 0.5 - 1.0 chuẩn GDPT 2025), Trả lời ngắn, Nối cặp, Sắp xếp, Điền khuyết, Tự luận AI chấm cùng mô hình tâm trắc học 3 tham số.",
+        "cta": "Vào Phòng Luyện Tập Thích Ứng Ngay"
+      },
+      "arena": {
+        "heading": "Đấu Trường Buzzer <2ms & Pháo Đài Bảo Mật Đa Khách Thuê",
+        "desc": "Tranh chuông thời gian thực dưới 2ms bằng khóa nguyên tử RAM cho 6 Gameshow truyền hình kinh điển, song hành cùng kiến trúc cô lập dữ liệu 3 tầng PostgreSQL RLS và chuỗi kiểm toán SHA-256.",
+        "cta": "Vào Đấu Trường Gameshow Arena"
+      }
+    },
+    "matrix": {
+      "badge": "Bảng Đối Sánh Chuẩn Mực Toàn Cầu",
+      "title": "1 Hệ Sinh Thái Aegis Global = Thay Thế 5 Công Cụ Rời Rạc",
+      "subtitle": "So sánh trực diện năng lực công nghệ và sư phạm của Aegis Global với các nền tảng phổ biến trên thị trường.",
+      "colCriterion": "Tiêu chí Công nghệ & Sư phạm",
+      "colAegis": "AEGIS GLOBAL (AGCI)",
+      "colGameshow": "Kahoot! / Quizizz",
+      "colLms": "Moodle / Canvas LMS",
+      "colAi": "ChatGPT / NotebookLM",
+      "rows": [
+        {
+          "criterion": "Bóc tách đề Word / MathType OLE (MTEF v5) & Ctrl+V Bảng/Toán → LaTeX/MD (<2ms)",
+          "aegis": "Độc quyền giải mã nhị phân <2ms (Tiết kiệm 99% DB)",
+          "gameshowTools": "Vỡ công thức hoặc biến thành ảnh mờ",
+          "traditionalLms": "Phải nhập mã GIFT / XML thủ công",
+          "genericAi": "Không có ngân hàng câu hỏi cấu trúc"
+        },
+        {
+          "criterion": "Đa phương tiện cho Trẻ nhỏ (🎙️ Thu âm giọng cô, Video, 9 dạng đề GDPT 2025 & QR Zalo)",
+          "aegis": "Thanh công cụ 1 chạm & Học sinh làm bài không cần tài khoản",
+          "gameshowTools": "Giới hạn dạng câu hỏi, khóa tính năng trả phí cao",
+          "traditionalLms": "Giao diện phức tạp, bắt buộc tạo tài khoản",
+          "genericAi": "Không hỗ trợ giao bài & chấm điểm lớp học"
+        },
+        {
+          "criterion": "Trí tuệ Nhân tạo Hàn lâm (Hội đồng Bầy sói WPSE + Đại Hội Thảo 6 Pha chống ảo giác)",
+          "aegis": "Đồng thuận đa tác tử SCI = 98.4% & AegisNotebook đa nguồn",
+          "gameshowTools": "Chỉ gọi 1 prompt LLM đơn giản dễ sai đáp án",
+          "traditionalLms": "Không có AI biện chứng nội tại",
+          "genericAi": "1 mô hình đơn lẻ, dễ ảo giác (hallucination)"
+        },
+        {
+          "criterion": "Đo lường Tâm trắc học Quốc tế (IRT 3-PL + CAT + Deep Knowledge Tracing + FSRS v5)",
+          "aegis": "Chuẩn Khảo thí Quốc gia & Quốc tế (GMAT / GRE Standard)",
+          "gameshowTools": "Chỉ đếm % câu đúng thô sơ",
+          "traditionalLms": "Thống kê điểm tĩnh truyền thống",
+          "genericAi": "Không có động cơ tâm trắc học IRT/DKT"
+        },
+        {
+          "criterion": "Đấu trường Truyền hình Thời gian thực (<2ms RAM Buzzer, 6 Gameshow 60fps)",
+          "aegis": "6 Gameshow kinh điển (Olympia, Chiếc Nón Kỳ Diệu, Jeopardy!...)",
+          "gameshowTools": "Chỉ có trắc nghiệm nhanh đơn điệu",
+          "traditionalLms": "Không có Gameshow tương tác",
+          "genericAi": "Không có phòng thi đấu thời gian thực"
+        },
+        {
+          "criterion": "Kiến trúc Chủ quyền Kép (CDSA) & Bảo mật Cấp Ngân hàng (3-Layer RLS, SHA-256, PKI)",
+          "aegis": "Cô lập dữ liệu 3 tầng, bảo vệ bản quyền Creator & Audit bất biến",
+          "gameshowTools": "Thiếu phân quyền sâu cho Ngân hàng / Tập đoàn",
+          "traditionalLms": "Cồng kềnh, tốn kém chi phí vận hành máy chủ riêng",
+          "genericAi": "Rủi ro lộ lọt dữ liệu nội bộ doanh nghiệp"
+        }
+      ]
+    }
   },
   "gameshows": {
     "title": "6 Gameshow học thuật — Học mà chơi, chơi mà học",
@@ -52,44 +201,44 @@
     ]
   },
   "segments": {
-    "title": "Giải pháp theo từng ngành",
-    "subtitle": "Mỗi tổ chức có một bài toán riêng — Aegis thích ứng theo đúng nhu cầu của bạn.",
+    "title": "Giải pháp chuyên sâu theo từng lĩnh vực",
+    "subtitle": "Mỗi tổ chức có một bài toán riêng — Aegis Global thích ứng hoàn hảo theo đúng nhu cầu của bạn.",
     "tabs": [
       { "id": "banking", "label": "Ngân hàng & Tài chính", "painPoint": "Cần chuẩn hóa thi tuyển dụng, sát hạch nghiệp vụ định kỳ và tuân thủ AML trên quy mô hàng chục nghìn nhân sự.", "solution": "Multi-Tenant cách ly dữ liệu tuyệt đối theo chi nhánh, Audit Log SHA-256 không thể chỉnh sửa, PKI ký số hợp lệ." },
       { "id": "enterprise", "label": "Tập đoàn Đa chi nhánh", "painPoint": "Đào tạo nội bộ phân tán nhiều địa điểm, khó đo lường hiệu quả đồng nhất.", "solution": "Trưởng nhóm tự quản lý ngân hàng câu hỏi riêng, báo cáo tiến độ real-time theo từng đơn vị." },
-      { "id": "university", "label": "Đại học & Giáo dục", "painPoint": "Khối lượng đề thi giấy khổng lồ, khó cá nhân hóa lộ trình cho từng sinh viên.", "solution": "Số hóa đề thi 1-click từ Word/MathType, AI Adaptive Testing cá nhân hóa theo năng lực thực." },
-      { "id": "driving", "label": "Trung tâm Sát hạch GPLX", "painPoint": "Cần mô phỏng sát hạch lý thuyết chuẩn Bộ GTVT với các câu hỏi điểm liệt.", "solution": "Cơ chế Điểm liệt (IsCritical) tự động trượt toàn bài, mô phỏng sa hình bằng AI." }
+      { "id": "university", "label": "Mầm non, Phổ thông & Đại học", "painPoint": "Khối lượng đề thi Word/MathType khổng lồ, học sinh nhỏ tuổi cần âm thanh/hình ảnh sinh động và giao bài không cần tài khoản.", "solution": "Zen Studio bóc tách đề 3 chạm, Ctrl+V giải mã MathType sang LaTeX <2ms, thu âm giọng cô và phát mã QR Zalo làm bài ngay." },
+      { "id": "driving", "label": "Trung tâm Sát hạch & Chứng chỉ", "painPoint": "Cần mô phỏng sát hạch lý thuyết chuẩn Quốc gia với các câu hỏi điểm liệt và tình huống thực tế.", "solution": "Cơ chế Điểm liệt (IsCritical) tự động cảnh báo, kết hợp AI phân tích lỗ hổng kiến thức cá nhân hóa." }
     ]
   },
   "pricing": {
-    "title": "Bảng giá minh bạch cho mọi quy mô",
-    "subtitle": "Bắt đầu miễn phí, nâng cấp khi tổ chức của bạn phát triển.",
+    "title": "Bảng giá minh bạch & Linh hoạt cho mọi quy mô",
+    "subtitle": "Bắt đầu miễn phí ngay hôm nay, mở rộng không giới hạn khi lớp học và tổ chức của bạn phát triển.",
     "tiers": [
       {
-        "name": "Cộng đồng",
+        "name": "Cộng đồng & Giáo viên",
         "price": "Miễn phí",
-        "period": "",
-        "description": "Dành cho học viên cá nhân tự luyện thi.",
-        "features": ["Truy cập kho câu hỏi Cộng đồng", "Luyện thi thích ứng AI cơ bản", "Tham gia Đấu trường Gameshow", "Theo dõi Bảng vàng thành tích"],
+        "period": "(hoặc 25k Cafe)",
+        "description": "Dành cho học viên tự luyện và giáo viên sáng tạo học liệu.",
+        "features": ["Zen Studio bóc tách đề Word/MathType", "Dán trực tiếp Ảnh, Thu âm giọng cô, Video, Bảng", "Giao bài Zalo / QR không cần tài khoản học sinh", "Tham gia Đấu trường 6 Gameshow"],
         "cta": "Bắt đầu miễn phí",
         "highlighted": false
       },
       {
-        "name": "Pro / Đội nhóm",
-        "price": "Liên hệ",
+        "name": "Pro / Trường học & Đội nhóm",
+        "price": "299.000đ",
         "period": "/ tháng",
-        "description": "Dành cho Trưởng nhóm quản lý đội ngũ nhỏ.",
-        "features": ["Tất cả quyền lợi gói Cộng đồng", "Ngân hàng câu hỏi riêng của Nhóm", "Giao đề & theo dõi tiến độ đội nhóm", "Nhập đề 1-click từ Word/Excel"],
-        "cta": "Dùng thử Pro",
+        "description": "Dành cho Tổ bộ môn, Trung tâm đào tạo & Trưởng nhóm.",
+        "features": ["Tất cả quyền lợi gói Cộng đồng không giới hạn", "Hội đồng AI Bầy sói & Đại Hội Thảo 6 Pha", "Sổ điểm lớp học & Báo cáo năng lực IRT 3-PL", "Ngân hàng chủ đề & câu hỏi riêng biệt của Nhóm"],
+        "cta": "Trải nghiệm gói Pro",
         "highlighted": true
       },
       {
-        "name": "Enterprise",
+        "name": "Enterprise & Ngân hàng",
         "price": "Báo giá riêng",
         "period": "",
-        "description": "Dành cho Ngân hàng, Tập đoàn, Đại học quy mô lớn.",
-        "features": ["Multi-Tenant cách ly dữ liệu", "Đăng nhập SSO/PKI USB Token", "Audit Log SHA-256 không thể sửa", "SLA cam kết & hỗ trợ riêng"],
-        "cta": "Đặt lịch Demo",
+        "description": "Dành cho Ngân hàng, Tập đoàn đa chi nhánh & Đại học lớn.",
+        "features": ["Cô lập dữ liệu 3 tầng (PostgreSQL RLS)", "Đăng nhập SSO / TOTP 2FA / PKI USB Token", "Chuỗi kiểm toán bất biến SHA-256 Merkle Chain", "White-label thương hiệu riêng & SLA 99.99%"],
+        "cta": "Đặt lịch Demo Enterprise",
         "highlighted": false
       }
     ]
@@ -97,32 +246,32 @@
   "trust": {
     "title": "Bảo mật & Tuân thủ chuẩn quốc tế",
     "badges": [
-      { "label": "NIST SP 800-63B", "desc": "Chuẩn mật khẩu & xác thực" },
-      { "label": "PBKDF2 / SHA-256", "desc": "Băm mật khẩu & Audit Log" },
-      { "label": "PKI USB Token", "desc": "Chữ ký số cấp doanh nghiệp" },
-      { "label": "Multi-Tenant Isolation", "desc": "Cách ly dữ liệu tuyệt đối" }
+      { "label": "NIST SP 800-63B", "desc": "Chuẩn mật khẩu & xác thực đa nhân tố" },
+      { "label": "SHA-256 Merkle Chain", "desc": "Chuỗi kiểm toán bất biến chống sửa điểm" },
+      { "label": "PKI USB Token", "desc": "Chữ ký số cấp doanh nghiệp & ngân hàng" },
+      { "label": "3-Layer RLS Isolation", "desc": "Cách ly dữ liệu tuyệt đối đa khách thuê" }
     ]
   },
   "finalCta": {
-    "title": "Sẵn sàng bứt phá năng lực cùng Aegis?",
-    "subtitle": "Tham gia cùng hàng nghìn học viên và hàng chục tổ chức đang tin dùng Aegis mỗi ngày.",
+    "title": "Sẵn sàng bứt phá năng lực cùng Aegis Global?",
+    "subtitle": "Tham gia cùng hàng nghìn giáo viên, học viên và các tổ chức tiên phong đang kiến tạo chuẩn mực khảo thí mới.",
     "ctaPrimary": "Bắt đầu miễn phí ngay",
-    "ctaSecondary": "Đặt lịch Demo cho Doanh nghiệp"
+    "ctaSecondary": "Mở Zen Studio cho Giáo viên"
   },
   "footer": {
     "tagline": "Đo lường năng lực thực chất — Bùng nổ cảm hứng học tập đỉnh cao.",
     "product": "Sản phẩm",
-    "company": "Công ty",
+    "company": "Tổ chức",
     "legal": "Pháp lý",
     "links": {
-      "features": "Tính năng",
-      "gameshows": "Gameshow",
+      "features": "Tính năng Đột phá",
+      "gameshows": "6 Gameshow",
       "pricing": "Bảng giá",
-      "about": "Về chúng tôi",
+      "about": "Về Aegis Global",
       "contact": "Liên hệ",
       "privacy": "Chính sách bảo mật",
       "terms": "Điều khoản sử dụng"
     },
-    "copyright": "Đã đăng ký bản quyền."
+    "copyright": "Đã đăng ký bản quyền toàn cầu."
   }
 }

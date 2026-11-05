@@ -20,45 +20,258 @@
   "socialProof": {
     "title": "موثوق به من قِبل كبرى المؤسسات والمنظمات العالمية",
     "stats": [
-      { "value": "3,500+", "label": "سؤال في بنك الأسئلة" },
-      { "value": "6", "label": "تنسيقات مسابقات أكاديمية" },
-      { "value": "<2ms", "label": "زمن استجابة جرس الساحة" },
-      { "value": "99.9%", "label": "جاهزية البنية التحتية" }
+      {
+        "value": "3,500+",
+        "label": "سؤال في بنك الأسئلة"
+      },
+      {
+        "value": "6",
+        "label": "تنسيقات مسابقات أكاديمية"
+      },
+      {
+        "value": "<2ms",
+        "label": "زمن استجابة جرس الساحة"
+      },
+      {
+        "value": "99.9%",
+        "label": "جاهزية البنية التحتية"
+      }
     ],
-    "segments": ["البنوك والمالية", "المؤسسات متعددة الفروع", "الجامعات والتعليم", "مراكز اختبارات القيادة"]
+    "segments": [
+      "البنوك والمالية",
+      "المؤسسات متعددة الفروع",
+      "الجامعات والتعليم",
+      "مراكز اختبارات القيادة"
+    ]
   },
   "features": {
-    "title": "6 تقنيات رائدة، حصرياً في Aegis",
+    "badge": "AEGIS GLOBAL COGNITIVE INFRASTRUCTURE (AGCI v5.0)",
+    "title": "9 تقنيات رائدة، حصرياً في Aegis",
     "subtitle": "ليست مجرد أداة اختبارات عادية — بل منظومة متكاملة لتقييم الكفاءة المعرفية من الجيل القادم.",
+    "personas": {
+      "all": "🌐 All Breakthroughs (9)",
+      "teacher": "👩‍🏫 Teachers & Creators (Zen PLG)",
+      "enterprise": "🏦 Enterprise, Banks & Universities",
+      "learner": "🎓 Adaptive Learners & Gameshow"
+    },
     "items": [
-      { "title": "اختبارات التكيف الدماغي بالذكاء الاصطناعي", "desc": "محرك CAT/IRT 3-PL يضبط صعوبة الأسئلة بعد كل إجابة لقياس الكفاءة الفعلية بدلاً من الحفظ السطحي." },
-      { "title": "استوديو ساحة المسابقات المباشرة", "desc": "تحكيم دقيق للضغط على الجرس بزمن استجابة أقل من 2 ميلي ثانية عبر 6 مسابقات كلاسيكية شهيرة." },
-      { "title": "قاعات اختبار آمنة بمعايير عسكرية", "desc": "مراقبة فورية بالذكاء الاصطناعي لمنع الغش وتوقيع رقمي بمفتاح PKI USB Token للاختبارات الحساسة." },
-      { "title": "تسجيل دخول بدون كلمة مرور خلال ثانية", "desc": "مسح رمز الاستجابة السريعة QR أو خدمات Google — ادخل قاعة الاختبار فوراً دون عناء تذكر كلمات المرور." },
-      { "title": "رقمنة بنك الأسئلة بنقرة واحدة", "desc": "استيراد تلقائي من Word/MathType وExcel وPDF — حوّل المستندات الورقية إلى بنك رقمي في دقائق." },
-      { "title": "المعلم الذكي السقراطي", "desc": "رفيق دراسة ذكي متاح 24/7 يشرح المسائل بطريقة الحوار السقراطي لتعميق الفهم المستمر." }
-    ]
+      {
+        "title": "Zen Studio 3-Touch & Multimodal Paste",
+        "desc": "Build exams in 10 seconds! Record teacher voice directly in browser, paste images/videos, and share via QR link — students join instantly with zero account required.",
+        "metric": "3 Touches • 10s",
+        "badge": "ZEN PLG",
+        "personas": [
+          "teacher"
+        ]
+      },
+      {
+        "title": "Tri-Tier MathType OLE & Word Table Engine",
+        "desc": "Exclusively decodes binary MTEF v5 (Equation.DSMT4), WMZ/WMF and AI Vision directly from Clipboard into crisp Vector LaTeX & Markdown Tables, saving 99.2% DB storage.",
+        "metric": "-99.2% DB • <2ms",
+        "badge": "WORLD FIRST",
+        "personas": [
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "Epistemic Triad AI & Wolf Pack Swarm",
+        "desc": "Replaces single-LLM hallucination with a 3-tier architecture: Universal AI Router -> Wolf Pack Swarm Consensus (SCI) -> 6-Phase Academic Symposium.",
+        "metric": "SCI 98.4% • 0 Hallucination",
+        "badge": "EPISTEMIC AI",
+        "personas": [
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "IRT 3-PL, DKT & FSRS v5 Psychometrics",
+        "desc": "Measures real competence (a, b, c parameters), traces deep knowledge (DKT), schedules FSRS v5 spaced repetition, and grades 9 item types including Progressive Multi-True/False.",
+        "metric": "IRT 3-PL + FSRS v5",
+        "badge": "PSYCHOMETRICS",
+        "personas": [
+          "learner",
+          "enterprise",
+          "teacher"
+        ]
+      },
+      {
+        "title": "AegisNotebook Sovereign & ACSE Micro-Course",
+        "desc": "Detects cross-document policy/legal conflicts and transforms dry explanations into 4 cognitive learning slices: Clue -> Concept -> Step -> Hook.",
+        "metric": "4 Cognitive Slices",
+        "badge": "COGNITIVE SCIENCE",
+        "personas": [
+          "learner",
+          "teacher",
+          "enterprise"
+        ]
+      },
+      {
+        "title": "6 TV Gameshow Arenas (<2ms RAM Buzzer)",
+        "desc": "Faithfully reproduces Road to Olympia, Wheel of Fortune, Golden Bell, Jeopardy, University Challenge & Lightning Fast with sub-2ms in-memory buzzer arbitration.",
+        "metric": "<2ms Buzzer • 60fps",
+        "badge": "LIVE ARENA",
+        "personas": [
+          "learner",
+          "teacher"
+        ]
+      },
+      {
+        "title": "5D Orthogonal Taxonomy & Universal Transpiler",
+        "desc": "Classifies knowledge across 5 orthogonal axes with O(1) Pivot rotation and cross-compiles seamlessly between Docx, Excel (27 roles), QTI 3.0, Moodle XML & GIFT.",
+        "metric": "5 Axes • O(1) Pivot",
+        "badge": "INTEROPERABILITY",
+        "personas": [
+          "enterprise",
+          "teacher"
+        ]
+      },
+      {
+        "title": "3-Layer Isolation, PKI Token & SHA-256 Merkle",
+        "desc": "Absolute data sovereignty via Middleware -> EF Global Filter -> PostgreSQL RLS, Scoped RBAC, PKI USB Token signatures, and tamper-proof SHA-256 Merkle audit chains.",
+        "metric": "3-Layer RLS + SHA-256",
+        "badge": "MILITARY GRADE",
+        "personas": [
+          "enterprise"
+        ]
+      },
+      {
+        "title": "Global FinOps Treasury & CAS/COW Deduplication",
+        "desc": "Multi-rail global checkout (PayOS, Offline EMVCo VietQR, Stripe, Web3 Polygon), AegisCoin economy, and SHA-256 Copy-On-Write storage deduplication.",
+        "metric": "5 Payment Rails • COW",
+        "badge": "GLOBAL FINOPS",
+        "personas": [
+          "enterprise",
+          "teacher"
+        ]
+      }
+    ],
+    "lab": {
+      "eyebrow": "INTERACTIVE TECHNOLOGY SANDBOX",
+      "title": "Experience Aegis Core Technologies Live",
+      "subtitle": "Click to test how Aegis processes MathType binary streams, runs AI Swarm debates, calculates progressive IRT scores, and locks Arena buzzers in <2ms.",
+      "tabs": {
+        "zen": "⚡ Smart Paste & MathType OLE",
+        "ai": "🐺 Wolf Pack AI Swarm (SCI)",
+        "irt": "📐 Progressive Scoring & IRT 3-PL",
+        "arena": "🔔 <2ms Buzzer & Merkle Security"
+      }
+    },
+    "matrix": {
+      "eyebrow": "GLOBAL CATEGORY-KING BENCHMARK",
+      "title": "Why Aegis Global Outperforms Legacy Platforms",
+      "subtitle": "Aegis unifies the engagement of Kahoot, the enterprise rigor of Moodle/Canvas, and multi-agent epistemic intelligence beyond standalone LLMs.",
+      "columns": {
+        "criteria": "Core Capability & Architecture",
+        "aegis": "AEGIS GLOBAL (AGCI)",
+        "kahoot": "Kahoot! / Quizizz",
+        "lms": "Moodle / Canvas LMS",
+        "ai": "ChatGPT / NotebookLM"
+      },
+      "rows": [
+        {
+          "criteria": "Copy-Paste MathType OLE & Word Tables",
+          "aegis": "✅ 3-Tier Binary MTEF v5 -> Vector LaTeX & Markdown (-99.2% DB)",
+          "kahoot": "❌ Manual retyping or blurry PNG images",
+          "lms": "⚠️ Complex plugins, prone to broken formulas",
+          "ai": "⚠️ Loses layout & equation structure on paste"
+        },
+        {
+          "criteria": "Preschool / K-12 Voice & Zero-Account Join",
+          "aegis": "✅ 1-Click Browser Voice Record + Instant QR/Zalo Link (10s)",
+          "kahoot": "✅ PIN code join (Paid audio features)",
+          "lms": "❌ Mandatory student account & complex enrollment",
+          "ai": "❌ Not an interactive exam/classroom platform"
+        },
+        {
+          "criteria": "AI Accuracy & Hallucination Defense",
+          "aegis": "✅ Epistemic Triad: Wolf Pack Swarm + 6-Phase Symposium (SCI)",
+          "kahoot": "⚠️ Single-LLM wrapper, unverified answers",
+          "lms": "❌ No native multi-agent epistemic engine",
+          "ai": "⚠️ Single-model output, prone to subtle hallucinations"
+        },
+        {
+          "criteria": "Psychometrics & Progressive True/False Scoring",
+          "aegis": "✅ IRT 3-PL + DKT + FSRS v5 + Progressive 0.1 -> 0.25 -> 0.5 -> 1.0",
+          "kahoot": "❌ Simple raw points & speed bonus only",
+          "lms": "⚠️ Basic classical test theory (CTT)",
+          "ai": "❌ No psychometric calibration engine"
+        },
+        {
+          "criteria": "Live TV Gameshow Arena",
+          "aegis": "✅ 6 Authentic Formats (Olympia, Golden Bell, Wheel...) <2ms RAM",
+          "kahoot": "⚠️ 1 basic arcade quiz format",
+          "lms": "❌ Static web forms only",
+          "ai": "❌ Text chat interface only"
+        },
+        {
+          "criteria": "Banking & Enterprise Security",
+          "aegis": "✅ 3-Layer PostgreSQL RLS + PKI USB Token + SHA-256 Merkle Audit",
+          "kahoot": "❌ Consumer-grade cloud sharing",
+          "lms": "⚠️ Single-tenant or heavy manual setup",
+          "ai": "❌ No exam proctoring or cryptographic audit trail"
+        }
+      ]
+    }
   },
   "gameshows": {
     "title": "6 مسابقات أكاديمية — تعلّم من خلال التحدي",
     "subtitle": "تطبيق دقيق لقواعد أشهر المسابقات التلفزيونية لتعزيز مراجعة المعرفة واكتساب المهارات.",
     "items": [
-      { "name": "طريق الأولمبيا", "desc": "4 جولات حماسية — الإحماء، اجتياز العقبات، التسارع، وخط النهاية." },
-      { "name": "عجلة الحظ", "desc": "عجلة فيزيائية ثلاثية الأبعاد بسرعة 60 إطاراً في الثانية لحل الألغاز مع خانات الحظ ومضاعفة النقاط." },
-      { "name": "تحدي الجامعات", "desc": "مواجهة 4 ضد 4 بين الجامعات مع جرس البداية وجولات مكافآت من 3 أسئلة مع نقاشات الفريق." },
-      { "name": "جيباردي! (Jeopardy!)", "desc": "مصفوفة نقاط من 30 خلية، تتطلب الإجابة بأسلوب طرح السؤال الكلاسيكي." },
-      { "name": "سرعة البرق", "desc": "آلة تسلق من 10 درجات — كل إجابة صحيحة تصعد بك درجة، والخطأ يعيدك إلى الصفر." },
-      { "name": "الجرس الذهبي", "desc": "منافسة جماعية كبرى للبقاء حتى النهاية وقرع الجرس للإجابة على السؤال الحاسم." }
+      {
+        "name": "طريق الأولمبيا",
+        "desc": "4 جولات حماسية — الإحماء، اجتياز العقبات، التسارع، وخط النهاية."
+      },
+      {
+        "name": "عجلة الحظ",
+        "desc": "عجلة فيزيائية ثلاثية الأبعاد بسرعة 60 إطاراً في الثانية لحل الألغاز مع خانات الحظ ومضاعفة النقاط."
+      },
+      {
+        "name": "تحدي الجامعات",
+        "desc": "مواجهة 4 ضد 4 بين الجامعات مع جرس البداية وجولات مكافآت من 3 أسئلة مع نقاشات الفريق."
+      },
+      {
+        "name": "جيباردي! (Jeopardy!)",
+        "desc": "مصفوفة نقاط من 30 خلية، تتطلب الإجابة بأسلوب طرح السؤال الكلاسيكي."
+      },
+      {
+        "name": "سرعة البرق",
+        "desc": "آلة تسلق من 10 درجات — كل إجابة صحيحة تصعد بك درجة، والخطأ يعيدك إلى الصفر."
+      },
+      {
+        "name": "الجرس الذهبي",
+        "desc": "منافسة جماعية كبرى للبقاء حتى النهاية وقرع الجرس للإجابة على السؤال الحاسم."
+      }
     ]
   },
   "segments": {
     "title": "حلول متكاملة مصممة لكل قطاع",
     "subtitle": "لكل مؤسسة تحدياتها الفريدة — ويتكيف Aegis بدقة مع كافة احتياجاتك.",
     "tabs": [
-      { "id": "banking", "label": "البنوك والمالية", "painPoint": "توحيد امتحانات التوظيف، الشهادات المهنية الدورية، والامتثال لمكافحة غسل الأموال (AML) لعشرات الآلاف من الموظفين.", "solution": "عزل بيانات متعدد المستأجرين لكل فرع، سجلات تدقيق غير قابلة للتلاعب بشفرة SHA-256، وتواقيع رقمية PKI معتمدة قانونياً." },
-      { "id": "enterprise", "label": "المؤسسات متعددة الفروع", "painPoint": "تشتت التدريب الداخلي عبر مواقع جغرافية متعددة وصعوبة قياس الكفاءة بشكل موحد.", "solution": "يمتلك قادة الفرق بنوك أسئلة خاصة مع تقارير فورية عن نسبة الإنجاز والتقدم لكل وحدة." },
-      { "id": "university", "label": "الجامعات والتعليم", "painPoint": "أرشيف ورقي ضخم وصعوبة تخصيص مسارات التعلم لكل طالب على حدة.", "solution": "رقمنة بنقرة واحدة من Word/MathType، واختبارات تكيفية تقيس القدرات الحقيقية للطلاب." },
-      { "id": "driving", "label": "مراكز تدريب القيادة", "painPoint": "محاكاة الاختبارات النظرية وفق المعايير الوطنية مع أسئلة الرسوب الفوري الإلزامية.", "solution": "منطق آلي للرسوب الفوري في الأسئلة الحرجة، مع محاكاة سيناريوهات القيادة بالذكاء الاصطناعي." }
+      {
+        "id": "banking",
+        "label": "البنوك والمالية",
+        "painPoint": "توحيد امتحانات التوظيف، الشهادات المهنية الدورية، والامتثال لمكافحة غسل الأموال (AML) لعشرات الآلاف من الموظفين.",
+        "solution": "عزل بيانات متعدد المستأجرين لكل فرع، سجلات تدقيق غير قابلة للتلاعب بشفرة SHA-256، وتواقيع رقمية PKI معتمدة قانونياً."
+      },
+      {
+        "id": "enterprise",
+        "label": "المؤسسات متعددة الفروع",
+        "painPoint": "تشتت التدريب الداخلي عبر مواقع جغرافية متعددة وصعوبة قياس الكفاءة بشكل موحد.",
+        "solution": "يمتلك قادة الفرق بنوك أسئلة خاصة مع تقارير فورية عن نسبة الإنجاز والتقدم لكل وحدة."
+      },
+      {
+        "id": "university",
+        "label": "الجامعات والتعليم",
+        "painPoint": "أرشيف ورقي ضخم وصعوبة تخصيص مسارات التعلم لكل طالب على حدة.",
+        "solution": "رقمنة بنقرة واحدة من Word/MathType، واختبارات تكيفية تقيس القدرات الحقيقية للطلاب."
+      },
+      {
+        "id": "driving",
+        "label": "مراكز تدريب القيادة",
+        "painPoint": "محاكاة الاختبارات النظرية وفق المعايير الوطنية مع أسئلة الرسوب الفوري الإلزامية.",
+        "solution": "منطق آلي للرسوب الفوري في الأسئلة الحرجة، مع محاكاة سيناريوهات القيادة بالذكاء الاصطناعي."
+      }
     ]
   },
   "pricing": {
@@ -70,7 +283,12 @@
         "price": "مجاناً",
         "period": "",
         "description": "للمتعلمين الأفراد الذين يدرسون بشكل مستقل.",
-        "features": ["الوصول لبنك أسئلة المجتمع", "تدريب تكيفي أساسي بالذكاء الاصطناعي", "المشاركة في ساحة المسابقات", "متابعة الترتيب في لوحة الصدارة"],
+        "features": [
+          "الوصول لبنك أسئلة المجتمع",
+          "تدريب تكيفي أساسي بالذكاء الاصطناعي",
+          "المشاركة في ساحة المسابقات",
+          "متابعة الترتيب في لوحة الصدارة"
+        ],
         "cta": "ابدأ مجاناً",
         "highlighted": false
       },
@@ -79,7 +297,12 @@
         "price": "تواصل معنا",
         "period": "/ شهرياً",
         "description": "لقادة الفرق الذين يديرون مجموعات صغيرة.",
-        "features": ["كل ميزات باقة المجتمع", "بنك أسئلة مخصص لفريقك", "تعيين الاختبارات ومتابعة تقدم الفريق", "استيراد بنقرة واحدة من Word/Excel"],
+        "features": [
+          "كل ميزات باقة المجتمع",
+          "بنك أسئلة مخصص لفريقك",
+          "تعيين الاختبارات ومتابعة تقدم الفريق",
+          "استيراد بنقرة واحدة من Word/Excel"
+        ],
         "cta": "تجربة Pro",
         "highlighted": true
       },
@@ -88,7 +311,12 @@
         "price": "عرض مخصص",
         "period": "",
         "description": "للبنوك الكبرى والشركات متعددة الجنسيات والجامعات.",
-        "features": ["عزل تام لبيانات المستأجرين", "تسجيل دخول موحد SSO / مفتاح PKI", "سجل تدقيق SHA-256 غير قابل للتعديل", "اتفاقية مستوى خدمة SLA ودعم مخصص"],
+        "features": [
+          "عزل تام لبيانات المستأجرين",
+          "تسجيل دخول موحد SSO / مفتاح PKI",
+          "سجل تدقيق SHA-256 غير قابل للتعديل",
+          "اتفاقية مستوى خدمة SLA ودعم مخصص"
+        ],
         "cta": "حجز عرض تجريبي",
         "highlighted": false
       }
@@ -97,10 +325,22 @@
   "trust": {
     "title": "أمان وامتثال متوافق مع المعايير الدولية",
     "badges": [
-      { "label": "NIST SP 800-63B", "desc": "معيار أمان كلمات المرور والمصادقة" },
-      { "label": "PBKDF2 / SHA-256", "desc": "تشفير آمن وسجلات تدقيق غير قابلة للتعديل" },
-      { "label": "PKI USB Token", "desc": "توقيعات إلكترونية رقمية للمؤسسات" },
-      { "label": "Multi-Tenant Isolation", "desc": "عزل صارم للبيانات بين المستأجرين" }
+      {
+        "label": "NIST SP 800-63B",
+        "desc": "معيار أمان كلمات المرور والمصادقة"
+      },
+      {
+        "label": "PBKDF2 / SHA-256",
+        "desc": "تشفير آمن وسجلات تدقيق غير قابلة للتعديل"
+      },
+      {
+        "label": "PKI USB Token",
+        "desc": "توقيعات إلكترونية رقمية للمؤسسات"
+      },
+      {
+        "label": "Multi-Tenant Isolation",
+        "desc": "عزل صارم للبيانات بين المستأجرين"
+      }
     ]
   },
   "finalCta": {
