@@ -185,3 +185,4 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
   );
 };
 export default SmartRichMediaToolbar;
+

@@ -1,4 +1,13 @@
 import React from 'react';
+import {
+  unwrapWordConditionalMathHtml,
+  ommlOrMathMlNodeToLatex,
+  normalizeUnicodeMathToLatex,
+  htmlTableToMarkdown,
+  tsvToMarkdownTable,
+} from './clipboardMathTableTranspiler';
+
+export { normalizeUnicodeMathToLatex };
 
 export async function compressImageToDataUri(file: Blob, maxDim = 960): Promise<string> {
   if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
@@ -51,70 +60,33 @@ export function readBlobAsDataUri(blob: Blob): Promise<string> {
   });
 }
 
-function mathMlNodeToLatex(node: Element): string {
-  const texAnno = node.querySelector('annotation[encoding*="tex" i]');
-  if (texAnno?.textContent?.trim()) return texAnno.textContent.trim();
+export function convertWordHtmlToRichMarkdown(rawHtml: string): string | null {
+  if (!rawHtml) return null;
+  const html = unwrapWordConditionalMathHtml(rawHtml);
+  const hasRichStructure = /<(table|m:omath|m:omathpara|math|mml:math|sup|sub|u|img)\b|katex|data-latex/i.test(html);
+  if (!hasRichStructure) return null;
 
-  const walk = (el: Node): string => {
-    if (el.nodeType === Node.TEXT_NODE) return (el.textContent || '').trim();
-    if (el.nodeType !== Node.ELEMENT_NODE) return '';
-    const tag = (el as Element).localName?.toLowerCase() || '';
-    const kids = Array.from(el.childNodes).filter(
-      c => c.nodeType === Node.ELEMENT_NODE || (c.nodeType === Node.TEXT_NODE && c.textContent?.trim())
-    );
-    if (tag === 'mfrac' && kids.length >= 2) return `\\frac{${walk(kids[0])}}{${walk(kids[1])}}`;
-    if (tag === 'msqrt') return `\\sqrt{${kids.map(walk).join('')}}`;
-    if (tag === 'mroot' && kids.length >= 2) return `\\sqrt[${walk(kids[1])}]{${walk(kids[0])}}`;
-    if (tag === 'msup' && kids.length >= 2) return `{${walk(kids[0])}}^{${walk(kids[1])}}`;
-    if (tag === 'msub' && kids.length >= 2) return `{${walk(kids[0])}}_{${walk(kids[1])}}`;
-    if (tag === 'msubsup' && kids.length >= 3) return `{${walk(kids[0])}}_{${walk(kids[1])}}^{${walk(kids[2])}}`;
-    if ((tag === 'mover' || tag === 'munder') && kids.length >= 2) return `${walk(kids[0])}_{${walk(kids[1])}}`;
-    if (tag === 'annotation' || tag === 'semantics') return kids.length > 0 ? walk(kids[0]) : '';
-    return kids.map(walk).join(' ');
-  };
-  return walk(node).replace(/\s+/g, ' ').trim();
-}
-
-export function normalizeUnicodeMathToLatex(input: string): string {
-  return input
-    .replace(/([A-Za-z0-9)\]])²/g, '$$$1^{2}$$')
-    .replace(/([A-Za-z0-9)\]])³/g, '$$$1^{3}$$')
-    .replace(/([A-Za-z])₁/g, '$$$1_{1}$$')
-    .replace(/([A-Za-z])₂/g, '$$$1_{2}$$')
-    .replace(/([A-Za-z])₃/g, '$$$1_{3}$$')
-    .replace(/([A-Za-z])₄/g, '$$$1_{4}$$')
-    .replace(/√\(([^)]+)\)/g, '$\\sqrt{$1}$')
-    .replace(/√([0-9A-Za-z]+)/g, '$\\sqrt{$1}$')
-    .replace(/≤/g, '$\\le$')
-    .replace(/≥/g, '$\\ge$')
-    .replace(/≠/g, '$\\ne$')
-    .replace(/±/g, '$\\pm$');
-}
-
-export function convertWordHtmlToRichMarkdown(html: string): string | null {
-  if (!html || !/<(table|img|math|mml:math|sup|sub|u)\b/i.test(html)) return null;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  doc.querySelectorAll('style, script, meta, link, xml').forEach(el => el.remove());
+  doc.querySelectorAll('style, script, meta, link, xml, title, head').forEach(el => el.remove());
 
-  doc.querySelectorAll('math, mml\\:math').forEach(mathEl => {
-    const tex = mathMlNodeToLatex(mathEl);
-    if (tex) mathEl.replaceWith(doc.createTextNode(`$${tex}$`));
-  });
-
-  doc.querySelectorAll('img').forEach(imgEl => {
-    const src = imgEl.getAttribute('src') || '';
-    if (src.startsWith('data:image/') || src.startsWith('http://') || src.startsWith('https://')) {
-      const alt = (imgEl.getAttribute('alt') || 'Hình minh họa').replace(/[\[\]\r\n]/g, ' ').trim();
-      imgEl.replaceWith(doc.createTextNode(`\n![${alt}](${src})\n`));
-    } else {
-      imgEl.remove();
+  // 1. Convert KaTeX / MathJax / Office MathML (m:oMath) / W3C MathML (mml:math) -> LaTeX ($...$)
+  const mathSelectors = 'm\\:oMathPara, m\\:oMath, oMathPara, oMath, math, mml\\:math, .katex-mathml, [data-latex]';
+  doc.querySelectorAll(mathSelectors).forEach(mathEl => {
+    // Skip nested oMath if parent oMathPara is already being processed
+    if (mathEl.tagName.toLowerCase().endsWith('omath') && mathEl.parentElement?.tagName.toLowerCase().endsWith('omathpara')) {
+      return;
+    }
+    const tex = ommlOrMathMlNodeToLatex(mathEl);
+    if (tex) {
+      mathEl.replaceWith(doc.createTextNode(`$${tex}$`));
     }
   });
 
+  // 2. Convert <sup>, <sub>, <u> BEFORE table extraction so cells retain LaTeX/underline
   doc.querySelectorAll('sup').forEach(el => {
     const t = el.textContent?.trim();
-    if (t) el.replaceWith(doc.createTextNode(`$^{${t}}$`));
+    if (t && !/^\[\d+\]$/.test(t)) el.replaceWith(doc.createTextNode(`$^{${t}}$`));
   });
   doc.querySelectorAll('sub').forEach(el => {
     const t = el.textContent?.trim();
@@ -125,22 +97,26 @@ export function convertWordHtmlToRichMarkdown(html: string): string | null {
     if (t) el.replaceWith(doc.createTextNode(`<u>${t}</u>`));
   });
 
+  // 3. Convert <table> -> Markdown Table (| A | B |)
   doc.querySelectorAll('table').forEach(tableEl => {
-    const rows = Array.from(tableEl.querySelectorAll('tr'))
-      .map(tr =>
-        Array.from(tr.querySelectorAll('th, td')).map(cell =>
-          (cell.textContent || '').replace(/\r?\n+/g, ' ').replace(/\s+/g, ' ').replace(/\|/g, '\\|').trim()
-        )
-      )
-      .filter(r => r.length > 0 && r.some(c => c.length > 0));
-    if (rows.length > 0) {
-      const colCount = Math.max(...rows.map(r => r.length));
-      const padRow = (r: string[]) => Array.from({ length: colCount }, (_, i) => r[i] || '');
-      const header = `| ${padRow(rows[0]).join(' | ')} |`;
-      const divider = `| ${Array.from({ length: colCount }, () => '---').join(' | ')} |`;
-      const body = rows.slice(1).map(r => `| ${padRow(r).join(' | ')} |`).join('\n');
-      const mdTable = `\n${header}\n${divider}${body ? `\n${body}` : ''}\n`;
-      tableEl.replaceWith(doc.createTextNode(mdTable));
+    const mdTable = htmlTableToMarkdown(tableEl);
+    if (mdTable) tableEl.replaceWith(doc.createTextNode(mdTable));
+  });
+
+  // 4. Handle <img>: Convert formula-alt images to LaTeX; keep only genuine data/http illustrations
+  doc.querySelectorAll('img').forEach(imgEl => {
+    const latexAlt = imgEl.getAttribute('data-latex') || imgEl.getAttribute('alt') || '';
+    if (latexAlt && /\\[a-zA-Z]+|[\^_{}=]/.test(latexAlt) && latexAlt.length < 300) {
+      const cleanTex = latexAlt.replace(/^\$+|\$+$/g, '').trim();
+      imgEl.replaceWith(doc.createTextNode(`$${cleanTex}$`));
+      return;
+    }
+    const src = imgEl.getAttribute('src') || '';
+    if (src.startsWith('data:image/') || src.startsWith('http://') || src.startsWith('https://')) {
+      const alt = (latexAlt || 'Hình minh họa').replace(/[\[\]\r\n]/g, ' ').trim();
+      imgEl.replaceWith(doc.createTextNode(`\n![${alt}](${src})\n`));
+    } else {
+      imgEl.remove();
     }
   });
 
@@ -150,8 +126,10 @@ export function convertWordHtmlToRichMarkdown(html: string): string | null {
   });
 
   const result = normalizeUnicodeMathToLatex(doc.body.textContent || '')
+    .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+
   return result || null;
 }
 
@@ -169,21 +147,12 @@ export function convertPlainTextToSmartMedia(text: string): string | null {
       return `![Hình minh họa](${trimmed})`;
     }
   }
-  const lines = trimmed.split(/\r?\n/).filter(l => l.trim().length > 0);
-  if (lines.length >= 2 && lines.every(l => l.includes('\t'))) {
-    const rows = lines.map(l => l.split('\t').map(c => c.trim().replace(/\|/g, '\\|')));
-    const colCount = Math.max(...rows.map(r => r.length));
-    if (colCount >= 2) {
-      const pad = (r: string[]) => Array.from({ length: colCount }, (_, i) => r[i] || '');
-      const header = `| ${pad(rows[0]).join(' | ')} |`;
-      const divider = `| ${Array.from({ length: colCount }, () => '---').join(' | ')} |`;
-      const body = rows.slice(1).map(r => `| ${pad(r).join(' | ')} |`).join('\n');
-      return `\n${header}\n${divider}\n${body}\n`;
-    }
-  }
-  if (/[²³₁₂₃₄√≤≥≠±]/.test(trimmed)) {
-    return normalizeUnicodeMathToLatex(trimmed);
-  }
+  const mdTable = tsvToMarkdownTable(trimmed);
+  if (mdTable) return mdTable;
+
+  const normalizedMath = normalizeUnicodeMathToLatex(trimmed);
+  if (normalizedMath !== trimmed) return normalizedMath;
+
   return null;
 }
 
@@ -210,9 +179,54 @@ export async function handleSmartRichPaste(
   onNotify?: (msg: string) => void
 ) {
   const targetEl = e.currentTarget;
+  const html = e.clipboardData?.getData('text/html') || '';
+  const plain = e.clipboardData?.getData('text/plain') || '';
+
+  // LUỒNG 1 (ƯU TIÊN SỐ 1): Phân tích cấu trúc HTML từ Word / Excel / Web
+  // Chuyển Bảng biểu -> Markdown Table (| A | B |), Công thức OMML/MathML -> LaTeX ($...$).
+  // Tuyệt đối KHÔNG lấy ảnh preview (image/png) mà Word/Excel tự sinh kèm trong Clipboard!
+  const convertedHtml = convertWordHtmlToRichMarkdown(html);
+  if (convertedHtml) {
+    e.preventDefault();
+    insertAtCursor(targetEl, currentVal, convertedHtml, onChange);
+    const hasTable = /\|\s*---/.test(convertedHtml);
+    const hasMath = convertedHtml.includes('$');
+    if (hasTable && hasMath) {
+      onNotify?.('Đã chuyển đổi Bảng biểu -> Markdown & Công thức -> LaTeX tối ưu lưu trữ!');
+    } else if (hasTable) {
+      onNotify?.('Đã chuyển đổi Bảng biểu Word/Excel -> Chuẩn Markdown Table (tiết kiệm 99% DB)!');
+    } else if (hasMath) {
+      onNotify?.('Đã chuyển đổi Công thức Toán -> Chuẩn Vector LaTeX ($...$)!');
+    } else {
+      onNotify?.('Đã chuẩn hóa dữ liệu từ Word/Clipboard!');
+    }
+    return;
+  }
+
+  // LUỒNG 2 (ƯU TIÊN SỐ 2): Phân tích Plain Text (Bảng TSV từ Excel, Công thức Unicode, Link Media)
+  const convertedPlain = convertPlainTextToSmartMedia(plain);
+  if (convertedPlain) {
+    e.preventDefault();
+    insertAtCursor(targetEl, currentVal, convertedPlain, onChange);
+    if (/\|\s*---/.test(convertedPlain)) {
+      onNotify?.('Đã chuyển đổi Bảng dữ liệu -> Chuẩn Markdown Table!');
+    } else if (convertedPlain.includes('$')) {
+      onNotify?.('Đã chuyển đổi Ký hiệu Toán học -> Chuẩn LaTeX ($...$)!');
+    } else {
+      onNotify?.('Đã tự động nhận diện và nhúng Đa phương tiện!');
+    }
+    return;
+  }
+
+  // Nếu Clipboard có chứa văn bản thuần (copy chữ bình thường từ Word/Excel/Web),
+  // giữ nguyên hành vi dán văn bản mặc định của trình duyệt, KHÔNG đọc fileItem ảnh preview của Office!
+  if (plain.trim().length > 0) {
+    return;
+  }
+
+  // LUỒNG 3 (CHỈ KHI CLIPBOARD LÀ MEDIA THUẦN TÚY): Chụp màn hình Win+Shift+S, Copy Image, Audio, Video
   const items = Array.from(e.clipboardData?.items || []);
   const fileItem = items.find(it => it.kind === 'file' && /^(image|audio|video)\//i.test(it.type));
-
   if (fileItem) {
     e.preventDefault();
     const file = fileItem.getAsFile();
@@ -220,7 +234,7 @@ export async function handleSmartRichPaste(
     if (file.type.startsWith('image/')) {
       const uri = await compressImageToDataUri(file);
       insertAtCursor(targetEl, currentVal, `![Hình minh họa](${uri})`, onChange);
-      onNotify?.('Đã dán và tối ưu hóa Hình ảnh trực tiếp vào câu hỏi!');
+      onNotify?.('Đã dán và nén tối ưu Hình ảnh trực tiếp vào câu hỏi!');
       return;
     }
     if (file.type.startsWith('audio/')) {
@@ -235,23 +249,6 @@ export async function handleSmartRichPaste(
       onNotify?.('Đã dán Video trực tiếp vào câu hỏi!');
       return;
     }
-  }
-
-  const html = e.clipboardData?.getData('text/html') || '';
-  const convertedHtml = convertWordHtmlToRichMarkdown(html);
-  if (convertedHtml) {
-    e.preventDefault();
-    insertAtCursor(targetEl, currentVal, convertedHtml, onChange);
-    onNotify?.('Đã tự động chuyển đổi Bảng biểu / Hình ảnh / Công thức từ Word!');
-    return;
-  }
-
-  const plain = e.clipboardData?.getData('text/plain') || '';
-  const convertedPlain = convertPlainTextToSmartMedia(plain);
-  if (convertedPlain) {
-    e.preventDefault();
-    insertAtCursor(targetEl, currentVal, convertedPlain, onChange);
-    onNotify?.('Đã tự động nhận diện và chuyển đổi dữ liệu Đa phương tiện / Bảng biểu!');
   }
 }
 
