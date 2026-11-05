@@ -1,206 +1,235 @@
-# 🎓 CẨM NANG SƯ PHẠM DÀNH CHO GIÁO VIÊN & GIẢNG VIÊN
-## BỘ BA QUYỀN NĂNG SƯ PHẠM • ĐẤU TRƯỜNG ARENA 5 THỂ THỨC • PHÂN CẤP CHỦ ĐỀ SỞ HỮU TRÍ TUỆ
-### *(Tài liệu chuẩn mực quốc tế — Thiết kế trực quan, dễ ứng dụng từ bậc Tiểu học đến Đại học)*
+# 🎓 CẨM NANG HƯỚNG DẪN SỬ DỤNG HỆ SINH THÁI SƯ PHẠM ZEN (4-TRONG-1)
+## DÀNH CHO MỌI GIÁO VIÊN — TỪ CÔ GIÁO MẦM NON ĐẾN GIẢNG VIÊN ĐẠI HỌC
+### *(Hướng dẫn cầm tay chỉ việc từng bước • Ngôn ngữ bình dị • Kèm ví dụ minh họa thực tế)*
 
 > **Hệ sinh thái**: Aegis Global Cognitive Infrastructure (AGCI)  
-> **Phiên bản chuẩn hóa**: `ALDS v2.0 (Academic & Classroom Sovereign Edition)`  
-> **Địa chỉ thao tác giáo viên**: `http://localhost:3000/creator/studio`  
-> **Phương châm sư phạm**: *"Giảm 90% áp lực soạn đề & chấm bài — Chuyển hóa từng vấp ngã của học sinh thành bước nhảy nhận thức"*
+> **Phiên bản**: `ALDS v2.5 — Friendly Teacher & Kindergarten-Ready Edition`  
+> **Thanh điều hướng 4 phân hệ của Giáo viên**:  
+> - ✨ **Zen Studio (Soạn Đề)**: [`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)  
+> - 🗂️ **ZenTopics (Chủ Đề Của Tôi)**: [`/creator/topics`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx)  
+> - 📝 **ZenQuestions (Câu Hỏi Của Tôi)**: [`/creator/questions`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/questions/ZenQuestionsPage.tsx)  
+> - 👥 **Đội Nhóm & Học Viên (Quản Lý Lớp)**: [`/team`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx)  
+> **Lời hứa với Thầy/Cô**: *"Không cần giỏi máy tính! Chỉ cần biết bấm chuột hoặc chạm màn hình điện thoại là Thầy/Cô làm chủ được toàn bộ hệ thống trong 3 phút."*
 
 ---
 
-## 📑 MỤC LỤC
-1. [Giới thiệu Không gian Sư phạm Creator Zen Studio](#1-giới-thiệu-không-gian-sư-phạm-creator-zen-studio)
-2. [Quy trình 3 Chạm / 10 Giây Tải & Tạo Đề Thi Tự Động](#2-quy-trình-3-chạm--10-giây-tải--tạo-đề-thi-tự-động)
-3. [Bộ Ba Quyền Năng Sư Phạm Tại Thanh Điều Hướng Đáy](#3-bộ-ba-quyền-năng-sư-phạm-tại-thanh-điều-hướng-đáy)
-4. [Đấu Trường Trực Tiếp 5 Thể Thức Động (Live Arena Gameshow Modes)](#4-đấu-trường-trực-tiếp-5-thể-thức-động-live-arena-gameshow-modes)
-5. [Cấu Trúc Cây Phả Hệ Chủ Đề 4 Cấp & Bảo Vệ Bản Quyền Sáng Tạo](#5-cấu-trúc-cây-phả-hệ-chủ-đề-4-cấp--bảo-vệ-bản-quyền-sáng-tạo)
-6. [Ma Trận Phân Cấp Người Dùng 4 Tầng & Hạn Mức Tương Xứng](#6-ma-trận-phân-cấp-người-dùng-4-tầng--hạn-mức-tương-xứng)
-7. [Giao Bài Tự Luyện & Giám Sát Nhận Thức Lớp Học (Cohort Diagnostic Heatmap)](#7-giao-bài-tự-luyện--giám-sát-nhận-thức-lớp-học-cohort-diagnostic-heatmap)
-8. [Khoa Học Nhận Thức: Giúp Học Sinh Học Từ Sai Lầm (ACSE 4 Lát Cắt & FSRS v5)](#8-khoa-học-nhận-thức-giúp-học-sinh-học-từ-sai-lầm-acse-4-lát-cắt--fsrs-v5)
-9. [Bảng Hướng Dẫn Thực Hành Nhanh Cho Từng Cấp Học (Tiểu Học $\rightarrow$ Đại Học)](#9-bảng-hướng-dẫn-thực-hành-nhanh-cho-từng-cấp-học-tiểu-học--đại-học)
-10. [Các Mẹo Soạn Đề Thi Word & Excel Chuẩn Xác 100%](#10-các-mẹo-soạn-đề-thi-word--excel-chuẩn-xác-100)
-11. [Quản Trị Chiến Dịch Marketing Tập Trung (NoHC), Triết Lý 1 Ly Cafe (7 Ngày Pro) & Hệ Thống Đa Ngôn Ngữ Toàn Cầu (OCP, CLRACT, MultiLang)](#11-quản-trị-chiến-dịch-marketing-tập-trung-nohc-triết-lý-1-ly-cafe-7-ngày-pro--hệ-thống-đa-ngôn-ngữ-toàn-cầu-ocp-clract-multilang)
+## 📑 MỤC LỤC NHANH CHO THẦY/CÔ
+1. [Bức Tranh Toàn Cảnh: "Ngôi Nhà Zen 4 Phòng" Của Thầy/Cô](#1-bức-tranh-toàn-cảnh-ngôi-nhà-zen-4-phòng-của-thầycô)
+2. [Phòng 1 — ✨ Zen Studio: Biến Tờ Giấy/File Word Thành Trò Chơi Trong 3 Chạm](#2-phòng-1--zen-studio-biến-tờ-giấyfile-word-thành-trò-chơi-trong-3-chạm)
+3. [Phòng 2 — 🗂️ ZenTopics: "Tủ Đựng Hồ Sơ Chủ Đề" Của Riêng Thầy/Cô](#3-phòng-2--zentopics-tủ-đựng-hồ-sơ-chủ-đề-của-riêng-thầycô)
+4. [Phòng 3 — 📝 ZenQuestions: "Kho Câu Hỏi Cá Nhân" & Trợ Lý AI Soạn Hộ](#4-phòng-3--zenquestions-kho-câu-hỏi-cá-nhân--trợ-lý-ai-soạn-hộ)
+5. [Phòng 4 — 👥 Đội Nhóm & Học Viên: Giao Bài Qua Zalo & Xem Ai Đã Làm Bài](#5-phòng-4--đội-nhóm--học-viên-giao-bài-qua-zalo--xem-ai-đã-làm-bài)
+6. [3 Câu Chuyện Ví Dụ Thực Tế (Từ Cô Giáo Mầm Non Đến Thầy Giáo Trung Học)](#6-3-câu-chuyện-ví-dụ-thực-tế-từ-cô-giáo-mầm-non-đến-thầy-giáo-trung-học)
+7. [5 Trò Chơi Đấu Trường Trực Tiếp Trên Lớp Học (Live Arena)](#7-5-trò-chơi-đấu-trường-trực-tiếp-trên-lớp-học-live-arena)
+8. [Mẹo Gõ File Word / Excel Để Máy Đọc Chuẩn 100%](#8-mẹo-gõ-file-word--excel-để-máy-đọc-chuẩn-100)
+9. [Giải Đáp Thắc Mắc Thường Gặp Của Thầy/Cô (Hỏi Nhanh - Đáp Gọn)](#9-giải-đáp-thắc-mắc-thường-gặp-của-thầycô-hỏi-nhanh---đáp-gọn)
 
 ---
 
-## 1. GIỚI THIỆU KHÔNG GIAN SƯ PHẠM CREATOR ZEN STUDIO
+## 1. BỨC TRANH TOÀN CẢNH: "NGÔI NHÀ ZEN 4 PHÒNG" CỦA THẦY/CÔ
 
-**Creator Zen Studio** được thiết kế dựa trên nguyên lý **Zero-Friction (Không rào cản kỹ thuật)** và **Tập trung thị giác tối thượng (Cognitive Focus)**:
-* ❌ **Không phân tâm**: Khi Thầy/Cô đã nạp đề, toàn bộ banner giới thiệu, khuyến mãi được thu gọn tự động, nhường trọn vẹn **90% diện tích màn hình** để Thầy/Cô duyệt và chỉnh sửa câu hỏi.
-* ❌ **Không nhập liệu thủ công**: Không cần cắt dán công thức toán hay tải từng tấm ảnh.
-* 💎 **Đa dạng tệp đầu vào**: Hỗ trợ toàn diện tệp Word (`.docx`), Excel (`.xlsx`, `.xls`) và tài liệu số. Hệ thống tự động bóc tách, khử trùng lặp CAS ($0\% \text{ lãng phí}$) và sẵn sàng chỉ trong **vài giây**.
+Khi đăng nhập vào hệ thống, Thầy/Cô sẽ thấy ngay **Thanh điều hướng 4 nút màu sắc** ở trên cùng màn hình ([`CreatorWorkspaceNav.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/components/CreatorWorkspaceNav.tsx)). Hãy hình dung đây là **4 căn phòng làm việc riêng tư** của Thầy/Cô (người khác không thể tự ý xóa hay sửa bài của Thầy/Cô):
 
 ```mermaid
-flowchart TD
-    A["📄 Tệp Đề Thi Word (.docx) / Excel (.xlsx)"] --> B["⚡ Kéo Thả Vào Creator Studio (2 Giây)"]
-    B --> C["🤖 AI Tự Nhận Diện Công Thức & Khử Trùng Lặp CAS"]
-    C --> D1["💾 1. Lưu Ngân Hàng (Tài sản số cá nhân theo cây 4 cấp)"]
-    C --> D2["📤 2. Giao Bài Tập (Cấu hình Kids/Paper/Exam & sinh QR link)"]
-    C --> D3["⚡ 3. Kích Hoạt Đấu Trường (Chọn 1 trong 5 gameshow trực tiếp)"]
+flowchart LR
+    subgraph ZEN["🏫 NGÔI NHÀ SƯ PHẠM ZEN CỦA THẦY/CÔ"]
+        direction LR
+        P1["✨ Phòng 1: Zen Studio<br/>(/creator/studio)<br/>Nạp nhanh file Word/Excel/PDF"]
+        P2["🗂️ Phòng 2: ZenTopics<br/>(/creator/topics)<br/>Tủ phân loại Chủ đề & Đề thi"]
+        P3["📝 Phòng 3: ZenQuestions<br/>(/creator/questions)<br/>Kho chỉnh sửa từng Câu hỏi"]
+        P4["👥 Phòng 4: Đội Nhóm & Học Viên<br/>(/team)<br/>Giao bài Zalo & Xem điểm lớp"]
+        P1 --> P2 --> P3 --> P4
+    end
 ```
 
----
+| Tên Phòng (Nút Trên Màn Hình) | Dùng Để Làm Gì? (Hiểu Trong 1 Câu) | Khi Nào Thầy/Cô Bấm Vào Đây? |
+| :--- | :--- | :--- |
+| **✨ Zen Studio (Soạn Đề)** | Kéo thả file Word/Excel/PDF có sẵn để máy tự tách câu hỏi trong 2 giây. | Khi Thầy/Cô có sẵn file đề thi trên máy tính và muốn cho học sinh làm ngay. |
+| **🗂️ ZenTopics (Chủ Đề Của Tôi)** | Như "Tủ hồ sơ nhiều ngăn" chứa các Chủ đề & Đề thi do chính Thầy/Cô tạo. | Khi Thầy/Cô muốn tạo chủ đề mới (VD: *Chủ đề Động vật*, *Toán Lớp 1*), xem đề cũ hoặc xóa đề nháp. |
+| **📝 ZenQuestions (Câu Hỏi Của Tôi)** | Chứa toàn bộ từng câu hỏi lẻ của Thầy/Cô. Có nút nhờ AI tự nghĩ câu hỏi mới! | Khi Thầy/Cô muốn gõ thêm 1-2 câu đố mới, sửa lỗi chính tả câu cũ, hoặc nhờ AI soạn hộ 5 câu hỏi. |
+| **👥 Đội Nhóm & Học Viên** | Nơi lấy đường link gửi vào Zalo phụ huynh và xem bảng điểm của cả lớp. | Khi Thầy/Cô muốn giao bài về nhà hoặc kiểm tra xem bé nào đã làm bài, câu nào cả lớp hay sai. |
 
-## 2. QUY TRÌNH 3 CHẠM / 10 GIÂY TẢI & TẠO ĐỀ THI TỰ ĐỘNG
-
-* **Chạm 1 — Kéo Thả File**: Mở `http://localhost:3000/creator/studio`, thả tệp Word hoặc Excel vào khung giữa màn hình.
-* **Chạm 2 — Hệ thống Tự Động Giải Mã (< 2 giây)**:
-  - Tự động nhận diện dạng câu hỏi: Trắc nghiệm 4 lựa chọn (A-B-C-D), Đúng/Sai đa ý (GDPT 2025), Điền số ngắn, Ghép nối.
-  - Tự động dịch ngược và hiển thị sắc nét công thức Toán, Lý, Hóa, Bảng biểu và Hình minh họa qua KaTeX.
-  - Khử trùng lặp qua hàm băm nội dung SHA-256 (CAS), tiết kiệm kho lưu trữ.
-* **Chạm 3 — Chọn 1 Trong 3 Quyền Năng Sư Phạm Tại Thanh Điều Hướng Đáy**.
-
----
-
-## 3. BỘ BA QUYỀN NĂNG SƯ PHẠM TẠI THANH ĐIỀU HƯỚNG ĐÁY
-
-Thanh điều khiển nổi (sticky) tại đáy màn hình được phân tách khoa học thành 3 nút lệnh độc lập, đại diện cho 3 nhu cầu sư phạm khác nhau của Thầy/Cô:
-
-### 💾 1. Lưu Ngân Hàng (Pure Asset Storage)
-* **Ý nghĩa**: Đề thi được cất giữ vĩnh viễn vào Ngân hàng Câu hỏi cá nhân của Thầy/Cô.
-* **Đặc điểm**: Hoàn toàn **không sinh bài tập giao cho học sinh**, bảo toàn bí mật đề thi, phục vụ lưu trữ tài sản tri thức lâu dài hoặc dùng để trộn đề thi học kỳ sau này.
-* **Phản hồi**: Hệ thống hiển thị hộp thoại xác nhận lưu thành công, hiển thị đầy đủ Mã Đề (`TP...`), Đường dẫn phả hệ (`/STUDIO/YYYYMMDD/CRT.../TP.../`) và nút liên kết nhanh đến Kho câu hỏi Quản trị.
-
-### 📤 2. Giao Bài Tập (Homework Assignment & Student Tracking)
-* **Ý nghĩa**: Biến đề thi thành bài tự luyện/kiểm tra về nhà cho học sinh với đầy đủ công cụ theo dõi nhận thức.
-* **Thiết lập sư phạm linh hoạt**:
-  - **Thời gian làm bài**: Tùy chỉnh số phút hoặc không giới hạn.
-  - **Giao diện làm bài chuyên biệt**: 
-    + 🎈 *Kids Mode*: Giao diện hoạt hình, rực rỡ, chữ lớn cho học sinh Tiểu học.
-    + 📝 *Paper Mode*: Trải nghiệm lật đề giấy như thi thật.
-    + ⚡ *Exam Mode*: Đồng hồ đếm ngược, chống gian lận.
-    + 📖 *Study Mode*: Cho phép xem giải thích và gợi ý ngay sau mỗi câu.
-  - **Quy tắc thi cử**: Bật/tắt đảo phương án, thiết lập thời gian cho từng câu, ngày giờ hết hạn nộp bài.
-* **Phản hồi**: Sinh **Mã QR trực quan** và **Đường link ngắn** kèm nút gửi thẳng vào nhóm Zalo/Facebook phụ huynh và học sinh.
-
-### ⚡ 3. Kích Hoạt Đấu Trường (Live Classroom Arena)
-* **Ý nghĩa**: Biến buổi học trên lớp thành một sàn đấu số trực tiếp hấp dẫn như Gameshow truyền hình.
-* **Đặc điểm**: Mở bảng chọn thể thức game để Thầy/Cô chọn trò chơi phù hợp với số lượng học sinh trong lớp.
+> [!IMPORTANT]
+> **Bảo mật & Chủ quyền tuyệt đối**: Trang Quản trị hệ thống (`/admin`) chỉ dành cho Quản trị viên kỹ thuật (`SysAdmin` & `TenantAdmin`). Toàn bộ tài nguyên giảng dạy của Thầy/Cô được bảo vệ riêng biệt trong 4 phòng Zen ở trên — **chỉ chính Thầy/Cô** mới có quyền sửa/xóa chủ đề và câu hỏi của mình!
 
 ---
 
-## 4. ĐẤU TRƯỜNG TRỰC TIẾP 5 THỂ THỨC ĐỘNG (LIVE ARENA GAMESHOW MODES)
+## 2. PHÒNG 1 — ✨ ZEN STUDIO: BIẾN TỜ GIẤY/FILE WORD THÀNH TRÒ CHƠI TRONG 3 CHẠM
 
-Hệ thống cung cấp **5 thể thức Gameshow đỉnh cao**, giải quyết triệt để vấn đề "chỉ hỗ trợ 4 người chơi của Olympia" trước đây:
+📍 **Cách mở**: Bấm nút **`✨ Zen Studio (Soạn Đề)`** trên thanh menu (hoặc vào địa chỉ `/creator/studio`).
 
-| Thể Thức Gameshow | Biểu Tượng | Quy Mô Người Chơi | Kịch Bản Sư Phạm Khuyên Dùng |
-| :--- | :---: | :---: | :--- |
-| **🔔 Rung Chuông Vàng**<br/>*(Golden Bell Battle Royale)* | 🟡 | **30 - 10,000 học sinh** *(Toàn bộ lớp/trường)* | Cả lớp cùng tham gia trên sàn đấu Canvas 60fps. Sai 1 câu là rời sàn! Thầy/Cô có minigame **"Cứu Trợ Thầy Cô"** (ném máy bay giấy/bốc thăm) để hồi sinh toàn bộ học sinh. Cực kỳ sôi động cho ôn tập cuối kỳ. |
-| **⚡ Nhanh Như Chớp**<br/>*(Lightning Incline)* | 🔵 | **1 - 8 học sinh** *(Thi theo tổ/nhóm)* | Cỗ máy leo dốc 10 bậc đứng! Đúng 1 câu leo 1 bậc, sai 1 câu tụt ngay về vạch số 0. Rèn luyện tốc độ và bản lĩnh phản xạ dưới áp lực đồng hồ đếm ngược 2 phút. Phù hợp kiểm tra 15 phút đầu giờ. |
-| **🏆 Olympia Supreme**<br/>*(Đường Lên Đỉnh Tri Thức)* | 🟣 | **1 - 4 thí sinh/đội** *(Chung kết)* | Format 4 vòng thi truyền hình chuẩn mực: Khởi Động 60s, Vượt Chướng Ngại Vật ma trận hình ảnh, Tăng Tốc bấm chuông $<2\text{ms}$, Về Đích & Ngôi Sao Hy Vọng. Dành cho trận chung kết các đội xuất sắc nhất. |
-| **👑 Ai Là Triệu Phú**<br/>*(Millionaire Socrates)* | 🔷 | **1 học sinh + Cả lớp khán giả** | 15 câu hỏi leo thang với 3 mốc an toàn. 4 quyền trợ giúp độc bản: 50:50, Hỏi Gia Sư AI Socrates, Hỏi ý kiến cả lớp qua quét mã QR, Đổi câu hỏi. Rất thích hợp cho kiểm tra bài cũ trực tiếp trên bảng. |
-| **🎓 Đấu Trường Đại Học**<br/>*(Team vs Team Challenge)* | 🔴 | **2 đội tuyển** *(4 vs 4)* | Đối kháng học thuật giữa 2 tổ hoặc 2 trường. Bấm chuông Starter giành quyền trả lời và mở chuỗi câu hỏi Bonus có kênh thảo luận kín cho đồng đội. |
+### Thao tác 3 bước cực dễ:
+1. **Bước 1 (Thả file)**: Thầy/Cô bấm vào khung nét đứt giữa màn hình rồi chọn file Word (`.docx`), Excel (`.xlsx`) hoặc PDF trên máy tính.
+2. **Bước 2 (Xem lại)**: Máy tự động đọc và hiện danh sách câu hỏi ngay trên màn hình. Nếu thấy chữ nào chưa ưng ý, Thầy/Cô bấm thẳng vào chữ đó để sửa ngay!
+3. **Bước 3 (Chọn 1 trong 3 nút ở dưới đáy màn hình)**:
+   - Nút **💾 Lưu Ngân Hàng**: Cất đề này vào tủ riêng (`ZenTopics` & `ZenQuestions`) để dành hôm sau dùng.
+   - Nút **📤 Giao Bài Tập**: Tạo ra **Mã QR** (hình vuông đen trắng) và **Đường link** để gửi vào Zalo cho phụ huynh/học sinh làm ở nhà.
+   - Nút **⚡ Kích Hoạt Đấu Trường**: Mở ngay trò chơi **Rung Chuông Vàng** hoặc **Nhanh Như Chớp** chiếu lên Tivi/Máy chiếu cho cả lớp cùng chơi!
 
 ---
 
-## 5. CẤU TRÚC CÂY PHẢ HỆ CHỦ ĐỀ 4 CẤP & BẢO VỆ BẢN QUYỀN SÁNG TẠO
+## 3. PHÒNG 2 — 🗂️ ZENTOPICS: "TỦ ĐỰNG HỒ SƠ CHỦ ĐỀ" CỦA RIÊNG THẦY/CÔ
 
-Toàn bộ đề thi tạo từ Creator Studio được định vị tự động theo chuẩn **Materialized Path $O(1)$** với 4 tầng phân cấp bất biến:
+📍 **Cách mở**: Bấm nút **`🗂️ ZenTopics (Chủ Đề Của Tôi)`** trên thanh menu (`/creator/topics`).
 
+Hãy tưởng tượng **ZenTopics** giống như chiếc tủ gỗ có nhiều ngăn kéo của Thầy/Cô. Mỗi ngăn kéo là một **Chủ đề** hoặc một **Đề thi**.
+
+### Các nút bấm siêu dễ trong ZenTopics:
+1. **Nút `+ Tạo Chủ Đề Mới` (màu vàng cam ở góc phải trên)**:
+   - Bấm vào khi Thầy/Cô muốn tạo một ngăn tủ mới.
+   - *Ví dụ cho Cô giáo Mầm non*:
+     - **Mã chủ đề**: Gõ ngắn gọn không dấu, ví dụ: `CON_VAT`
+     - **Tên chủ đề**: Gõ có dấu rõ ràng cho bé/phụ huynh nhìn thấy, ví dụ: `Thế giới Động vật quanh bé`
+     - **Mô tả**: `Các câu đố vui về tiếng kêu và hình dáng con vật cho lớp Mẫu giáo lớn 5 tuổi`
+     - Bấm **Lưu** là xong!
+2. **Nút `💬 Câu hỏi` (biểu tượng danh sách câu hỏi trên từng dòng chủ đề)**:
+   - Bấm vào nút này, một cửa sổ sẽ hiện ra ngay lập tức cho Thầy/Cô xem **tất cả các câu hỏi đang nằm trong chủ đề đó** kèm đáp án đúng màu xanh lá cây!
+   - Trong cửa sổ này có nút **`Mở trong Ngân Hàng`** — bấm vào là chuyển thẳng sang phòng `ZenQuestions` đúng ngay chủ đề đó để Thầy/Cô thêm/sửa câu hỏi.
+3. **Nút `👁️ Xem chi tiết` (biểu tượng con mắt trên từng dòng chủ đề)**:
+   - Mở bảng thông tin chi tiết của chủ đề. Tại đáy bảng có 4 nút rõ ràng:
+     - **`+ Mới`**: Tạo thêm chủ đề mới.
+     - **`✏️ Sửa`**: Đổi lại tên chủ đề hoặc mô tả rồi bấm Lưu.
+     - **`🔒 Khóa`**: Tạm ẩn chủ đề chưa muốn cho học sinh làm.
+     - **`🗑️ Xóa`**: Xóa chủ đề không dùng nữa.
+
+> [!TIP]
+> **Cơ chế Xóa Thông Minh Bảo Vệ Công Sức Thầy/Cô**:
+> - Nếu một câu hỏi đang nằm chung ở 2 chủ đề (ví dụ vừa nằm ở *"Chủ đề Con vật"*, vừa nằm ở *"Đề thi cuối tháng"*), khi Thầy/Cô xóa *"Đề thi cuối tháng"*, **câu hỏi đó KHÔNG BỊ MẤT** mà chỉ gỡ nhãn *"Đề thi cuối tháng"*, vẫn còn nguyên vẹn trong *"Chủ đề Con vật"*!
+> - Câu hỏi chỉ thực sự bị xóa khi Thầy/Cô xóa chủ đề cuối cùng đang chứa câu hỏi đó (và hệ thống luôn hỏi xác nhận cẩn thận trước khi xóa).
+
+---
+
+## 4. PHÒNG 3 — 📝 ZENQUESTIONS: "KHO CÂU HỎI CÁ NHÂN" & TRỢ LÝ AI SOẠN HỘ
+
+📍 **Cách mở**: Bấm nút **`📝 ZenQuestions (Câu Hỏi Của Tôi)`** trên thanh menu (`/creator/questions`).
+
+Nếu Thầy/Cô không có sẵn file Word, hoặc muốn tự gõ thêm vài câu đố vui cho các con, đây chính là nơi dành cho Thầy/Cô!
+
+### 3 Cách làm việc cực nhàn tại ZenQuestions:
+
+#### Cách 1: Tự gõ 1 câu hỏi mới (`+ Soạn Câu Hỏi Mới`)
+1. Bấm nút màu xanh lá **`+ Soạn Câu Hỏi Mới`** ở góc phải trên.
+2. Chọn **Chủ đề** (ví dụ: `Thế giới Động vật quanh bé`).
+3. Gõ nội dung câu hỏi vào ô lớn:
+   > *"Con vật nào dưới đây kêu 'Meo meo' và rất thích bắt chuột?"*
+4. Gõ 4 đáp án vào 4 ô A, B, C, D:
+   - Ô A: `Con Mèo`
+   - Ô B: `Con Vịt`
+   - Ô C: `Con Cá Vàng`
+   - Ô D: `Con Voi`
+5. Tích chọn đáp án đúng là **`A`** rồi bấm **Lưu**. Chỉ mất 20 giây!
+
+#### Cách 2: Nhờ Trí Tuệ Nhân Tạo (AI) tự nghĩ câu hỏi giúp (`🧠 Sinh Bằng AI`)
+1. Bấm nút màu tím **`🧠 Sinh Bằng AI`**.
+2. Chọn chủ đề và gõ yêu cầu ngắn gọn như nói chuyện bình thường:
+   > *"Hãy tạo cho tôi 5 câu đố vui thật dễ hiểu cho trẻ mẫu giáo 5 tuổi về các loại quả ngọt mùa hè"*
+3. Bấm **Tạo câu hỏi** $\rightarrow$ Chỉ sau vài giây, AI sẽ tự động soạn sẵn 5 câu hỏi có đủ 4 đáp án A, B, C, D và lời giải thích dịu dàng cho bé!
+
+#### Cách 3: Tìm kiếm, Sửa hoặc Xóa câu hỏi cũ
+- Gõ từ khóa vào ô **Tìm kiếm** (ví dụ gõ chữ *"Meo meo"*) để tìm ngay câu hỏi.
+- Chọn ô lọc **Chủ đề** để chỉ xem các câu hỏi của một bài học cụ thể.
+- Bấm vào câu hỏi bất kỳ để **Sửa** lại câu chữ hoặc bấm biểu tượng thùng rác để **Xóa**.
+
+---
+
+## 5. PHÒNG 4 — 👥 ĐỘI NHÓM & HỌC VIÊN: GIAO BÀI QUA ZALO & XEM AI ĐÃ LÀM BÀI
+
+📍 **Cách mở**: Bấm nút **`👥 Đội Nhóm & Học Viên`** trên thanh menu (`/team`).
+
+Đây là "Bàn giáo viên điện tử" giúp Thầy/Cô kết nối tài nguyên đề thi của mình với học sinh và phụ huynh:
+
+1. **Khu vực "Tài Nguyên Đề Thi & Chủ Đề Đã Giao Cho Học Viên"**:
+   - Hiển thị ngay các thẻ Đề thi / Chủ đề mà Thầy/Cô đã tạo trong `ZenStudio` và `ZenTopics`.
+   - Trên mỗi thẻ đề thi có **3 nút lệnh 1 chạm**:
+     - **🔗 `Giao bài`**: Bấm 1 cái là máy tự động chép sẵn đường link bài tập! Thầy/Cô chỉ việc mở Zalo nhóm lớp, bấm **Dán (Paste)** và gửi cho phụ huynh/học sinh.
+     - **📊 `Báo cáo Lớp`**: Mở bảng tổng kết thông minh cho biết:
+       - Đã có bao nhiêu học sinh nộp bài, điểm trung bình là bao nhiêu.
+       - **Câu hỏi nào nhiều bé làm sai nhất** (báo màu đỏ) để hôm sau lên lớp Thầy/Cô giảng kỹ lại câu đó.
+       - Tự động chia học sinh thành 3 nhóm: *Nhóm Xuất Sắc*, *Nhóm Đạt Yêu Cầu*, và *Nhóm Cần Cô Kèm Thêm*.
+     - **📝 `Câu hỏi`**: Nhảy thẳng sang trang `ZenQuestions` của đúng đề thi đó để xem hoặc sửa câu hỏi.
+2. **Khu vực "Tiến Độ Học Tập Của Học Viên"**:
+   - Xem danh sách từng học viên trong lớp/nhóm, số lần các con đã luyện tập và tỷ lệ trả lời đúng (%).
+
+---
+
+## 6. 3 CÂU CHUYỆN VÍ DỤ THỰC TẾ (TỪ CÔ GIÁO MẦM NON ĐẾN THẦY GIÁO TRUNG HỌC)
+
+### 🐣 Ví dụ 1: Cô Lan (Giáo viên Mẫu giáo Lớn 5-6 tuổi) tổ chức trò chơi "Bé Yêu Thiên Nhiên"
+- **Mong muốn của Cô Lan**: Chiều thứ Sáu muốn cho 25 bé trong lớp vừa xem Tivi vừa chơi đố vui về các con vật, rồi gửi bài về Zalo cho bố mẹ cuối tuần mở điện thoại chơi cùng con.
+- **Cách Cô Lan làm (chỉ mất 3 phút)**:
+  1. Cô Lan bấm vào **`🗂️ ZenTopics`** $\rightarrow$ bấm **`+ Tạo Chủ Đề Mới`** $\rightarrow$ đặt mã là `BE_YEU_THIEN_NHIEN`, tên là *"Đố vui Bé yêu thiên nhiên lớp Lá 1"*.
+  2. Cô Lan bấm sang **`📝 ZenQuestions`** $\rightarrow$ bấm **`🧠 Sinh Bằng AI`** (hoặc **`+ Soạn Câu Hỏi Mới`**) tạo 10 câu đố vui về tiếng kêu con mèo, con gà trống, màu sắc quả táo, bông hoa hướng dương.
+  3. Để gửi cho bố mẹ các bé: Cô Lan bấm sang **`👥 Đội Nhóm & Học Viên`**, tìm thẻ *"Đố vui Bé yêu thiên nhiên lớp Lá 1"* $\rightarrow$ bấm nút **`🔗 Giao bài`** $\rightarrow$ dán vào nhóm Zalo *"Lớp Lá 1 Yêu Thương"*.
+  4. Ở nhà, bố mẹ chỉ cần bấm vào link trên Zalo (chế độ **🎈 Kids Mode** chữ to, màu sắc hoạt hình rực rỡ), đọc câu hỏi cho bé chọn và nhận pháo hoa khen thưởng ngay trên điện thoại!
+
+---
+
+### 📐 Ví dụ 2: Thầy Minh (Giáo viên Toán) nạp đề Word có công thức phân số & hình học
+- **Mong muốn của Thầy Minh**: Có sẵn file Word `De-On-Tap-Chuong-1.docx` gồm 20 câu trắc nghiệm có nhiều công thức căn bậc hai và phân số, muốn nạp vào máy mà không phải gõ lại công thức.
+- **Cách Thầy Minh làm (chỉ mất 10 giây)**:
+  1. Thầy Minh mở **`✨ Zen Studio`** (`/creator/studio`).
+  2. Kéo file `De-On-Tap-Chuong-1.docx` thả vào giữa màn hình.
+  3. Máy tự động bóc tách đủ 20 câu và hiển thị công thức Toán đẹp mắt.
+  4. Thầy bấm **`📤 Giao Bài Tập`** ở dưới đáy $\rightarrow$ chọn chế độ **📝 Paper Mode** (giống hệt tờ đề giấy) $\rightarrow$ bấm **`Tải Mã QR`** gửi vào nhóm lớp.
+  5. Sáng hôm sau, Thầy Minh vào **`👥 Đội Nhóm & Học Viên`** $\rightarrow$ bấm **`📊 Báo cáo Lớp`** $\rightarrow$ phát hiện Câu số 14 có tới 65% học sinh chọn nhầm đáp án B $\rightarrow$ lên lớp Thầy chỉ cần chữa đúng Câu 14, tiết kiệm được 30 phút trên lớp!
+
+---
+
+### 🧹 Ví dụ 3: Cô Mai muốn dọn dẹp lại các Chủ đề và Câu hỏi của mình
+- **Mong muốn của Cô Mai**: Cô tạo nhầm một chủ đề tên là *"Đề nháp thử nghiệm"* và muốn xóa đi, nhưng sợ làm mất các câu hỏi hay đã dùng chung với *"Đề ôn thi học kỳ"*.
+- **Cách Cô Mai làm**:
+  1. Cô Mai vào **`🗂️ ZenTopics`** (`/creator/topics`).
+  2. Trên dòng *"Đề nháp thử nghiệm"*, cô bấm nút **`💬 Câu hỏi`** để kiểm tra xem có những câu nào bên trong.
+  3. Sau đó cô bấm nút **`👁️ Xem chi tiết`** $\rightarrow$ bấm nút **`🗑️ Xóa`** ở góc dưới bên phải.
+  4. Hệ thống tự động giữ nguyên toàn bộ các câu hỏi đang dùng chung ở *"Đề ôn thi học kỳ"*, chỉ xóa sạch những câu nháp không dùng ở đâu khác!
+
+---
+
+## 7. 5 TRÒ CHƠI ĐẤU TRƯỜNG TRỰC TIẾP TRÊN LỚP HỌC (LIVE ARENA)
+
+Khi ở trong **`✨ Zen Studio`**, sau khi nạp đề xong, nếu Thầy/Cô bấm nút **`⚡ Kích Hoạt Đấu Trường`**, Thầy/Cô có thể chọn 1 trong 5 trò chơi truyền hình cực kỳ sôi động:
+
+| Tên Trò Chơi | Phù Hợp Nhất Cho | Cách Chơi Cực Vui Trên Lớp |
+| :--- | :--- | :--- |
+| **🔔 1. Rung Chuông Vàng** | **Mầm non, Tiểu học, Cả lớp cùng chơi** | Tất cả học sinh cùng ngồi trên thảm đấu ảo. Trả lời sai sẽ bị loại tạm thời, và Cô giáo có nút **"Máy Bay Cứu Trợ"** để cứu cả lớp quay lại chơi tiếp! |
+| **⚡ 2. Nhanh Như Chớp** | **Chia 2 tổ thi đua đầu giờ (5-10 phút)** | Học sinh trả lời đúng liên tiếp để leo lên đỉnh dốc 10 bậc. Trả lời sai 1 câu sẽ trượt cầu tuột về vạch xuất phát — cả lớp reo hò cực kỳ hào hứng! |
+| **👑 3. Ai Là Triệu Phú** | **Gọi 1 học sinh lên bảng kiểm tra bài cũ** | Có 4 quyền trợ giúp: *50:50 (bỏ 2 đáp án sai)*, *Hỏi ý kiến các bạn dưới lớp*, *Đổi câu hỏi*, và *Hỏi Gia sư Thông thái*. |
+| **🏆 4. Đường Lên Đỉnh Olympia** | **Thi chung kết 4 bạn giỏi nhất lớp/trường** | Đầy đủ 4 phần thi: Khởi động, Vượt chướng ngại vật (lật mảnh ghép đoán hình), Tăng tốc và Về đích chọn Ngôi sao hy vọng. |
+| **🎓 5. Đấu Trường Đội Tuyển** | **Chia 2 đội (Đội Đỏ vs Đội Xanh) thi đấu** | Hai đội bấm chuông giành quyền trả lời trước và thảo luận nhóm để ghi điểm đồng đội. |
+
+---
+
+## 8. MẸO GÕ FILE WORD / EXCEL ĐỂ MÁY ĐỌC CHUẨN 100%
+
+Nếu Thầy/Cô thích soạn câu hỏi trên Word (`.docx`) trước khi thả vào **`✨ Zen Studio`**, chỉ cần nhớ **3 quy tắc nhỏ xíu** sau:
+
+1. **Đầu mỗi câu hỏi**: Gõ chữ **`Câu 1:`**, **`Câu 2:`**, **`Câu 3:`**...
+2. **Đầu 4 đáp án**: Gõ chữ **`A.`**, **`B.`**, **`C.`**, **`D.`**
+3. **Đánh dấu đáp án đúng**: Chỉ cần **gạch chân** (ví dụ: <u>**A.**</u> Con Mèo) hoặc **tô màu đỏ** chữ cái đáp án đúng (hoặc để bảng đáp án `1A 2B 3C` ở cuối trang Word).
+
+**Ví dụ mẫu 1 câu trong file Word chuẩn 100%:**
+```text
+Câu 1: Đèn giao thông bật màu gì thì bé và bố mẹ phải dừng xe lại?
+A. Màu Đỏ
+B. Màu Xanh lá
+C. Màu Vàng
+D. Màu Tím
+Lời giải: Khi đèn giao thông màu Đỏ bật sáng, mọi phương tiện phải dừng lại trước vạch kẻ đường để đảm bảo an toàn.
 ```
-/STUDIO/ (Cấp 1: Thư mục gốc Studio)
-  └── /20261102/ (Cấp 2: Thư mục Ngày nạp đề)
-        └── /CRT7571EC/ (Cấp 3: Không gian định danh của Thầy/Cô)
-              └── /TP9967D005/ (Cấp 4: Đề thi cụ thể, mã Hex không dấu gạch nối)
-```
-
-* **Cấp 1 — Root Topic (`STUDIO`)**: Không gian gốc của toàn bộ sản phẩm từ Creator Zen Studio.
-* **Cấp 2 — Ngày (`YYYYMMDD`)**: Phân nhóm đề thi theo từng mốc thời gian sư phạm rõ ràng.
-* **Cấp 3 — Mã Creator (`CRT...`)**: Tiền tố `CRT` chuẩn hóa quốc tế gắn liền với mã tài khoản giáo viên (Ví dụ: `CRT7571EC`), độc lập và an toàn tuyệt đối.
-* **Cấp 4 — Mã Đề (`TP...`)**: Tiền tố `TP` (Topic) kết hợp 8 ký tự Hex ngẫu nhiên (Ví dụ: `TP9967D005`), **tuyệt đối không dùng dấu gạch nối `-`** để bảo đảm thuật toán phân tích ngược URL và đối soát cơ sở dữ liệu không bao giờ bị xung đột.
+*(Trong đó chữ **A.** được gạch chân hoặc tô đỏ).*
 
 ---
 
-## 6. MA TRẬN PHÂN CẤP NGƯỜI DÙNG 4 TẦNG & HẠN MỨC TƯƠNG XỨNG
+## 9. GIẢI ĐÁP THẮC MẮC THƯỜNG GẶP CỦA THẦY/CÔ (HỎI NHANH - ĐÁP GỌN)
 
-Hệ thống phân cấp đặc quyền rõ ràng nhằm bảo đảm quyền lợi sư phạm và tài nguyên điện toán đám mây:
+**❓ Câu hỏi 1: Giáo viên khác cùng trường có tự ý vào xóa mất Chủ đề hay Câu hỏi của tôi được không?**
+> **Trả lời**: **Tuyệt đối KHÔNG!** Trong `ZenTopics` và `ZenQuestions`, mỗi Thầy/Cô chỉ nhìn thấy và quản lý các chủ đề, câu hỏi do chính mình tạo ra. Không một giáo viên nào khác có quyền sửa hay xóa bài của Thầy/Cô.
 
-| Cấp Bậc Người Dùng | Hạn Mức Tải Đề | Thể Thức Arena | Cấu Hình Giao Bài Tập | Bản Quyền & AI |
-| :--- | :---: | :---: | :---: | :--- |
-| **1. Khách Vãng Lai (Guest)** | 3 đề/ngày | Golden Bell, Lightning | Mặc định (Exam Mode) | Ký số ẩn Zero-Width |
-| **2. Giáo Viên Tiên Phong (Teacher Pro)** | **20 đề/ngày** *(Dùng thử 90 ngày miễn phí)* | **Cả 5 thể thức Gameshow** | Đầy đủ 4 Mode (Kids, Paper, Exam, Study) + Đảo đề | Phân tích IRT 3-PL, Gia sư AI Socrates, Thẻ vinh danh 3D |
-| **3. Trưởng Bộ Môn (Dept Lead)** | 50 đề/ngày | Cả 5 thể thức + Chế độ Multi-room | Quản lý theo lớp, xuất báo cáo PDF | Ma trận nhận thức Bloom 6 cấp, lan tỏa chủ đề $\ge 40\%$ |
-| **4. Hiệu Trưởng / Doanh Nghiệp (Dean)** | **Không giới hạn (∞)** | Đấu trường trường học (10,000 thí sinh) | Đồng bộ LMS, tích hợp SSO trường | Tên miền riêng (White-label), Kho đề cô lập RLS |
+**❓ Câu hỏi 2: Học sinh mẫu giáo hoặc lớp 1 chưa có tài khoản email thì làm sao làm bài cô giao?**
+> **Trả lời**: Học sinh và phụ huynh **KHÔNG CẦN tạo tài khoản hay mật khẩu**! Khi Thầy/Cô gửi link hoặc mã QR vào nhóm Zalo, bố mẹ và bé chỉ cần bấm vào link, gõ tên bé (ví dụ: *"Bé Bông - Lớp Lá 1"*) là vào chơi và nộp điểm cho cô được ngay!
 
----
+**❓ Câu hỏi 3: Tôi muốn đổi ngôn ngữ sang Tiếng Việt hoặc Tiếng Anh thì bấm ở đâu?**
+> **Trả lời**: Ngay góc phải trên cùng của thanh menu có nút chọn cờ ngôn ngữ (**`🇻🇳 VI`** / **`🇬🇧 EN`** và 11 ngôn ngữ quốc tế). Thầy/Cô bấm vào là toàn bộ màn hình chuyển ngôn ngữ ngay lập tức mà không bị mất dữ liệu đang làm.
 
-## 7. GIAO BÀI TỰ LUYỆN & GIÁM SÁT NHẬN THỨC LỚP HỌC (COHORT DIAGNOSTIC HEATMAP)
-
-### Bước 1: Gửi Đề Cho Học Sinh Trong 1 Giây
-Sau khi cấu hình tại modal **Giao Bài Tập**, Thầy/Cô bấm **"Gửi Vào Nhóm Zalo"** (hoặc sao chép link/QR). Hệ thống tự động soạn sẵn thông điệp:
-> *"📢 BÀI TẬP VỀ NHÀ: Đề ôn tập Chương 2 môn Toán. Các em quét mã QR hoặc bấm link sau để làm bài trước 21h00 tối nay nhé: https://aegisglobal.io/practice/STUDIO_20261102_CRT7571EC/TP9967D005?mode=EXAM&time=45"*
-
-### Bước 2: Theo Dõi Biểu Đồ Nhiệt Nhận Thức Cả Lớp
-Thầy/Cô theo dõi bảng nhiệt sư phạm trực quan:
-* Cột Đỏ Cảnh Báo ($>40\%$ học sinh làm sai): Điểm nghẽn nhận thức chung của cả lớp.
-* Phân nhóm tự động 3 dải năng lực: Nhóm Cần Cứu Trợ (củng cố nền tảng), Nhóm Vững Vàng, và Nhóm Đột Phá Điểm 10.
-
----
-
-## 8. KHOA HỌC NHẬN THỨC: GIÚP HỌC SINH HỌC TỪ SAI LẦM (ACSE 4 LÁT CẮT & FSRS v5)
-
-* **Bóc tách bẫy sai (Distractor Misconception)**: Giải thích lý do tâm lý khiến học sinh chọn nhầm phương án nhiễu.
-* **4 Lát cắt ACSE (Sweller Cognitive Load)**: `Clue (Dấu hiệu)` $\rightarrow$ `Concept (Hạt nhân tri thức)` $\rightarrow$ `Step (Chuỗi suy luận)` $\rightarrow$ `Hook (Mẹo khắc cốt ghi tâm)`.
-* **Gia sư Socrates AI**: Không cho đáp án sẵn mà đặt câu hỏi gợi mở để học sinh tự tìm ra bản chất vấn đề.
-* **Sổ tay FSRS v5**: Thuật toán lặp ngắt quãng tự động nhắc học sinh làm lại câu sai sau 1 ngày, 3 ngày, 7 ngày đến khi thuần thục.
-
----
-
-## 9. BẢNG HƯỚNG DẪN THỰC HÀNH NHANH CHO TỪNG CẤP HỌC
-
-| Cấp Học | Thể Thức Arena Khuyên Dùng | Chế Độ Làm Bài Phù Hợp | Trọng Tâm Sư Phạm |
-| :--- | :--- | :--- | :--- |
-| **🎒 Tiểu Học** *(Lớp 1-5)* | Rung Chuông Vàng, Ai Là Triệu Phú | **Kids Mode** *(Hình ảnh ngộ nghĩnh, chữ to)* | Tạo niềm yêu thích môn học, khen thưởng tức thì. |
-| **🏫 THCS** *(Lớp 6-9)* | Nhanh Như Chớp, Đấu Trường Đội | **Study Mode** *(Xem gợi ý ngay khi làm)* | Rèn luyện tư duy logic, thói quen tự sửa sai. |
-| **🎓 THPT** *(Lớp 10-12)* | Olympia Supreme, Rung Chuông Vàng | **Exam Mode / Paper Mode** *(Áp lực thời gian)* | Luyện thi tốt nghiệp, làm quen cấu trúc GDPT 2025. |
-| **🏛️ Đại Học** *(ĐH/CĐ)* | Đấu Trường Đại Học, Nhanh Như Chớp | **Exam Mode** *(Chống gian lận, đảo đề)* | Đánh giá năng lực chuyên ngành, câu hỏi tình huống phức hợp. |
-
----
-
-## 10. CÁC MẸO SOẠN ĐỀ THI WORD & EXCEL CHUẨN XÁC 100%
-
-1. **Đề thi Word (`.docx`)**:
-   - Câu hỏi: Bắt đầu bằng `Câu 1:`, `Câu 2.` hoặc `Bài 1:`.
-   - Phương án: Gõ `A.`, `B.`, `C.`, `D.` ở đầu phương án.
-   - Đáp án đúng: Bôi đỏ, gạch chân hoặc để bảng đáp án ở cuối đề (`1.A  2.B  3.C...`).
-   - Công thức & Hình ảnh: Gõ MathType/Equation hoặc chèn ảnh thoải mái, hệ thống tự động bóc tách sang KaTeX.
-2. **Đề thi Excel (`.xlsx`, `.xls`)**:
-   - Cột A: Nội dung câu hỏi (`QuestionContent`).
-   - Cột B, C, D, E: Bốn phương án lựa chọn (A, B, C, D).
-   - Cột F: Đáp án đúng (`CorrectAnswer`, ví dụ `A` hoặc `1`).
-   - Cột G: Lời giải chi tiết (`Explanation`).
-
----
-
-## 11. QUẢN TRỊ CHIẾN DỊCH MARKETING TẬP TRUNG (NOHC), TRIẾT LÝ 1 LY CAFE (7 NGÀY PRO) & HỆ THỐNG ĐA NGÔN NGỮ TOÀN CẦU (OCP, CLRACT, MULTILANG)
-
-Nhằm phục vụ đối tác sư phạm toàn cầu với chuẩn mực kỹ thuật và văn hóa ứng xử cao nhất, hệ thống **Creator Zen Studio** được chuẩn hóa theo 4 trụ cột kiến trúc cốt lõi:
-
-### 11.1. Quản Trị Chiến Dịch Tiếp Thị Tập Trung & Không Hard-code (NoHC & Dynamic Policy)
-- **Kiến trúc CLEAR / Clean Architecture**: Mọi thông số về quyền lợi giáo viên không bao giờ được viết cứng trong mã nguồn C# hay React. Toàn bộ chính sách được quản lý tập trung trong bảng CSDL [`creator_marketing_policies`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/CreatorMarketingPolicy.cs) và cung cấp qua API [`/api/creator/studio/marketing-policy`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/CreatorStudioController.cs#L800-L835):
-  - **Thời gian dùng thử (TrialDays)**: Linh động theo từng chiến dịch tiếp thị (ví dụ: 90 ngày, 60 ngày hoặc theo mùa tựu trường).
-  - **Thời gian mở khóa Pro mời cafe (CoffeeProDays)**: Cấu hình biến động theo chiến dịch marketing (mặc định 7 ngày, có thể nâng lên 10, 14, 30 ngày trong các dịp lễ tri ân như Ngày Nhà giáo Việt Nam 20/11 hoặc Tết).
-  - **Tỷ lệ chia sẻ doanh thu (RevenueShareRate)**: Cấu hình tập trung (mặc định 80/20).
-  - **Điểm thưởng cống hiến Karma (KarmaBonusPoints)**: Tự động ghi nhận khi giáo viên gia nhập.
-  - **Đơn giá ủng hộ & Tọa độ thanh toán SSoT**: Giá 1 ly cafe (`CoffeePriceVnd`), kết nối SSoT thời gian thực với cấu hình thanh toán tập trung (`VietQrBankBin = 970405`, `VietQrAccountNumber = 8888912600688`, `VietQrAccountName = NGUYEN VIET CUONG`) từ `IPaymentOrchestratorService`.
-
-### 11.2. Triết Lý Kinh Tế Học & Nhân Văn Của "Chính Sách 1 Ly Cafe (Biến Động Linh Hoạt & Chuẩn Mực 7 Ngày Pro)"
-Chính sách mở khóa qua 1 ly cafe được thiết kế dựa trên sự thấu cảm sâu sắc về mặt **Tâm lý học hành vi (Behavioral Economics)** và **Đạo đức sư phạm (Pedagogical Empathy)**:
-1. **Thời Hạn Mở Khóa Pro Biến Động Linh Hoạt (Mặc Định Chuẩn Mực 7 Ngày)**:
-   - 1 ly cafe (25.000 VNĐ ~ \$1 USD) tương đương một buổi cà phê sáng thân tình của đồng nghiệp. Mức chi phí nhỏ ("tiền lẻ") loại bỏ hoàn toàn rào cản đắn đo tâm lý (Frictionless Micro-patronage).
-   - Thời hạn **mặc định 7 ngày** (1 tuần) tương ứng trọn vẹn với một **chu kỳ cao điểm soạn đề thi** của giáo viên (đợt thi giữa kỳ, cuối kỳ, hoặc khảo sát chất lượng).
-   - SysAdmin có toàn quyền tùy chỉnh **thời hạn mở khóa Pro** (`CoffeeProDays`) biến động thành 10 ngày, 14 ngày hoặc 30 ngày ngay tại tab **Chính Sách Creator** thuộc phân hệ Quản trị Doanh thu `/admin/payments` để phục vụ các đợt bùng nổ chiến dịch tiếp thị mà không cần can thiệp mã nguồn.
-2. **Loại bỏ Hoàn toàn Áp lực Đăng ký Định kỳ (No Recurring SaaS Lock-in)**:
-   - Không tự động trừ tiền thẻ tín dụng hàng tháng.
-   - Không ép buộc giáo viên phải mua gói năm hay gói tháng phức tạp khi chỉ có nhu cầu soạn đề cấp bách.
-3. **Chính Sách Nhân Văn Sư Phạm — Aegis Heart (0đ Vĩnh Viễn)**:
-   - Thầy/Cô công tác tại vùng sâu, vùng xa, biên giới, hải đảo hoặc hoàn cảnh khó khăn được kích hoạt gói **Aegis Heart (0đ)** tài trợ 100% tài nguyên tính toán và AI vĩnh viễn, thể hiện trách nhiệm xã hội cao quý của Aegis Global.
-
-### 11.3. Hệ Thống Đa Ngôn Ngữ Toàn Cầu (Global MultiLang & Zero-Monolith UI)
-- **Language Switcher Tức Thì**: Bộ chuyển đổi ngôn ngữ [`LanguageSwitcher.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/widgets/app-header/LanguageSwitcher.tsx) được tích hợp ngay trên thanh điều khiển Studio, hỗ trợ chuyển đổi 0ms giữa Tiếng Việt, Tiếng Anh và các ngôn ngữ quốc tế.
-- **Type-Safe i18n Dictionary**: 100% chuỗi ký tự hiển thị được quản lý tập trung trong [`public/locales/vi/creator.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/vi/creator.json) và [`public/locales/en/creator.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/en/creator.json):
-  - **Tiêu đề phân hệ**: Khi ở giao diện Tiếng Việt hiển thị chuẩn mực sư phạm **"Xưởng Sáng Tạo Sư Phạm Zen"**, khi ở Tiếng Anh hiển thị chuẩn quốc tế **"Creator Zen Studio"**.
-  - **Nhãn nhận thức & bản quyền**: Khi ở Tiếng Việt hiển thị **"Hệ Sinh Thái Sáng Tạo Aegis • Bảo Vệ Bản Quyền Nhận Thức"**, khi ở Tiếng Anh hiển thị **"Aegis Creator Ecosystem • Anti-Scraping Protected"**.
-  - **Nhãn số ngày Pro biến động**: Đồng bộ động `{coffeeDays} Ngày Pro` (VI) và `{coffeeDays} Days Pro` (EN).
-- **Tuân thủ Chuẩn Zero-Monolith UI**: Toàn bộ các component giao diện [`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx) và [`TeacherCoffeeModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/TeacherCoffeeModal.tsx) duy trì độ dài nghiêm ngặt $\le 210$ dòng code, bảo đảm hiệu năng tải tức thì và độ ổn định cao nhất.
+**❓ Câu hỏi 4: Khi tôi dùng hết lượt tải đề miễn phí trong ngày hoặc muốn mở khóa toàn bộ tính năng VIP trong đợt thi thì làm thế nào?**
+> **Trả lời**: Thầy/Cô chỉ cần bấm nút màu cam **`☕ Mời 1 Ly Cafe (25.000đ)`** ở góc trên màn hình và quét mã VietQR bằng bất kỳ ứng dụng ngân hàng nào. Hệ thống tự động mở khóa toàn bộ đặc quyền Pro không giới hạn cho Thầy/Cô ngay tức thì mà không ràng buộc đóng phí hàng tháng!
