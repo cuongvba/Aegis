@@ -23,38 +23,22 @@ namespace AegisQuiz.Infrastructure.Services.Docx
     public static class MtefToLatexConverter
     {
         private static readonly byte[] MathTypeTag = Encoding.ASCII.GetBytes("Design Science, Inc.\0");
+        private static readonly byte[] DsmtSignature = Encoding.ASCII.GetBytes("DSMT");
+        private static readonly byte[] MtWinSignature = Encoding.ASCII.GetBytes("MTWin");
 
         /// <summary>
-        /// Thử giải mã tệp WMF nhị phân sang KaTeX thông qua MTEF v5 AST.
+        /// Thử giải mã tệp WMF nhị phân hoặc luồng OLE \objdata sang KaTeX thông qua MTEF v5 AST.
         /// Trả về true nếu giải mã thành công và sinh ra chuỗi KaTeX hợp lệ.
         /// </summary>
         public static bool TryConvert(byte[] wmfBytes, out string katexFormula)
         {
             katexFormula = string.Empty;
-            if (wmfBytes == null || wmfBytes.Length < 64) return false;
+            if (wmfBytes == null || wmfBytes.Length < 48) return false;
 
             try
             {
-                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF hoặc EQNOLEFILEHDR (0x1C 0x00) trong OLE \objdata
-                int mtefStart = -1;
-                int tagIdx = FindBytePattern(wmfBytes, MathTypeTag);
-                if (tagIdx >= 0)
-                {
-                    mtefStart = tagIdx + MathTypeTag.Length;
-                }
-                else
-                {
-                    for (int i = 0; i < wmfBytes.Length - 40; i++)
-                    {
-                        if (wmfBytes[i] == 0x1C && wmfBytes[i + 1] == 0x00 &&
-                            (wmfBytes[i + 28] == 5 || wmfBytes[i + 28] == 3) &&
-                            wmfBytes[i + 29] <= 1 && wmfBytes[i + 30] <= 5)
-                        {
-                            mtefStart = i + 28;
-                            break;
-                        }
-                    }
-                }
+                // 1. Tìm kiếm chữ ký MTEF 'Design Science, Inc.\0' trong WMF, hoặc chữ ký অ্যাপ 'DSMT'/'MTWin' / EQNOLEFILEHDR (0x1C 0x00) trong OLE \objdata
+                int mtefStart = LocateMtefHeaderStart(wmfBytes);
                 if (mtefStart < 0 || mtefStart + 15 >= wmfBytes.Length) return false;
 
                 byte mtefVer = wmfBytes[mtefStart];
@@ -83,6 +67,71 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                 // Fail-safe: Nếu gặp lỗi trong quá trình đọc nhị phân MTEF, an toàn chuyển về pipeline tiếp theo
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Định vị vị trí bắt đầu 5-byte MTEF Header trong cả 3 định dạng:
+        /// (1) WMF Contiguous ('Design Science, Inc.\0'), (2) OLE2 Equation Native ('DSMT'/'MTWin' tại offset +5), (3) EQNOLEFILEHDR (0x1C 0x00).
+        /// </summary>
+        private static int LocateMtefHeaderStart(byte[] bytes)
+        {
+            int tagIdx = FindBytePattern(bytes, MathTypeTag);
+            if (tagIdx >= 0 && tagIdx + MathTypeTag.Length + 10 < bytes.Length)
+            {
+                int candidate = tagIdx + MathTypeTag.Length;
+                if (bytes[candidate] == 5 || bytes[candidate] == 3)
+                    return candidate;
+            }
+
+            // Tìm chữ ký ứng dụng 'DSMT' (ví dụ DSMT4, DSMT5, DSMT6, DSMT7) hoặc 'MTWin' đứng ngay sau 5-byte MTEF header
+            int dsmtIdx = FindBytePattern(bytes, DsmtSignature);
+            if (dsmtIdx >= 5 && (bytes[dsmtIdx - 5] == 5 || bytes[dsmtIdx - 5] == 3) && bytes[dsmtIdx - 4] <= 2)
+            {
+                return dsmtIdx - 5;
+            }
+
+            int mtwinIdx = FindBytePattern(bytes, MtWinSignature);
+            if (mtwinIdx >= 5 && (bytes[mtwinIdx - 5] == 5 || bytes[mtwinIdx - 5] == 3) && bytes[mtwinIdx - 4] <= 2)
+            {
+                return mtwinIdx - 5;
+            }
+
+            // Fallback: Tìm kiếm cấu trúc EQNOLEFILEHDR (cbHdr = 0x001C = 28 bytes)
+            for (int i = 0; i < bytes.Length - 40; i++)
+            {
+                if (bytes[i] == 0x1C && bytes[i + 1] == 0x00 && bytes[i + 2] == 0x00 && bytes[i + 3] == 0x00 &&
+                    (bytes[i + 28] == 5 || bytes[i + 28] == 3) &&
+                    bytes[i + 29] <= 2 && bytes[i + 30] <= 10)
+                {
+                    return i + 28;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Kế thừa toàn bộ tinh hoa hậu xử lý LaTeX của bộ đọc .docx (Vector, Góc SGK, Lượng giác, Hệ phương trình, UPMP v2.0, Từ điển Toán học)
+        /// cho mọi luồng Clipboard / Vision OCR.
+        /// </summary>
+        public static string NormalizeToDocxStandardLatex(string latex)
+        {
+            if (string.IsNullOrWhiteSpace(latex)) return string.Empty;
+            string inner = latex.Trim();
+            if (inner.StartsWith("$$") && inner.EndsWith("$$") && inner.Length > 4)
+                inner = inner[2..^2].Trim();
+            else if (inner.StartsWith("$") && inner.EndsWith("$") && inner.Length > 2)
+                inner = inner[1..^1].Trim();
+            else if (inner.StartsWith(@"\(") && inner.EndsWith(@"\)") && inner.Length > 4)
+                inner = inner[2..^2].Trim();
+            else if (inner.StartsWith(@"\[") && inner.EndsWith(@"\]") && inner.Length > 4)
+                inner = inner[2..^2].Trim();
+
+            string normalized = PostNormalizeLatex(inner);
+            if (string.IsNullOrWhiteSpace(normalized)) return string.Empty;
+
+            string wrapped = $"${normalized}$";
+            return DocxParserService.NormalizeMathInlineText(wrapped);
         }
 
         /// <summary>

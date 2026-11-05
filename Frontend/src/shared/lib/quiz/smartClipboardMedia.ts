@@ -27,7 +27,14 @@ export async function compressImageToDataUri(file: Blob, maxDim = 960): Promise<
       img.onerror = () => resolve(String(reader.result || ''));
       img.onload = () => {
         let { width, height } = img;
-        if (width <= maxDim && height <= maxDim && file.size <= 180 * 1024) {
+        // Chỉ trả về trực tiếp với ảnh JPEG/WebP nhỏ không có kênh trong suốt Alpha;
+        // Với ảnh PNG từ Word/MathType (chữ đen trên nền trong suốt), bắt buộc phủ nền trắng #ffffff để tránh lỗi nền đen!
+        if (
+          file.type !== 'image/png' &&
+          width <= maxDim &&
+          height <= maxDim &&
+          file.size <= 180 * 1024
+        ) {
           resolve(String(reader.result || ''));
           return;
         }
@@ -49,7 +56,7 @@ export async function compressImageToDataUri(file: Blob, maxDim = 960): Promise<
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/webp', 0.86));
+        resolve(canvas.toDataURL('image/png'));
       };
       img.src = String(reader.result || '');
     };
@@ -193,7 +200,7 @@ export async function handleSmartRichPaste(
     onNotify?.('⏳ Đang giải mã đối tượng MathType từ Word sang công thức LaTeX ($...$)...');
     const imageDataUri =
       clipboardFile && clipboardFile.type.startsWith('image/')
-        ? await readBlobAsDataUri(clipboardFile)
+        ? await compressImageToDataUri(clipboardFile)
         : undefined;
 
     const mtRes = await transpileClipboardMathTypeViaApi({
@@ -269,10 +276,12 @@ export async function handleSmartRichPaste(
     if (clipboardFile.type.startsWith('image/')) {
       const uri = await compressImageToDataUri(clipboardFile);
       // Kiểm tra xem ảnh chụp/copy này có phải là ảnh công thức MathType không
-      const { isLikelyFormula } = await inspectImageMathSignature(clipboardFile, uri);
+      const { isLikelyFormula, formulaReadyDataUri } = await inspectImageMathSignature(clipboardFile, uri);
       if (isLikelyFormula) {
         onNotify?.('⏳ Phát hiện ảnh công thức Toán học, đang chuyển đổi sang chuẩn LaTeX ($...$)...');
-        const mtRes = await transpileClipboardMathTypeViaApi({ imageDataUri: uri });
+        const mtRes = await transpileClipboardMathTypeViaApi({
+          imageDataUri: formulaReadyDataUri || uri,
+        });
         if (mtRes.success && mtRes.singleLatex) {
           insertSnippet(mtRes.singleLatex);
           onNotify?.('Đã chuyển đổi ảnh công thức MathType sang chuẩn Vector LaTeX ($...$)!');

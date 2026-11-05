@@ -2329,6 +2329,7 @@ namespace AegisQuiz.API.Controllers
 
         // ── POST api/quiz/questions/clipboard-mathtype ────────────────────────
         [HttpPost("questions/clipboard-mathtype")]
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         public async Task<IActionResult> TranspileClipboardMathType(
             [FromBody] ClipboardMathTypeRequest request,
             [FromServices] System.Net.Http.IHttpClientFactory httpClientFactory)

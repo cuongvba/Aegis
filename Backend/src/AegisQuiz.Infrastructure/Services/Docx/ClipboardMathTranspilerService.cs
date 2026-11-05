@@ -12,14 +12,17 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AegisQuiz.Infrastructure.AI;
+using SkiaSharp;
 
 namespace AegisQuiz.Infrastructure.Services.Docx
 {
     /// <summary>
-    /// [Aegis Tri-Tier Clipboard MathType-to-LaTeX Transpiler Service]
-    /// 1. Tier 1 (0ms Deterministic AST): Giải mã trực tiếp luồng nhị phân MTEF v5 (\objdata & \wmetafile8 từ RTF Clipboard) qua MtefToLatexConverter & MathTypeWmfEngine.
+    /// [Aegis Tri-Tier Clipboard MathType-to-LaTeX Transpiler Service v2.0]
+    /// Kế thừa 100% tinh hoa giải mã công thức của bộ đọc .docx (MtefToLatexConverter + MathTypeWmfEngine + MathLocaleNormalizer + DocxParserService):
+    /// 1. Tier 1 (0ms Deterministic AST): Giải mã trực tiếp luồng nhị phân \wmetafile8 (giống hệt word/media/imageX.wmf trong .docx) & \objdata (OLE MTEF v5) từ RTF Clipboard.
     /// 2. Tier 2 (0ms Local WMZ/WMF): Giải nén tệp tạm .wmz/.wmf từ Word Clipboard (nếu cùng máy chủ/môi trường cục bộ).
-    /// 3. Tier 3 (Multimodal Vision Math OCR): Chuyển đổi ảnh bitmap công thức MathType (PNG/WebP) sang chuẩn LaTeX ($...$) có bộ nhớ đệm SHA-256.
+    /// 3. Tier 3 (SkiaSharp White-Canvas Super-Resolution + Multimodal Vision Math OCR + Docx Post-Normalization):
+    ///    Khử nền trong suốt Alpha PNG (tránh lỗi nền đen đè chữ đen), phóng đại nét mảnh & chuẩn hóa đầu ra theo đúng chuẩn .docx ($...$).
     /// </summary>
     public static class ClipboardMathTranspilerService
     {
@@ -30,15 +33,22 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             var results = new List<string>();
             if (hexChunks == null) return results;
 
-            foreach (var rawHex in hexChunks)
+            foreach (var rawEntry in hexChunks)
             {
-                if (string.IsNullOrWhiteSpace(rawHex)) continue;
-                var bytes = TryParseHex(rawHex);
-                if (bytes == null || bytes.Length < 32) continue;
+                if (string.IsNullOrWhiteSpace(rawEntry)) continue;
 
-                if (TryDecodeBinaryMathBytes(bytes, out var latex))
+                // Hỗ trợ gói kép "WMF_HEX|OBJDATA_HEX" cho cùng 1 đối tượng công thức để ưu tiên \wmetafile8 (giống hệt .docx) trước rồi fallback sang \objdata
+                var candidates = rawEntry.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var candidateHex in candidates)
                 {
-                    results.Add(latex);
+                    var bytes = TryParseHex(candidateHex);
+                    if (bytes == null || bytes.Length < 32) continue;
+
+                    if (TryDecodeBinaryMathBytes(bytes, out var latex))
+                    {
+                        results.Add(latex);
+                        break;
+                    }
                 }
             }
 
@@ -95,21 +105,81 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                 catch { /* fallback to raw bytes */ }
             }
 
-            // 1. Ưu tiên giải mã cây AST MTEF v5 (hỗ trợ cả WMF 'Design Science, Inc.' và OLE 'EQNOLEFILEHDR')
+            // 1. Ưu tiên giải mã cây AST MTEF v5 (hỗ trợ cả WMF 'Design Science, Inc.', chữ ký 'DSMT'/'MTWin' và OLE 'EQNOLEFILEHDR')
             if (MtefToLatexConverter.TryConvert(bytes, out var mtefLatex) && !string.IsNullOrWhiteSpace(mtefLatex))
             {
-                latex = mtefLatex;
-                return true;
+                latex = MtefToLatexConverter.NormalizeToDocxStandardLatex(mtefLatex);
+                return !string.IsNullOrWhiteSpace(latex);
             }
 
-            // 2. Fallback qua bộ giải mã tọa độ GDI WMF -> LaTeX
+            // 2. Fallback qua bộ giải mã tọa độ GDI WMF -> LaTeX + Chuẩn hóa hậu kỳ chuẩn .docx
             if (MathTypeWmfEngine.TryExtractSimpleMathText(bytes, out var wmfLatex) && !string.IsNullOrWhiteSpace(wmfLatex))
             {
-                latex = wmfLatex;
-                return true;
+                latex = MtefToLatexConverter.NormalizeToDocxStandardLatex(wmfLatex);
+                return !string.IsNullOrWhiteSpace(latex);
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Tiền xử lý ảnh công thức bằng SkiaSharp trước khi đưa vào Vision OCR:
+        /// 1. Phủ nền trắng tinh khiết (#FFFFFF) dưới kênh Alpha trong suốt (sửa triệt để lỗi ảnh PNG MathType chữ đen nền trong suốt bị biến thành khối đen).
+        /// 2. Phóng đại (Upscale 2x-3x) đối với ảnh công thức nhỏ (< 380x96px) để các số mũ, chỉ số dưới, dấu căn và phân số sắc nét tuyệt đối.
+        /// 3. Thêm viền đệm trắng 28px bốn phía giúp mô hình Vision nhận diện chính xác ký tự đầu/cuối.
+        /// </summary>
+        public static (string MimeType, string Base64Data, string DataUri) PreprocessFormulaImageForOcr(string originalMime, string originalBase64, string originalDataUri)
+        {
+            try
+            {
+                byte[] rawBytes = Convert.FromBase64String(originalBase64);
+                using var srcBitmap = SKBitmap.Decode(rawBytes);
+                if (srcBitmap == null || srcBitmap.Width <= 0 || srcBitmap.Height <= 0)
+                    return (originalMime, originalBase64, originalDataUri);
+
+                float scale = 1.0f;
+                if (srcBitmap.Width < 380 || srcBitmap.Height < 96)
+                {
+                    float scaleW = 380f / Math.Max(1, srcBitmap.Width);
+                    float scaleH = 96f / Math.Max(1, srcBitmap.Height);
+                    scale = Math.Clamp(Math.Max(scaleW, scaleH), 1.5f, 3.0f);
+                }
+
+                int scaledW = Math.Min(1800, (int)Math.Round(srcBitmap.Width * scale));
+                int scaledH = Math.Min(900, (int)Math.Round(srcBitmap.Height * scale));
+                const int pad = 28;
+                int outW = scaledW + pad * 2;
+                int outH = scaledH + pad * 2;
+
+                var info = new SKImageInfo(outW, outH, SKColorType.Rgba8888, SKAlphaType.Opaque);
+                using var surface = SKSurface.Create(info);
+                if (surface == null)
+                    return (originalMime, originalBase64, originalDataUri);
+
+                var canvas = surface.Canvas;
+                canvas.Clear(SKColors.White);
+
+                var destRect = new SKRect(pad, pad, pad + scaledW, pad + scaledH);
+                using var paint = new SKPaint
+                {
+                    IsAntialias = true,
+                    FilterQuality = SKFilterQuality.High
+                };
+                canvas.DrawBitmap(srcBitmap, destRect, paint);
+                canvas.Flush();
+
+                using var image = surface.Snapshot();
+                using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
+                if (encoded == null)
+                    return (originalMime, originalBase64, originalDataUri);
+
+                string b64 = Convert.ToBase64String(encoded.ToArray());
+                return ("image/png", b64, $"data:image/png;base64,{b64}");
+            }
+            catch
+            {
+                return (originalMime, originalBase64, originalDataUri);
+            }
         }
 
         public static async Task<string?> DecodeFormulaImageViaVisionAsync(
@@ -123,16 +193,19 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             if (commaIdx < 0 || commaIdx + 1 >= imageDataUri.Length) return null;
 
             var header = imageDataUri[..commaIdx];
-            var base64Data = imageDataUri[(commaIdx + 1)..].Trim();
+            var rawBase64Data = imageDataUri[(commaIdx + 1)..].Trim();
             var mimeMatch = Regex.Match(header, @"data:(image/[a-zA-Z0-9.+_-]+)", RegexOptions.IgnoreCase);
-            var mimeType = mimeMatch.Success ? mimeMatch.Groups[1].Value : "image/png";
+            var rawMimeType = mimeMatch.Success ? mimeMatch.Groups[1].Value : "image/png";
 
             // Tra cứu Cache SHA-256 (0ms nếu công thức đã từng được dán)
-            var hashKey = ComputeSha256(base64Data);
+            var hashKey = "V2_" + ComputeSha256(rawBase64Data);
             if (VisionFormulaCache.TryGetValue(hashKey, out var cached))
             {
                 return cached == "IMAGE_KEEP" ? null : cached;
             }
+
+            // Chuẩn hóa ảnh công thức (Khử nền trong suốt -> nền trắng #FFFFFF + Padding 28px + Super-Resolution Upscale)
+            var (mimeType, base64Data, processedDataUri) = PreprocessFormulaImageForOcr(rawMimeType, rawBase64Data, imageDataUri);
 
             var keys = UniversalAiRouter.LoadApiKeyFileFallback();
             List<string> GetKeyList(params string[] names)
@@ -150,22 +223,49 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             }
 
             const string systemPrompt =
-                "You are a precision MathType-to-LaTeX OCR engine. " +
-                "If the image contains a mathematical or chemical formula, equation, expression, system of equations, or matrix, " +
-                "output ONLY the pure LaTeX formula wrapped in $...$ (for example: $\\frac{-b \\pm \\sqrt{\\Delta}}{2a}$ or $\\int_{0}^{1} x^2 dx$). " +
-                "Do NOT include markdown code blocks, backticks, or explanations. " +
-                "If the image is a geometric figure, graph/chart, or general illustration picture that cannot be represented purely as LaTeX, output EXACTLY: IMAGE_KEEP";
+                "You are a deterministic MathType-to-LaTeX optical character recognition (OCR) engine. " +
+                "Transcribe ONLY the exact mathematical or chemical characters, symbols, fractions, radicals, integrals, limits, vectors, angles, matrices, or system of equations visually shown in the image into pure LaTeX wrapped in $...$ " +
+                "(for example: $\\cos(2x) = 1 - 2\\sin^2 x$ or $\\frac{-b \\pm \\sqrt{\\Delta}}{2a}$ or $\\overrightarrow{AB}$). " +
+                "CRITICAL RULES: " +
+                "1. NEVER solve, simplify, evaluate, expand into series, or add any terms not visually present in the image. Transcribe character-for-character! " +
+                "2. Output ONLY the LaTeX string wrapped in $...$, with NO markdown code blocks, NO backticks, and NO explanation. " +
+                "3. Only if the image is a photograph, geometric shape diagram without a formula, or decorative picture that cannot be represented as LaTeX, output EXACTLY: IMAGE_KEEP";
 
             string? rawResult = null;
 
-            // 1. Thử qua Google Gemini Vision (gemini-2.0-flash) xoay vòng qua bể khóa
-            foreach (var geminiKey in GetKeyList("GOOGLE_API_KEY", "GEMINI_API_KEY", "GoogleGemini").Take(3))
+            // 1. Ưu tiên Mistral Pixtral Vision (pixtral-large-latest -> pixtral-12b-2409) có độ chính xác OCR Toán học cao và khóa hoạt động ổn định
+            foreach (var mistralKey in GetKeyList("MISTRAL_API_KEY", "Mistral").Take(2))
             {
-                rawResult = await TryCallGeminiVisionAsync(httpClientFactory, geminiKey, mimeType, base64Data, systemPrompt);
+                rawResult = await TryCallOpenAiCompatibleVisionAsync(
+                    httpClientFactory,
+                    "https://api.mistral.ai/v1/chat/completions",
+                    mistralKey,
+                    "pixtral-large-latest",
+                    processedDataUri,
+                    systemPrompt);
+                if (!string.IsNullOrWhiteSpace(rawResult)) break;
+
+                rawResult = await TryCallOpenAiCompatibleVisionAsync(
+                    httpClientFactory,
+                    "https://api.mistral.ai/v1/chat/completions",
+                    mistralKey,
+                    "pixtral-12b-2409",
+                    processedDataUri,
+                    systemPrompt);
                 if (!string.IsNullOrWhiteSpace(rawResult)) break;
             }
 
-            // 2. Fallback qua Groq Vision (Llama-4 Scout Multimodal)
+            // 2. Fallback qua Google Gemini Vision (gemini-2.0-flash)
+            if (string.IsNullOrWhiteSpace(rawResult))
+            {
+                foreach (var geminiKey in GetKeyList("GOOGLE_API_KEY", "GEMINI_API_KEY", "GoogleGemini").Take(2))
+                {
+                    rawResult = await TryCallGeminiVisionAsync(httpClientFactory, geminiKey, mimeType, base64Data, systemPrompt);
+                    if (!string.IsNullOrWhiteSpace(rawResult)) break;
+                }
+            }
+
+            // 3. Fallback qua Groq Vision (Llama-4 Scout Multimodal)
             if (string.IsNullOrWhiteSpace(rawResult))
             {
                 foreach (var groqKey in GetKeyList("GROQ_API_KEY", "Groq").Take(2))
@@ -175,23 +275,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                         "https://api.groq.com/openai/v1/chat/completions",
                         groqKey,
                         "meta-llama/llama-4-scout-17b-16e-instruct",
-                        imageDataUri,
-                        systemPrompt);
-                    if (!string.IsNullOrWhiteSpace(rawResult)) break;
-                }
-            }
-
-            // 3. Fallback qua Mistral Pixtral Vision (pixtral-12b-2409)
-            if (string.IsNullOrWhiteSpace(rawResult))
-            {
-                foreach (var mistralKey in GetKeyList("MISTRAL_API_KEY", "Mistral").Take(2))
-                {
-                    rawResult = await TryCallOpenAiCompatibleVisionAsync(
-                        httpClientFactory,
-                        "https://api.mistral.ai/v1/chat/completions",
-                        mistralKey,
-                        "pixtral-12b-2409",
-                        imageDataUri,
+                        processedDataUri,
                         systemPrompt);
                     if (!string.IsNullOrWhiteSpace(rawResult)) break;
                 }
@@ -207,7 +291,7 @@ namespace AegisQuiz.Infrastructure.Services.Docx
                         "https://api.openai.com/v1/chat/completions",
                         openAiKey,
                         "gpt-4o-mini",
-                        imageDataUri,
+                        processedDataUri,
                         systemPrompt);
                     if (!string.IsNullOrWhiteSpace(rawResult)) break;
                 }
@@ -333,8 +417,10 @@ namespace AegisQuiz.Infrastructure.Services.Docx
             s = Regex.Replace(s, @"\s*```$", "");
             s = s.Trim();
             if (string.IsNullOrWhiteSpace(s)) return null;
-            if (!s.StartsWith("$")) s = $"${s.Trim('$')}$";
-            return s;
+
+            // Áp dụng toàn bộ chuỗi chuẩn hóa hậu kỳ của bộ đọc .docx (Vector \overrightarrow, Góc \widehat, Hệ phương trình \begin{cases}, Lượng giác, UPMP v2.0)
+            var normalized = MtefToLatexConverter.NormalizeToDocxStandardLatex(s);
+            return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
         }
 
         private static byte[]? TryParseHex(string rawHex)
