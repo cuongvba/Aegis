@@ -8,6 +8,8 @@ import {
   ZenQuestionPatch,
 } from '../types/zen-studio.types';
 import { ZenHomeworkConfig, DEFAULT_ZEN_HOMEWORK_CONFIG } from '../types/zen-homework.types';
+import type { BankTopic } from '@/pages/admin/questions/types';
+import type { LearnerQuestion } from '@/types/quiz';
 
 export function useZenStudio() {
   const [partnership, setPartnership] = useState<EducatorPartnershipInfo | null>(null);
@@ -25,10 +27,23 @@ export function useZenStudio() {
 
   // Arena game selector modal state
   const [isArenaSelectorOpen, setIsArenaSelectorOpen] = useState(false);
+  const [stagedLaunchPayload, setStagedLaunchPayload] = useState<{
+    title: string;
+    totalQuestions: number;
+    subjectCode?: string;
+    questions: any[];
+  } | null>(null);
 
   // Homework config state
   const [homeworkConfig, setHomeworkConfig] = useState<ZenHomeworkConfig>(DEFAULT_ZEN_HOMEWORK_CONFIG);
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
+  const [stagedHomeworkPayload, setStagedHomeworkPayload] = useState<{
+    title: string;
+    subjectCode?: string;
+    domainCode?: string;
+    topicCode?: string;
+    questions: any[];
+  } | null>(null);
 
   // Fetch partnership on mount
   useEffect(() => {
@@ -86,13 +101,34 @@ export function useZenStudio() {
     setIsArenaSelectorOpen(true);
   }, []);
 
+  const handleOpenArenaSelectorWithPayload = useCallback(
+    (payload: {
+      title: string;
+      totalQuestions: number;
+      subjectCode?: string;
+      questions: any[];
+    }) => {
+      setStagedLaunchPayload(payload);
+      setIsArenaSelectorOpen(true);
+    },
+    []
+  );
+
   const handleCloseArenaSelector = useCallback(() => {
     setIsArenaSelectorOpen(false);
+    setStagedLaunchPayload(null);
   }, []);
 
   // Launch realtime exam room with dynamic gameCode and duration
   const handleLaunchRoom = useCallback(async (gameCode: string = 'GOLDEN_BELL', durationMinutes: number = 15) => {
-    if (!uploadResult) return;
+    const payload = stagedLaunchPayload || (uploadResult ? {
+      title: uploadResult.examTitle,
+      totalQuestions: uploadResult.totalQuestions,
+      subjectCode: uploadResult.suggestedTaxonomy?.categoryCode || uploadResult.suggestedTaxonomy?.domainCode,
+      questions: uploadResult.questions,
+    } : null);
+
+    if (!payload) return;
     setIsLaunching(true);
     try {
       const response = await api.post<{
@@ -107,17 +143,18 @@ export function useZenStudio() {
         qrCodeData: string;
         launchedAt: string;
       }>('/api/creator/studio/launch', {
-        title: uploadResult.examTitle,
-        totalQuestions: uploadResult.totalQuestions,
-        subjectCode: uploadResult.suggestedTaxonomy?.categoryCode || uploadResult.suggestedTaxonomy?.domainCode,
+        title: payload.title,
+        totalQuestions: payload.totalQuestions,
+        subjectCode: payload.subjectCode,
         durationMinutes,
         gameCode,
-        questions: uploadResult.questions,
+        questions: payload.questions,
       });
 
       if (response.data && response.data.success) {
         setLaunchResult(response.data);
         setIsArenaSelectorOpen(false);
+        setStagedLaunchPayload(null);
       }
     } catch (err: any) {
       console.error('Launch room error:', err);
@@ -125,7 +162,7 @@ export function useZenStudio() {
     } finally {
       setIsLaunching(false);
     }
-  }, [uploadResult]);
+  }, [uploadResult, stagedLaunchPayload]);
 
   // Pure save to knowledge bank (Chỉ lưu vào ngân hàng tri thức)
   const handlePureSaveToBank = useCallback(async () => {
@@ -157,20 +194,55 @@ export function useZenStudio() {
 
   // Save to knowledge bank & generate practice link with student config params
   const handleSaveToBank = useCallback(async (customConfig?: ZenHomeworkConfig) => {
-    if (!uploadResult) return;
     const cfg = customConfig || homeworkConfig;
     if (customConfig) {
       setHomeworkConfig(customConfig);
     }
 
+    // Fast-path: If an existing topic was chosen, generate practice URL directly
+    if (stagedHomeworkPayload?.topicCode) {
+      const query = new URLSearchParams({
+        topic: stagedHomeworkPayload.topicCode,
+        mode: cfg.mode,
+        timeLimit: String(cfg.timeLimitMin),
+        shuffleOptions: cfg.shuffleOptions ? '1' : '0',
+        shuffleQuestions: cfg.shuffleQuestions ? '1' : '0',
+        qTimer: cfg.enableQuestionTimer ? '1' : '0',
+        autoNext: cfg.autoNextOnTimeout ? '1' : '0',
+      });
+      const practiceUrlWithConfig = `/practice?${query.toString()}`;
+
+      setBankSaveResult({
+        success: true,
+        topicId: stagedHomeworkPayload.topicCode,
+        topicCode: stagedHomeworkPayload.topicCode,
+        questionCount: stagedHomeworkPayload.questions.length,
+        practiceUrl: practiceUrlWithConfig,
+        homeworkConfig: cfg,
+        message: `Đã sẵn sàng bài tập về nhà cho chủ đề "${stagedHomeworkPayload.title}"!`,
+      });
+      setIsHomeworkModalOpen(false);
+      setStagedHomeworkPayload(null);
+      return;
+    }
+
+    const payload = stagedHomeworkPayload || (uploadResult ? {
+      title: uploadResult.examTitle,
+      subjectCode: uploadResult.suggestedTaxonomy?.categoryCode || uploadResult.suggestedTaxonomy?.domainCode,
+      domainCode: uploadResult.suggestedTaxonomy?.domainCode || 'EDUCATION',
+      questions: uploadResult.questions,
+    } : null);
+
+    if (!payload) return;
+
     setIsSavingToBank(true);
     setErrorMessage(null);
     try {
       const response = await api.post<ZenBankSaveResult>('/api/creator/studio/save-to-bank', {
-        title: uploadResult.examTitle,
-        subjectCode: uploadResult.suggestedTaxonomy?.categoryCode || uploadResult.suggestedTaxonomy?.domainCode,
-        domainCode: uploadResult.suggestedTaxonomy?.domainCode || 'EDUCATION',
-        questions: uploadResult.questions,
+        title: payload.title,
+        subjectCode: payload.subjectCode,
+        domainCode: payload.domainCode || 'EDUCATION',
+        questions: payload.questions,
       });
 
       if (response.data && response.data.success) {
@@ -191,6 +263,7 @@ export function useZenStudio() {
           homeworkConfig: cfg,
         });
         setIsHomeworkModalOpen(false);
+        setStagedHomeworkPayload(null);
       }
     } catch (err: any) {
       console.error('Save to bank error:', err);
@@ -198,14 +271,29 @@ export function useZenStudio() {
     } finally {
       setIsSavingToBank(false);
     }
-  }, [uploadResult, homeworkConfig]);
+  }, [uploadResult, homeworkConfig, stagedHomeworkPayload]);
 
   const handleOpenHomeworkModal = useCallback(() => {
     setIsHomeworkModalOpen(true);
   }, []);
 
+  const handleOpenHomeworkWithPayload = useCallback(
+    (payload: {
+      title: string;
+      subjectCode?: string;
+      domainCode?: string;
+      topicCode?: string;
+      questions: any[];
+    }) => {
+      setStagedHomeworkPayload(payload);
+      setIsHomeworkModalOpen(true);
+    },
+    []
+  );
+
   const handleCloseHomeworkModal = useCallback(() => {
     setIsHomeworkModalOpen(false);
+    setStagedHomeworkPayload(null);
   }, []);
 
   const handleCloseBankModal = useCallback(() => {
@@ -235,6 +323,65 @@ export function useZenStudio() {
     );
   }, []);
 
+  const handleLaunchArenaFromSaved = useCallback((questions: LearnerQuestion[], topic: BankTopic | null) => {
+    const arenaQuestions = questions.map((q) => ({
+      content: q.content,
+      options: q.options || [],
+      correctAnswer: q.answerRaw || (q.options && q.options[0]) || '',
+      explanation: q.aiExplanation || q.citation || '',
+    }));
+    handleOpenArenaSelectorWithPayload({
+      title: topic?.name || `Đấu trường ${questions.length} câu`,
+      totalQuestions: questions.length,
+      subjectCode: topic?.categoryCode || topic?.domainCode || 'GENERAL',
+      questions: arenaQuestions,
+    });
+  }, [handleOpenArenaSelectorWithPayload]);
+
+  const handleAssignHomeworkFromSaved = useCallback((questions: LearnerQuestion[], topic: BankTopic | null) => {
+    handleOpenHomeworkWithPayload({
+      title: topic?.name || `Bài tập ${questions.length} câu`,
+      subjectCode: topic?.categoryCode || topic?.domainCode || 'GENERAL',
+      topicCode: topic?.code,
+      questions: questions.map((q) => ({
+        content: q.content,
+        options: q.options || [],
+        correctAnswer: q.answerRaw || (q.options && q.options[0]) || '',
+        explanation: q.aiExplanation || q.citation || '',
+      })),
+    });
+  }, [handleOpenHomeworkWithPayload]);
+
+  const handleLoadIntoStudio = useCallback((questions: LearnerQuestion[], topic: BankTopic | null) => {
+    setUploadResult({
+      success: true,
+      examTitle: topic?.name || 'Đề thi chọn lọc từ Ngân hàng',
+      totalQuestions: questions.length,
+      duplicateCount: 0,
+      uniqueCount: questions.length,
+      deduplicationRatePercentage: 0,
+      suggestedTaxonomy: {
+        domainCode: topic?.domainCode || 'EDUCATION',
+        domainName: topic?.name || 'Giáo dục',
+        targetLevel: 'STANDARD',
+        categoryCode: topic?.categoryCode || topic?.code || 'GENERAL',
+        categoryName: topic?.name || 'Tổng hợp',
+        benchmarkStandard: 'GENERAL_STANDARD',
+        cognitiveLevel: 'THONG_HIEU',
+        confidenceScore: 1.0,
+      },
+      questions: questions.map((q, idx) => ({
+        order: idx + 1,
+        content: q.content,
+        canonicalHash: q.id || `q_${idx + 1}`,
+        isDuplicate: false,
+        options: q.options || [],
+        correctAnswer: q.answerRaw || (q.options && q.options[0]) || '',
+        explanation: q.aiExplanation || q.citation || '',
+      })),
+    });
+  }, []);
+
   return {
     partnership,
     isUploading,
@@ -256,11 +403,18 @@ export function useZenStudio() {
     isArenaSelectorOpen,
     handleOpenArenaSelector,
     handleCloseArenaSelector,
+    handleOpenArenaSelectorWithPayload,
+    stagedLaunchPayload,
     homeworkConfig,
     isHomeworkModalOpen,
     handleOpenHomeworkModal,
+    handleOpenHomeworkWithPayload,
     handleCloseHomeworkModal,
     handleSaveToBank,
     handleCloseBankModal,
+    setUploadResult,
+    handleLaunchArenaFromSaved,
+    handleAssignHomeworkFromSaved,
+    handleLoadIntoStudio,
   };
 }

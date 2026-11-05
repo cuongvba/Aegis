@@ -208,6 +208,26 @@ Khi ở trong **`✨ Zen Studio`**, sau khi nạp đề xong, nếu Thầy/Cô b
 
 ---
 
+## 7C. SỬ DỤNG KHO CHỦ ĐỀ & CÂU HỎI ĐÃ LƯU NGAY TRONG ZEN STUDIO (GIAO BÀI & ĐẤU TRƯỜNG 1 CHẠM)
+
+Ngoài tính năng nạp đề thi mới từ file Word/Excel/PDF, **`✨ Zen Studio`** (`/creator/studio`) đã được trang bị **Bộ Chuyển Đổi Không Gian Làm Việc Song Hành**:
+
+```
+ ┌────────────────────────────────────┬────────────────────────────────────┐
+ │  📄 Soạn Đề Mới (Word / Excel)     │  📚 Chủ Đề & Câu Hỏi Đã Lưu        │
+ └────────────────────────────────────┴────────────────────────────────────┘
+```
+
+Khi Thầy/Cô bấm chuyển sang tab **`📚 Chủ Đề & Câu Hỏi Đã Lưu`**:
+1. **Cột Trái (Cây Chủ Đề)**: Hiển thị toàn bộ các chủ đề và đề thi Thầy/Cô đã từng lưu trong hệ thống, kèm thanh tìm kiếm siêu tốc và số lượng câu hỏi hiện có.
+2. **Cột Phải (Kho Câu Hỏi)**: Hiển thị nội dung chi tiết các câu hỏi với checkbox tích chọn linh hoạt (hỗ trợ nút **Chọn tất cả** / **Bỏ chọn**).
+3. **Thanh Hành Động Nổi Diệu Kỳ (Xuất hiện ngay khi chọn Chủ đề hoặc Câu hỏi)**:
+   - ✈️ **`Giao Bài Tập`**: Mở ngay hộp thoại cấu hình giao bài (Luyện tập / Thi thử / Kid Mode / Đảo đề) và sinh mã QR, link làm bài ngay tức thì mà không cần nạp lại file!
+   - 🚀 **`Kích Hoạt Đấu Trường`**: Mở ngay hộp thoại chọn thể thức Gameshow (Chuông Vàng, Triệu Phú, Olympia...) để cả lớp cùng thi đấu trực tiếp với các câu hỏi đã chọn!
+   - ✏️ **`Mở Trong Studio`**: Nạp trọn vẹn danh sách câu hỏi đã chọn vào trình soạn thảo Zen Studio để chỉnh sửa, cập nhật đáp án hoặc bổ sung lời giải chi tiết.
+
+---
+
 ## 8. MẸO GÕ FILE WORD / EXCEL ĐỂ MÁY ĐỌC CHUẨN 100%
 
 Nếu Thầy/Cô thích soạn câu hỏi trên Word (`.docx`) trước khi thả vào **`✨ Zen Studio`**, chỉ cần nhớ **3 quy tắc nhỏ xíu** sau:

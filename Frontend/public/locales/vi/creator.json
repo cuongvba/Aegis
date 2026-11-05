@@ -160,5 +160,25 @@
     "btnCoffeeConfirm": "Tôi Đã Mời Cafe (Mở Khóa Pro {{days}} Ngày)",
     "securityFooter": "Bảo mật bản quyền nhận thức & Chống trộm cắp chất xám đề thi",
     "daysProSuffix": "Ngày Pro"
+  },
+  "modeSwitcher": {
+    "upload": "Soạn Đề Mới (Word/Excel)",
+    "savedBank": "Chủ Đề & Câu Hỏi Đã Lưu"
+  },
+  "savedBank": {
+    "title": "Kho Chủ Đề & Câu Hỏi Đã Lưu Của Tôi",
+    "subtitle": "Chọn chủ đề hoặc tích chọn câu hỏi để Kích hoạt Đấu trường hoặc Giao bài tập tức thì",
+    "clearSelection": "Bỏ chọn",
+    "topicListTitle": "Cây Chủ Đề",
+    "searchTopicPlaceholder": "Tìm tên hoặc mã chủ đề...",
+    "allQuestions": "Tất Cả Câu Hỏi",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn",
+    "searchQuestionPlaceholder": "Tìm nội dung câu hỏi...",
+    "selectedQuestionsCount": "Đã chọn: {{count}} câu hỏi",
+    "btnAssignHomework": "Giao Bài Tập",
+    "btnLaunchArena": "Kích Hoạt Đấu Trường",
+    "btnOpenInStudio": "Nạp vào Studio để sửa chi tiết",
+    "openInStudio": "Mở Trong Studio"
   }
 }

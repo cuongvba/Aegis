@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, AlertCircle, Coffee, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Sparkles, AlertCircle, Coffee, ShieldCheck, Database, FileUp } from 'lucide-react';
 import { useZenStudio } from './hooks/useZenStudio';
-import { ZenTrialBanner } from './components/ZenTrialBanner';
+import { ZenStudioHero } from './components/ZenStudioHero';
 import { ZenDropZone } from './components/ZenDropZone';
+import { ZenSavedBankSelector } from './components/ZenSavedBankSelector';
 import { ZenExamPreview } from './components/ZenExamPreview';
 import { ZenRoomLauncherModal } from './components/ZenRoomLauncherModal';
 import { ZenBankSaveModal } from './components/ZenBankSaveModal';
@@ -11,12 +12,14 @@ import { ZenHomeworkConfigModal } from './components/ZenHomeworkConfigModal';
 import { ZenArenaGameSelectorModal } from './components/ZenArenaGameSelectorModal';
 import { ZenPureBankSuccessModal } from './components/ZenPureBankSuccessModal';
 import { TeacherCoffeeModal } from './components/TeacherCoffeeModal';
+import { ZenStudioTopBar } from './components/ZenStudioTopBar';
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { antiScrapingGuardService, IngestionQuotaStatus } from '@/services/antiScrapingGuard.service';
 
 export const CreatorZenStudioPage: React.FC = () => {
   const { t } = useTranslation('creator');
   const [showCoffeeModal, setShowCoffeeModal] = useState(false);
+  const [studioMode, setStudioMode] = useState<'upload' | 'saved'>('upload');
   const [quotaStatus, setQuotaStatus] = useState<IngestionQuotaStatus>(
     antiScrapingGuardService.getQuotaStatus()
   );
@@ -41,6 +44,8 @@ export const CreatorZenStudioPage: React.FC = () => {
     handleClosePureSaveModal,
     isArenaSelectorOpen,
     handleOpenArenaSelector,
+    handleOpenArenaSelectorWithPayload,
+    stagedLaunchPayload,
     handleCloseArenaSelector,
     homeworkConfig,
     isHomeworkModalOpen,
@@ -48,6 +53,9 @@ export const CreatorZenStudioPage: React.FC = () => {
     handleCloseHomeworkModal,
     handleSaveToBank,
     handleCloseBankModal,
+    handleLaunchArenaFromSaved,
+    handleAssignHomeworkFromSaved,
+    handleLoadIntoStudio,
   } = useZenStudio();
 
   const refreshQuota = () => {
@@ -72,57 +80,14 @@ export const CreatorZenStudioPage: React.FC = () => {
         <CreatorWorkspaceNav />
 
         {/* Top Control Bar: Hạn mức bảo vệ bản quyền & Nút Mời Cafe */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-md">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
-              <ShieldCheck className="w-3.5 h-3.5" />
-            </span>
-            <span className="text-slate-300 font-medium hidden sm:inline">
-              {t('topBar.quotaLabel')}
-            </span>
-            <span className="font-mono font-bold text-amber-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-              {quotaStatus.dailyUsed}/{quotaStatus.isUnlimited ? t('topBar.unlimited') : `${quotaStatus.dailyLimit} ${t('topBar.examsPerDay')}`}
-            </span>
-            {partnership?.referralCode && (
-              <span className="font-mono text-[11px] text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40 hidden md:inline">
-                ID: {partnership.referralCode}
-              </span>
-            )}
-            <span className="text-[10px] text-slate-500 hidden lg:inline">
-              {t('topBar.securityNote')}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setShowCoffeeModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md transition active:scale-95 cursor-pointer"
-            >
-              <Coffee className="w-3.5 h-3.5" />
-              <span>{t('coffee.buttonLabel', { price: (partnership?.coffeePriceVnd || 25000).toLocaleString('vi-VN') })}</span>
-            </button>
-          </div>
-        </div>
+        <ZenStudioTopBar
+          quotaStatus={quotaStatus}
+          partnership={partnership}
+          onOpenCoffeeModal={() => setShowCoffeeModal(true)}
+        />
 
         {/* Khi CHƯA upload: Hiển thị Hero Banner & Gói Đối Tác đầy đủ */}
-        {!uploadResult && (
-          <>
-            <div className="text-center space-y-3 pt-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{t('ecosystemTag')}</span>
-              </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white">
-                {t('title')}
-              </h1>
-              <p className="text-sm md:text-base text-slate-400 max-w-2xl mx-auto">
-                {t('subtitle')}
-              </p>
-            </div>
-            <ZenTrialBanner partnership={partnership} />
-          </>
-        )}
+        {!uploadResult && <ZenStudioHero partnership={partnership} />}
 
         {/* Error message alert */}
         {errorMessage && (
@@ -132,9 +97,47 @@ export const CreatorZenStudioPage: React.FC = () => {
           </div>
         )}
 
-        {/* Main Workspace: DropZone OR Preview */}
+        {/* Workspace Mode Switcher (Khi chưa có preview) */}
+        {!uploadResult && (
+          <div className="flex items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-md mx-auto shadow-md">
+            <button
+              type="button"
+              onClick={() => setStudioMode('upload')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                studioMode === 'upload'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <FileUp size={14} />
+              <span>{t('modeSwitcher.upload', 'Soạn Đề Mới (Word/Excel)')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setStudioMode('saved')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                studioMode === 'saved'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Database size={14} />
+              <span>{t('modeSwitcher.savedBank', 'Chủ Đề & Câu Hỏi Đã Lưu')}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Main Workspace: DropZone OR SavedBankSelector OR Preview */}
         {!uploadResult ? (
-          <ZenDropZone onFileSelected={guardedUploadFile} isLoading={isUploading} />
+          studioMode === 'upload' ? (
+            <ZenDropZone onFileSelected={guardedUploadFile} isLoading={isUploading} />
+          ) : (
+            <ZenSavedBankSelector
+              onLaunchArena={handleLaunchArenaFromSaved}
+              onAssignHomework={handleAssignHomeworkFromSaved}
+              onLoadIntoStudio={handleLoadIntoStudio}
+            />
+          )
         ) : (
           <ZenExamPreview
             data={uploadResult}
@@ -152,7 +155,7 @@ export const CreatorZenStudioPage: React.FC = () => {
         <ZenArenaGameSelectorModal
           isOpen={isArenaSelectorOpen}
           isLoading={isLaunching}
-          totalQuestions={uploadResult?.totalQuestions ?? 0}
+          totalQuestions={stagedLaunchPayload?.totalQuestions ?? uploadResult?.totalQuestions ?? 0}
           onClose={handleCloseArenaSelector}
           onConfirm={(gameCode: string, durationMinutes: number) => handleLaunchRoom(gameCode, durationMinutes)}
         />

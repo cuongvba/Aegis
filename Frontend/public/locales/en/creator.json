@@ -160,5 +160,25 @@
     "btnCoffeeConfirm": "I Bought a Coffee (Unlock Pro for {{days}} Days)",
     "securityFooter": "Cognitive Copyright Protection & Anti-Scraping Fortress",
     "daysProSuffix": "Days Pro"
+  },
+  "modeSwitcher": {
+    "upload": "Parse New Exam (Word/Excel)",
+    "savedBank": "Saved Topics & Questions"
+  },
+  "savedBank": {
+    "title": "My Saved Topics & Question Bank",
+    "subtitle": "Select a topic or choose questions to instantly Launch Arena or Assign Homework",
+    "clearSelection": "Deselect",
+    "topicListTitle": "Topic Tree",
+    "searchTopicPlaceholder": "Search topic title or code...",
+    "allQuestions": "All Questions",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect",
+    "searchQuestionPlaceholder": "Search question content...",
+    "selectedQuestionsCount": "Selected: {{count}} questions",
+    "btnAssignHomework": "Assign Homework",
+    "btnLaunchArena": "Launch Arena",
+    "btnOpenInStudio": "Load into Studio for detailed editing",
+    "openInStudio": "Open in Studio"
   }
 }
