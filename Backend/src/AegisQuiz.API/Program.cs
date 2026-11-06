@@ -92,6 +92,7 @@ builder.Services.AddSingleton<ITranspilerExportStrategy, AegisQuiz.Infrastructur
 builder.Services.AddSingleton<ITranspilerExportStrategy, AegisQuiz.Infrastructure.Transpiler.MoodleGiftExportStrategy>();
 builder.Services.AddSingleton<ITranspilerExportStrategy, AegisQuiz.Infrastructure.Transpiler.Qti30PackageExportStrategy>();
 builder.Services.AddScoped<IUniversalExamTranspilerService, AegisQuiz.Infrastructure.Transpiler.UniversalExamTranspilerService>();
+builder.Services.AddScoped<IExamExportTranspilerService, AegisQuiz.Infrastructure.Services.Docx.DocxExamExportTranspilerService>();
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();
 builder.Services.AddScoped<IDocxStateMachineClassifier, AegisQuiz.Infrastructure.Services.Docx.DocxStateMachineClassifierService>();
 builder.Services.AddScoped<IDynamicDomainContextService, DynamicDomainContextService>();

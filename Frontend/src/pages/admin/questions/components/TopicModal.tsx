@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink, Send, Play } from 'lucide-react';
+import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink, Send, Play , FileText } from 'lucide-react';
 import type { LearnerQuestion } from '@/types/quiz';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
@@ -42,6 +42,7 @@ interface TopicModalProps {
   isContributing?: boolean;
   onAssignHomework?: (t: BankTopic) => void;
   onLaunchArena?: (t: BankTopic) => void;
+  onExportDocx?: (t: BankTopic) => void;
 }
 
 export function TopicModal({
@@ -53,7 +54,7 @@ export function TopicModal({
   setTopicDomainCode, setTopicScope, setIsEditingTopic,
   onClose, onSave, onOpenAdd, onOpenEdit, onOpenQuestions, onDelete, onToggleActive,
   onContributeCommunity, isContributing,
-  onAssignHomework, onLaunchArena,
+  onAssignHomework, onLaunchArena, onExportDocx,
 }: TopicModalProps) {
   if (!isOpen) return null;
 
@@ -293,8 +294,8 @@ export function TopicModal({
                       </button>
                     )}
                   </div>
-                  {(onAssignHomework || onLaunchArena) && activeTopic && (
-                    <div className="grid grid-cols-2 gap-2 pt-1">
+                  {(onAssignHomework || onLaunchArena || onExportDocx) && activeTopic && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                       {onAssignHomework && (
                         <button
                           type="button"
@@ -321,6 +322,20 @@ export function TopicModal({
                         >
                           <Play size={14} />
                           <span>Kích Hoạt Đấu Trường</span>
+                        </button>
+                      )}
+                      {onExportDocx && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onClose();
+                            onExportDocx(activeTopic);
+                          }}
+                          className="py-2.5 px-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-blue-600/30 active:scale-95"
+                          title="Xuất đề thi chuẩn Bộ GD&ĐT ra file Word / Trộn đề / OMR"
+                        >
+                          <FileText size={14} />
+                          <span>Xuất File Word</span>
                         </button>
                       )}
                     </div>

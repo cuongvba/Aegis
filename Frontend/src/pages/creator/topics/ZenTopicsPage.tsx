@@ -15,6 +15,7 @@ import { ZenArenaGameSelectorModal } from '../studio/components/ZenArenaGameSele
 import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigModal';
 import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
 import { ZenBankSaveModal } from '../studio/components/ZenBankSaveModal';
+import { ZenExamExportModal } from '../studio/components/ZenExamExportModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -40,6 +41,20 @@ export const ZenTopicsPage: React.FC = () => {
   const navigate = useNavigate();
   const state = useZenTopics(user);
   const launcher = useZenLauncher();
+  const [topicForExport, setTopicForExport] = React.useState<any>(null);
+  const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
+
+  const handleExportTopicDocx = (top: any) => {
+    setTopicForExport(top);
+    setIsExportModalOpen(true);
+  };
+
+  const exportQuestions = React.useMemo(() => {
+    if (!topicForExport) return [];
+    return state.questions.filter(
+      q => q.topicId === topicForExport.id || q.topicCode === topicForExport.code
+    );
+  }, [topicForExport, state.questions]);
 
   const directOwnedCount = state.topics.filter(
     top => top.createdByUserId && String(top.createdByUserId) === String(user?.id)
@@ -150,6 +165,7 @@ export const ZenTopicsPage: React.FC = () => {
             onOpenQuestions={state.openQuestionsModal}
             onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions)}
             onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions)}
+            onExportDocx={handleExportTopicDocx}
             renderSortIcon={(field, currentField, isAsc) => (
               <span className={`inline-flex ml-1.5 ${field === currentField ? 'text-amber-400' : 'text-slate-600'}`}>
                 <Network size={11} className={field === currentField && !isAsc ? 'rotate-180 transform' : ''} />
@@ -193,6 +209,7 @@ export const ZenTopicsPage: React.FC = () => {
           isContributing={state.isContributing}
           onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions)}
           onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions)}
+          onExportDocx={handleExportTopicDocx}
         />
 
         <TopicQuestionsModal
@@ -211,6 +228,16 @@ export const ZenTopicsPage: React.FC = () => {
           isDeletingTopicLoading={state.isDeletingTopicLoading}
           onClose={() => state.setTopicToDelete(null)}
           onConfirm={state.confirmDeleteTopic}
+        />
+
+        <ZenExamExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => {
+            setIsExportModalOpen(false);
+            setTopicForExport(null);
+          }}
+          questions={exportQuestions}
+          defaultTitle={topicForExport?.name ?? 'ĐỀ THI THEO CHỦ ĐỀ'}
         />
 
         {/* Realtime Arena & Homework Practice Modals */}

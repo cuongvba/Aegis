@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Play, Database, Loader2, Send, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Database, Loader2, Send, X, FileText } from 'lucide-react';
 import { ZEN_PAGE_SIZES } from '../hooks/useZenPagination';
 
 interface ZenPaginationBarProps {
@@ -19,6 +19,7 @@ interface ZenPaginationBarProps {
   onPureSaveToBank?: () => void;
   isPureSavingToBank?: boolean;
   onOpenHomeworkConfig?: () => void;
+  onOpenExportModal?: () => void;
   onCancel?: () => void;
 }
 
@@ -26,6 +27,7 @@ interface ZenPaginationBarProps {
 export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
   page, totalPages, pageSize, total, rangeStart, rangeEnd, pageWindow, editedCount, isLaunching,
   onGoTo, onPageSize, onOpenArenaSelector, onPureSaveToBank, isPureSavingToBank, onOpenHomeworkConfig,
+  onOpenExportModal,
   onCancel,
 }) => {
   const { t } = useTranslation('creator');
@@ -154,7 +156,20 @@ export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
             </button>
           )}
 
-          {/* 3. NÚT KÍCH HOẠT ĐẤU TRƯỜNG (Mở modal chọn Rung Chuông Vàng, Nhanh Như Chớp, Olympia...) */}
+          {/* 3. NÚT XUẤT FILE WORD NỘP TRƯỜNG & TRỘN ĐA MÃ ĐỀ */}
+          {onOpenExportModal && (
+            <button
+              onClick={onOpenExportModal}
+              type="button"
+              title="Xuất file Word (.docx) chuẩn Bộ GD&ĐT, trộn đa mã đề & phiếu tô OMR nộp trường"
+              className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-xl text-xs font-bold bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/40 shadow-lg shadow-indigo-950/30 transition active:scale-95 cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Xuất File Word</span>
+            </button>
+          )}
+
+          {/* 4. NÚT KÍCH HOẠT ĐẤU TRƯỜNG (Mở modal chọn Rung Chuông Vàng, Nhanh Như Chớp, Olympia...) */}
           <button
             onClick={onOpenArenaSelector}
             disabled={isLaunching}
@@ -166,7 +181,7 @@ export const ZenPaginationBar: React.FC<ZenPaginationBarProps> = ({
             <span>Kích Hoạt Đấu Trường</span>
           </button>
 
-          {/* 4. NÚT HỦY BỎ (Hủy bỏ thao tác đọc đề và làm mới trạng thái) */}
+          {/* 5. NÚT HỦY BỎ (Hủy bỏ thao tác đọc đề và làm mới trạng thái) */}
           {onCancel && (
             <button
               onClick={() => {

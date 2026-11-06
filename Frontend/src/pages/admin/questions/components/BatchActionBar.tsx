@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, CheckCircle2, Tag, Trash2, Unlink, Send, Play } from 'lucide-react';
+import { BookOpen, CheckCircle2, Tag, Trash2, Unlink, Send, Play, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface BatchActionBarProps {
@@ -12,6 +12,7 @@ interface BatchActionBarProps {
   onDeselectAll: () => void;
   onAssignHomework?: () => void;
   onLaunchArena?: () => void;
+  onExportDocx?: () => void;
 }
 
 export const BatchActionBar: React.FC<BatchActionBarProps> = ({
@@ -24,6 +25,7 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
   onDeselectAll,
   onAssignHomework,
   onLaunchArena,
+  onExportDocx,
 }) => {
   const { t } = useTranslation('admin_questions');
   if (selectedCount === 0) return null;
@@ -51,6 +53,16 @@ export const BatchActionBar: React.FC<BatchActionBarProps> = ({
           className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-lg shadow-indigo-600/30 active:scale-95 transition-all whitespace-nowrap"
         >
           <Play size={13} /> Kích Hoạt Đấu Trường
+        </button>
+      )}
+      {onExportDocx && (
+        <button
+          type="button"
+          onClick={onExportDocx}
+          className="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-lg shadow-blue-600/30 active:scale-95 transition-all whitespace-nowrap"
+          title="Xuất đề thi chuẩn Bộ GD&ĐT ra file Word / Trộn đa mã đề / Bảng đáp án / Phiếu OMR"
+        >
+          <FileText size={13} /> Xuất Đề Thi (Word)
         </button>
       )}
       <button

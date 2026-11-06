@@ -10,6 +10,7 @@ import { ZenRoomLauncherModal } from './components/ZenRoomLauncherModal';
 import { ZenBankSaveModal } from './components/ZenBankSaveModal';
 import { ZenHomeworkConfigModal } from './components/ZenHomeworkConfigModal';
 import { ZenArenaGameSelectorModal } from './components/ZenArenaGameSelectorModal';
+import { ZenExamExportModal } from './components/ZenExamExportModal';
 import { ZenPureBankSuccessModal } from './components/ZenPureBankSuccessModal';
 import { TeacherCoffeeModal } from './components/TeacherCoffeeModal';
 import { ZenStudioTopBar } from './components/ZenStudioTopBar';
@@ -19,6 +20,7 @@ import { antiScrapingGuardService, IngestionQuotaStatus } from '@/services/antiS
 export const CreatorZenStudioPage: React.FC = () => {
   const { t } = useTranslation('creator');
   const [showCoffeeModal, setShowCoffeeModal] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [studioMode, setStudioMode] = useState<'upload' | 'saved'>('upload');
   const [quotaStatus, setQuotaStatus] = useState<IngestionQuotaStatus>(
     antiScrapingGuardService.getQuotaStatus()
@@ -150,6 +152,15 @@ export const CreatorZenStudioPage: React.FC = () => {
             isLaunching={isLaunching}
           />
         )}
+
+        {/* 0. Modal Xuất Đề Thi Word & Trộn Đề */}
+        <ZenExamExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          questions={uploadResult?.questions ?? []}
+          defaultTitle={uploadResult?.examTitle || 'ĐỀ KHẢO SÁT CHẤT LƯỢNG HỌC KỲ'}
+          defaultSubject={(uploadResult as any)?.subjectName || 'MÔN: TOÁN HỌC'}
+        />
 
         {/* 1. Modal Thể thức Gameshow Đấu Trường Realtime */}
         <ZenArenaGameSelectorModal

@@ -13,6 +13,7 @@ interface ZenExamPreviewProps {
   onPureSaveToBank?: () => void;
   isPureSavingToBank?: boolean;
   onOpenHomeworkConfig?: () => void;
+  onOpenExportModal?: () => void;
   onReset: () => void;
   onUpdateQuestion: (order: number, patch: ZenQuestionPatch) => void;
   isLaunching: boolean;
@@ -24,6 +25,7 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
   onPureSaveToBank,
   isPureSavingToBank,
   onOpenHomeworkConfig,
+  onOpenExportModal,
   onReset,
   onUpdateQuestion,
   isLaunching,
@@ -84,6 +86,7 @@ export const ZenExamPreview: React.FC<ZenExamPreviewProps> = ({
         onPureSaveToBank={onPureSaveToBank}
         isPureSavingToBank={isPureSavingToBank}
         onOpenHomeworkConfig={onOpenHomeworkConfig}
+        onOpenExportModal={onOpenExportModal}
         onCancel={onReset}
       />
     </div>

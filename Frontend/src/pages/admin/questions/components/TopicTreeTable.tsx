@@ -23,6 +23,7 @@ interface TopicTreeTableProps {
   onDelete?: (id: string) => void;
   onAssignHomework?: (topic: BankTopic) => void;
   onLaunchArena?: (topic: BankTopic) => void;
+  onExportDocx?: (topic: BankTopic) => void;
 }
 
 export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
@@ -37,6 +38,7 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
   onDelete,
   onAssignHomework,
   onLaunchArena,
+  onExportDocx,
 }) => {
   const { t } = useTranslation('admin_questions');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
@@ -275,6 +277,17 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
                         >
                           <Play size={11} />
                           <span>Đấu trường</span>
+                        </button>
+                      )}
+                      {onExportDocx && (
+                        <button
+                          type="button"
+                          onClick={() => onExportDocx(node)}
+                          className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-blue-300 hover:text-white bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title={`Xuất đề thi chuẩn Bộ GD&ĐT ra file Word từ "${node.name}"`}
+                        >
+                          <FileText size={11} />
+                          <span>Xuất Word</span>
                         </button>
                       )}
                       {hasWritePermission && (

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Eye, ToggleLeft, ToggleRight, Trash2, ListTree, TableProperties, Plus, HelpCircle, Send, Play } from 'lucide-react';
+import { Eye, ToggleLeft, ToggleRight, Trash2, ListTree, TableProperties, Plus, HelpCircle, Send, Play, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
@@ -28,6 +28,7 @@ interface TopicTableSectionProps {
   handleDeleteTopic?: (id: string) => void;
   onAssignHomework?: (topic: BankTopic) => void;
   onLaunchArena?: (topic: BankTopic) => void;
+  onExportDocx?: (topic: BankTopic) => void;
   renderSortIcon: (field: string, currentField: string, isAsc: boolean) => React.ReactNode;
   Pagination: React.ComponentType<{ page: number; totalPages: number; onChange: (p: number) => void }>;
 }
@@ -55,6 +56,7 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
   handleDeleteTopic,
   onAssignHomework,
   onLaunchArena,
+  onExportDocx,
   renderSortIcon,
   Pagination,
 }) => {
@@ -134,6 +136,7 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
           onDelete={handleDeleteTopic}
           onAssignHomework={onAssignHomework}
           onLaunchArena={onLaunchArena}
+          onExportDocx={onExportDocx}
         />
       ) : (
         /* RENDER CHẾ ĐỘ BẢNG PHẲNG TRUYỀN THỐNG */
@@ -220,6 +223,17 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
                         >
                           <Play size={12} />
                           <span>Đấu trường</span>
+                        </button>
+                      )}
+                      {onExportDocx && (
+                        <button
+                          type="button"
+                          onClick={() => onExportDocx(topicItem)}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-blue-300 hover:text-white bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/40 rounded-lg transition cursor-pointer shadow-sm"
+                          title="Xuất file Word chuẩn Bộ GD&ĐT kèm ma trận đáp án"
+                        >
+                          <FileText size={12} />
+                          <span>Xuất Word</span>
                         </button>
                       )}
                     </div>

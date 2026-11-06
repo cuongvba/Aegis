@@ -30,6 +30,7 @@ namespace AegisQuiz.API.Controllers
         private readonly IExcelParserService _excelParser;
         private readonly IPdfExtractorService _pdfParser;
         private readonly IExamDeduplicationEngine _dedupEngine;
+        private readonly IExamExportTranspilerService _examTranspiler;
         private readonly AegisQuizDbContext _db;
         private readonly ArenaRoomManager _roomManager;
         private readonly ITenantContext _tenant;
@@ -43,6 +44,7 @@ namespace AegisQuiz.API.Controllers
             IExcelParserService excelParser,
             IPdfExtractorService pdfParser,
             IExamDeduplicationEngine dedupEngine,
+            IExamExportTranspilerService examTranspiler,
             AegisQuizDbContext db,
             ArenaRoomManager roomManager,
             ITenantContext tenant,
@@ -54,6 +56,7 @@ namespace AegisQuiz.API.Controllers
             _excelParser = excelParser;
             _pdfParser = pdfParser;
             _dedupEngine = dedupEngine;
+            _examTranspiler = examTranspiler;
             _db = db;
             _roomManager = roomManager;
             _tenant = tenant;
@@ -1161,6 +1164,72 @@ namespace AegisQuiz.API.Controllers
                 QuestionFailureRates = failRates,
                 Submissions = studentItems
             });
+        }
+
+        /// <summary>
+        /// [Aegis Sovereign Outbound] Xuất bản 1 mã đề thi ra file Word (.docx) chuẩn thể thức Bộ GD&ĐT nộp trường.
+        /// </summary>
+        [HttpPost("export/docx")]
+        public IActionResult ExportExamDocx([FromBody] ExamExportOptionsDto request)
+        {
+            if (request == null || request.Questions == null || request.Questions.Count == 0)
+            {
+                return BadRequest(new { success = false, message = "Danh sách câu hỏi không được để trống." });
+            }
+
+            try
+            {
+                string code = !string.IsNullOrWhiteSpace(request.ExamCodePrefix) ? request.ExamCodePrefix + "1" : "101";
+                byte[] bytes = _examTranspiler.ExportSingleExamToDocx(request.Questions, request, code);
+                string fileName = $"DeThi_{request.SubjectName.Replace(" ", "_")}_MaDe_{code}.docx";
+                return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi xuất bản file Word đề thi");
+                return StatusCode(500, new { success = false, message = "Lỗi tạo file Word: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// [Aegis Sovereign Outbound] Trộn đề thi thành N mã đề và đóng gói trọn bộ hồ sơ khảo thí nộp trường dạng file ZIP.
+        /// </summary>
+        [HttpPost("export/package-zip")]
+        public IActionResult ExportMultiVariantPackageZip([FromBody] ExamExportOptionsDto request)
+        {
+            if (request == null || request.Questions == null || request.Questions.Count == 0)
+            {
+                return BadRequest(new { success = false, message = "Danh sách câu hỏi không được để trống." });
+            }
+
+            try
+            {
+                var result = _examTranspiler.GenerateMultiVariantPackageZip(request.Questions, request);
+                if (result.ZipPackageBytes == null || result.ZipPackageBytes.Length == 0)
+                {
+                    return StatusCode(500, new { success = false, message = "Không tạo được gói tài liệu khảo thí." });
+                }
+
+                return File(result.ZipPackageBytes, "application/zip", result.ZipPackageFileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi tạo gói hồ sơ khảo thí ZIP");
+                return StatusCode(500, new { success = false, message = "Lỗi tạo gói ZIP: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// [Aegis Sovereign Outbound] Xuất phiếu trả lời trắc nghiệm quang học OMR định dạng HTML Vector A4 sẵn sàng in.
+        /// </summary>
+        [HttpPost("export/omr-sheet")]
+        public IActionResult ExportOmrSheet([FromBody] ExamExportOptionsDto request)
+        {
+            int total = request?.Questions?.Count ?? 40;
+            if (total <= 0) total = 40;
+
+            string html = _examTranspiler.GenerateOmrAnswerSheetHtml(total, request ?? new ExamExportOptionsDto());
+            return Content(html, "text/html; charset=utf-8");
         }
     }
 }

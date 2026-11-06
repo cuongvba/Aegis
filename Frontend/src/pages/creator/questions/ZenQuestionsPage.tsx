@@ -18,6 +18,7 @@ import { ZenArenaGameSelectorModal } from '../studio/components/ZenArenaGameSele
 import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigModal';
 import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
 import { ZenBankSaveModal } from '../studio/components/ZenBankSaveModal';
+import { ZenExamExportModal } from '../studio/components/ZenExamExportModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -43,6 +44,7 @@ export const ZenQuestionsPage: React.FC = () => {
   const navigate = useNavigate();
   const state = useZenQuestions(user);
   const launcher = useZenLauncher();
+  const [isExportModalOpen, setIsExportModalOpen] = React.useState(false);
 
   const selectedQuestions = React.useMemo(
     () => state.questions.filter(q => state.selectedQuestionIds.includes(q.id)),
@@ -231,6 +233,7 @@ export const ZenQuestionsPage: React.FC = () => {
           onOpenBatchTag={() => state.setShowBatchTagModal(true)}
           onAssignHomework={() => launcher.openHomeworkForQuestions(selectedQuestions, "Bài tập chọn lọc")}
           onLaunchArena={() => launcher.openArenaForQuestions(selectedQuestions, "Đấu trường chọn lọc")}
+          onExportDocx={() => setIsExportModalOpen(true)}
           onBatchRemoveContext={async () => {
             if (!window.confirm('Gỡ bỏ bài đọc hiểu khỏi các câu đã chọn?')) return;
             await learnerQuizService.batchRemoveContext(state.selectedQuestionIds);
@@ -242,6 +245,13 @@ export const ZenQuestionsPage: React.FC = () => {
         />
         <BatchContextModal isOpen={state.showBatchContextModal} onClose={() => state.setShowBatchContextModal(false)} selectedCount={state.selectedQuestionIds.length} contexts={state.availableContexts} onConfirm={async data => { state.setIsBatchAssigning(true); try { await learnerQuizService.batchAssignContext({ questionIds: state.selectedQuestionIds, ...data }); state.setSelectedQuestionIds([]); state.setShowBatchContextModal(false); state.fetchZenQuestionsData(); } catch { alert('Gán ngữ cảnh thất bại'); } finally { state.setIsBatchAssigning(false); } }} isAssigning={state.isBatchAssigning} />
         <BatchTagModal isOpen={state.showBatchTagModal} onClose={() => state.setShowBatchTagModal(false)} selectedCount={state.selectedQuestionIds.length} selectedQuestionIds={state.selectedQuestionIds} onApply={async data => { state.setIsBatchTagging(true); try { await learnerQuizService.batchAssignTags({ questionIds: state.selectedQuestionIds, ...data }); state.setSelectedQuestionIds([]); state.setShowBatchTagModal(false); state.fetchZenQuestionsData(); } catch { alert('Gắn thẻ thất bại'); } finally { state.setIsBatchTagging(false); } }} isSubmitting={state.isBatchTagging} />
+
+        <ZenExamExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          questions={selectedQuestions}
+          defaultTitle="ĐỀ THI TRÍCH XUẤT TỪ NGÂN HÀNG CÂU HỎI"
+        />
 
         {/* Realtime Arena & Homework Practice Modals */}
         <ZenArenaGameSelectorModal

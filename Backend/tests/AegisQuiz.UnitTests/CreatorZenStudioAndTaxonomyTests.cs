@@ -93,6 +93,7 @@ namespace AegisQuiz.UnitTests
                 null!,
                 null!,
                 _dedupEngine,
+                null!,
                 db,
                 null!,
                 new TestTenantContext(),
