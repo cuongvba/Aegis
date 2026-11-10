@@ -42,7 +42,16 @@ namespace AegisQuiz.API.Controllers
         {
             try
             {
-                // 1. Xác định Tenant hiện tại
+                // 1. Xác định User & Tenant hiện tại
+                string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                UserAccount? userAccount = null;
+                if (!string.IsNullOrEmpty(userId) && Guid.TryParse(userId, out var parsedUserId))
+                {
+                    userAccount = await _db.UserAccounts
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(u => u.Id == parsedUserId);
+                }
+
                 var tenantId = _tenantContext.CurrentTenantId;
                 if (tenantId == Guid.Empty)
                 {
@@ -53,6 +62,12 @@ namespace AegisQuiz.API.Controllers
                     {
                         tenantId = tid;
                     }
+                }
+
+                if ((tenantId == Guid.Empty || tenantId == Tenant.CommunityTenantId) &&
+                    userAccount != null && userAccount.TenantId != Guid.Empty)
+                {
+                    tenantId = userAccount.TenantId;
                 }
 
                 Tenant? tenant = null;
@@ -76,26 +91,12 @@ namespace AegisQuiz.API.Controllers
                           };
                 }
 
-                // 2. Tính toán Features theo Plan & Overrides
-                var enabledFeatures = PlanFeatureCatalog.GetFeaturesForPlan(tenant.Plan, tenant.FeatureFlagsJson);
-                var quotas = PlanFeatureCatalog.GetQuotasForPlan(tenant.Plan);
-
-                // 3. Lấy Domain Scopes được kích hoạt
-                var activeDomains = await _db.TenantDomainConfigs
-                    .AsNoTracking()
-                    .Where(d => d.TenantId == tenant.Id && d.IsEnabled)
-                    .Select(d => d.DomainCode)
-                    .ToListAsync();
-
-                if (!activeDomains.Any())
-                {
-                    activeDomains = new List<string> { "general", "education" };
-                }
-
-                // 4. Lấy thông tin User & Group (OrgUnit)
-                string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                string? role = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value ?? _tenantContext.CurrentRole;
-                Guid? orgUnitId = null;
+                // 2. Lấy thông tin User, Role, SubscriptionTier & Group (OrgUnit)
+                string? role = userAccount?.Role
+                            ?? User.FindFirst(ClaimTypes.Role)?.Value
+                            ?? User.FindFirst("role")?.Value
+                            ?? _tenantContext.CurrentRole;
+                Guid? orgUnitId = userAccount?.OrgUnitId;
                 string? orgUnitPath = null;
                 var userCapabilities = new List<string>();
 
@@ -103,18 +104,25 @@ namespace AegisQuiz.API.Controllers
                 {
                     var userRole = await _db.UserRoles
                         .AsNoTracking()
-                        .Where(r => r.UserId == userId && r.TenantId == tenant.Id && r.IsActive)
+                        .Where(r => r.UserId == userId && (r.TenantId == tenant.Id || r.TenantId == userAccount!.TenantId) && r.IsActive)
                         .FirstOrDefaultAsync();
 
                     if (userRole != null)
                     {
-                        role = userRole.Role;
-                        orgUnitId = userRole.OrgUnitId;
-                        if (orgUnitId.HasValue)
+                        if (role != AppRoles.SystemAdmin)
                         {
-                            var ou = await _db.OrganizationUnits.AsNoTracking().FirstOrDefaultAsync(x => x.Id == orgUnitId.Value);
-                            orgUnitPath = ou?.HierarchyPath;
+                            role = userRole.Role;
                         }
+                        orgUnitId ??= userRole.OrgUnitId;
+                    }
+
+                    if (orgUnitId.HasValue)
+                    {
+                        var ou = await _db.OrganizationUnits
+                            .IgnoreQueryFilters()
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(x => x.Id == orgUnitId.Value);
+                        orgUnitPath = ou?.HierarchyPath;
                     }
 
                     if (!string.IsNullOrEmpty(role))
@@ -127,6 +135,53 @@ namespace AegisQuiz.API.Controllers
                     role = AppRoles.GuestViewer;
                 }
 
+                var subscriptionTier = (userAccount?.SubscriptionTier
+                                     ?? User.FindFirst("subscriptionTier")?.Value
+                                     ?? "FREE").Trim().ToUpperInvariant();
+                var isPremium = (userAccount?.IsPremium ?? false)
+                             || subscriptionTier == "VIP"
+                             || subscriptionTier == "PRO"
+                             || subscriptionTier == "ENTERPRISE"
+                             || role == AppRoles.SystemAdmin;
+
+                if (role == AppRoles.SystemAdmin && (subscriptionTier == "FREE" || string.IsNullOrEmpty(subscriptionTier)))
+                {
+                    subscriptionTier = "ENTERPRISE";
+                }
+
+                // 3. Tính toán Effective Plan kết hợp giữa Tenant Plan, User SubscriptionTier và SystemAdmin
+                var effectivePlan = tenant.Plan;
+                if (role == AppRoles.SystemAdmin || subscriptionTier == "ENTERPRISE" || subscriptionTier == "GLOBAL")
+                {
+                    if (effectivePlan < TenantPlan.Enterprise)
+                    {
+                        effectivePlan = TenantPlan.Enterprise;
+                    }
+                }
+                else if (subscriptionTier == "VIP" || subscriptionTier == "PRO" || isPremium)
+                {
+                    if (effectivePlan < TenantPlan.Professional)
+                    {
+                        effectivePlan = TenantPlan.Professional;
+                    }
+                }
+
+                var enabledFeatures = PlanFeatureCatalog.GetFeaturesForPlan(effectivePlan, tenant.FeatureFlagsJson);
+                var quotas = PlanFeatureCatalog.GetQuotasForPlan(effectivePlan);
+
+                // 4. Lấy Domain Scopes được kích hoạt
+                var activeDomains = await _db.TenantDomainConfigs
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(d => d.TenantId == tenant.Id && d.IsEnabled)
+                    .Select(d => d.DomainCode)
+                    .ToListAsync();
+
+                if (!activeDomains.Any())
+                {
+                    activeDomains = new List<string> { "general", "education" };
+                }
+
                 var response = new
                 {
                     tenant = new
@@ -134,7 +189,7 @@ namespace AegisQuiz.API.Controllers
                         id = tenant.Id,
                         code = tenant.Code,
                         name = tenant.Name,
-                        plan = tenant.Plan.ToString(),
+                        plan = effectivePlan.ToString(),
                         scaleType = tenant.ScaleType.ToString(),
                         primaryColor = tenant.PrimaryColor,
                         logoUrl = tenant.LogoUrl,
@@ -147,6 +202,8 @@ namespace AegisQuiz.API.Controllers
                     {
                         id = userId,
                         role = role,
+                        subscriptionTier = subscriptionTier,
+                        isPremium = isPremium,
                         orgUnitId = orgUnitId,
                         orgUnitPath = orgUnitPath,
                         capabilities = userCapabilities

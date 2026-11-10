@@ -28,8 +28,8 @@ export const StudioPaywallTeaser: React.FC = () => {
 
         <div className="space-y-3">
           <button
-            onClick={() => navigate('/paywall')}
-            className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-400 hover:to-purple-500 active:scale-98 transition-all flex items-center justify-center gap-2"
+            onClick={() => navigate('/paywall?plan=PRO&feature=studio:split_screen')}
+            className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-400 hover:to-purple-500 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>{t('paywall.upgradeNow')}</span>

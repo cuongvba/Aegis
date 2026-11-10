@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Sparkles, CheckCircle2, ShieldCheck, Crown } from 'lucide-react';
 import { PaymentMethodTabs, PaymentMethod } from './components/PaymentMethodTabs';
@@ -8,20 +8,53 @@ import { ChinaWalletSection } from './components/ChinaWalletSection';
 import { InternationalCardSection } from './components/InternationalCardSection';
 import { Web3CryptoSection } from './components/Web3CryptoSection';
 import { BuyMeCoffeeModal } from '@/features/coffee/BuyMeCoffeeModal';
+import { useAuthContext } from '@/app/providers/AuthProvider';
+import { useEntitlement } from '@/shared/hooks/useEntitlement';
 
 export function PaywallPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, i18n } = useTranslation('paywall');
+  const { user, updateUser } = useAuthContext();
+  const { plan: currentEntitlementPlan, refresh: refreshEntitlements } = useEntitlement();
   const [isCoffeeOpen, setIsCoffeeOpen] = useState(false);
 
-  // Đọc user từ localStorage
-  const userRaw = localStorage.getItem('user');
-  const user = userRaw ? JSON.parse(userRaw) : null;
-  const [isVip, setIsVip] = useState<boolean>(!!user?.isPremium);
+  const requestedPlanParam = (searchParams.get('plan') || '').toUpperCase();
+  const initialPlanTier: 'PRO' | 'ENTERPRISE' =
+    requestedPlanParam === 'ENTERPRISE' || requestedPlanParam === 'GLOBAL'
+      ? 'ENTERPRISE'
+      : 'PRO';
 
   // Chọn gói đăng ký
-  const [planTier, setPlanTier] = useState<'PRO' | 'ENTERPRISE'>('PRO');
+  const [planTier, setPlanTier] = useState<'PRO' | 'ENTERPRISE'>(initialPlanTier);
   const amountVnd = planTier === 'PRO' ? 299000 : 999000;
+
+  useEffect(() => {
+    if (requestedPlanParam === 'ENTERPRISE' || requestedPlanParam === 'GLOBAL') {
+      setPlanTier('ENTERPRISE');
+    } else if (requestedPlanParam === 'PRO' || requestedPlanParam === 'PROFESSIONAL') {
+      setPlanTier('PRO');
+    }
+  }, [requestedPlanParam]);
+
+  const userTier = (user?.subscriptionTier || '').toUpperCase();
+  const isEnterpriseUser =
+    user?.role === 'SystemAdmin' ||
+    userTier === 'ENTERPRISE' ||
+    currentEntitlementPlan === 'Enterprise' ||
+    currentEntitlementPlan === 'Global';
+  const isProUser =
+    isEnterpriseUser ||
+    Boolean(user?.isPremium) ||
+    userTier === 'VIP' ||
+    userTier === 'PRO' ||
+    currentEntitlementPlan === 'Professional';
+
+  const [justPaidTier, setJustPaidTier] = useState<'PRO' | 'ENTERPRISE' | null>(null);
+  const isSelectedPlanAlreadyActive =
+    justPaidTier === planTier ||
+    isEnterpriseUser ||
+    (planTier === 'PRO' && isProUser && requestedPlanParam !== 'ENTERPRISE');
 
   // Tự động định tuyến Tab theo Locale
   const resolveDefaultTab = (): PaymentMethod => {
@@ -38,11 +71,11 @@ export function PaywallPage() {
   }, [i18n.language]);
 
   const handlePaymentSuccess = () => {
-    setIsVip(true);
-    if (user) {
-      const updatedUser = { ...user, isPremium: true, subscriptionTier: 'VIP' };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-    }
+    const upgradedTier = planTier === 'ENTERPRISE' ? 'ENTERPRISE' : 'VIP';
+    setJustPaidTier(planTier);
+    updateUser({ isPremium: true, subscriptionTier: upgradedTier });
+    window.dispatchEvent(new CustomEvent('aegis:user:updated'));
+    refreshEntitlements();
   };
 
   return (
@@ -68,20 +101,38 @@ export function PaywallPage() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 space-y-8">
-        {/* Banner Đã kích hoạt VIP */}
-        {isVip ? (
+        {/* Banner Đã kích hoạt VIP / ENTERPRISE */}
+        {isSelectedPlanAlreadyActive ? (
           <div className="p-8 rounded-3xl bg-gradient-to-br from-emerald-950/40 via-slate-900/80 to-slate-950 border border-emerald-500/30 text-center space-y-4 shadow-2xl">
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-white">{t('vip_activated_title')}</h2>
-            <p className="text-slate-300 text-sm max-w-xl mx-auto">{t('vip_activated_desc')}</p>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-emerald-500/20"
-            >
-              {t('back_dashboard')}
-            </button>
+            <h2 className="text-2xl font-bold text-white">
+              {isEnterpriseUser
+                ? 'Tài khoản của bạn đã kích hoạt Gói Doanh Nghiệp (ENTERPRISE)'
+                : t('vip_activated_title')}
+            </h2>
+            <p className="text-slate-300 text-sm max-w-xl mx-auto">
+              {isEnterpriseUser
+                ? 'Bạn đang sở hữu đặc quyền tối cao toàn hệ sinh thái Aegis Global: Mở khóa 100% Hội đồng AI Symposium, IRT 3-PL CAT, White-Labeling và Split-Screen Studio.'
+                : t('vip_activated_desc')}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              {!isEnterpriseUser && (
+                <button
+                  onClick={() => setPlanTier('ENTERPRISE')}
+                  className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-amber-500/20 cursor-pointer"
+                >
+                  Nâng cấp lên Gói ENTERPRISE →
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-emerald-500/20 cursor-pointer"
+              >
+                {t('back_dashboard')}
+              </button>
+            </div>
           </div>
         ) : (
           <>

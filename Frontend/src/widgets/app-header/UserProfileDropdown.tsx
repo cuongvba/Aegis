@@ -110,11 +110,16 @@ export function UserProfileDropdown() {
               <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase tracking-wide">
                 {user.role}
               </span>
-              {user.isPremium && (
+              {user.role === 'SystemAdmin' ||
+              (user.subscriptionTier || '').toUpperCase() === 'ENTERPRISE' ? (
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 uppercase tracking-wide">
+                  ENTERPRISE
+                </span>
+              ) : user.isPremium || (user.subscriptionTier || '').toUpperCase() === 'VIP' ? (
                 <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   PRO VIP
                 </span>
-              )}
+              ) : null}
             </div>
           </div>
 

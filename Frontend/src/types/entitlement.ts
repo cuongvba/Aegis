@@ -57,6 +57,8 @@ export interface TenantInfo {
 export interface UserEntitlementContext {
   id?: string;
   role: string;
+  subscriptionTier?: string;
+  isPremium?: boolean;
   orgUnitId?: string;
   orgUnitPath?: string;
   capabilities: string[];

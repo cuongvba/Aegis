@@ -24,8 +24,8 @@ export const WhiteLabelPaywallTeaser: React.FC = () => {
 
         <div className="space-y-3">
           <button
-            onClick={() => navigate('/paywall')}
-            className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 active:scale-98 transition-all flex items-center justify-center gap-2"
+            onClick={() => navigate('/paywall?plan=ENTERPRISE&feature=branding:white_label_theming')}
+            className="w-full py-3 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-500 hover:to-indigo-500 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>{t('paywall.upgradeNow')}</span>

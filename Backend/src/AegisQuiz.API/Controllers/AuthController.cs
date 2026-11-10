@@ -378,6 +378,11 @@ namespace AegisQuiz.API.Controllers
                 user.FailedLoginAttempts = 0;
                 user.LockoutEnd = null;
                 user.LastLoginAt = DateTime.UtcNow;
+                if (user.Role == AppRoles.SystemAdmin && (string.IsNullOrEmpty(user.SubscriptionTier) || user.SubscriptionTier == "FREE"))
+                {
+                    user.SubscriptionTier = "ENTERPRISE";
+                    user.IsPremium = true;
+                }
                 user.UpdatedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
 
@@ -1387,6 +1392,15 @@ namespace AegisQuiz.API.Controllers
 
         private static object BuildUserProfileDto(UserAccount user, Tenant? tenant = null)
         {
+            var effectiveTier = user.Role == AppRoles.SystemAdmin && (string.IsNullOrEmpty(user.SubscriptionTier) || user.SubscriptionTier == "FREE")
+                ? "ENTERPRISE"
+                : (user.SubscriptionTier ?? "FREE");
+            var effectivePremium = user.IsPremium
+                || effectiveTier == "VIP"
+                || effectiveTier == "PRO"
+                || effectiveTier == "ENTERPRISE"
+                || user.Role == AppRoles.SystemAdmin;
+
             return new
             {
                 id = user.Id.ToString(),
@@ -1401,8 +1415,8 @@ namespace AegisQuiz.API.Controllers
                 orgUnitId = user.OrgUnitId?.ToString(),
                 orgUnitName = user.OrgUnit?.Name,
                 orgUnitHierarchyPath = user.OrgUnit?.HierarchyPath,
-                isPremium = user.IsPremium,
-                subscriptionTier = user.SubscriptionTier,
+                isPremium = effectivePremium,
+                subscriptionTier = effectiveTier,
                 subscriptionExpiresAt = user.SubscriptionExpiresAt,
                 isTwoFactorEnabled = user.IsTwoFactorEnabled,
                 createdAt = user.CreatedAt,

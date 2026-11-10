@@ -85,19 +85,27 @@ export const PaywallModal: React.FC = () => {
           <button
             type="button"
             onClick={closePaywall}
-            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+            className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer"
           >
             Để sau
           </button>
-          <a
-            href="mailto:sales@aegis.vn?subject=Đăng ký nâng cấp gói dịch vụ Aegis"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg shadow-md shadow-indigo-500/20 transition flex items-center gap-1.5"
+          <button
+            type="button"
+            onClick={() => {
+              const targetTier =
+                meta.requiredPlan === 'Enterprise' || meta.requiredPlan === 'Global'
+                  ? 'ENTERPRISE'
+                  : 'PRO';
+              const targetUrl = `/paywall?plan=${targetTier}&feature=${encodeURIComponent(activePaywallFeature)}`;
+              closePaywall();
+              window.history.pushState({}, '', targetUrl);
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-lg shadow-md shadow-indigo-500/20 transition flex items-center gap-1.5 cursor-pointer"
           >
             <span>Nâng Cấp Gói Ngay</span>
             <span>→</span>
-          </a>
+          </button>
         </div>
       </div>
     </div>

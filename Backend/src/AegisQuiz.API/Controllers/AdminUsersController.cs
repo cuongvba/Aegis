@@ -372,6 +372,7 @@ namespace AegisQuiz.API.Controllers
                     }
                 }
 
+                var effectiveTenantId = user.TenantId != Guid.Empty ? user.TenantId : tenantId;
                 var assignedBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "admin";
 
                 // Cập nhật Họ tên
@@ -393,11 +394,12 @@ namespace AegisQuiz.API.Controllers
 
                     // Đồng bộ role vào UserRoles
                     var existingRole = await _db.UserRoles
-                        .FirstOrDefaultAsync(r => r.UserId == user.Id.ToString() && r.TenantId == tenantId && r.IsActive);
+                        .FirstOrDefaultAsync(r => r.UserId == user.Id.ToString() && (r.TenantId == effectiveTenantId || r.TenantId == tenantId) && r.IsActive);
 
                     if (existingRole != null)
                     {
                         existingRole.Role = cleanRole;
+                        existingRole.TenantId = effectiveTenantId;
                         existingRole.OrgUnitId = request.OrgUnitId ?? user.OrgUnitId;
                         existingRole.AssignedBy = assignedBy;
                     }
@@ -407,7 +409,7 @@ namespace AegisQuiz.API.Controllers
                         {
                             Id = Guid.NewGuid(),
                             UserId = user.Id.ToString(),
-                            TenantId = tenantId,
+                            TenantId = effectiveTenantId,
                             Role = cleanRole,
                             OrgUnitId = request.OrgUnitId ?? user.OrgUnitId,
                             AssignedBy = assignedBy,
@@ -429,7 +431,8 @@ namespace AegisQuiz.API.Controllers
                     else
                     {
                         var orgExists = await _db.OrganizationUnits
-                            .AnyAsync(o => o.Id == request.OrgUnitId.Value && o.TenantId == tenantId);
+                            .IgnoreQueryFilters()
+                            .AnyAsync(o => o.Id == request.OrgUnitId.Value && (isSystemAdmin || o.TenantId == effectiveTenantId));
                         if (!orgExists)
                             return BadRequest(new { message = "Đơn vị phòng ban không tồn tại trong Tenant này." });
 
@@ -446,7 +449,25 @@ namespace AegisQuiz.API.Controllers
                 {
                     var cleanTier = request.SubscriptionTier.Trim().ToUpperInvariant();
                     user.SubscriptionTier = cleanTier;
-                    user.IsPremium = cleanTier == "VIP" || cleanTier == "ENTERPRISE";
+                    user.IsPremium = cleanTier == "VIP" || cleanTier == "PRO" || cleanTier == "ENTERPRISE";
+
+                    // Nếu SystemAdmin / TenantAdmin nâng cấp lên ENTERPRISE hoặc VIP, đồng bộ Plan của Tenant chủ quản
+                    if ((user.Role == AppRoles.SystemAdmin || user.Role == AppRoles.TenantAdmin) &&
+                        effectiveTenantId != Guid.Empty && effectiveTenantId != Tenant.CommunityTenantId)
+                    {
+                        var userTenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Id == effectiveTenantId);
+                        if (userTenant != null)
+                        {
+                            if (cleanTier == "ENTERPRISE" && userTenant.Plan < TenantPlan.Enterprise)
+                            {
+                                userTenant.Plan = TenantPlan.Enterprise;
+                            }
+                            else if ((cleanTier == "VIP" || cleanTier == "PRO") && userTenant.Plan < TenantPlan.Professional)
+                            {
+                                userTenant.Plan = TenantPlan.Professional;
+                            }
+                        }
+                    }
                 }
 
                 if (request.SubscriptionExpiresAt.HasValue)
@@ -473,7 +494,17 @@ namespace AegisQuiz.API.Controllers
                 return Ok(new
                 {
                     message = "Cập nhật thông tin người dùng thành công.",
-                    userId = user.Id
+                    userId = user.Id,
+                    user = new
+                    {
+                        id = user.Id.ToString(),
+                        email = user.Email,
+                        role = user.Role,
+                        tenantId = user.TenantId.ToString(),
+                        orgUnitId = user.OrgUnitId?.ToString(),
+                        subscriptionTier = user.SubscriptionTier,
+                        isPremium = user.IsPremium
+                    }
                 });
             }
             catch (Exception ex)

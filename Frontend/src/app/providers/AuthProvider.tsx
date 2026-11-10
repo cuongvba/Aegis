@@ -90,16 +90,36 @@ function readFromStorage(): { token: string | null; user: UserProfile | null } {
 
   try {
     const parsed = JSON.parse(userRaw) as Partial<UserProfile> & { role?: string };
+    const normalizedRole = normalizeRole(parsed.role);
+    const rawTier = (parsed.subscriptionTier || '').toUpperCase();
+    const effectiveTier =
+      normalizedRole === AppRole.SystemAdmin && (!rawTier || rawTier === 'FREE')
+        ? 'ENTERPRISE'
+        : rawTier || (parsed.isPremium ? 'VIP' : 'FREE');
+    const effectivePremium =
+      Boolean(parsed.isPremium) ||
+      effectiveTier === 'VIP' ||
+      effectiveTier === 'PRO' ||
+      effectiveTier === 'ENTERPRISE' ||
+      normalizedRole === AppRole.SystemAdmin;
+
     const user: UserProfile = {
-      id:          parsed.id ?? '',
-      name:        parsed.name,
-      email:       parsed.email,
-      role:        normalizeRole(parsed.role),
-      isPremium:   parsed.isPremium ?? false,
-      tenantId:    parsed.tenantId,
-      orgUnitId:   parsed.orgUnitId,
-      orgUnitName: parsed.orgUnitName,
-      ou:          parsed.ou,
+      id:                    parsed.id ?? '',
+      name:                  parsed.name,
+      email:                 parsed.email,
+      phoneNumber:           parsed.phoneNumber,
+      avatar:                parsed.avatar,
+      role:                  normalizedRole,
+      isPremium:             effectivePremium,
+      subscriptionTier:      effectiveTier,
+      subscriptionExpiresAt: parsed.subscriptionExpiresAt,
+      tenantId:              parsed.tenantId,
+      tenantName:            parsed.tenantName,
+      tenantCode:            parsed.tenantCode,
+      orgUnitId:             parsed.orgUnitId,
+      orgUnitName:           parsed.orgUnitName,
+      orgUnitHierarchyPath:  parsed.orgUnitHierarchyPath,
+      ou:                    parsed.ou,
     };
     return { token, user };
   } catch {
@@ -178,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsInitializing(false);
   }, []);
 
-  // ── Cross-tab sync ─────────────────────────────────────────────────
+  // ── Cross-tab & Same-tab sync ──────────────────────────────────────
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'token' || e.key === 'user') {
@@ -188,8 +208,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    const handleUserUpdated = () => {
+      const { token: newToken, user: newUser } = readFromStorage();
+      setToken(newToken);
+      setUser(newUser);
+    };
+
     window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener('aegis:user:updated', handleUserUpdated);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('aegis:user:updated', handleUserUpdated);
+    };
   }, []);
 
   // ── Auto-logout on 401 (from apiClient interceptor) ───────────────

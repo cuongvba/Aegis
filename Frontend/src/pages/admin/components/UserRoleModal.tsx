@@ -133,13 +133,44 @@ export function UserRoleModal({ user, orgUnits, tenants, isSystemAdmin, isOpen, 
 
     setIsSubmitting(true);
     try {
+      const normalizedTier = (subscriptionTier || 'FREE').toUpperCase();
       await api.put(`/api/admin/users/${user.id}`, {
         role,
         orgUnitId: orgUnitId || null,
         targetTenantId: targetTenantId || null,
-        subscriptionTier,
+        subscriptionTier: normalizedTier,
         isActive
       });
+
+      // Nếu người dùng đang chỉnh sửa chính tài khoản của mình -> đồng bộ ngay localStorage & EntitlementContext 0ms
+      try {
+        const storedRaw = localStorage.getItem('user');
+        if (storedRaw) {
+          const parsed = JSON.parse(storedRaw);
+          if (
+            (parsed.id && String(parsed.id).toLowerCase() === String(user.id).toLowerCase()) ||
+            (parsed.email && String(parsed.email).toLowerCase() === String(user.email).toLowerCase())
+          ) {
+            const updatedCurrentUser = {
+              ...parsed,
+              role,
+              subscriptionTier: normalizedTier,
+              isPremium:
+                normalizedTier === 'VIP' ||
+                normalizedTier === 'PRO' ||
+                normalizedTier === 'ENTERPRISE' ||
+                role === AppRole.SystemAdmin,
+              tenantId: targetTenantId || parsed.tenantId,
+              orgUnitId: orgUnitId || undefined,
+            };
+            localStorage.setItem('user', JSON.stringify(updatedCurrentUser));
+            window.dispatchEvent(new CustomEvent('aegis:user:updated'));
+            window.dispatchEvent(new CustomEvent('aegis:entitlements:refresh'));
+          }
+        }
+      } catch {
+        // Ignore storage sync error
+      }
 
       onSuccess();
       onClose();
