@@ -409,15 +409,50 @@ namespace AegisQuiz.API.Controllers
 
                 var crtCode = FormatCreatorCode(rawCreatorCode);
 
-                // Cấp 4: TP + 8 ký tự Hex (Ví dụ: TP9967D005, hoàn toàn không có dấu -)
+                // Cấp 4: TP + 8 ký tự Hex (Ví dụ: TP9967D005) hoặc mã tùy chỉnh từ Giáo viên
                 var hexCode = Guid.NewGuid().ToString("N")[..8].ToUpper();
-                var topicCode = "TP" + hexCode;
+                var topicCode = !string.IsNullOrWhiteSpace(request.CustomTopicCode)
+                    ? request.CustomTopicCode.Trim().ToUpperInvariant().Replace(" ", "_")
+                    : ("TP" + hexCode);
 
-                // Bảo đảm cây phả hệ 3 cấp cha: STUDIO -> YMD -> Creator tồn tại
+                if (await _db.BankTopics.AnyAsync(t => t.Code == topicCode))
+                {
+                    topicCode = $"{topicCode}_{hexCode[..4]}";
+                }
+
                 var now = DateTime.UtcNow;
-                var creatorFolder = await EnsureStudioHierarchyAsync(tenantId, userId, crtCode, now);
-
                 var ymd = now.ToString("yyyyMMdd");
+
+                BankTopic parentFolder;
+                string materializedPath;
+                int depthLevel;
+
+                if (request.ParentTopicId.HasValue && request.ParentTopicId.Value != Guid.Empty)
+                {
+                    var chosenParent = await _db.BankTopics.FirstOrDefaultAsync(t => t.Id == request.ParentTopicId.Value);
+                    if (chosenParent != null)
+                    {
+                        parentFolder = chosenParent;
+                        var parentPath = string.IsNullOrWhiteSpace(chosenParent.MaterializedPath)
+                            ? $"/{chosenParent.Code}"
+                            : chosenParent.MaterializedPath.TrimEnd('/');
+                        materializedPath = $"{parentPath}/{topicCode}/";
+                        depthLevel = Math.Max(1, chosenParent.DepthLevel) + 1;
+                    }
+                    else
+                    {
+                        parentFolder = await EnsureStudioHierarchyAsync(tenantId, userId, crtCode, now);
+                        materializedPath = $"/STUDIO/{ymd}/{crtCode}/{topicCode}/";
+                        depthLevel = 4;
+                    }
+                }
+                else
+                {
+                    // Bảo đảm cây phả hệ 3 cấp cha: STUDIO -> YMD -> Creator tồn tại
+                    parentFolder = await EnsureStudioHierarchyAsync(tenantId, userId, crtCode, now);
+                    materializedPath = $"/STUDIO/{ymd}/{crtCode}/{topicCode}/";
+                    depthLevel = 4;
+                }
 
                 var topic = new BankTopic
                 {
@@ -425,12 +460,12 @@ namespace AegisQuiz.API.Controllers
                     Code = topicCode,
                     Name = string.IsNullOrWhiteSpace(request.Title) ? $"Đề Thi Studio {DateTime.Now:dd/MM/yyyy HH:mm}" : request.Title,
                     Description = $"Đề thi tạo từ Creator Studio bởi {crtCode}",
-                    CategoryCode = request.SubjectCode ?? "GENERAL",
-                    DomainCode = request.DomainCode ?? "EDUCATION",
+                    CategoryCode = request.SubjectCode ?? parentFolder.CategoryCode ?? "GENERAL",
+                    DomainCode = request.DomainCode ?? parentFolder.DomainCode ?? "EDUCATION",
                     Scope = tenantId != Guid.Empty ? "TENANT" : "COMMUNITY",
-                    MaterializedPath = $"/STUDIO/{ymd}/{crtCode}/{topicCode}/",
-                    DepthLevel = 4,
-                    ParentId = creatorFolder.Id,
+                    MaterializedPath = materializedPath,
+                    DepthLevel = depthLevel,
+                    ParentId = parentFolder.Id,
                     VisibilityScope = TopicVisibility.Public,
                     Enabled = true,
                     TenantId = tenantId,

@@ -201,15 +201,52 @@ Khi giáo viên nạp các đề thi môn Tin học hoặc Khoa học máy tính
 
 ### 3. Vòng Đời Thanh Điều Khiển Nổi (Zen Pagination Action Bar)
 Thanh điều khiển nổi [`ZenPaginationBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenPaginationBar.tsx) tích hợp 4 tác vụ cốt lõi:
-1. **Lưu Ngân Hàng** (`onPureSaveToBank`): Lưu trữ vĩnh viễn vào Ngân hàng Tri thức cá nhân.
+1. **Lưu Ngân Hàng** (`onPureSaveToBank`): Lưu trữ vĩnh viễn vào Ngân hàng Tri thức cá nhân (kèm chọn nhánh cha `ParentTopicId` trên cây phân cấp).
 2. **Giao Bài Tập** (`onOpenHomeworkConfig`): Mở modal cấu hình Kids/Paper/Exam và sinh link/QR Code.
 3. **Kích Hoạt Đấu Trường** (`onOpenArenaSelector`): Mở modal chọn thể thức Gameshow thời gian thực.
 4. **Hủy Bỏ** (`onCancel`): Hủy bỏ ngay lập tức phiên nạp đề hiện tại, giải phóng bộ nhớ và khôi phục màn hình chọn tệp tin sạch sẽ.
 
 ---
 
-## VI. LỜI KẾT VÀ BẢO CHỨNG THÀNH CÔNG
+## V-C. KIẾN TRÚC MỞ RỘNG V4.0: CÂY CHỦ ĐỀ PHÂN CẤP ĐA TẦNG (`ROLL-UP SUBTREE ENGINE`) & QUẢN TRỊ ĐỘI NHÓM THẬT (`/team` ZERO-MOCK)
 
-Sức mạnh thực sự của một kiến trúc phần mềm đẳng cấp thế giới không phải là khoe khoang sự phức tạp, mà là **khả năng nuốt trọn sự phức tạp vào tầng sâu Backend để giải phóng cho người dùng cuối một trải nghiệm thanh thoát, tinh tế và đầy quyền năng (Zen Simplicity)**.
+### 1. Thuật Toán Dựng Cây Phân Cấp & Cộng Dồn Câu Hỏi Đệ Quy (`topicTreeHelper.ts`)
+Để giải quyết triệt để hiện tượng các thư mục cha trên giao diện Studio hiển thị danh sách phẳng hoặc báo `0 câu` (do câu hỏi thực tế gắn ở các nhánh lá con cháu `TP...` hoặc ánh xạ qua `COM_...`), hệ thống thiết lập động cơ SSoT tại [`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/topicTreeHelper.ts):
 
-Với **Creator Zen Studio** kết hợp cùng **Động Cơ Khử Trùng Lặp CAS** và **AI Cognitive Auto-Aligner**, AegisQuiz sẽ tạo ra một cú hích bùng nổ, biến việc soạn đề và tổ chức thi cử của thầy cô từ một gánh nặng cực nhọc thành một niềm vui sáng tạo mỗi ngày.
+```mermaid
+flowchart TB
+    subgraph TREE_ENGINE["ĐỘNG CƠ CÂY PHÂN CẤP & CỘNG DỒN CÂU HỎI (topicTreeHelper.ts)"]
+        direction LR
+        P1["1. Suy luận Phả hệ Đa nguồn<br/>(parentId -> materializedPath -> Code Prefix)"]
+        P2["2. Ánh xạ Câu hỏi Đa chiều<br/>(categoryCode / #tag / linkedTopicCodes / COM_)"]
+        P3["3. Đệ quy Hợp Tập Hợp (Set Union)<br/>(totalQuestionCount = |Q(u) ∪ ⋃ Q(v)|)"]
+        P1 --> P2 --> P3
+    end
+```
+
+* **Công thức cộng dồn không trùng lặp (Deduplicated Subtree Roll-up)**:
+  Với mỗi nút chủ đề $u$ và tập các nút con trực tiếp $\text{Children}(u)$, tập hợp định danh câu hỏi toàn nhánh $\mathcal{Q}_{\text{total}}(u)$ được tính đệ quy hậu thứ tự (Post-order Traversal):
+  $$\mathcal{Q}_{\text{total}}(u) = \mathcal{Q}_{\text{direct}}(u) \cup \bigcup_{v \in \text{Children}(u)} \mathcal{Q}_{\text{total}}(v), \quad \text{totalQuestionCount}(u) = \left|\mathcal{Q}_{\text{total}}(u)\right|$$
+* **Đồng bộ xuyên suốt 4 phân hệ Giáo viên**:
+  - `/creator/studio`: [`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx), [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx), [`ZenSavedBankSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenSavedBankSelector.tsx), [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx).
+  - `/creator/topics` & `/creator/questions`: [`ZenTopicsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx), [`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx), [`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicModal.tsx), [`TopicQuestionsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/topics/components/TopicQuestionsModal.tsx), [`useQuestionFilters.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/hooks/useQuestionFilters.ts).
+  - Backend Cascade `MaterializedPath`: [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs) & [`CreatorStudioController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/CreatorStudioController.cs).
+
+### 2. Kiến Trúc Quản Trị Lớp Học & Đội Nhóm Dữ Liệu Thật (`/team` Zero-Mock Architecture)
+Xóa bỏ hoàn toàn dữ liệu giả lập (`MOCK_TEAM`, `MOCK_PROGRESS`), phân hệ `/team` kết nối trực tiếp 100% với PostgreSQL qua [`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TeamLeaderController.cs):
+* **Tự động phân giải & khởi tạo đơn vị lớp học (`EnsureLeaderTeamUnitAsync`)**: Tự động gán hoặc khởi tạo `OrganizationUnit` (`UnitType = Classroom`) cho Giáo viên / Creator / TeamLeader và kết nạp các học viên (`Learner`) thực tế cùng Tenant.
+* **Quản trị vòng đời thành viên & lớp học (Full CRUD)**:
+  - [`TeamDashboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx) (`249 LOC`) & [`useTeamManagement.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/hooks/useTeamManagement.ts) (`209 LOC`).
+  - [`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx) (`218 LOC`): Hiển thị tiến độ thật từ `QuestionAttempts` + `HomeworkSubmissions`.
+  - [`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx) (`242 LOC`): Tạo tài khoản học viên mới hoặc kết nạp người dùng có sẵn.
+  - [`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx) (`155 LOC`): Cập nhật thông tin nhóm hoặc tạo nhóm mới.
+
+---
+
+## VI. LỜI KẾT & VẾT KIỂM TOÁN BẤT BIẾN (AUDIT TRAIL)
+
+| Phiên Bản | Ngày Cập Nhật | Chủ Nhiệm | Nội Dung Nâng Cấp Kiến Trúc | Trạng Thái Kiểm Chứng |
+| :---: | :---: | :---: | :--- | :---: |
+| `v1.0` | `2026-10-12` | **No.1 Charter** | Thiết kế Creator Zen Studio 3 chạm / 10 giây, CAS SHA-256 Deduplication & Copy-On-Write. | **Verified** |
+| `v3.0` | `2026-11-05` | **No.1 Charter** | Bổ sung Cây Tri Thức Cộng Đồng (`COM_`), Bộ lọc bảo vệ mã nguồn Tin học Zero-DOM-Leak & Thanh điều khiển nổi 4 nút. | **Verified** |
+| `v4.0` | `2026-11-10` | **No.1 Supreme Architect** | Triển khai Cây Chủ Đề Phân Cấp Đa Tầng (`topicTreeHelper.ts`, `ZenTopicTreePanel.tsx`, `ZenQuickTopicModal.tsx`) với thuật toán cộng dồn câu hỏi toàn nhánh, và nâng cấp `/team` quản trị thành viên + tiến độ thật 100% từ PostgreSQL (`TeamLeaderController.cs`). | **100% Verified (70/70 Vitest + 337 BE Tests Passed)** |

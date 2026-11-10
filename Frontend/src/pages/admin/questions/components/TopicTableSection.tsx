@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { BankTopic } from '../types';
 import { getTopicFullPath } from '../types';
 import { TopicTreeTable } from './TopicTreeTable';
+import { buildHierarchicalTopicTree } from '@/shared/lib/quiz/topicTreeHelper';
 
 interface TopicTableSectionProps {
   topics: BankTopic[];
@@ -63,16 +64,15 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
   const { t } = useTranslation('admin_questions');
   const [viewMode, setViewMode] = useState<'tree' | 'flat'>('tree');
 
-  // Tính số lượng câu hỏi thực tế theo từng mã chủ đề
+  // Tính số lượng câu hỏi thực tế (cộng dồn cả nhánh con Roll-up) theo từng mã chủ đề
   const questionCountsByTopic = useMemo(() => {
+    const { nodeByCode } = buildHierarchicalTopicTree(topics, questions as any[]);
     const map: Record<string, number> = {};
-    questions.forEach((q) => {
-      if (q.categoryCode) {
-        map[q.categoryCode] = (map[q.categoryCode] || 0) + 1;
-      }
+    nodeByCode.forEach((node) => {
+      map[node.code] = node.totalQuestionCount;
     });
     return map;
-  }, [questions]);
+  }, [topics, questions]);
 
   const handleSort = (field: string) => {
     if (tSortField === field) setTSortAsc(!tSortAsc);
@@ -126,6 +126,7 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
       {viewMode === 'tree' ? (
         <TopicTreeTable
           topics={topics}
+          questions={questions as any[]}
           searchKeyword={tSearch}
           questionCountsByTopic={questionCountsByTopic}
           hasWritePermission={hasWritePermission}

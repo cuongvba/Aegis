@@ -96,6 +96,10 @@ builder.Services.AddScoped<IExamExportTranspilerService, AegisQuiz.Infrastructur
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();
 builder.Services.AddScoped<IDocxStateMachineClassifier, AegisQuiz.Infrastructure.Services.Docx.DocxStateMachineClassifierService>();
 builder.Services.AddScoped<IDynamicDomainContextService, DynamicDomainContextService>();
+builder.Services.AddScoped<IPdfMathSymbolGlyphNormalizer, AegisQuiz.Infrastructure.Services.Pdf.PdfMathSymbolGlyphNormalizer>();
+builder.Services.AddScoped<IPdfStructureGuardService, AegisQuiz.Infrastructure.Services.Pdf.PdfStructureGuardService>();
+builder.Services.AddScoped<IPdfVisionFallbackService, AegisQuiz.Infrastructure.Services.Pdf.PdfHybridVisionFallbackService>();
+builder.Services.AddScoped<IPdfToMarkdownTranspilerService, AegisQuiz.Infrastructure.Services.Pdf.PdfToMarkdownTranspilerService>();
 builder.Services.AddScoped<IPdfExtractorService, PdfParserService>();
 builder.Services.AddScoped<IExamDeduplicationEngine, ExamDeduplicationEngine>();
 builder.Services.AddScoped<IIrtClientService, IrtClientService>();

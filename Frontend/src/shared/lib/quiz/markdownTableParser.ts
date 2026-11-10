@@ -21,6 +21,8 @@ export function splitTableCells(line: string): string[] {
   const cells: string[] = [];
   let current = '';
   let inTag = false;
+  let tagDepth = 0;
+  let inMath = false;
   let inEscape = false;
 
   for (let i = 0; i < trimmed.length; i++) {
@@ -38,8 +40,20 @@ export function splitTableCells(line: string): string[] {
       continue;
     }
 
+    if (char === '$' && !inTag && tagDepth === 0) {
+      inMath = !inMath;
+      current += char;
+      continue;
+    }
+
     if (char === '<') {
       inTag = true;
+      const rest = trimmed.slice(i);
+      if (/^<\/[a-zA-Z]/.test(rest)) {
+        tagDepth = Math.max(0, tagDepth - 1);
+      } else if (/^<[a-zA-Z][^>]*[^\/]>/.test(rest)) {
+        tagDepth++;
+      }
       current += char;
       continue;
     }
@@ -50,7 +64,7 @@ export function splitTableCells(line: string): string[] {
       continue;
     }
 
-    if (char === '|' && !inTag) {
+    if (char === '|' && !inTag && tagDepth === 0 && !inMath) {
       cells.push(current.trim());
       current = '';
       continue;
@@ -116,6 +130,13 @@ export function parseAndTokenizeTables(
         html += '</tr>';
       });
       html += '</tbody></table></div>';
+
+      // [Nested Token Resolution] Giải mã ngay các token KaTeX/Media nằm bên trong các ô bảng
+      for (const [tKey, tVal] of Object.entries(tableTokens)) {
+        if (html.includes(tKey)) {
+          html = html.split(tKey).join(tVal);
+        }
+      }
 
       const token = `__AEGIS_TABLE_TOKEN_${counter++}__`;
       tableTokens[token] = html;

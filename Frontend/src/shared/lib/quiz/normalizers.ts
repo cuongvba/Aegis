@@ -440,8 +440,8 @@ export function parseMultiTfAnswer(answerStr: string | undefined | null): Record
 
   const raw = String(answerStr).trim();
 
-  // Pattern bao phủ: [1:1; 2:0; 3:1; 4:1], a:1, b:0, a) Đúng, b) Sai, 1:Đ; 2:S
-  const regex = /(?:\[|\(|^|\b|\;|\,)\s*([a-z0-9]+)\s*[\:\=\)\.\-]\s*([01]|đúng|sai|true|false|đ|s|t|f)\b/gi;
+  // Pattern bao phủ: [1:1; 2:0; 3:1; 4:1], a:1, b:0, a) Đúng, b) Sai, 1:Đ; 2:S (Hỗ trợ Unicode tiếng Việt Đ/Đúng)
+  const regex = /(?:\[|\(|^|\b|\;|\,)\s*([a-z0-9]+)\s*[\:\=\)\.\-]\s*(đúng|sai|true|false|[01]|đ|s|t|f)(?=$|[\s,;\])\.])/gi;
   let m: RegExpExecArray | null;
 
   while ((m = regex.exec(raw)) !== null) {

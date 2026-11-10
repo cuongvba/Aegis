@@ -123,6 +123,8 @@ namespace AegisQuiz.Application.DTOs
         public string Title { get; set; } = string.Empty;
         public string? SubjectCode { get; set; }
         public string? DomainCode { get; set; } = "EDUCATION";
+        public Guid? ParentTopicId { get; set; }
+        public string? CustomTopicCode { get; set; }
         public List<ZenQuestionPreviewDto> Questions { get; set; } = new();
     }
 

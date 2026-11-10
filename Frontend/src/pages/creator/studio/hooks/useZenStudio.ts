@@ -164,8 +164,8 @@ export function useZenStudio() {
     }
   }, [uploadResult, stagedLaunchPayload]);
 
-  // Pure save to knowledge bank (Chỉ lưu vào ngân hàng tri thức)
-  const handlePureSaveToBank = useCallback(async () => {
+  // Pure save to knowledge bank (Chỉ lưu vào ngân hàng tri thức, hỗ trợ chọn nhánh chủ đề cha phân cấp)
+  const handlePureSaveToBank = useCallback(async (parentTopicId?: string | null, customTopicCode?: string) => {
     if (!uploadResult) return;
     setIsPureSavingToBank(true);
     setErrorMessage(null);
@@ -174,6 +174,8 @@ export function useZenStudio() {
         title: uploadResult.examTitle,
         subjectCode: uploadResult.suggestedTaxonomy?.categoryCode || uploadResult.suggestedTaxonomy?.domainCode,
         domainCode: uploadResult.suggestedTaxonomy?.domainCode || 'EDUCATION',
+        parentTopicId: parentTopicId || null,
+        customTopicCode: customTopicCode || null,
         questions: uploadResult.questions,
       });
 

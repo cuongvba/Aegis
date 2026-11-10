@@ -1,18 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight, ChevronDown, Folder, FolderOpen, FileText,
   Calendar, User, Eye, ToggleLeft, ToggleRight, Trash2, FolderPlus, HelpCircle, Send, Play
 } from 'lucide-react';
 import type { BankTopic } from '../types';
+import { buildHierarchicalTopicTree, type HierarchicalTopicNode } from '@/shared/lib/quiz/topicTreeHelper';
 
-export interface TopicTreeNode extends BankTopic {
-  children: TopicTreeNode[];
-  level: number;
-}
+export type TopicTreeNode = HierarchicalTopicNode;
 
 interface TopicTreeTableProps {
   topics: BankTopic[];
+  questions?: any[];
   searchKeyword: string;
   questionCountsByTopic: Record<string, number>;
   hasWritePermission: boolean;
@@ -28,6 +27,7 @@ interface TopicTreeTableProps {
 
 export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
   topics,
+  questions = [],
   searchKeyword,
   questionCountsByTopic,
   hasWritePermission,
@@ -43,30 +43,21 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
   const { t } = useTranslation('admin_questions');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
 
-  // 1. Xây dựng cấu trúc Cây (Tree Hierarchy)
-  const { tree, allParentIds } = useMemo(() => {
-    const map = new Map<string, TopicTreeNode>();
-    const roots: TopicTreeNode[] = [];
-    const parentSet = new Set<string>();
+  // 1. Xây dựng cấu trúc Cây (Tree Hierarchy) kèm Roll-up Question Count
+  const { roots: tree, allParentIds } = useMemo(
+    () => buildHierarchicalTopicTree(topics, questions),
+    [topics, questions]
+  );
 
-    topics.forEach((top) => {
-      map.set(top.id, { ...top, children: [], level: 0 });
-    });
-
-    topics.forEach((top) => {
-      const node = map.get(top.id)!;
-      if (top.parentId && map.has(top.parentId)) {
-        const parent = map.get(top.parentId)!;
-        node.level = parent.level + 1;
-        parent.children.push(node);
-        parentSet.add(parent.id);
-      } else {
-        roots.push(node);
-      }
-    });
-
-    return { tree: roots, allParentIds: parentSet };
-  }, [topics]);
+  // Mặc định mở sẵn các nhánh cha khi mới tải dữ liệu
+  useEffect(() => {
+    if (allParentIds.size > 0) {
+      setExpandedIds((prev) => {
+        if (prev.size > 0) return prev;
+        return new Set(allParentIds);
+      });
+    }
+  }, [allParentIds]);
 
   // 2. Tìm kiếm thông minh: Lọc và tự động mở các nhánh cha khớp từ khóa
   const { filteredTree, autoExpandedIds } = useMemo(() => {
@@ -180,7 +171,11 @@ export const TopicTreeTable: React.FC<TopicTreeTableProps> = ({
             {flatRows.map((node) => {
               const hasKids = node.children.length > 0;
               const expanded = isExpanded(node.id);
-              const qCount = questionCountsByTopic[node.code] || node.questionCountCached || 0;
+              const qCount =
+                node.totalQuestionCount ||
+                questionCountsByTopic[node.code] ||
+                node.questionCountCached ||
+                0;
 
               return (
                 <tr key={node.id} className="border-b border-slate-850/60 hover:bg-slate-800/20 transition-colors group">

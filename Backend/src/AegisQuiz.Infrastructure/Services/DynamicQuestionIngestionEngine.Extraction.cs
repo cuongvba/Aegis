@@ -276,8 +276,16 @@ namespace AegisQuiz.Infrastructure.Services
             var pattern = matchedRule?.InteractionSpec?.InlineOptionDelimiterPattern;
             if (string.IsNullOrWhiteSpace(pattern)) pattern = BuiltInInlineOptionPattern;
 
-            var matches = GetOrAddRegex(pattern).Matches(line);
-            if (matches.Count == 0) return result;
+            var rawMatches = GetOrAddRegex(pattern).Matches(line).Cast<Match>().ToList();
+            if (rawMatches.Count == 0) return result;
+
+            // Phân loại: Có sự xuất hiện của nhãn chữ cái [A-H] không?
+            bool hasLetterMatches = rawMatches.Any(m => m.Groups.Count >= 3 && !string.IsNullOrEmpty(m.Groups[2].Value) && char.IsLetter(m.Groups[2].Value[0]));
+            
+            // Nếu có nhãn chữ cái [A-H], loại bỏ hoàn toàn các match là số (để tránh nhận nhầm tọa độ điểm (1; 2), (0; 2) có số kết thúc bằng ngoặc đơn)
+            var matches = hasLetterMatches
+                ? rawMatches.Where(m => m.Groups.Count >= 3 && !string.IsNullOrEmpty(m.Groups[2].Value) && char.IsLetter(m.Groups[2].Value[0])).ToList()
+                : rawMatches;
 
             // Nếu chỉ có 1 nhãn số trên dòng (1., 2...) và quy tắc không phải là GPLX,
             // thì đây là mệnh đề liệt kê trong đề bài (ví dụ: "1. Nước sôi...", "2. Kim loại..."), không phải phương án trắc nghiệm
@@ -298,12 +306,51 @@ namespace AegisQuiz.Infrastructure.Services
                 string content = contentEnd > contentStart ? line.Substring(contentStart, contentEnd - contentStart).Trim() : string.Empty;
                 content = Regex.Replace(content, @"[\.\s\t]+$", "").Trim();
 
+                // Chuẩn hóa bao bọc KaTeX $ ... $ cho phương án toán học nếu chưa có dấu $
+                if (!content.Contains("$") && !string.IsNullOrWhiteSpace(content))
+                {
+                    bool isMathExpression = content.Contains("\\") ||
+                        Regex.IsMatch(content, @"^[a-zA-Z](?:_\{[0-9a-zA-Z]+\})?\s*=") ||
+                        Regex.IsMatch(content, @"^\(\s*\-?\d+\s*;\s*\-?\d+") ||
+                        Regex.IsMatch(content, @"^\[\s*\d+\s*;\s*\d+") ||
+                        content.Contains("^") || content.Contains("_{");
+
+                    if (isMathExpression)
+                    {
+                        content = $"${content}$";
+                    }
+                }
+
+                // Parity Guard cho phương án
+                if (content.Count(c => c == '$') % 2 != 0)
+                {
+                    content += "$";
+                }
+
                 bool isMarked = match.Value.Contains("<u>") || match.Value.Contains("<b>") || match.Value.Contains("*") || match.Value.Contains("<mark>")
                     || !string.IsNullOrEmpty(match.Groups[1].Value) 
                     || (match.Groups.Count > 3 && !string.IsNullOrEmpty(match.Groups[3].Value))
                     || content.Contains("<mark>");
 
                 result.Add((letter, content, isMarked));
+            }
+
+            // Kiểm tra tính tuần tự hợp lệ: các nhãn phương án phải tăng dần (A -> B -> C -> D hoặc 1 -> 2 -> 3)
+            if (result.Count >= 2)
+            {
+                bool isSequential = true;
+                for (int k = 1; k < result.Count; k++)
+                {
+                    if (result[k].Letter != result[k - 1].Letter + 1)
+                    {
+                        isSequential = false;
+                        break;
+                    }
+                }
+                if (!isSequential)
+                {
+                    return new List<(char Letter, string Content, bool IsMarkedCorrect)>();
+                }
             }
             return result;
         }
@@ -1120,11 +1167,15 @@ namespace AegisQuiz.Infrastructure.Services
             var inlineOpts = new List<ParsedOptionDto>();
             for (int i = lines.Count - 1; i >= 0; i--)
             {
-                if (inlineOpts.Count == 0 && (string.IsNullOrWhiteSpace(lines[i]) || lines[i].StartsWith("![") || lines[i].Contains("data:image/")))
+                var curLine = lines[i].Trim();
+                if (inlineOpts.Count == 0 && (string.IsNullOrWhiteSpace(curLine) || 
+                    curLine.StartsWith("![") || 
+                    curLine.Contains("data:image/") ||
+                    IsIgnorableOptionBoundaryNoise(curLine)))
                 {
                     continue; // Bỏ qua ảnh hoặc dòng trống ở đuôi câu hỏi
                 }
-                var lineOpts = ExtractUppercaseOptionsFromLine(lines[i], rule);
+                var lineOpts = ExtractUppercaseOptionsFromLine(curLine, rule);
                 if (lineOpts.Count >= 2)
                 {
                     inlineOpts.InsertRange(0, lineOpts);
@@ -1139,6 +1190,10 @@ namespace AegisQuiz.Infrastructure.Services
                 }
                 else
                 {
+                    if (inlineOpts.Count > 0 && IsIgnorableOptionBoundaryNoise(curLine))
+                    {
+                        continue;
+                    }
                     break;
                 }
             }
@@ -2050,6 +2105,15 @@ namespace AegisQuiz.Infrastructure.Services
 
             questionMap[key] = q;
             results.Add(q);
+        }
+
+        private static bool IsIgnorableOptionBoundaryNoise(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line)) return true;
+            string trimmed = line.Trim();
+            if (trimmed == "□" || trimmed == "" || trimmed == "\\int" || trimmed == "\\int \\int" || trimmed == "■" || trimmed == "–" || trimmed == "—") return true;
+            if (trimmed.Length <= 8 && !Regex.IsMatch(trimmed, @"[a-zA-Z0-9À-ỹ]")) return true;
+            return false;
         }
     }
 }

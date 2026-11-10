@@ -556,21 +556,40 @@ namespace AegisQuiz.API.Controllers
                     createdByUserId = parsedGuid;
                 }
 
+                var cleanCode = dto.Code.Trim().ToUpper();
+                string materializedPath = $"/{cleanCode}/";
+                int depthLevel = 1;
+
+                if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
+                {
+                    var parentTopic = await _db.BankTopics.AsNoTracking().FirstOrDefaultAsync(t => t.Id == dto.ParentId.Value);
+                    if (parentTopic != null)
+                    {
+                        var parentPath = string.IsNullOrWhiteSpace(parentTopic.MaterializedPath)
+                            ? $"/{parentTopic.Code}"
+                            : parentTopic.MaterializedPath.TrimEnd('/');
+                        materializedPath = $"{parentPath}/{cleanCode}/";
+                        depthLevel = Math.Max(1, parentTopic.DepthLevel) + 1;
+                    }
+                }
+
                 var topic = new BankTopic
                 {
-                    Id              = Guid.NewGuid(),
-                    Code            = dto.Code.Trim().ToUpper(),
-                    Name            = dto.Name,
-                    Description     = dto.Description,
-                    CategoryCode    = dto.CategoryCode,
-                    ParentId        = dto.ParentId,
-                    Enabled         = dto.Enabled,
-                    VisibilityScope = dto.VisibilityScope,
-                    DomainCode      = !string.IsNullOrWhiteSpace(dto.DomainCode) ? dto.DomainCode : "GENERAL",
-                    Scope           = !string.IsNullOrWhiteSpace(dto.Scope) ? dto.Scope : "COMMUNITY",
-                    TenantId        = _tenant.CurrentTenantId,
-                    CreatedByUserId = createdByUserId,
-                    CreatedAt       = DateTime.UtcNow
+                    Id               = Guid.NewGuid(),
+                    Code             = cleanCode,
+                    Name             = dto.Name,
+                    Description      = dto.Description,
+                    CategoryCode     = string.IsNullOrWhiteSpace(dto.CategoryCode) ? cleanCode : dto.CategoryCode,
+                    ParentId         = dto.ParentId,
+                    MaterializedPath = materializedPath,
+                    DepthLevel       = depthLevel,
+                    Enabled          = dto.Enabled,
+                    VisibilityScope  = dto.VisibilityScope,
+                    DomainCode       = !string.IsNullOrWhiteSpace(dto.DomainCode) ? dto.DomainCode : "GENERAL",
+                    Scope            = !string.IsNullOrWhiteSpace(dto.Scope) ? dto.Scope : "COMMUNITY",
+                    TenantId         = _tenant.CurrentTenantId,
+                    CreatedByUserId  = createdByUserId,
+                    CreatedAt        = DateTime.UtcNow
                 };
 
                 _db.BankTopics.Add(topic);
@@ -609,16 +628,49 @@ namespace AegisQuiz.API.Controllers
                         return Conflict(new { message = $"Mã chủ đề '{newCode}' đã được sử dụng bởi một chủ đề khác." });
                 }
 
+                var oldPath = topic.MaterializedPath ?? $"/{oldCode}/";
                 topic.Code            = newCode;
                 topic.Name            = dto.Name;
                 topic.Description     = dto.Description;
-                topic.CategoryCode    = dto.CategoryCode;
+                topic.CategoryCode    = string.IsNullOrWhiteSpace(dto.CategoryCode) ? newCode : dto.CategoryCode;
                 topic.ParentId        = dto.ParentId;
                 topic.Enabled         = dto.Enabled;
                 topic.VisibilityScope = dto.VisibilityScope;
                 if (!string.IsNullOrWhiteSpace(dto.DomainCode)) topic.DomainCode = dto.DomainCode;
                 if (!string.IsNullOrWhiteSpace(dto.Scope)) topic.Scope = dto.Scope;
                 topic.UpdatedAt       = DateTime.UtcNow;
+
+                // Tính lại MaterializedPath và DepthLevel theo ParentId mới
+                if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty && dto.ParentId.Value != topic.Id)
+                {
+                    var parentTopic = await _db.BankTopics.AsNoTracking().FirstOrDefaultAsync(t => t.Id == dto.ParentId.Value);
+                    if (parentTopic != null)
+                    {
+                        var parentPath = string.IsNullOrWhiteSpace(parentTopic.MaterializedPath)
+                            ? $"/{parentTopic.Code}"
+                            : parentTopic.MaterializedPath.TrimEnd('/');
+                        topic.MaterializedPath = $"{parentPath}/{newCode}/";
+                        topic.DepthLevel = Math.Max(1, parentTopic.DepthLevel) + 1;
+                    }
+                }
+                else
+                {
+                    topic.MaterializedPath = $"/{newCode}/";
+                    topic.DepthLevel = 1;
+                }
+
+                var newPath = topic.MaterializedPath ?? $"/{newCode}/";
+                if (!string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    var descendants = await _db.BankTopics
+                        .Where(t => t.Id != id && t.MaterializedPath != null && t.MaterializedPath.StartsWith(oldPath))
+                        .ToListAsync();
+                    foreach (var d in descendants)
+                    {
+                        d.MaterializedPath = newPath + d.MaterializedPath!.Substring(oldPath.Length);
+                        d.DepthLevel = d.MaterializedPath.Split('/', StringSplitOptions.RemoveEmptyEntries).Length;
+                    }
+                }
 
                 if (codeChanged)
                 {

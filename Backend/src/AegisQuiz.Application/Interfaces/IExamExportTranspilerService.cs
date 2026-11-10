@@ -36,3 +36,4 @@ namespace AegisQuiz.Application.Interfaces
         string GenerateOmrAnswerSheetHtml(int totalQuestions, ExamExportOptionsDto options);
     }
 }
+

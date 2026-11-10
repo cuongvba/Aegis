@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import uuid
 import math
+import random
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any, Tuple
 
@@ -50,8 +51,12 @@ app.add_middleware(
     allow_headers  = ["*"],
 )
 
-# ── In-memory session store (production: thay bằng Redis) ─────────────────────
+# ── In-memory session store & Sympson-Hetter Exposure Tracker ─────────────────
 _sessions: Dict[str, "CATSession"] = {}
+_total_sessions_started: int = 0
+_item_selection_counts: Dict[str, int] = {}
+_item_administration_counts: Dict[str, int] = {}
+_sympson_hetter_k: Dict[str, float] = {}
 
 
 # ── Pydantic Models ───────────────────────────────────────────────────────────
@@ -64,13 +69,16 @@ class QuestionIRT(BaseModel):
     c           : float = Field(default=0.25, ge=0.0,  le=0.5,   description="Guessing")
     topic_code  : str   = ""
     difficulty  : int   = Field(default=3,    ge=1,    le=5)
+    exposure_k  : Optional[float] = Field(default=None, ge=0.01, le=1.0, description="Sympson-Hetter k_i override")
 
 class CATConfig(BaseModel):
-    min_items       : int   = Field(default=5,   ge=3, le=10)
-    max_items       : int   = Field(default=20,  ge=5, le=50)
-    se_threshold    : float = Field(default=0.3, ge=0.1, le=1.0, description="Standard Error ngưỡng dừng")
-    initial_theta   : float = Field(default=0.0, description="Năng lực ban đầu ước lượng")
-    topic_code      : Optional[str] = None
+    min_items         : int   = Field(default=5,    ge=3,   le=10)
+    max_items         : int   = Field(default=20,   ge=5,   le=50)
+    se_threshold      : float = Field(default=0.3,  ge=0.1, le=1.0, description="Standard Error ngưỡng dừng")
+    initial_theta     : float = Field(default=0.0,  description="Năng lực ban đầu ước lượng")
+    topic_code        : Optional[str] = None
+    max_exposure_rate : float = Field(default=0.20, ge=0.05, le=1.0, description="Ngưỡng phơi bày tối đa Sympson-Hetter r_max")
+    randomesque_k     : int   = Field(default=3,    ge=1,    le=10,  description="Số ứng viên Top-K Fisher Information (1 = tất định)")
 
 class StartCATRequest(BaseModel):
     user_id         : str
@@ -159,28 +167,90 @@ class IRT3PLEngine:
         return theta_hat, se
 
     @staticmethod
+    def get_sympson_hetter_k(question: QuestionIRT, max_exposure_rate: float = 0.20) -> float:
+        """
+        Tính hệ số kiểm soát phơi bày Sympson-Hetter k_i = P(Administer | Select) thuộc [0.05, 1.0].
+        Nếu P(S_i) <= r_max thì k_i = 1.0; nếu P(S_i) > r_max thì k_i = r_max / P(S_i).
+        """
+        if question.exposure_k is not None:
+            return max(0.05, min(1.0, question.exposure_k))
+
+        qid = question.question_id
+        if qid in _sympson_hetter_k and _total_sessions_started < 5:
+            return _sympson_hetter_k[qid]
+
+        if _total_sessions_started < 5:
+            return 1.0
+
+        sel_count = _item_selection_counts.get(qid, 0)
+        p_select = sel_count / max(1, _total_sessions_started)
+        if p_select <= max_exposure_rate:
+            k_i = 1.0
+        else:
+            k_i = max(0.05, min(1.0, max_exposure_rate / p_select))
+
+        _sympson_hetter_k[qid] = k_i
+        return k_i
+
+    @staticmethod
     def select_next_item(
-        theta        : float,
-        available    : List[QuestionIRT],
-        administered : set
+        theta             : float,
+        available         : List[QuestionIRT],
+        administered      : set,
+        max_exposure_rate : float = 0.20,
+        randomesque_k     : int = 3
     ) -> Optional[QuestionIRT]:
         """
-        CAT Item Selection: Chọn câu hỏi tối đa hóa Fisher Information tại θ.
+        [World-Class Psychometrics] CAT Item Selection:
+        Kết hợp tối đa hóa Hàm thông tin Fisher I(θ) với:
+        1. Sympson-Hetter Probabilistic Exposure Control (P(A_i) <= r_max = 0.20)
+        2. Randomesque Top-K Fisher Information Sampling (chống lộ câu mở đầu)
         """
         candidates = [q for q in available if q.question_id not in administered]
         if not candidates:
             return None
 
-        best_q    = None
-        best_info = -1.0
+        # Xếp hạng toàn bộ ứng viên theo Fisher Information I(θ) giảm dần
+        scored = [
+            (IRT3PLEngine.information(theta, q.a, q.b, q.c), q)
+            for q in candidates
+        ]
+        scored.sort(key=lambda x: x[0], reverse=True)
 
-        for q in candidates:
-            info = IRT3PLEngine.information(theta, q.a, q.b, q.c)
-            if info > best_info:
-                best_info = info
-                best_q    = q
+        # Áp dụng cổng lọc xác suất Sympson-Hetter để thu thập Top-K ứng viên hợp lệ
+        accepted_pool: List[Tuple[float, QuestionIRT]] = []
+        pool_target = max(1, min(randomesque_k, len(scored)))
 
-        return best_q
+        for info, q in scored:
+            qid = q.question_id
+            _item_selection_counts[qid] = _item_selection_counts.get(qid, 0) + 1
+            k_i = IRT3PLEngine.get_sympson_hetter_k(q, max_exposure_rate)
+
+            if k_i >= 0.999 or random.random() <= k_i:
+                accepted_pool.append((info, q))
+                if len(accepted_pool) >= pool_target:
+                    break
+
+        # Fail-safe: Nếu tất cả cổng xác suất đều từ chối, chọn ứng viên có Fisher Info cao nhất
+        if not accepted_pool:
+            chosen = scored[0][1]
+        elif len(accepted_pool) == 1 or randomesque_k <= 1:
+            chosen = accepted_pool[0][1]
+        else:
+            # Lấy mẫu có trọng số theo Fisher Information trong nhóm Top-K
+            weights = [max(info, 1e-6) for info, _ in accepted_pool]
+            total_w = sum(weights)
+            r_val = random.uniform(0, total_w)
+            upto = 0.0
+            chosen = accepted_pool[0][1]
+            for w, (_, q_cand) in zip(weights, accepted_pool):
+                upto += w
+                if upto >= r_val:
+                    chosen = q_cand
+                    break
+
+        _item_administration_counts[chosen.question_id] = _item_administration_counts.get(chosen.question_id, 0) + 1
+        return chosen
 
     @staticmethod
     def should_terminate(
@@ -227,8 +297,14 @@ class CATSession:
         self.engine        = IRT3PLEngine()
 
     def get_next_question(self) -> Optional[QuestionIRT]:
-        """Chọn câu hỏi tiếp theo tối ưu."""
-        q = self.engine.select_next_item(self.theta, self.question_bank, self.administered)
+        """Chọn câu hỏi tiếp theo tối ưu kết hợp Sympson-Hetter Exposure Control."""
+        q = self.engine.select_next_item(
+            self.theta,
+            self.question_bank,
+            self.administered,
+            max_exposure_rate=self.config.max_exposure_rate,
+            randomesque_k=self.config.randomesque_k
+        )
         self.current_q = q
         return q
 
@@ -316,15 +392,38 @@ async def health_check():
     }
 
 
+@app.get("/irt/exposure-stats", summary="Thống kê kiểm soát phơi bày câu hỏi Sympson-Hetter")
+async def get_exposure_stats():
+    """Trả về chỉ số phơi bày P(A_i), P(S_i) và hệ số k_i của Sympson-Hetter."""
+    n_sess = max(1, _total_sessions_started)
+    items = []
+    for qid, sel_count in sorted(_item_selection_counts.items(), key=lambda x: x[1], reverse=True)[:50]:
+        adm_count = _item_administration_counts.get(qid, 0)
+        items.append({
+            "question_id": qid,
+            "selected_count": sel_count,
+            "administered_count": adm_count,
+            "exposure_rate": round(adm_count / n_sess, 4),
+            "sympson_hetter_k": round(_sympson_hetter_k.get(qid, 1.0), 4)
+        })
+    return {
+        "total_sessions": _total_sessions_started,
+        "tracked_items": len(_item_selection_counts),
+        "items": items
+    }
+
+
 @app.post("/cat/start", summary="Bắt đầu phiên CAT mới")
 async def start_cat_session(request: StartCATRequest):
     """
     Khởi tạo phiên CAT mới và trả về câu hỏi đầu tiên.
-    Câu hỏi đầu tiên được chọn tại θ = config.initial_theta (mặc định 0).
+    Câu hỏi đầu tiên được chọn tại θ = config.initial_theta (mặc định 0) kèm kiểm soát Sympson-Hetter.
     """
+    global _total_sessions_started
     if not request.question_bank:
         raise HTTPException(status_code=400, detail="Question bank không được trống")
 
+    _total_sessions_started += 1
     session_id = str(uuid.uuid4())
     session    = CATSession(
         session_id    = session_id,

@@ -27,15 +27,21 @@ namespace AegisQuiz.Infrastructure.Services
     {
         private readonly IDynamicQuestionIngestionEngine _cigEngine;
         private readonly IDynamicMathDictionaryService? _mathDictionary;
+        private readonly IPdfMathSymbolGlyphNormalizer _mathNormalizer;
+        private readonly IPdfStructureGuardService _structureGuard;
         private readonly ILogger<DynamicPdfPipeline>? _logger;
 
         public DynamicPdfPipeline(
             IDynamicQuestionIngestionEngine cigEngine,
             IDynamicMathDictionaryService? mathDictionary = null,
+            IPdfMathSymbolGlyphNormalizer? mathNormalizer = null,
+            IPdfStructureGuardService? structureGuard = null,
             ILogger<DynamicPdfPipeline>? logger = null)
         {
             _cigEngine = cigEngine;
             _mathDictionary = mathDictionary;
+            _mathNormalizer = mathNormalizer ?? new Pdf.PdfMathSymbolGlyphNormalizer();
+            _structureGuard = structureGuard ?? new Pdf.PdfStructureGuardService();
             _logger = logger;
         }
 
@@ -320,8 +326,9 @@ namespace AegisQuiz.Infrastructure.Services
             foreach (var line in rawLines)
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
+                if (_structureGuard.IsRunningNoise(line)) continue;
 
-                string cleaned = line
+                string cleaned = _mathNormalizer.NormalizeMathGlyphs(line)
                     // Font Ligatures
                     .Replace("ﬁ", "fi")
                     .Replace("ﬂ", "fl")

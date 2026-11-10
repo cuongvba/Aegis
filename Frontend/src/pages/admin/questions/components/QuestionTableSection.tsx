@@ -6,6 +6,7 @@ import type { LearnerQuestion } from '@/types/quiz';
 import { canManageResource } from '@/types/auth';
 import type { BankTopic } from '../types';
 import { getCorrectAnswerDisplay, getQuestionTypeLabel, getTopicFullPath } from '../types';
+import { flattenTopicTreeForSelect } from '@/shared/lib/quiz/topicTreeHelper';
 
 interface QuestionTableSectionProps {
   questions: LearnerQuestion[];
@@ -219,8 +220,8 @@ export const QuestionTableSection: React.FC<QuestionTableSectionProps> = ({
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="">{t('filters.allTopics')}</option>
-              {topics.map(top => (
-                <option key={top.id} value={top.code}>{getTopicFullPath(top, topics)}</option>
+              {flattenTopicTreeForSelect(topics, questions).map(opt => (
+                <option key={opt.topic.id} value={opt.topic.code}>{opt.label}</option>
               ))}
             </select>
           </div>

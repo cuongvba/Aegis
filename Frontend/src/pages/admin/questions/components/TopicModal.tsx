@@ -2,7 +2,10 @@ import { useMemo } from 'react';
 import { X, Plus, Save, Edit, Lock, Unlock, Trash2, FolderTree, Network, Globe, HelpCircle, ExternalLink, Send, Play , FileText } from 'lucide-react';
 import type { LearnerQuestion } from '@/types/quiz';
 import type { BankTopic } from '../types';
-import { getTopicFullPath } from '../types';
+import {
+  buildHierarchicalTopicTree,
+  flattenTopicTreeForSelect,
+} from '@/shared/lib/quiz/topicTreeHelper';
 
 interface TopicModalProps {
   isOpen: boolean;
@@ -60,37 +63,28 @@ export function TopicModal({
 
   const activeTopic = topics.find(t => t.id === editingTopicId);
 
-  // Đếm câu hỏi trực tiếp và đệ quy qua các chuyên đề con
-  const directCount = useMemo(() => {
-    return questions.filter(
-      q => q.topicCode === topicCode || q.categoryCode === topicCode
-    ).length;
-  }, [questions, topicCode]);
+  // Đếm câu hỏi trực tiếp và đệ quy qua các chuyên đề con (Roll-up Subtree)
+  const { directCount, totalInBranch, descendantTopicCount } = useMemo(() => {
+    const { nodeById, nodeByCode } = buildHierarchicalTopicTree(topics, questions);
+    const node =
+      (editingTopicId ? nodeById.get(editingTopicId) : undefined) ||
+      (topicCode ? nodeByCode.get(topicCode.toUpperCase()) : undefined);
+    if (!node) return { directCount: 0, totalInBranch: 0, descendantTopicCount: 0 };
+    return {
+      directCount: node.directQuestionCount,
+      totalInBranch: node.totalQuestionCount,
+      descendantTopicCount: Math.max(0, node.descendantCodes.length - 1),
+    };
+  }, [editingTopicId, topicCode, topics, questions]);
 
-  const childTopics = useMemo(() => {
-    if (!editingTopicId) return [];
-    return topics.filter(t => t.parentId === editingTopicId);
-  }, [editingTopicId, topics]);
-
-  const { descendantCount, descendantTopicCount } = useMemo(() => {
-    if (!editingTopicId) return { descendantCount: 0, descendantTopicCount: 0 };
-    const childCodes = new Set<string>();
-    const queue = [editingTopicId];
-    while (queue.length > 0) {
-      const pid = queue.shift();
-      if (!pid) continue;
-      topics.filter(t => t.parentId === pid).forEach(child => {
-        childCodes.add(child.code);
-        queue.push(child.id);
-      });
-    }
-    const qCount = questions.filter(
-      q => (q.topicCode && childCodes.has(q.topicCode)) || (q.categoryCode && childCodes.has(q.categoryCode))
-    ).length;
-    return { descendantCount: qCount, descendantTopicCount: childCodes.size };
-  }, [editingTopicId, topics, questions]);
-
-  const totalInBranch = directCount + descendantCount;
+  const parentTreeOptions = useMemo(
+    () =>
+      flattenTopicTreeForSelect(
+        topics.filter((t) => t.id !== editingTopicId),
+        questions
+      ),
+    [topics, questions, editingTopicId]
+  );
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -226,9 +220,9 @@ export function TopicModal({
               disabled={!isEditingTopic}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              <option value="">(Không có chủ đề cha — Cấp gốc)</option>
-              {topics.filter(t => t.id !== editingTopicId).map(t => (
-                <option key={t.id} value={t.id}>{getTopicFullPath(t, topics)}</option>
+              <option value="">📁 (Không có chủ đề cha — Cấp gốc)</option>
+              {parentTreeOptions.map(opt => (
+                <option key={opt.topic.id} value={opt.topic.id}>{opt.label}</option>
               ))}
             </select>
           </div>
@@ -265,7 +259,7 @@ export function TopicModal({
                       title="Xem danh sách câu hỏi thuộc chủ đề này"
                     >
                       <HelpCircle size={15} className="text-sky-400" />
-                      <span>Câu hỏi ({directCount})</span>
+                      <span>Câu hỏi ({totalInBranch})</span>
                     </button>
                     {onContributeCommunity && activeTopic && activeTopic.code !== "GENERAL" && activeTopic.code !== "STUDIO" && !activeTopic.code.startsWith("COM_") && (
                       <button

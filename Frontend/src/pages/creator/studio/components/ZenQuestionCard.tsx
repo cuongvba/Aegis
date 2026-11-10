@@ -187,8 +187,8 @@ export const ZenQuestionCard: React.FC<ZenQuestionCardProps> = ({ question: q, o
             </div>
           )}
 
-          {/* Các phương án A, B, C, D */}
-          {options.length > 0 && (
+          {/* Các phương án A, B, C, D (Chỉ hiển thị cho câu trắc nghiệm đơn/nhiều lựa chọn, không lặp lại cho câu có subItems Đúng/Sai) */}
+          {options.length > 0 && (!q.subItems || q.subItems.length === 0) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mb-3 text-left">
               {options.map((opt, i) => (
                 <div
@@ -209,7 +209,7 @@ export const ZenQuestionCard: React.FC<ZenQuestionCardProps> = ({ question: q, o
             </div>
           )}
 
-          {(correct.length > 0 || showRawAnswer) && (
+          {(correct.length > 0 || showRawAnswer) && (!q.subItems || q.subItems.length === 0) && (
             <div className="flex items-start gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm text-emerald-200 mb-2">
               <KeyRound className="w-4 h-4 mt-0.5 shrink-0" />
               <div>

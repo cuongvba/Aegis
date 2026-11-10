@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import api from '@/services/api';
 import type { BankTopic } from '@/pages/admin/questions/types';
+import { getQuestionsForTopicSubtree, doesQuestionMatchTopicCode } from '@/shared/lib/quiz/topicTreeHelper';
 import type {
   ZenRoomLaunchResult,
   ZenBankSaveResult,
@@ -46,15 +47,11 @@ export function useZenLauncher() {
     }));
   };
 
-  // Open Arena for a specific topic
-  const openArenaForTopic = useCallback((topic: BankTopic, allQuestions: any[] = []) => {
-    const matched = allQuestions.filter(
-      (q) =>
-        (q.topicCode && q.topicCode.toLowerCase() === topic.code.toLowerCase()) ||
-        q.categoryCode === topic.code ||
-        q.topicId === topic.id ||
-        q.bankTopicId === topic.id
-    );
+  // Open Arena for a specific topic (gồm toàn bộ câu hỏi của nhánh con cháu nếu là thư mục cha)
+  const openArenaForTopic = useCallback((topic: BankTopic, allQuestions: any[] = [], allTopics: BankTopic[] = []) => {
+    const matched = allTopics.length > 0
+      ? getQuestionsForTopicSubtree(topic.code, allTopics, allQuestions)
+      : allQuestions.filter((q) => doesQuestionMatchTopicCode(q, topic.code));
 
     const questionsToUse = matched.length > 0 ? matched : [
       {
@@ -121,15 +118,11 @@ export function useZenLauncher() {
     [stagedArenaPayload]
   );
 
-  // Open Homework for a topic
-  const openHomeworkForTopic = useCallback((topic: BankTopic, allQuestions: any[] = []) => {
-    const matched = allQuestions.filter(
-      (q) =>
-        (q.topicCode && q.topicCode.toLowerCase() === topic.code.toLowerCase()) ||
-        q.categoryCode === topic.code ||
-        q.topicId === topic.id ||
-        q.bankTopicId === topic.id
-    );
+  // Open Homework for a topic (gồm toàn bộ câu hỏi của nhánh con cháu nếu là thư mục cha)
+  const openHomeworkForTopic = useCallback((topic: BankTopic, allQuestions: any[] = [], allTopics: BankTopic[] = []) => {
+    const matched = allTopics.length > 0
+      ? getQuestionsForTopicSubtree(topic.code, allTopics, allQuestions)
+      : allQuestions.filter((q) => doesQuestionMatchTopicCode(q, topic.code));
 
     setStagedHomeworkPayload({
       title: topic.name,

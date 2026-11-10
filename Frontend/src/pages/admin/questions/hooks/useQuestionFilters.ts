@@ -10,6 +10,10 @@ import { useEffect, useMemo, useState } from 'react';
 import type { LearnerQuestion } from '@/types/quiz';
 import type { UserProfile } from '@/types/auth';
 import { type BankTopic, getTopicFullPath } from '../types';
+import {
+  buildHierarchicalTopicTree,
+  doesQuestionMatchTopicCode,
+} from '@/shared/lib/quiz/topicTreeHelper';
 
 export type QuestionScopeFilter = 'ALL' | 'TEAM' | 'MY_QUESTIONS';
 export type QuestionViewMode = 'HIERARCHY' | 'TIMELINE';
@@ -105,6 +109,14 @@ export function useQuestionFilters(
   const missingAnswersCount = useMemo(() =>
     questions.filter(q => !q.answerRaw || !q.answerRaw.trim()).length, [questions]);
 
+  // Hỗ trợ lọc theo cả nhánh con cháu khi chọn chủ đề cha trên cây
+  const selectedSubtreeTopicCodes = useMemo(() => {
+    if (!qTopicFilter) return [];
+    const { nodeByCode } = buildHierarchicalTopicTree(topics, questions);
+    const targetNode = nodeByCode.get(qTopicFilter.toUpperCase());
+    return targetNode ? targetNode.descendantCodes : [qTopicFilter];
+  }, [qTopicFilter, topics, questions]);
+
   const filteredQuestions = useMemo(() => {
     const list = questions.filter(q => {
       const searchLower = qSearch.toLowerCase().trim();
@@ -126,9 +138,7 @@ export function useQuestionFilters(
       const matchType    = !qTypeFilter || q.questionType === qTypeFilter;
       const matchTopic   =
         !qTopicFilter ||
-        q.topicCode === qTopicFilter ||
-        (q.categoryCode && q.categoryCode === qTopicFilter) ||
-        (q.treePath && q.treePath.includes('/' + qTopicFilter + '/'));
+        selectedSubtreeTopicCodes.some((code) => doesQuestionMatchTopicCode(q, code));
 
       const matchDomain  = !qDomainFilter || qDomainFilter === 'ALL' || q.domainCode === qDomainFilter;
       const matchTag     = !qTagFilter || (q.tags || []).some(t => t.toLowerCase() === qTagFilter.toLowerCase());

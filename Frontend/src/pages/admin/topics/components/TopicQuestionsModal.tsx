@@ -1,6 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { X, Search, HelpCircle, CheckCircle2, BookOpen, ExternalLink, Filter, Layers } from 'lucide-react';
+import { X, Search, HelpCircle, CheckCircle2, BookOpen, ExternalLink, Layers } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { MathRenderer } from '@/components/common/MathRenderer';
+import {
+  doesQuestionMatchTopicCode,
+  getQuestionsForTopicSubtree,
+} from '@/shared/lib/quiz/topicTreeHelper';
 import type { BankTopic } from '../../questions/types';
 import type { LearnerQuestion } from '@/types/quiz';
 
@@ -25,33 +30,14 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
   const [search, setSearch] = useState('');
   const [includeDescendants, setIncludeDescendants] = useState(true);
 
-  // Thu thập toàn bộ mã chủ đề trực thuộc hoặc con cháu (nếu includeDescendants = true)
-  const targetCodes = useMemo(() => {
-    if (!topic) return new Set<string>();
-    const codes = new Set<string>([topic.code.toUpperCase()]);
-
-    if (includeDescendants && allTopics.length > 0) {
-      const topicPath = topic.materializedPath || `/${topic.code}/`;
-      allTopics.forEach(t => {
-        if (t.materializedPath && t.materializedPath.startsWith(topicPath)) {
-          codes.add(t.code.toUpperCase());
-        }
-      });
-    }
-
-    return codes;
-  }, [topic, includeDescendants, allTopics]);
-
-  // Lọc danh sách câu hỏi thuộc chủ đề
+  // Lọc danh sách câu hỏi thuộc chủ đề hoặc toàn bộ nhánh con cháu (Roll-up Subtree)
   const topicQuestions = useMemo(() => {
-    if (!topic || targetCodes.size === 0) return [];
-    return questions.filter(q => {
-      const qTopic = (q.topicCode || q.categoryCode || '').toUpperCase();
-      if (targetCodes.has(qTopic)) return true;
-      if (Array.isArray(q.tags) && q.tags.some(t => targetCodes.has(t.replace('#', '').toUpperCase()))) return true;
-      return false;
-    });
-  }, [questions, targetCodes, topic]);
+    if (!topic) return [];
+    if (includeDescendants) {
+      return getQuestionsForTopicSubtree(topic.code, allTopics.length > 0 ? allTopics : [topic], questions);
+    }
+    return questions.filter((q) => doesQuestionMatchTopicCode(q, topic.code));
+  }, [questions, topic, includeDescendants, allTopics]);
 
   // Lọc theo từ khóa tìm kiếm
   const filteredQuestions = useMemo(() => {
@@ -183,7 +169,7 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
 
                   {/* Nội dung câu hỏi */}
                   <div className="text-xs sm:text-sm font-medium text-slate-200 leading-relaxed">
-                    {q.content}
+                    <MathRenderer content={q.content || ''} />
                   </div>
 
                   {/* Danh sách đáp án */}
@@ -206,7 +192,9 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
                             }`}>
                               {letter}
                             </span>
-                            <span className="flex-1 leading-snug">{opt}</span>
+                            <span className="flex-1 leading-snug">
+                              <MathRenderer content={opt || ''} />
+                            </span>
                             {isCorrect && <CheckCircle2 size={13} className="text-emerald-400 shrink-0 mt-0.5" />}
                           </div>
                         );
@@ -218,9 +206,9 @@ export const TopicQuestionsModal: React.FC<TopicQuestionsModalProps> = ({
                   {q.citation && (
                     <div className="text-[11px] text-slate-400 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-start gap-1.5">
                       <BookOpen size={12} className="text-sky-400 shrink-0 mt-0.5" />
-                      <div>
+                      <div className="flex-1">
                         <span className="font-bold text-slate-300">Lời giải / Gợi ý: </span>
-                        <span>{q.citation}</span>
+                        <MathRenderer content={q.citation} />
                       </div>
                     </div>
                   )}

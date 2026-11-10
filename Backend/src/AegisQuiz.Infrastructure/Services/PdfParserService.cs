@@ -22,6 +22,20 @@ namespace AegisQuiz.Infrastructure.Services
     /// </summary>
     public class PdfParserService : IPdfExtractorService
     {
+        private readonly IPdfMathSymbolGlyphNormalizer _mathNormalizer;
+        private readonly IPdfStructureGuardService _structureGuard;
+        private readonly IPdfToMarkdownTranspilerService _transpiler;
+
+        public PdfParserService(
+            IPdfMathSymbolGlyphNormalizer? mathNormalizer = null,
+            IPdfStructureGuardService? structureGuard = null,
+            IPdfToMarkdownTranspilerService? transpiler = null)
+        {
+            _mathNormalizer = mathNormalizer ?? new Pdf.PdfMathSymbolGlyphNormalizer();
+            _structureGuard = structureGuard ?? new Pdf.PdfStructureGuardService();
+            _transpiler = transpiler ?? new Pdf.PdfToMarkdownTranspilerService(_mathNormalizer, _structureGuard);
+        }
+
         /// <summary>
         /// Trích xuất toàn bộ văn bản từ tệp PDF thành một chuỗi văn bản sạch.
         /// </summary>
@@ -65,10 +79,22 @@ namespace AegisQuiz.Infrastructure.Services
             if (pdfStream == null || pdfStream.Length == 0)
                 return new List<DocxImportPreviewDto>();
 
-            if (pdfStream.CanSeek)
-                pdfStream.Seek(0, SeekOrigin.Begin);
+            // [Resilience Guard] Sao chép vào MemoryStream để đảm bảo Seek(0) và re-read an toàn 100% trên mọi runtime (Windows/Docker Linux)
+            MemoryStream memStream;
+            if (pdfStream is MemoryStream existingMs)
+            {
+                memStream = existingMs;
+                memStream.Seek(0, SeekOrigin.Begin);
+            }
+            else
+            {
+                memStream = new MemoryStream();
+                if (pdfStream.CanSeek) pdfStream.Seek(0, SeekOrigin.Begin);
+                pdfStream.CopyTo(memStream);
+                memStream.Seek(0, SeekOrigin.Begin);
+            }
 
-            using var document = PdfDocument.Open(pdfStream);
+            using var document = PdfDocument.Open(memStream);
             int totalPages = document.NumberOfPages;
             int totalTextLength = 0;
             var pageTextMap = new Dictionary<int, string>();
@@ -312,27 +338,36 @@ namespace AegisQuiz.Infrastructure.Services
                 }
             }
 
-            var rawText = string.Join("\n", pageTextMap.Values);
+            // ══════════════════════════════════════════════════════════════════════════
+            // CHẾ ĐỘ 3: PDF HỌC THUẬT / TOÁN HỌC / THPT 2025 (Transpile to Structured Markdown)
+            // ══════════════════════════════════════════════════════════════════════════
+            using var transpilerStream = new MemoryStream(memStream.ToArray());
+            var parsedQuestions = _transpiler.TranspileAndParse(transpilerStream);
 
-            // Chuẩn hóa điểm neo câu hỏi nếu bị dính dòng trong luồng văn bản PDF
-            rawText = Regex.Replace(
-                rawText, 
-                @"(?<=[^\r\n])\s+(Câu\s+\d+[\.\:])", 
-                "\n$1", 
-                RegexOptions.IgnoreCase);
+            if (parsedQuestions == null || parsedQuestions.Count == 0)
+            {
+                var rawText = string.Join("\n", pageTextMap.Values);
 
-            // Chuẩn hóa các phương án số 1-4 nếu bị dính liền vào dòng trước
-            rawText = Regex.Replace(
-                rawText, 
-                @"(?<=[^\r\n])\s+([1-4]\s*[\.\/]\s*)", 
-                "\n$1", 
-                RegexOptions.IgnoreCase);
+                // Chuẩn hóa điểm neo câu hỏi nếu bị dính dòng trong luồng văn bản PDF
+                rawText = Regex.Replace(
+                    rawText, 
+                    @"(?<=[^\r\n])\s+(Câu\s+\d+[\.\:])", 
+                    "\n$1", 
+                    RegexOptions.IgnoreCase);
 
-            // Tận dụng DocxParserService để bóc tách luồng văn bản đã chuẩn hóa
-            var lines = rawText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            var parsedQuestions = DocxParserService.ParseParagraphs(lines);
+                // Chuẩn hóa các phương án số 1-4 nếu bị dính liền vào dòng trước
+                rawText = Regex.Replace(
+                    rawText, 
+                    @"(?<=[^\r\n])\s+([1-4]\s*[\.\/]\s*)", 
+                    "\n$1", 
+                    RegexOptions.IgnoreCase);
 
-            // Gán ảnh tương ứng cho các câu hỏi sa hình / biển báo
+                // Tận dụng DocxParserService để bóc tách luồng văn bản đã chuẩn hóa
+                var lines = rawText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                parsedQuestions = DocxParserService.ParseParagraphs(lines);
+            }
+
+            // Gán ảnh tương ứng cho các câu hỏi sa hình / biển báo / đồ thị
             var allImages = pageImagesMap.Values.SelectMany(x => x).ToList();
             int imgIndex = 0;
             foreach (var q in parsedQuestions)
@@ -342,6 +377,7 @@ namespace AegisQuiz.Infrastructure.Services
                     bool needsImage = q.Content.Contains("sa hình", StringComparison.OrdinalIgnoreCase) ||
                                       q.Content.Contains("biển báo", StringComparison.OrdinalIgnoreCase) ||
                                       q.Content.Contains("biển nào", StringComparison.OrdinalIgnoreCase) ||
+                                      q.Content.Contains("đồ thị", StringComparison.OrdinalIgnoreCase) ||
                                       q.Content.Contains("hình vẽ", StringComparison.OrdinalIgnoreCase);
 
                     if (needsImage && imgIndex < allImages.Count)
@@ -351,9 +387,10 @@ namespace AegisQuiz.Infrastructure.Services
                         string mime = (raw.Length >= 2 && raw[0] == 0xFF && raw[1] == 0xD8) ? "image/jpeg" : "image/png";
                         string dataUri = $"data:{mime};base64,{Convert.ToBase64String(raw)}";
 
-                        q.Content += $"\n\n![Biển báo/Sa hình]({dataUri})";
+                        q.Content += $"\n\n![Minh họa/Đồ thị]({dataUri})";
                         q.ContentType = "image";
-                        q.SubCategory = q.Content.Contains("sa hình", StringComparison.OrdinalIgnoreCase) ? "SA_HINH" : "BIEN_BAO";
+                        q.SubCategory = q.Content.Contains("sa hình", StringComparison.OrdinalIgnoreCase) ? "SA_HINH" : 
+                                        q.Content.Contains("biển báo", StringComparison.OrdinalIgnoreCase) ? "BIEN_BAO" : "TOAN_HINH_HOC";
                     }
                 }
             }

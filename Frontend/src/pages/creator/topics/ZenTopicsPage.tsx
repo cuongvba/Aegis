@@ -11,6 +11,7 @@ import { TopicQuestionsModal } from '@/pages/admin/topics/components/TopicQuesti
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { useZenTopics } from './hooks/useZenTopics';
 import { useZenLauncher } from '../studio/hooks/useZenLauncher';
+import { getQuestionsForTopicSubtree } from '@/shared/lib/quiz/topicTreeHelper';
 import { ZenArenaGameSelectorModal } from '../studio/components/ZenArenaGameSelectorModal';
 import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigModal';
 import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
@@ -51,10 +52,8 @@ export const ZenTopicsPage: React.FC = () => {
 
   const exportQuestions = React.useMemo(() => {
     if (!topicForExport) return [];
-    return state.questions.filter(
-      q => q.topicId === topicForExport.id || q.topicCode === topicForExport.code
-    );
-  }, [topicForExport, state.questions]);
+    return getQuestionsForTopicSubtree(topicForExport.code, state.topics, state.questions);
+  }, [topicForExport, state.topics, state.questions]);
 
   const directOwnedCount = state.topics.filter(
     top => top.createdByUserId && String(top.createdByUserId) === String(user?.id)
@@ -163,8 +162,8 @@ export const ZenTopicsPage: React.FC = () => {
             openEditTopicModal={state.openEditTopicModal}
             openAddChildTopicModal={(parentId: string) => state.openAddTopicModal(parentId)}
             onOpenQuestions={state.openQuestionsModal}
-            onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions)}
-            onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions)}
+            onAssignHomework={(top) => launcher.openHomeworkForTopic(top, state.questions, state.topics)}
+            onLaunchArena={(top) => launcher.openArenaForTopic(top, state.questions, state.topics)}
             onExportDocx={handleExportTopicDocx}
             renderSortIcon={(field, currentField, isAsc) => (
               <span className={`inline-flex ml-1.5 ${field === currentField ? 'text-amber-400' : 'text-slate-600'}`}>

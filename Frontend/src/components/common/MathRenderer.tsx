@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
-import katex from 'katex';
 import 'katex/dist/katex.min.css';
 // @ts-ignore
 import 'katex/dist/contrib/mhchem';
 import { sanitizeWmfInText, convertWmfDataUriToSvg, cleanSvgDataUri } from '@/shared/lib/quiz/wmfDecoder';
 import { useMathConfig } from '@/shared/context/MathConfigContext';
-import { parseAndTokenizeTables } from '@/shared/lib/quiz/markdownTableParser';
+import { compileMathAndMarkdownHtml, getFormulaMetrics } from '@/shared/lib/quiz/mathHtmlCompiler';
 
 interface MathRendererProps {
   content: string;
@@ -16,79 +15,24 @@ interface MathRendererProps {
 }
 
 /**
- * [World-Class Math & Multimodal Media Renderer]
+ * [World-Class Math & Multimodal Media Renderer — Zero-Monolith UI <= 250 LOC]
  * Tự động phân tích và render:
  * 1. Phương án hoặc câu hỏi dạng Data URI Base64 ("data:image/png;base64,...") -> Thẻ <img>
  * 2. Hình vẽ minh họa dạng Markdown "![...](data:image/...)" -> Thẻ <img> kèm chú thích
  * 3. Công thức toán học LaTeX inline ($...$) hoặc block ($$...$$) -> Vector SVG siêu tốc qua KaTeX
- * 4. Văn bản hỗn hợp kết hợp giữa chữ viết và công thức toán học
+ * 4. Bảng biểu Markdown có chứa công thức KaTeX bên trong các ô <th>/<td>
  * 5. Tự động chuyển đổi định dạng WMF (MathType) sang Vector SVG sắc nét
  */
-/**
- * Tính toán độ cao động và căn chỉnh trục dọc cho công thức toán học:
- * 1. Công thức 1 dòng thông thường: tăng kích thước font lên 1 mức (~1.80em)
- * 2. Công thức phức tạp có dấu: độ cao > 1.5 lần độ cao thông thường (~2.80em - 3.20em)
- * 3. Công thức phân số, ma trận n chiều: độ cao co dãn theo số tầng/chiều
- * 4. Công thức dài: chiều dài tự nhiên bao phủ toàn bộ (w-auto max-w-full)
- */
-function getFormulaMetrics(src: string, customBaseUnit?: number): { heightEm: number; isComplex: boolean; vAlign: string } {
-  let lineFactor = 1.0;
-  let heightEm = 1.45;
-  let vAlign = '-0.30em';
-
-  try {
-    if (src.startsWith('data:image/svg+xml;base64,')) {
-      const base64Str = src.slice('data:image/svg+xml;base64,'.length);
-      const head = atob(base64Str.slice(0, 1200));
-      const lfMatch = head.match(/data-line-factor=["']([\d.]+)["']/i);
-      if (lfMatch) {
-        lineFactor = parseFloat(lfMatch[1]);
-      } else {
-        // Fallback: Tính lineFactor trực tiếp từ viewBox và font-size nội tại của SVG
-        const vbMatch = head.match(/viewBox=["'][\d.-]+\s+[\d.-]+\s+([\d.-]+)\s+([\d.-]+)["']/i);
-        const fsMatches = [...head.matchAll(/font-size:([\d.]+)/gi)].map(m => parseFloat(m[1]));
-        if (vbMatch && fsMatches.length > 0) {
-          fsMatches.sort((a, b) => a - b);
-          const medianFs = fsMatches[Math.floor(fsMatches.length / 2)];
-          const h = parseFloat(vbMatch[2]);
-          if (medianFs > 0) {
-            lineFactor = Math.max(0.8, Math.min(10.0, h / medianFs));
-          }
-        }
-      }
-    }
-  } catch {}
-
-  // Chiều cao chuẩn hóa: lineFactor * BASE_UNIT (mặc định 1.45 hoặc cấu hình động theo Context/Subject)
-  const baseUnit = (customBaseUnit && customBaseUnit > 0) ? customBaseUnit : 1.45;
-  heightEm = Math.max(1.20, lineFactor * baseUnit);
-  vAlign = `-${((heightEm - 1.0) * 0.48 + 0.12).toFixed(2)}em`;
-
-  return { heightEm, isComplex: lineFactor > 1.8, vAlign };
-}
-
-/**
- * Chuẩn hóa SVG vector của KaTeX:
- * Mặc định KaTeX sinh ra SVG width="400em" với viewBox="0 0 400000 522" (nén tỷ lệ 766:1 phi lý khiến chóp mũi tên bị co thành subpixel và mất nét).
- * Hàm này tối ưu hóa viewBox và width về 4em / 4.000 units (tỷ lệ 7.6:1 chuẩn mực), giúp chóp mũi tên luôn sắc nét, giữ nguyên tỷ lệ vàng.
- */
-function normalizeVectorSvg(html: string): string {
-  if (!html.includes('xMaxYMin slice')) return html;
-  return html.replace(
-    /<svg[^>]*preserveAspectRatio="xMaxYMin slice"[^>]*>[\s\S]*?<\/svg>/g,
-    '<svg xmlns="http://www.w3.org/2000/svg" width="4em" height="0.522em" viewBox="0 0 4000 522" preserveAspectRatio="xMaxYMin slice" class="aegis-vector-arrow" style="width: 4em !important; height: inherit !important; position: absolute !important; top: 0 !important; right: 0 !important; left: auto !important; fill: currentColor !important; stroke: currentColor !important; stroke-width: 0.5px !important; display: block !important;"><path d="M0 241v40h3891c-47.3 35.3-84 78-110 128 -16.7 32-27.7 63.7-33 95 0 1.3-.2 2.7-.5 4-.3 1.3-.5 2.3-.5 3 0 7.3 6.7 11 20 11 8 0 13.2-.8 15.5-2.5 2.3-1.7 4.2-5.5 5.5-11.5 2-13.3 5.7-27 11-41 14.7-44.7 39-84.5 73-119.5s73.7-60.2 119-75.5c6-2 9-5.7 9-11s-3-9-9-11c-45.3-15.3-85 -40.5-119-75.5s-58.3-74.8-73-119.5c-4.7-14-8.3-27.3-11-40-1.3-6.7-3.2-10.8-5.5 -12.5-2.3-1.7-7.5-2.5-15.5-2.5-14 0-21 3.7-21 11 0 2 2 10.3 6 25 20.7 83.3 67 151.7 139 205zm0 0v40h3900v-40z" style="fill: currentColor !important; stroke: none !important;"/></svg>'
-  );
-}
-
 export const MathRenderer: React.FC<MathRendererProps> = ({
   content,
   className = '',
   inline = false,
   subjectCode,
-  fontScale
+  fontScale,
 }) => {
   const mathConfig = useMathConfig();
-  const effectiveBaseUnit = fontScale ||
+  const effectiveBaseUnit =
+    fontScale ||
     (subjectCode && mathConfig.settings.subjectProfiles?.[subjectCode]?.baseFontUnit) ||
     mathConfig.baseFontUnit ||
     1.45;
@@ -98,185 +42,9 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
   }, [content]);
 
   const renderedHtml = useMemo(() => {
-    if (!sanitizedContent) return '';
+    return compileMathAndMarkdownHtml(sanitizedContent, effectiveBaseUnit);
+  }, [sanitizedContent, effectiveBaseUnit]);
 
-    // Trường hợp 1: Nội dung thuần túy là 1 Data URI ảnh (Phương án dạng ảnh MathType)
-    const trimmed = sanitizedContent.trim().replace(/[\.\s\t]+$/, '');
-    if (((trimmed.startsWith('data:image/') || trimmed.startsWith('data:image/x-wmf') || trimmed.startsWith('data:image/wmf')) && !/\s/.test(trimmed)) || (trimmed.startsWith('http') && !/\s/.test(trimmed) && (trimmed.endsWith('.png') || trimmed.endsWith('.jpg') || trimmed.endsWith('.webp') || trimmed.endsWith('.svg')))) {
-      return null; // Render trực tiếp bằng thẻ img
-    }
-
-    // Trường hợp 1b: Nội dung là file âm thanh (Đề thi kỹ năng nghe Listening)
-    if (trimmed.startsWith('data:audio/') || (trimmed.startsWith('http') && (trimmed.endsWith('.mp3') || trimmed.endsWith('.wav') || trimmed.endsWith('.ogg') || trimmed.endsWith('.m4a')))) {
-      return `<div class="my-2 p-2 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center gap-2"><audio controls class="w-full h-8"><source src="${trimmed}" /></audio></div>`;
-    }
-
-    // Bản đồ token hóa bảo vệ các phần tử media (Ảnh Markdown, Audio, Video, Raw Data URI)
-    const mediaTokens: Record<string, string> = {};
-    let tokenCounter = 0;
-
-    const buildVideoHtml = (src: string) => {
-      const ytMatch = src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
-      if (ytMatch) {
-        return `<div class="my-3 rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-lg max-w-xl mx-auto aspect-video"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" title="Video bài học" class="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
-      }
-      return `<div class="my-3 p-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col gap-1.5 max-w-xl mx-auto"><span class="text-[11px] font-bold text-amber-400">🎬 Video trực quan:</span><video controls preload="metadata" class="w-full max-h-80 rounded-xl bg-black"><source src="${src}" /></video></div>`;
-    };
-
-    // Hỗ trợ link audio nhúng dạng [Audio](url)
-    let processed = sanitizedContent.replace(/\[Audio(?:\s+Listening)?\]\(((?:data:audio\/|http)[^)]+)\)/gi, (_match, src) => {
-      const token = `__AEGIS_AUDIO_TOKEN_${tokenCounter++}__`;
-      mediaTokens[token] = `<div class="my-2 p-2.5 bg-slate-900/90 border border-slate-800 rounded-xl flex flex-col gap-1"><span class="text-[11px] font-bold text-sky-400">🎧 Bài nghe Audio:</span><audio controls class="w-full h-8"><source src="${src}" /></audio></div>`;
-      return token;
-    });
-
-    // Hỗ trợ link video nhúng dạng [Video](url) hoặc data:video/...
-    processed = processed.replace(/\[Video(?:\s+[^\]]*)?\]\(((?:data:video\/|http)[^)]+)\)/gi, (_match, src) => {
-      const token = `__AEGIS_VIDEO_TOKEN_${tokenCounter++}__`;
-      mediaTokens[token] = buildVideoHtml(src);
-      return token;
-    });
-
-    // Trường hợp 2: Văn bản có chứa markdown image: ![alt](data:image/... hoặc url)
-    processed = processed.replace(/!\[([^\]]*)\]\((data:image\/[^;]+;base64,[^)]+|https?:\/\/[^)\s]+)\)/g, (_match, alt, src) => {
-      const safeSrc = (src.startsWith('data:image/x-wmf') || src.startsWith('data:image/wmf')) ? convertWmfDataUriToSvg(src) : src;
-      const token = `__AEGIS_IMG_TOKEN_${tokenCounter++}__`;
-      mediaTokens[token] = `<div class="my-3 flex flex-col items-center"><div class="inline-block p-2.5 rounded-2xl bg-white border border-slate-200 shadow-md max-w-full"><img src="${safeSrc}" alt="${alt || 'Hình minh họa'}" class="max-h-96 max-w-full rounded-xl object-contain bg-white block mx-auto" /></div><span class="text-[11px] text-slate-400 mt-1.5 italic">${alt || 'Hình minh họa'}</span></div>`;
-      return token;
-    });
-
-    // Trường hợp 2b: [World-Class Smart Ingestion] Nhận diện chuỗi Data URI Base64 dạng raw đứng rời
-    processed = processed.replace(/(?<!(?:src=["']|\())(data:image\/[a-zA-Z0-9.+_-]+;base64,[A-Za-z0-9+/=]+)(?!\))/g, (_match, src) => {
-      const safeSrc = (src.startsWith('data:image/x-wmf') || src.startsWith('data:image/wmf'))
-        ? convertWmfDataUriToSvg(src)
-        : (src.startsWith('data:image/svg+xml') ? cleanSvgDataUri(src) : src);
-      const token = `__AEGIS_IMG_TOKEN_${tokenCounter++}__`;
-      const metrics = getFormulaMetrics(safeSrc, effectiveBaseUnit);
-      mediaTokens[token] = `<img src="${safeSrc}" alt="Công thức" style="height: ${metrics.heightEm.toFixed(2)}em; max-height: var(--math-max-height, 14em); width: auto; max-width: 100%; vertical-align: ${metrics.vAlign}; object-fit: contain;" class="inline-block rounded px-2 py-0.5 mx-1 align-middle border border-slate-300 bg-white shadow-sm hover:scale-105 transition-transform cursor-zoom-in" />`;
-      return token;
-    });
-
-    // Trường hợp 2c: Tự động bọc $ cho các phương trình hóa học dạng \ce{...} đứng độc lập
-    processed = processed.replace(/(?<!\$)\\ce\{([^\}]+)\}(?!\$)/g, '$\\ce{$1}$');
-
-    // Trường hợp 3: Render công thức toán học LaTeX Block ($$ ... $$)
-    processed = processed.replace(/\$\$([\s\S]+?)\$\$/g, (_match, equation) => {
-      try {
-        const normalized = equation
-          .trim()
-          .replace(/\\vec\{([^{}]+)\}/g, '\\overrightarrow{$1}')
-          .replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overrightarrow{$1}')
-          .replace(/\\hat\{([^{}]+)\}/g, '\\widehat{$1}')
-          .replace(/\\hat\s+([a-zA-Z0-9]+)/g, '\\widehat{$1}')
-          .replace(/\\angle\s*\{?([A-Z]{3})\}?/g, '\\widehat{$1}')
-          .replace(/∠\s*([A-Z]{3})/g, '\\widehat{$1}')
-          .replace(/[\u20D7⃗]/g, '');
-        const rendered = katex.renderToString(normalized, {
-          displayMode: true,
-          throwOnError: false,
-          strict: false,
-        });
-        const token = `__AEGIS_KATEX_BLOCK_${tokenCounter++}__`;
-        mediaTokens[token] = `<div class="block-math my-2 text-[1.1em] overflow-x-auto overflow-y-hidden py-1 tracking-wide">${normalizeVectorSvg(rendered)}</div>`;
-        return token;
-      } catch {
-        return `<span class="text-rose-400 font-mono text-xs">[Lỗi công thức: ${equation}]</span>`;
-      }
-    });
-
-    // Trường hợp 4: Render công thức toán học LaTeX Inline ($ ... $)
-    processed = processed.replace(/(?<!\\)\$([^\$\n\r]+?)\$/g, (_match, equation) => {
-      try {
-        const normalized = equation
-          .trim()
-          .replace(/\\vec\{([^{}]+)\}/g, '\\overrightarrow{$1}')
-          .replace(/\\vec\s+([a-zA-Z0-9]+)/g, '\\overrightarrow{$1}')
-          .replace(/\\hat\{([^{}]+)\}/g, '\\widehat{$1}')
-          .replace(/\\hat\s+([a-zA-Z0-9]+)/g, '\\widehat{$1}')
-          .replace(/\\angle\s*\{?([A-Z]{3})\}?/g, '\\widehat{$1}')
-          .replace(/∠\s*([A-Z]{3})/g, '\\widehat{$1}')
-          .replace(/[\u20D7⃗]/g, '');
-
-        // Tự động nâng cấp lên \displaystyle cho các cấu trúc đa tầng (phân số, căn thức, tích phân, tổng, giới hạn...)
-        const hasComplexStructures = /\\(?:frac|dfrac|cfrac|sqrt|int|iint|iiint|oint|sum|prod|lim|matrix|pmatrix|bmatrix|vmatrix|cases)/.test(normalized);
-        const formulaToRender = hasComplexStructures && !normalized.includes('\\displaystyle')
-          ? `{\\displaystyle ${normalized}}`
-          : normalized;
-
-        const rendered = katex.renderToString(formulaToRender, {
-          displayMode: false,
-          throwOnError: false,
-          strict: false,
-        });
-        const token = `__AEGIS_KATEX_INLINE_${tokenCounter++}__`;
-        mediaTokens[token] = `<span class="inline-math font-medium tracking-wide mx-0.5">${normalizeVectorSvg(rendered)}</span>`;
-        return token;
-      } catch {
-        return `<span class="text-rose-400 font-mono text-xs">[Lỗi công thức: ${equation}]</span>`;
-      }
-    });
-
-    // Trường hợp 4b: Tự động phân tích và chuyển đổi Bảng số liệu thống kê Markdown
-    processed = parseAndTokenizeTables(processed, mediaTokens);
-
-    // Trường hợp 5: Hỗ trợ gạch chân cho Đề thi Ngoại ngữ (Phát âm, Trọng âm, Tìm lỗi sai)
-    // Bảo vệ thẻ <u> định dạng thật (không có ký tự ẩn \u200B từ mã code tin học)
-    processed = processed.replace(/<u(?:\s+[^>]*)?>([\s\S]+?)<\/u>/gi, (_match, text) => {
-      const token = `__AEGIS_U_TOKEN_${tokenCounter++}__`;
-      mediaTokens[token] = `<u class="underline decoration-2 decoration-sky-400 underline-offset-4 font-bold text-sky-300">${text}</u>`;
-      return token;
-    });
-
-    // Hỗ trợ thẻ <mark> highlight
-    processed = processed.replace(/<mark(?:\s+[^>]*)?>([\s\S]+?)<\/mark>/gi, (_match, text) => {
-      const token = `__AEGIS_MARK_TOKEN_${tokenCounter++}__`;
-      mediaTokens[token] = `<mark class="bg-amber-400/20 text-amber-200 px-1 py-0.5 rounded font-semibold border-b border-amber-400/50">${text}</mark>`;
-      return token;
-    });
-
-    // Trường hợp 5b: Hỗ trợ mã code block Markdown ```lang ... ``` hoặc ``` ... ``` cho Đề Tin học
-    processed = processed.replace(/```(?:[a-zA-Z0-9_+-]*\n)?([\s\S]+?)```/g, (_match, code) => {
-      const token = `__AEGIS_CODE_BLOCK_${tokenCounter++}__`;
-      const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      mediaTokens[token] = `<pre class="my-2.5 p-3 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-mono text-xs overflow-x-auto leading-relaxed whitespace-pre-wrap select-text"><code>${escapedCode}</code></pre>`;
-      return token;
-    });
-
-    // Trường hợp 5c: Hỗ trợ mã code markdown inline `code`
-    processed = processed.replace(/`([^`\n]+)`/g, (_match, code) => {
-      const token = `__AEGIS_CODE_TOKEN_${tokenCounter++}__`;
-      const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      mediaTokens[token] = `<code class="font-mono bg-slate-800 text-amber-300 px-1.5 py-0.5 rounded text-[0.9em] border border-slate-700/60">${escapedCode}</code>`;
-      return token;
-    });
-
-    // [BẢO VỆ TÍNH TOÀN VẸN ĐỀ TIN HỌC / HTML / CSS / XML TAGS]
-    // Toàn bộ các thẻ HTML/CSS trong đề thi (ví dụ: <ol start="10">, <li>, <h1>, <style>, <p>, <em>...)
-    // sẽ được escape sang thực thể an toàn &lt;...&gt; để browser hiển thị nguyên vẹn mã nguồn, không bị parse nhầm thành DOM
-    processed = processed
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\u200B/g, '');
-
-    // In đậm markdown **text**
-    processed = processed.replace(/\*\*([^\*]+?)\*\*/g, '<strong>$1</strong>');
-
-    // Chuyển ký tự xuống dòng thành thẻ <br/> nếu không nằm trong thẻ block
-    processed = processed.replace(/\n/g, '<br/>');
-
-    // Dọn dẹp thẻ <br/> thừa bao bọc trước và sau Token khối bảng/ảnh/toán
-    processed = processed.replace(/(?:<br\/>)+(?=(?:__AEGIS_TABLE_TOKEN_|__AEGIS_KATEX_BLOCK_))/g, '');
-    processed = processed.replace(/(?<=(?:__AEGIS_TABLE_TOKEN_\d+__|__AEGIS_KATEX_BLOCK_\d+__))(?:<br\/>)+/g, '');
-
-    // Phục hồi nguyên vẹn các Media & Formula Tokens (ảnh, audio, video, bảng, KaTeX, format)
-    for (const [token, html] of Object.entries(mediaTokens)) {
-      processed = processed.split(token).join(html);
-    }
-
-    return processed;
-  }, [sanitizedContent]);
-
-  // Nếu là ảnh Data URI thuần túy (duy nhất 1 ảnh không kèm ký tự khác)
   let trimmed = sanitizedContent?.trim()?.replace(/[\.\s\t]+$/, '') || '';
   if (trimmed.startsWith('data:image/x-wmf') || trimmed.startsWith('data:image/wmf')) {
     trimmed = convertWmfDataUriToSvg(trimmed);
@@ -284,7 +52,12 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     trimmed = cleanSvgDataUri(trimmed);
   }
 
-  if (((trimmed.startsWith('data:image/') || trimmed.startsWith('data:image/x-wmf')) && !/\s/.test(trimmed)) || (trimmed.startsWith('http') && !/\s/.test(trimmed) && (trimmed.endsWith('.png') || trimmed.endsWith('.jpg') || trimmed.endsWith('.webp') || trimmed.endsWith('.svg')))) {
+  if (
+    ((trimmed.startsWith('data:image/') || trimmed.startsWith('data:image/x-wmf')) && !/\s/.test(trimmed)) ||
+    (trimmed.startsWith('http') &&
+      !/\s/.test(trimmed) &&
+      (trimmed.endsWith('.png') || trimmed.endsWith('.jpg') || trimmed.endsWith('.webp') || trimmed.endsWith('.svg')))
+  ) {
     const isSvgMath = trimmed.startsWith('data:image/svg+xml');
     const metrics = isSvgMath ? getFormulaMetrics(trimmed, effectiveBaseUnit) : null;
     return (
@@ -292,8 +65,21 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
         <img
           src={trimmed}
           alt="Công thức / Hình ảnh"
-          style={metrics ? { height: `${metrics.heightEm.toFixed(2)}em`, maxHeight: '14em', width: 'auto', maxWidth: '100%', verticalAlign: metrics.vAlign, objectFit: 'contain' } : undefined}
-          className={`${metrics ? '' : 'h-auto min-h-[2.2em] max-h-36 w-auto max-w-full'} object-contain rounded-lg border border-slate-300 bg-white px-2 py-0.5 shadow-sm hover:scale-105 transition-transform cursor-zoom-in`}
+          style={
+            metrics
+              ? {
+                  height: `${metrics.heightEm.toFixed(2)}em`,
+                  maxHeight: '14em',
+                  width: 'auto',
+                  maxWidth: '100%',
+                  verticalAlign: metrics.vAlign,
+                  objectFit: 'contain',
+                }
+              : undefined
+          }
+          className={`${
+            metrics ? '' : 'h-auto min-h-[2.2em] max-h-36 w-auto max-w-full'
+          } object-contain rounded-lg border border-slate-300 bg-white px-2 py-0.5 shadow-sm hover:scale-105 transition-transform cursor-zoom-in`}
           onClick={(e) => {
             e.stopPropagation();
             window.open(trimmed, '_blank');

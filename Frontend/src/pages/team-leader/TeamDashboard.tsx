@@ -1,307 +1,353 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Users, BarChart3, ChevronRight, TrendingUp, Clock, CheckCircle2, Trophy,
-  Send, RefreshCw, AlertCircle, ShieldCheck, Target, FileQuestion, Play,
-  Sparkles, FolderTree, Copy, Check
+  Users,
+  Trophy,
+  Play,
+  FolderTree,
+  FileQuestion,
+  Sparkles,
+  ExternalLink,
+  Copy,
+  Check,
+  ShieldCheck,
+  BarChart3,
+  UserPlus,
+  Settings,
+  PlusCircle,
+  RefreshCw,
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import api from '@/services/api';
-import { learnerQuizService } from '@/services/learner-quiz.service';
+import { useAuthContext } from '@/app/providers/AuthProvider';
 import { CreatorWorkspaceNav } from '@/pages/creator/components/CreatorWorkspaceNav';
 import { TeacherCohortDashboardModal } from '@/pages/creator/studio/components/TeacherCohortDashboardModal';
-import type { BankTopic } from '@/pages/admin/questions/types';
+import {
+  useTeamManagement,
+  type TeamMemberRecord,
+} from './hooks/useTeamManagement';
+import { TeamMembersTableSection } from './components/TeamMembersTableSection';
+import { TeamMemberManagerModal } from './components/TeamMemberManagerModal';
+import { TeamSettingsModal } from './components/TeamSettingsModal';
 
-interface TeamMember {
-  userId: string;
-  name?: string;
-  assignedAt: string;
-}
-
-interface MemberProgress {
-  userId: string;
-  totalAttempts: number;
-  avgScore: number;
-  lastAttemptDate: string | null;
-  correctAnswers: number;
-  totalQuestions: number;
-}
-
-interface TeamInfo {
-  orgUnit: { id: string; name: string; code: string; unitType: number };
-  memberCount: number;
-  members: TeamMember[];
-}
-
-const MOCK_TEAM: TeamInfo = {
-  orgUnit: { id: 'team-demo-guid', name: 'Lớp Học & Đội Nhóm Sáng Tạo Aegis', code: 'AEGIS_CLASSROOM', unitType: 5 },
-  memberCount: 6,
-  members: [
-    { userId: 'learner-001', name: 'Nguyễn Văn An', assignedAt: '2026-08-01' },
-    { userId: 'learner-002', name: 'Trần Thị Bình', assignedAt: '2026-08-01' },
-    { userId: 'learner-003', name: 'Lê Minh Cường', assignedAt: '2026-08-15' },
-    { userId: 'learner-004', name: 'Phạm Thu Dung', assignedAt: '2026-09-01' },
-    { userId: 'learner-005', name: 'Hoàng Văn Em', assignedAt: '2026-09-01' },
-    { userId: 'learner-006', name: 'Vũ Thị Phương', assignedAt: '2026-09-05' },
-  ],
-};
-
-const MOCK_PROGRESS: Record<string, MemberProgress> = {
-  'learner-001': { userId: 'learner-001', totalAttempts: 24, avgScore: 87.5, lastAttemptDate: '2026-11-04', correctAnswers: 210, totalQuestions: 240 },
-  'learner-002': { userId: 'learner-002', totalAttempts: 18, avgScore: 92.1, lastAttemptDate: '2026-11-04', correctAnswers: 165, totalQuestions: 180 },
-  'learner-003': { userId: 'learner-003', totalAttempts: 31, avgScore: 79.3, lastAttemptDate: '2026-11-03', correctAnswers: 246, totalQuestions: 310 },
-  'learner-004': { userId: 'learner-004', totalAttempts: 12, avgScore: 68.0, lastAttemptDate: '2026-11-02', correctAnswers: 81, totalQuestions: 120 },
-  'learner-005': { userId: 'learner-005', totalAttempts: 7, avgScore: 55.4, lastAttemptDate: '2026-11-01', correctAnswers: 38, totalQuestions: 70 },
-  'learner-006': { userId: 'learner-006', totalAttempts: 3, avgScore: 43.2, lastAttemptDate: '2026-11-01', correctAnswers: 13, totalQuestions: 30 },
-};
-
-function scoreColor(score: number): string {
-  if (score >= 85) return 'text-emerald-400';
-  if (score >= 70) return 'text-amber-400';
-  if (score >= 50) return 'text-orange-400';
-  return 'text-red-400';
-}
-
-export function TeamDashboard() {
+export const TeamDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
-  const [teamInfo, setTeamInfo] = useState<TeamInfo | null>(null);
-  const [progress, setProgress] = useState<Record<string, MemberProgress>>({});
-  const [myTopics, setMyTopics] = useState<BankTopic[]>([]);
-  const [myQuestionCount, setMyQuestionCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [assignMsg, setAssignMsg] = useState<string | null>(null);
-  const [copiedTopicCode, setCopiedTopicCode] = useState<string | null>(null);
-  const [cohortModalTopic, setCohortModalTopic] = useState<BankTopic | null>(null);
+  const { user } = useAuthContext();
+  const team = useTeamManagement(user?.id);
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [topicsData, questionsData] = await Promise.all([
-          learnerQuizService.getTopics(false, true),
-          learnerQuizService.getQuestions({ myOnly: true }),
-        ]);
-        const leafTopics = topicsData.filter((t: BankTopic) => !t.code.startsWith('STUDIO_') && t.code !== 'STUDIO');
-        setMyTopics(leafTopics.length > 0 ? leafTopics : topicsData);
-        setMyQuestionCount(questionsData.length);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [diagnosticTopic, setDiagnosticTopic] = useState<{
+    code: string;
+    name: string;
+    totalQuestions: number;
+  } | null>(null);
 
-        const initialCode = searchParams.get('topicCode');
-        if (initialCode) {
-          const found = topicsData.find((t: BankTopic) => t.code === initialCode);
-          if (found) setCohortModalTopic(found);
-        }
+  // Modals state
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMemberRecord | null>(null);
+  const [teamSettingsOpen, setTeamSettingsOpen] = useState(false);
+  const [teamSettingsMode, setTeamSettingsMode] = useState<'edit' | 'create'>('edit');
 
-        try {
-          const [teamRes, progressRes] = await Promise.all([
-            api.get('/api/team-leader/my-team'),
-            api.get('/api/team-leader/my-team/progress'),
-          ]);
-          setTeamInfo(teamRes.data);
-          const prog: Record<string, MemberProgress> = {};
-          (progressRes.data.memberProgress as MemberProgress[]).forEach(p => { prog[p.userId] = p; });
-          setProgress(prog);
-        } catch {
-          setTeamInfo(MOCK_TEAM);
-          setProgress(MOCK_PROGRESS);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [user?.id]);
-
-  const handleCopyHomeworkLink = (topicCode: string) => {
-    const url = `${window.location.origin}/practice?topicCode=${encodeURIComponent(topicCode)}&mode=study`;
-    navigator.clipboard.writeText(url);
-    setCopiedTopicCode(topicCode);
-    setAssignMsg(`Đã sao chép đường dẫn giao bài [${topicCode}] cho học viên!`);
-    setTimeout(() => { setCopiedTopicCode(null); setAssignMsg(null); }, 3500);
+  const handleCopyPracticeLink = (topicCode: string) => {
+    const link = `${window.location.origin}/practice?topic=${encodeURIComponent(topicCode)}`;
+    navigator.clipboard.writeText(link).catch(() => {});
+    setCopiedCode(topicCode);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const members = teamInfo?.members ?? [];
-  const progList = members.map(m => progress[m.userId]).filter(Boolean);
-  const avgScore = progList.length ? progList.reduce((s, p) => s + p.avgScore, 0) / progList.length : 0;
-  const activeCount = progList.filter(p => p.totalAttempts > 0).length;
+  const handleRemoveMember = async (member: TeamMemberRecord) => {
+    if (
+      !window.confirm(
+        `Thầy/Cô có chắc chắn muốn gỡ học viên "${member.fullName}" (${member.email}) khỏi nhóm "${team.orgUnit?.name}"?`
+      )
+    ) {
+      return;
+    }
+    try {
+      await team.removeMember(member.userId);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Lỗi khi gỡ thành viên khỏi nhóm.');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white py-4 sm:py-6 px-3 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         <CreatorWorkspaceNav />
 
-        {assignMsg && (
-          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs sm:text-sm font-bold">
-            <CheckCircle2 size={16} /> {assignMsg}
-          </div>
-        )}
-
-        {/* Hero Banner: Quản lý Đội nhóm, Tài nguyên & Học viên */}
-        <div className="bg-gradient-to-r from-cyan-950/40 via-slate-900/90 to-emerald-950/40 border border-cyan-500/30 rounded-2xl p-6 shadow-xl">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase text-cyan-400 tracking-widest mb-1.5 flex items-center gap-1.5">
-                <ShieldCheck size={13} /> Không Gian Quản Trị Lớp Học & Đội Nhóm (Creator & Teacher Hub)
-              </p>
-              <h1 className="text-xl sm:text-2xl font-black text-white flex flex-wrap items-center gap-2.5">
-                <span>{user?.orgUnitName || teamInfo?.orgUnit.name || 'Lớp Học & Đội Nhóm Của Tôi'}</span>
-                <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                  {members.length} học viên
-                </span>
-              </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                Giáo viên / Chủ sở hữu: <strong className="text-white">{user?.name || 'Creator'}</strong> • Quản lý trực tiếp đề thi Zen Studio, Chủ đề cá nhân và Tiến độ học viên.
-              </p>
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-indigo-950/50 via-slate-900 to-emerald-950/30 border border-indigo-500/25 rounded-2xl p-5 shadow-xl">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-xs text-emerald-400 font-bold uppercase tracking-wider">
+              <ShieldCheck size={14} />
+              <span>Không Gian Quản Trị Lớp Học &amp; Đội Nhóm Thực Tế (PostgreSQL SSoT)</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <Link to="/creator/studio" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-500/20 transition">
-                <Sparkles size={14} /> <span>Soạn Đề (Zen Studio)</span>
-              </Link>
-              <Link to="/creator/topics" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-black transition">
-                <FolderTree size={14} /> <span>ZenTopics ({myTopics.length})</span>
-              </Link>
-              <Link to="/creator/questions" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-black transition">
-                <FileQuestion size={14} /> <span>ZenQuestions ({myQuestionCount})</span>
-              </Link>
-              <Link to="/practice?scope=TEAM" className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black shadow-lg shadow-emerald-500/20 transition">
-                <Play size={14} /> <span>Luyện Thi Nhóm</span>
-              </Link>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                {team.orgUnit?.name ?? 'Lớp Học & Đội Nhóm Aegis'}
+              </h1>
+              {team.orgUnit?.code && (
+                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-xs font-mono font-bold">
+                  {team.orgUnit.code}
+                </span>
+              )}
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold">
+                {team.members.length} thành viên
+              </span>
+
+              {team.allTeams.length > 1 && (
+                <select
+                  value={team.selectedOrgUnitId}
+                  onChange={(e) => team.handleSelectTeam(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1 text-xs text-amber-300 font-bold focus:outline-none focus:border-amber-500"
+                >
+                  {team.allTeams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      Chuyển nhóm: {t.name} ({t.code})
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
+
+            <p className="text-xs text-slate-400">
+              Trưởng nhóm / Giáo viên: <strong className="text-slate-200">{user?.name || 'Giáo viên'}</strong>
+              {team.orgUnit?.address ? ` • ${team.orgUnit.address}` : ''}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => team.fetchTeamAndResources()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-bold transition cursor-pointer"
+            >
+              <RefreshCw size={13} className={team.loading ? 'animate-spin text-emerald-400' : ''} />
+              <span>Làm mới</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTeamSettingsMode('edit');
+                setTeamSettingsOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              <Settings size={13} className="text-indigo-400" />
+              <span>Sửa Thông Tin Nhóm</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTeamSettingsMode('create');
+                setTeamSettingsOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition cursor-pointer"
+            >
+              <PlusCircle size={13} />
+              <span>+ Tạo Lớp/Nhóm Mới</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditingMember(null);
+                setMemberModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/20 transition cursor-pointer"
+            >
+              <UserPlus size={14} />
+              <span>+ Thêm Học Viên</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/creator/studio')}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/25 transition cursor-pointer"
+            >
+              <Sparkles size={14} />
+              <span>Zen Studio</span>
+            </button>
           </div>
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Học viên trong nhóm', value: members.length, icon: <Users size={16} />, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/20' },
-            { label: 'Chủ đề / Đề thi của tôi', value: myTopics.length, icon: <FolderTree size={16} />, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-            { label: 'Câu hỏi sở hữu', value: myQuestionCount, icon: <FileQuestion size={16} />, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-            { label: 'Điểm TB Học viên', value: avgScore > 0 ? `${avgScore.toFixed(1)}%` : '—', icon: <Trophy size={16} />, color: scoreColor(avgScore), bg: 'bg-indigo-500/10 border-indigo-500/20' },
-          ].map(stat => (
-            <div key={stat.label} className={`rounded-2xl border p-4 ${stat.bg}`}>
-              <div className={`mb-2 ${stat.color}`}>{stat.icon}</div>
-              <p className="text-xl font-black text-white">{stat.value}</p>
-              <p className="text-[11px] text-slate-400 font-medium mt-0.5">{stat.label}</p>
+        {/* 4 Real KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+            <Users className="w-5 h-5 text-indigo-400 mb-2" />
+            <div className="text-2xl font-bold text-white">{team.members.length}</div>
+            <div className="text-xs text-slate-400">
+              Thành viên thật trong nhóm ({team.activeMembersCount} đã làm bài)
             </div>
-          ))}
+          </div>
+
+          <div
+            onClick={() => navigate('/creator/topics')}
+            className="bg-slate-900 border border-amber-500/25 hover:border-amber-500/50 rounded-2xl p-4 cursor-pointer transition"
+          >
+            <FolderTree className="w-5 h-5 text-amber-400 mb-2" />
+            <div className="text-2xl font-bold text-white">{team.myTopics.length}</div>
+            <div className="text-xs text-amber-300/80 flex items-center justify-between">
+              <span>Nhánh chủ đề phân cấp</span>
+              <ExternalLink size={12} />
+            </div>
+          </div>
+
+          <div
+            onClick={() => navigate('/creator/questions')}
+            className="bg-slate-900 border border-emerald-500/25 hover:border-emerald-500/50 rounded-2xl p-4 cursor-pointer transition"
+          >
+            <FileQuestion className="w-5 h-5 text-emerald-400 mb-2" />
+            <div className="text-2xl font-bold text-white">{team.myQuestions.length}</div>
+            <div className="text-xs text-emerald-300/80 flex items-center justify-between">
+              <span>Câu hỏi thuộc chủ quyền</span>
+              <ExternalLink size={12} />
+            </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+            <Trophy className="w-5 h-5 text-purple-400 mb-2" />
+            <div className="text-2xl font-bold text-white">{team.avgTeamScore}%</div>
+            <div className="text-xs text-slate-400">Điểm TB thực tế của nhóm</div>
+          </div>
         </div>
 
-        {/* Kho Đề Thi & Chủ Đề Giao Cho Học Viên */}
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Real Member Management & Progress Table */}
+        <TeamMembersTableSection
+          members={team.members}
+          activeMembersCount={team.activeMembersCount}
+          onOpenAddMember={() => {
+            setEditingMember(null);
+            setMemberModalOpen(true);
+          }}
+          onOpenEditMember={(m) => {
+            setEditingMember(m);
+            setMemberModalOpen(true);
+          }}
+          onRemoveMember={handleRemoveMember}
+        />
+
+        {/* Hierarchical Topics & Exam Resources Section */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FolderTree size={16} className="text-amber-400" />
-              <span className="font-black text-sm text-white">Tài Nguyên Đề Thi & Chủ Đề Đã Giao Cho Học Viên</span>
+              <h2 className="text-sm sm:text-base font-bold text-white">
+                Tài Nguyên Đề Thi &amp; Cây Chủ Đề Đã Giao ({team.assignableTopicNodes.length})
+              </h2>
             </div>
-            <Link to="/creator/topics" className="text-xs font-bold text-amber-400 hover:text-amber-300">
-              Quản lý toàn bộ ZenTopics &rarr;
-            </Link>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/practice')}
+                className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+              >
+                <Play size={12} />
+                <span>Mở phòng luyện thi &rarr;</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/creator/topics')}
+                className="text-xs font-bold text-amber-400 hover:text-amber-300 cursor-pointer"
+              >
+                Quản lý Cây Chủ Đề &rarr;
+              </button>
+            </div>
           </div>
 
-          {myTopics.length === 0 ? (
-            <div className="p-6 text-center rounded-xl bg-slate-950/60 border border-slate-800/80 text-xs text-slate-400">
-              Thầy/Cô chưa có chủ đề hoặc đề thi cá nhân nào. Hãy bấm <strong>Soạn Đề (Zen Studio)</strong> hoặc <strong>ZenTopics</strong> để tạo mới!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {myTopics.slice(0, 6).map(top => (
-                <div key={top.id} className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-500/40 transition flex flex-col justify-between gap-3">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-mono text-[11px] font-bold text-amber-400 bg-amber-950/50 px-2 py-0.5 rounded border border-amber-800/40">
-                        {top.code}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400">{top.domainCode || 'EDUCATION'}</span>
-                    </div>
-                    <p className="text-xs font-bold text-slate-100 line-clamp-1">{top.name}</p>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {team.assignableTopicNodes.slice(0, 9).map((top) => (
+              <div
+                key={top.id}
+                className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/30 transition flex flex-col justify-between gap-3"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 font-mono text-[10px] font-bold">
+                      {top.code}
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-emerald-400">
+                      {top.totalQuestionCount} câu hỏi
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 pt-2 border-t border-slate-800/80">
-                    <button
-                      type="button"
-                      onClick={() => setCohortModalTopic(top)}
-                      className="flex-1 py-1.5 px-2 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold transition cursor-pointer"
-                    >
-                      📊 Báo cáo Lớp
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleCopyHomeworkLink(top.code)}
-                      className="py-1.5 px-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 transition cursor-pointer"
-                    >
-                      {copiedTopicCode === top.code ? <Check size={12} /> : <Copy size={12} />}
-                      <span>Giao bài</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/creator/questions?topicCode=${encodeURIComponent(top.code)}`)}
-                      className="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition cursor-pointer"
-                      title="Xem câu hỏi của chủ đề này"
-                    >
-                      Câu hỏi
-                    </button>
-                  </div>
+                  <h3 className="text-sm font-bold text-white mt-2 line-clamp-1" title={top.name}>
+                    {top.name}
+                  </h3>
+                  <p className="text-[10px] font-mono text-slate-500 mt-0.5 truncate">
+                    {top.materializedPath || `/${top.code}/`}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Bảng Tiến độ Học viên trong Đội nhóm */}
-        {!loading && (
-          <div className="bg-slate-900/60 border border-slate-800/60 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-800/60 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BarChart3 size={16} className="text-emerald-400" />
-                <span className="font-black text-sm text-white">Tiến Độ Học Tập Của Học Viên ({activeCount}/{members.length} đang hoạt động)</span>
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDiagnosticTopic({
+                        code: top.code,
+                        name: top.name,
+                        totalQuestions: top.totalQuestionCount || 10,
+                      })
+                    }
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 text-xs font-bold transition cursor-pointer"
+                  >
+                    <BarChart3 size={12} />
+                    <span>Báo cáo Lớp</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyPracticeLink(top.code)}
+                    className="flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition cursor-pointer"
+                  >
+                    {copiedCode === top.code ? <Check size={12} /> : <Copy size={12} />}
+                    <span>{copiedCode === top.code ? 'Đã chép' : 'Giao bài'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(`/creator/questions?topicCode=${encodeURIComponent(top.code)}`)
+                    }
+                    className="py-1.5 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition cursor-pointer"
+                  >
+                    Câu hỏi
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="divide-y divide-slate-800/40">
-              {members.map((member, idx) => {
-                const prog = progress[member.userId];
-                const completion = prog ? Math.round((prog.correctAnswers / Math.max(prog.totalQuestions, 1)) * 100) : 0;
-                return (
-                  <div key={member.userId} className="px-5 py-3.5 flex items-center gap-4 hover:bg-slate-800/30 transition-colors">
-                    <span className="text-xs text-slate-500 font-mono w-5 text-center">{idx + 1}</span>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-black text-cyan-300">
-                      {(member.name ?? member.userId).charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-200 truncate">{member.name ?? member.userId}</p>
-                      <p className="text-[11px] text-slate-400">
-                        {prog ? `${prog.totalAttempts} lần làm bài · Gần nhất: ${prog.lastAttemptDate || '—'}` : 'Chưa làm bài'}
-                      </p>
-                    </div>
-                    <div className="hidden sm:flex flex-col items-end gap-1 w-32">
-                      <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${completion}%` }} />
-                      </div>
-                      <span className="text-[10px] text-slate-400">{completion}% chính xác</span>
-                    </div>
-                    <div className="w-16 text-right">
-                      <span className={`text-sm font-black ${prog ? scoreColor(prog.avgScore) : 'text-slate-600'}`}>
-                        {prog ? `${prog.avgScore.toFixed(1)}%` : '—'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            ))}
           </div>
-        )}
-
-        {cohortModalTopic && (
-          <TeacherCohortDashboardModal
-            examTitle={cohortModalTopic.name}
-            totalQuestions={cohortModalTopic.questionCountCached || 20}
-            topicCode={cohortModalTopic.code}
-            onClose={() => setCohortModalTopic(null)}
-          />
-        )}
+        </div>
       </div>
+
+      {/* Modals */}
+      <TeamMemberManagerModal
+        isOpen={memberModalOpen}
+        editingMember={editingMember}
+        teamName={team.orgUnit?.name || 'Lớp Học & Đội Nhóm'}
+        onClose={() => setMemberModalOpen(false)}
+        onSearchAvailable={team.searchAvailableUsers}
+        onAddMember={team.addMember}
+        onUpdateMember={team.updateMember}
+      />
+
+      <TeamSettingsModal
+        isOpen={teamSettingsOpen}
+        mode={teamSettingsMode}
+        currentTeam={team.orgUnit}
+        onClose={() => setTeamSettingsOpen(false)}
+        onUpdateTeam={team.updateTeamInfo}
+        onCreateTeam={team.createNewTeam}
+      />
+
+      {diagnosticTopic && (
+        <TeacherCohortDashboardModal
+          topicCode={diagnosticTopic.code}
+          examTitle={diagnosticTopic.name}
+          totalQuestions={diagnosticTopic.totalQuestions}
+          onClose={() => setDiagnosticTopic(null)}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default TeamDashboard;

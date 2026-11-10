@@ -41,6 +41,12 @@ namespace AegisQuiz.Application.DTOs
 
         [JsonPropertyName("topic_code")]
         public string? TopicCode { get; set; }
+
+        [JsonPropertyName("max_exposure_rate")]
+        public double MaxExposureRate { get; set; } = 0.20;
+
+        [JsonPropertyName("randomesque_k")]
+        public int RandomesqueK { get; set; } = 3;
     }
 
     public class StartCatSessionRequest
@@ -51,6 +57,8 @@ namespace AegisQuiz.Application.DTOs
         public int? MaxItems { get; set; }
         public double? SeThreshold { get; set; }
         public double? InitialTheta { get; set; }
+        public double? MaxExposureRate { get; set; }
+        public int? RandomesqueK { get; set; }
     }
 
     public class CatStartResponse

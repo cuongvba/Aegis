@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Image as ImageIcon, Mic, Square, Volume2, Video, Table, Sigma, Sparkles } from 'lucide-react';
 import { compressImageToDataUri, readBlobAsDataUri } from '@/shared/lib/quiz/smartClipboardMedia';
 import { transpileClipboardMathTypeViaApi } from '@/shared/lib/quiz/mathtypeClipboardClient';
+import { MathFormulaStudioModal } from './math-studio/MathFormulaStudioModal';
 
 interface SmartRichMediaToolbarProps {
   value: string;
@@ -20,6 +21,7 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
   const audioInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isMathStudioOpen, setIsMathStudioOpen] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
@@ -106,7 +108,7 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
   };
 
   const handleInsertMath = () => {
-    appendSnippet('$\\frac{a}{b} + \\sqrt{x^{2}}$', true);
+    setIsMathStudioOpen(true);
   };
 
   const [isConvertingMathImg, setIsConvertingMathImg] = useState(false);
@@ -210,12 +212,23 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
       <button
         type="button"
         onClick={handleInsertMath}
-        title="Chèn nhanh mẫu công thức Toán LaTeX"
+        title="Mở hệ soạn thảo công thức Toán học toàn diện (KaTeX, mhchem, mẫu đề thi)"
         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700/80 hover:border-cyan-500/40 text-[11px] font-semibold transition-all cursor-pointer"
       >
         <Sigma className="w-3.5 h-3.5 text-cyan-400" />
         <span>Toán</span>
       </button>
+
+      {isMathStudioOpen && (
+        <MathFormulaStudioModal
+          isOpen={isMathStudioOpen}
+          onClose={() => setIsMathStudioOpen(false)}
+          onInsert={(formula) => {
+            appendSnippet(formula, true);
+            onNotify?.('Đã chèn công thức Toán học chuẩn!');
+          }}
+        />
+      )}
     </div>
   );
 };
