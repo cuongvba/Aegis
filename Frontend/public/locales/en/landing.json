@@ -15,7 +15,34 @@
     "subheadline": "An AI adaptive assessment platform (IRT 3-PL), 6 classic academic gameshows, and Enterprise-grade Multi-Tenant architecture — built for individuals, schools, enterprises and banks worldwide.",
     "ctaPrimary": "Individual learner — Start for free",
     "ctaSecondary": "Enterprise / Banking — Book a demo",
-    "previewCaption": "Watch AI personalize the question matrix in real time"
+    "previewCaption": "Watch AI personalize the question matrix in real time",
+    "sandbox": {
+      "badge": "Live Interactive Lab (Touch to Experience Core Power)",
+      "tabMathtype": "MathType <2ms",
+      "tabAi": "Wolf Pack AI",
+      "tabIrt": "IRT 3-PL",
+      "mathtypePrompt": "Try pasting Word content containing binary MathType OLE stream:",
+      "btnParse": "Decode MathType Instantly",
+      "commentWord": "// Original Word Data: MathType OLE Stream MTEF v5",
+      "katexResult": "KaTeX Vector LaTeX Output (60fps Engine)",
+      "metricSaved": "99.2% DB Storage Saved",
+      "aiPrompt": "4 AI Agents Academic Debate & Hallucination Defense:",
+      "aiConsensus": "Swarm Consensus SCI = 98.4%",
+      "agentAlpha": "Agent Alpha (Hypothesis Genesis)",
+      "agentAlphaDesc": "Generates initial thesis and conceptual deconstruction.",
+      "agentBeta": "Agent Beta (Popperian Falsification)",
+      "agentBetaDesc": "Identifies fallacies, boundary conditions and hallucination traps.",
+      "agentGamma": "Agent Gamma (Cross-Verification)",
+      "agentGammaDesc": "Validates against grounded canonical domain knowledge.",
+      "agentDelta": "Arbiter Delta (6-Phase Synthesis)",
+      "agentDeltaDesc": "✓ Reliability threshold achieved. Publishes optimal resolution.",
+      "irtPrompt": "Try answering a 4-part progressive True/False question:",
+      "irtScore": "Score:",
+      "irtTheta": "Latent Ability θ:",
+      "trueBtn": "True",
+      "falseBtn": "False",
+      "irtHint": "* Progressive Scoring Matrix: 1 correct: 0.1 • 2 correct: 0.25 • 3 correct: 0.5 • 4 correct: 1.0."
+    }
   },
   "socialProof": {
     "title": "Trusted by the most demanding organizations",
@@ -215,32 +242,75 @@
     }
   },
   "gameshows": {
-    "title": "6 Academic Gameshows — Learn Through Play",
-    "subtitle": "Full rule sets faithfully reproduced from classic TV gameshows, applied directly to knowledge review.",
+    "badge": "Open Arena Engine • Infinite Format Plug-Ins",
+    "title": "Online Arena <2ms — Infinite Formats",
+    "subtitle": "The only cognitive infrastructure featuring an Open Arena Architecture (IArenaGamePlugin): Beyond 6 authentic TV classics, build & plug in unlimited custom gameshow rules, stages, and AI lifelines.",
+    "buzzer": {
+      "badge": "RAM Lock Arena • <2ms Zero-Lag",
+      "title": "Test the Live Contention Buzzer",
+      "desc": "Unlike 200ms–500ms lag on Kahoot/Quizizz. Aegis utilizes atomic RAM Lock to record buzzer order down to 1/1000 second.",
+      "btn": "BUZZ NOW",
+      "pressed": "BUZZED!",
+      "testInstant": "Instant Test",
+      "latency": "Measured latency:",
+      "rankWon": "RANK #1 (ACQUIRED!)",
+      "hint": "Click or touch buzzer to measure reaction time"
+    },
+    "customBanner": {
+      "badge": "Proprietary Dynamic Plug-In Architecture",
+      "title": "Need a Custom Format? Build & Plug-In within 60 Seconds",
+      "desc": "Pre-loaded with advanced templates: Who Wants to Be a Millionaire, The Chase, 1 vs 100, Visual Charades. Or customize contention mode, step ladders, Socrates AI hints, and score multipliers at <2ms RAM speeds.",
+      "btnArena": "Enter Arena",
+      "btnCreate": "Design Custom Format"
+    },
     "items": [
       {
+        "code": "OLYMPIA",
         "name": "Road to Olympia",
-        "desc": "4 rounds — Warm-up, Obstacle Course, Acceleration, Finish Line — exactly as broadcast."
+        "desc": "4 rounds — Warm-up, Obstacle Course, Acceleration, Finish Line — exactly as broadcast.",
+        "badge": "4 TV Rounds • 60s Warm-up",
+        "stageFlair": ["Warm-up", "Obstacle", "Acceleration", "Finish Line ⭐"],
+        "actionText": "Climb Olympia Peak"
       },
       {
+        "code": "WHEEL",
         "name": "Wheel of Fortune",
-        "desc": "Physics-based 60fps spinning wheel, solve the full puzzle board with Lucky, Lose-a-Turn and Double slots."
+        "desc": "Physics-based 60fps spinning wheel, solve the full puzzle board with Lucky, Lose-a-Turn and Double slots.",
+        "badge": "60fps Physics • Word Board",
+        "stageFlair": ["Lucky", "Double", "Lose Turn", "Solve"],
+        "actionText": "Spin Fortune Wheel"
       },
       {
+        "code": "UNIVERSITY",
         "name": "University Challenge",
-        "desc": "4-vs-4 inter-university face-off with a Starter buzzer and 3-question Bonus rounds with team huddles."
+        "desc": "4-vs-4 inter-university face-off with a Starter buzzer and 3-question Bonus rounds with team huddles.",
+        "badge": "4 vs 4 Match • 15pt Starter",
+        "stageFlair": ["Starter", "Team Bonus", "15s Discussion"],
+        "actionText": "Inter-University Faceoff"
       },
       {
+        "code": "JEOPARDY",
         "name": "Jeopardy! American Matrix",
-        "desc": "A 30-cell point matrix, answers required in the classic question-form structure."
+        "desc": "A 30-cell point matrix, answers required in the classic question-form structure.",
+        "badge": "30-Cell Matrix • Double Points",
+        "stageFlair": ["$100", "$200", "$300", "$400", "$500 • What is...?"],
+        "actionText": "Flip Jeopardy Grid"
       },
       {
+        "code": "LIGHTNING",
         "name": "Lightning Fast",
-        "desc": "A 10-step climbing machine — correct answers climb one step, one wrong answer resets to zero."
+        "desc": "A 10-step climbing machine — correct answers climb one step, one wrong answer resets to zero.",
+        "badge": "10-Step Ladder • +1 or Reset",
+        "stageFlair": ["Step 1-3", "Step 4-7", "Step 8-9", "🔥 Step 10 (Max)"],
+        "actionText": "Climb Lightning Ladder"
       },
       {
+        "code": "GOLDEN_BELL",
         "name": "Golden Bell",
-        "desc": "Large-scale group competition, ring the bell to earn the right to answer the deciding question."
+        "desc": "Large-scale group competition, ring the bell to earn the right to answer the deciding question.",
+        "badge": "100+ Contenders • Teacher Lifelines",
+        "stageFlair": ["Whiteboard", "Lifelines", "Golden Bell 🔔"],
+        "actionText": "Ring Golden Bell Live"
       }
     ]
   },

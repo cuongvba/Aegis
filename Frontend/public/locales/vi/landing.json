@@ -15,7 +15,34 @@
     "subheadline": "Hệ sinh thái duy nhất hợp nhất Không gian Sáng tạo Giáo viên 3 chạm (Zen Studio), Giải mã nhị phân MathType/Word sang LaTeX <2ms, Hội đồng AI Bầy Sói chống ảo giác, Tâm trắc học IRT 3-PL, 6 Gameshow truyền hình <2ms và Bảo mật Cấp Ngân hàng.",
     "ctaPrimary": "Khám phá & Bắt đầu miễn phí",
     "ctaSecondary": "Ngân hàng / Tập đoàn — Xem Giải pháp",
-    "previewCaption": "Động cơ AI & Tâm trắc học IRT 3-PL cá nhân hóa ma trận năng lực theo thời gian thực"
+    "previewCaption": "Động cơ AI & Tâm trắc học IRT 3-PL cá nhân hóa ma trận năng lực theo thời gian thực",
+    "sandbox": {
+      "badge": "Live Interactive Lab (Chạm Là Thấy Sức Mạnh)",
+      "tabMathtype": "MathType <2ms",
+      "tabAi": "AI Bầy Sói",
+      "tabIrt": "IRT 3-PL",
+      "mathtypePrompt": "Thử dán đề Word chứa công thức MathType OLE nhị phân:",
+      "btnParse": "Bấm Giải Mã MathType Tức Thì",
+      "commentWord": "// Dữ liệu gốc trong Word: MathType OLE Stream MTEF v5",
+      "katexResult": "Kết Quả Vector LaTeX (KaTeX Engine 60fps)",
+      "metricSaved": "Tiết kiệm 99.2% DB",
+      "aiPrompt": "Hội Đồng 4 Tác Tử AI Phản Biện Triết Học & Bác Bỏ Ảo Giác:",
+      "aiConsensus": "Đồng thuận SCI = 98.4%",
+      "agentAlpha": "Tác tử Alpha (Khởi tạo)",
+      "agentAlphaDesc": "Đưa ra lời giải ban đầu và phân tích giả thuyết khoa học.",
+      "agentBeta": "Tác tử Beta (Popperian Bác bỏ)",
+      "agentBetaDesc": "Săn lùng lỗ hổng ngụy biện và bẫy ảo giác kiến thức.",
+      "agentGamma": "Tác tử Gamma (Kiểm chứng chéo)",
+      "agentGammaDesc": "Đối chiếu với CSDL quy chuẩn và văn bản pháp lý gốc.",
+      "agentDelta": "Trọng tài Delta (Kết luận 6 Pha)",
+      "agentDeltaDesc": "✓ Chỉ số độ tin cậy đạt chuẩn. Xuất bản lời giải tối ưu.",
+      "irtPrompt": "Thử trả lời câu hỏi Đúng/Sai 4 ý chuẩn GDPT 2025:",
+      "irtScore": "Điểm:",
+      "irtTheta": "Năng lực θ:",
+      "trueBtn": "Đúng",
+      "falseBtn": "Sai",
+      "irtHint": "* Thang điểm lũy tiến GDPT 2025: Đúng 1 ý: 0.1đ • Đúng 2 ý: 0.25đ • Đúng 3 ý: 0.5đ • Đúng 4 ý: 1.0đ."
+    }
   },
   "socialProof": {
     "title": "Chuẩn mực Khảo thí & Trí tuệ Nhận thức được tin dùng toàn cầu",
@@ -189,15 +216,76 @@
     }
   },
   "gameshows": {
-    "title": "6 Gameshow học thuật — Học mà chơi, chơi mà học",
-    "subtitle": "Tái hiện đầy đủ luật chơi của các gameshow truyền hình kinh điển, ứng dụng trực tiếp vào ôn luyện kiến thức.",
+    "badge": "Open Arena Engine • Kiến Trúc Cắm Rút (Plug-In) Vô Hạn",
+    "title": "Đấu Trường Trực Tuyến <2ms — Không Giới Hạn Format",
+    "subtitle": "Hệ sinh thái duy nhất sở hữu Kiến Trúc Đấu Trường Mở (IArenaGamePlugin): Không chỉ tái hiện 6 gameshow truyền hình kinh điển, hệ thống cho phép Nhà trường, Doanh nghiệp và Creator tự định nghĩa luật chơi, thang điểm và cắm rút (Plug-In) vô hạn format mới.",
+    "buzzer": {
+      "badge": "Đấu Trường RAM Lock • Độ Trễ <2ms Zero-Lag",
+      "title": "Thử Khóa Chuông Tranh Quyền Ngay Tại Chỗ",
+      "desc": "Khác biệt hoàn toàn với độ trễ 200ms – 500ms của Kahoot/Quizizz khiến học sinh ức chế. Aegis sử dụng cơ chế Khóa Nguyên Tử Bộ Nhớ Đệm RAM ghi nhận thứ tự bấm trong 1/1000 giây.",
+      "btn": "BẤM CHUÔNG",
+      "pressed": "ĐÃ BẤM!",
+      "testInstant": "Test Tức Thì",
+      "latency": "Độ trễ đo được:",
+      "rankWon": "HẠNG #1 (GIÀNH QUYỀN TRẢ LỜI!)",
+      "hint": "Click hoặc chạm nút chuông để đo tốc độ"
+    },
+    "customBanner": {
+      "badge": "Kiến Trúc Dynamic Plug-In Độc Bản",
+      "title": "Bạn Muốn Format Khác? Tự Tạo & Cắm Rút (Plug-In) Trong 60 Giây",
+      "desc": "Đã tích hợp sẵn các mẫu nâng cao: Ai Là Triệu Phú (Millionaire), Kẻ Săn Mồi (The Chase), Đấu Trí 1 vs 100, Đuổi Hình Bắt Chữ. Hoặc tùy biến tùy thích: Chế độ cướp chuông, thang leo dốc, trợ giúp AI Socrates, ma trận điểm thưởng — Tất cả chạy trên xung nhịp RAM <2ms.",
+      "btnArena": "Vào Đấu Trường Arena",
+      "btnCreate": "Tạo Format Độc Quyền"
+    },
     "items": [
-      { "name": "Đường Lên Đỉnh Olympia", "desc": "4 phần thi Khởi động – Vượt chướng ngại vật – Tăng tốc – Về đích, đúng chuẩn truyền hình." },
-      { "name": "Chiếc Nón Kỳ Diệu", "desc": "Vòng quay vật lý 60fps, giải toàn bộ ô chữ với các ô điểm May mắn, Mất lượt, Nhân đôi." },
-      { "name": "University Challenge", "desc": "Đối kháng liên trường 4 vs 4, chuông Starter và bộ 3 câu hỏi Bonus có thảo luận nhóm." },
-      { "name": "Jeopardy! American Matrix", "desc": "Bảng ma trận 30 ô điểm, bắt buộc trả lời theo cấu trúc câu hỏi ngược đúng luật gốc." },
-      { "name": "Nhanh Như Chớp", "desc": "Cỗ máy leo dốc 10 bậc, đúng tiến 1 nấc — sai lập tức tụt về vạch xuất phát." },
-      { "name": "Chuông Vàng (Golden Bell)", "desc": "Thi đấu tập thể quy mô lớn, rung chuông giành quyền trả lời câu hỏi quyết định." }
+      {
+        "code": "OLYMPIA",
+        "name": "Đường Lên Đỉnh Olympia",
+        "desc": "4 phần thi Khởi động – Vượt chướng ngại vật – Tăng tốc – Về đích, đúng chuẩn truyền hình.",
+        "badge": "4 Phần Thi VTV • 60s Khởi Động",
+        "stageFlair": ["Khởi Động", "VCNV", "Tăng Tốc", "Về Đích ⭐"],
+        "actionText": "Vào Leo Núi Olympia"
+      },
+      {
+        "code": "WHEEL",
+        "name": "Chiếc Nón Kỳ Diệu",
+        "desc": "Vòng quay vật lý 60fps, giải toàn bộ ô chữ với các ô điểm May mắn, Mất lượt, Nhân đôi.",
+        "badge": "Vật Lý 60fps • Ma Trận Ô Chữ",
+        "stageFlair": ["Ô May Mắn", "Nhân Đôi", "Mất Lượt", "Đoán Chữ"],
+        "actionText": "Quay Nón Kỳ Diệu"
+      },
+      {
+        "code": "UNIVERSITY",
+        "name": "University Challenge",
+        "desc": "Đối kháng liên trường 4 vs 4, chuông Starter và bộ 3 câu hỏi Bonus có thảo luận nhóm.",
+        "badge": "Đối Kháng 4 vs 4 • Chuông Starter 15đ",
+        "stageFlair": ["Starter Cá Nhân", "Bonus Nhóm", "Thảo Luận 15s"],
+        "actionText": "Đối Kháng Liên Trường"
+      },
+      {
+        "code": "JEOPARDY",
+        "name": "Jeopardy! American Matrix",
+        "desc": "Bảng ma trận 30 ô điểm, bắt buộc trả lời theo cấu trúc câu hỏi ngược đúng luật gốc.",
+        "badge": "Bảng Ma Trận 30 Ô • Điểm Cược Double",
+        "stageFlair": ["$100", "$200", "$300", "$400", "$500 • What is...?"],
+        "actionText": "Lật Bảng Ma Trận"
+      },
+      {
+        "code": "LIGHTNING",
+        "name": "Nhanh Như Chớp",
+        "desc": "Cỗ máy leo dốc 10 bậc, đúng tiến 1 nấc — sai lập tức tụt về vạch xuất phát.",
+        "badge": "Cỗ Máy 10 Bậc • Đúng +1 Sai Về 0",
+        "stageFlair": ["Bậc 1-3", "Bậc 4-7", "Bậc 8-9", "🔥 Bậc 10 (Max)"],
+        "actionText": "Leo Dốc Nhanh Như Chớp"
+      },
+      {
+        "code": "GOLDEN_BELL",
+        "name": "Chuông Vàng (Golden Bell)",
+        "desc": "Thi đấu tập thể quy mô lớn, rung chuông giành quyền trả lời câu hỏi quyết định.",
+        "badge": "100+ Thí Sinh Sàn Đấu • Cứu Trợ Thầy Cô",
+        "stageFlair": ["Bảng Viết Tay", "Phao Cứu Trợ", "Chuông Vàng 🔔"],
+        "actionText": "Rung Chuông Vàng Live"
+      }
     ]
   },
   "segments": {

@@ -6,7 +6,8 @@
  */
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, ArrowRight, Building2, Radar as RadarIcon, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, Building2 } from 'lucide-react';
+import { HeroInteractiveSandbox } from './hero/HeroInteractiveSandbox';
 
 export function HeroSection() {
   const { t } = useTranslation('landing');
@@ -58,37 +59,8 @@ export function HeroSection() {
           </a>
         </div>
 
-        {/* Visual proof card — thay ảnh tĩnh bằng khối "sống động" nhẹ */}
-        <div className="pt-10 max-w-3xl mx-auto">
-          <div className="rounded-3xl border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-2xl p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <span className="ms-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                <RadarIcon size={12} aria-hidden="true" /> {t('hero.previewCaption')}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {[68, 92, 85, 64, 88, 77].map((value, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl bg-slate-950/60 border border-slate-800/80 p-3 flex flex-col gap-2"
-                >
-                  <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500"
-                      style={{ width: `${value}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
-                    <Zap size={10} className="text-amber-400" aria-hidden="true" /> {value}%
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        {/* Hero Interactive Proof Sandbox */}
+        <HeroInteractiveSandbox />
       </div>
     </section>
   );
