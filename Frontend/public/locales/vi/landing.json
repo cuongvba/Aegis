@@ -42,6 +42,23 @@
       "trueBtn": "Đúng",
       "falseBtn": "Sai",
       "irtHint": "* Thang điểm lũy tiến GDPT 2025: Đúng 1 ý: 0.1đ • Đúng 2 ý: 0.25đ • Đúng 3 ý: 0.5đ • Đúng 4 ý: 1.0đ."
+    },
+    "dropzone": {
+      "badge": "⚡ ĐỘC QUYỀN: BÓC TÁCH WORD & MATHTYPE <2MS",
+      "title": "Kéo Thả Đề Word Hoặc Dán Công Thức MathType",
+      "subtitle": "Trực tiếp kiểm chứng công nghệ giải mã nhị phân MTEF v5 và bảng biểu sang KaTeX/Markdown trong 1 phần nghìn giây.",
+      "dropPrompt": "Kéo thả file Word (.docx) vào đây, hoặc click chọn đề mẫu dưới đây để xem kết quả:",
+      "pasteHint": "hoặc nhấn Ctrl+V để dán nội dung từ clipboard",
+      "btnSampleMath": "📐 Đề Toán Tích Phân MathType",
+      "btnSampleChem": "⚗️ Đề Hóa Redox & Bảng Biểu",
+      "btnSampleGdpt": "📑 Đề GDPT 2025 Đúng/Sai 4 Ý",
+      "rawWordTitle": "Dữ liệu thô từ Word (MTEF v5 / Table XML):",
+      "parsedTitle": "Học liệu số hóa hiển thị 60fps:",
+      "metricTime": "Thời gian giải mã:",
+      "metricSaved": "Tiết kiệm dung lượng DB:",
+      "metricIntegrity": "100% Vector Không Lỗi Font",
+      "btnOpenStudio": "Mở Toàn Bộ Đề Trong Zen Studio (3 Chạm)",
+      "btnReset": "Thử Mẫu Khác"
     }
   },
   "socialProof": {

@@ -6,7 +6,6 @@ import {
   Wand2, Mic, Network, ArrowUpRight, Sparkles, Users, Building2
 } from 'lucide-react';
 import { InteractiveFeatureLab } from './InteractiveFeatureLab';
-import { GlobalComparisonMatrix } from './GlobalComparisonMatrix';
 
 const ICONS = [Wand2, FileUp, Mic, Brain, GraduationCap, Zap, ShieldCheck, QrCode, Network];
 const ICON_STYLES = [
@@ -168,9 +167,6 @@ export function FeaturesSection() {
 
         {/* Interactive Technology Sandbox Lab */}
         <InteractiveFeatureLab />
-
-        {/* Global Competitive Comparison Matrix */}
-        <GlobalComparisonMatrix />
       </div>
     </section>
   );

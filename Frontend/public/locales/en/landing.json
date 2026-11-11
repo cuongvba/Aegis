@@ -42,6 +42,23 @@
       "trueBtn": "True",
       "falseBtn": "False",
       "irtHint": "* Progressive Scoring Matrix: 1 correct: 0.1 • 2 correct: 0.25 • 3 correct: 0.5 • 4 correct: 1.0."
+    },
+    "dropzone": {
+      "badge": "⚡ EXCLUSIVE: WORD & MATHTYPE DECONSTRUCTION <2MS",
+      "title": "Drag & Drop Word File Or Paste MathType Formula",
+      "subtitle": "Directly witness binary MTEF v5 and table decoding into KaTeX/Markdown in less than a millisecond.",
+      "dropPrompt": "Drag & drop your .docx file here, or click one of the benchmark samples below:",
+      "pasteHint": "or press Ctrl+V to paste from clipboard",
+      "btnSampleMath": "📐 Math: Integral & MathType OLE",
+      "btnSampleChem": "⚗️ Chemistry: Redox & Tables",
+      "btnSampleGdpt": "📑 4-Part Progressive True/False",
+      "rawWordTitle": "Raw Word Input (Binary OLE Stream / Table XML):",
+      "parsedTitle": "Digitized 60fps Vector Output:",
+      "metricTime": "Deconstruction Time:",
+      "metricSaved": "DB Space Saved:",
+      "metricIntegrity": "100% Vector Font-Perfect",
+      "btnOpenStudio": "Open in Creator Zen Studio (3-Touch)",
+      "btnReset": "Try Another Sample"
     }
   },
   "socialProof": {

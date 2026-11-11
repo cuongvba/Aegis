@@ -7,6 +7,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, ArrowRight, Building2 } from 'lucide-react';
+import { HeroWordDropzone } from './hero/HeroWordDropzone';
 import { HeroInteractiveSandbox } from './hero/HeroInteractiveSandbox';
 
 export function HeroSection() {
@@ -58,6 +59,9 @@ export function HeroSection() {
             <Building2 size={16} aria-hidden="true" /> {t('hero.ctaSecondary')}
           </a>
         </div>
+
+        {/* Instant Drag & Drop Word Deconstruction Box */}
+        <HeroWordDropzone />
 
         {/* Hero Interactive Proof Sandbox */}
         <HeroInteractiveSandbox />

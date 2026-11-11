@@ -14,6 +14,7 @@ import { LandingHeader }     from './components/LandingHeader';
 import { HeroSection }       from './components/HeroSection';
 import { SocialProofSection } from './components/SocialProofSection';
 import { FeaturesSection }   from './components/FeaturesSection';
+import { BattleMatrixSection } from './components/battle/BattleMatrixSection';
 import { GameshowSection }   from './components/GameshowSection';
 import { SegmentsSection }   from './components/SegmentsSection';
 import { PricingSection }    from './components/PricingSection';
@@ -30,6 +31,7 @@ export function LandingPage() {
         <HeroSection />
         <SocialProofSection />
         <FeaturesSection />
+        <BattleMatrixSection />
         <GameshowSection />
         <SegmentsSection />
         <PricingSection />
