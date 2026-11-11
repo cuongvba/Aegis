@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -6,7 +6,8 @@ import {
   Sparkles, ArrowRight, Zap, Shield, Cpu
 } from 'lucide-react';
 
-interface MatrixRow {
+interface NormalizedMatrixRow {
+  title: string;
   criterion: string;
   aegis: string;
   gameshowTools: string;
@@ -18,10 +19,31 @@ export const BattleMatrixSection: React.FC = () => {
   const { t } = useTranslation('landing');
   const navigate = useNavigate();
   const matrix = (t('features.matrix', { returnObjects: true }) as any) || {};
-  const rows: MatrixRow[] = Array.isArray(matrix.rows) ? matrix.rows : [];
-  const [filterIdx, setFilterIdx] = useState<number | 'all'>('all');
 
+  const rows: NormalizedMatrixRow[] = useMemo(() => {
+    const rawRows = Array.isArray(matrix.rows) ? matrix.rows : [];
+    return rawRows.map((r: any, idx: number) => {
+      const criterionText = r.criterion || r.criteria || `Trụ cột ${idx + 1}`;
+      const shortTitle = criterionText.split('(')[0]?.trim() || criterionText;
+      return {
+        title: shortTitle,
+        criterion: criterionText,
+        aegis: r.aegis || '',
+        gameshowTools: r.gameshowTools || r.kahoot || '',
+        traditionalLms: r.traditionalLms || r.lms || '',
+        genericAi: r.genericAi || r.ai || '',
+      };
+    });
+  }, [matrix]);
+
+  const [filterIdx, setFilterIdx] = useState<number | 'all'>('all');
   const filteredRows = filterIdx === 'all' ? rows : rows.filter((_, idx) => idx === filterIdx);
+
+  const colCriterion = matrix.colCriterion || matrix.columns?.criteria || 'Trụ Cột Năng Lực Cốt Lõi';
+  const colAegis = matrix.colAegis || matrix.columns?.aegis || 'AEGIS GLOBAL (AGCI)';
+  const colGameshow = matrix.colGameshow || matrix.columns?.kahoot || 'Kahoot! / Quizizz';
+  const colLms = matrix.colLms || matrix.columns?.lms || 'Moodle / Canvas LMS';
+  const colAi = matrix.colAi || matrix.columns?.ai || 'ChatGPT / NotebookLM';
 
   return (
     <section id="battle-matrix" className="py-20 sm:py-28 relative bg-slate-950 border-t border-slate-800/80">
@@ -30,7 +52,7 @@ export const BattleMatrixSection: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-4">
           <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 text-amber-300">
             <Crown size={14} className="text-amber-400" />
-            <span>{matrix.badge || 'Category-King Battle Matrix'}</span>
+            <span>{matrix.badge || matrix.eyebrow || 'Category-King Battle Matrix'}</span>
           </span>
 
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
@@ -100,7 +122,7 @@ export const BattleMatrixSection: React.FC = () => {
                   : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
               }`}
             >
-              {row.criterion.split('(')[0].trim()}
+              {row.title}
             </button>
           ))}
         </div>
@@ -110,32 +132,22 @@ export const BattleMatrixSection: React.FC = () => {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-slate-800 text-[11px] font-black uppercase tracking-wider">
-                <th className="py-4 px-5 text-slate-400 w-[28%]">
-                  {matrix.colCriterion || 'Trụ Cột Năng Lực Cốt Lõi'}
-                </th>
+                <th className="py-4 px-5 text-slate-400 w-[28%]">{colCriterion}</th>
                 <th className="py-4 px-5 bg-gradient-to-b from-cyan-950/70 to-slate-950/90 border-x border-cyan-500/40 text-cyan-300 w-[28%] shadow-inner">
                   <div className="flex items-center gap-2 text-sm font-black text-white">
                     <Crown size={16} className="text-amber-400 fill-amber-400" />
-                    <span>{matrix.colAegis || 'AEGIS GLOBAL (AGCI)'}</span>
+                    <span>{colAegis}</span>
                   </div>
                 </th>
-                <th className="py-4 px-5 text-slate-400 w-[15%]">
-                  {matrix.colGameshow || 'Kahoot! / Quizizz'}
-                </th>
-                <th className="py-4 px-5 text-slate-400 w-[14%]">
-                  {matrix.colLms || 'Moodle / Canvas'}
-                </th>
-                <th className="py-4 px-5 text-slate-400 w-[15%]">
-                  {matrix.colAi || 'ChatGPT / NotebookLM'}
-                </th>
+                <th className="py-4 px-5 text-slate-400 w-[15%]">{colGameshow}</th>
+                <th className="py-4 px-5 text-slate-400 w-[14%]">{colLms}</th>
+                <th className="py-4 px-5 text-slate-400 w-[15%]">{colAi}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-xs">
               {filteredRows.map((r, i) => (
                 <tr key={i} className="hover:bg-slate-900/60 transition-colors">
-                  <td className="py-4 px-5 font-bold text-slate-200">
-                    {r.criterion}
-                  </td>
+                  <td className="py-4 px-5 font-bold text-slate-200">{r.criterion}</td>
                   <td className="py-4 px-5 bg-cyan-950/30 border-x border-cyan-500/30 text-white font-bold">
                     <div className="flex items-start gap-2">
                       <CheckCircle2 size={15} className="text-cyan-400 shrink-0 mt-0.5" />
@@ -184,4 +196,3 @@ export const BattleMatrixSection: React.FC = () => {
 };
 
 export default BattleMatrixSection;
-

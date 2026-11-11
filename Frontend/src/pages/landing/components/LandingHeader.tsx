@@ -25,9 +25,10 @@ export function LandingHeader() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const navLinks = [
-    { label: t('nav.features'),  href: '#features' },
-    { label: t('nav.gameshows'), href: '#gameshows' },
-    { label: t('nav.pricing'),   href: '#pricing' },
+    { label: t('nav.features'),     href: '#features' },
+    { label: t('nav.battleMatrix'), href: '#battle-matrix' },
+    { label: t('nav.gameshows'),    href: '#gameshows' },
+    { label: t('nav.pricing'),      href: '#pricing' },
   ];
 
   return (
