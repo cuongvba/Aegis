@@ -107,3 +107,4 @@ Thầy Cô chỉ cần tích dấu V vào các quyền trợ giúp:
 1. **Âm thanh rực rỡ**: Hệ thống có sẵn bộ âm thanh chuẩn truyền hình (tiếng chuông cướp lượt, tiếng tạch tạch nan nón, tiếng chuông reo chiến thắng). Thầy Cô chỉ cần cắm loa lớp học là không khí sôi động như trường quay VTV!
 2. **Không lo mất mạng**: Nếu Wi-Fi lớp chập chờn, Aegis có cơ chế lưu điểm số an toàn ngay trên máy tính bảng của bé và tự động nộp lại khi có mạng trở lại.
 3. **Chiếu lên Tivi / Máy chiếu**: Bấm phím **`F11`** trên bàn phím máy tính để mở toàn màn hình, giấu hết các thanh công cụ để lớp học hóa thân thành sân khấu chuyên nghiệp.
+
