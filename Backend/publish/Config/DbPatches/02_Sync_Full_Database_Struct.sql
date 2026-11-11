@@ -1,5 +1,5 @@
 -- ============================================================================
--- AEGISQUIZ — FULL DATABASE SCHEMA SYNC SCRIPT (LOCAL CONTAINER -> LIVE)
+-- AEGIS — FULL DATABASE SCHEMA SYNC SCRIPT (LOCAL CONTAINER -> LIVE)
 -- Generated automatically by Aegis Lead System Architect
 -- 100% Idempotent: Can be run multiple times without data loss or error
 -- ============================================================================

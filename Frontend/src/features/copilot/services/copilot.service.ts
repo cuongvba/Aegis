@@ -69,5 +69,29 @@ export const CoPilotService = {
   }): Promise<{ success: boolean; notebookId?: string; chapterId?: string; message: string }> {
     const res = await api.post('/api/v1/copilot/export-notebook', data);
     return res.data;
+  },
+
+  /**
+   * Lấy tình trạng và hạn mức AI (Tokens, Gói cước, BYOK)
+   */
+  async getQuotaStatus(): Promise<import('../types/copilot.types').CoPilotQuotaStatus> {
+    try {
+      const res = await api.get<import('../types/copilot.types').CoPilotQuotaStatus>('/api/v1/copilot/quota');
+      return res.data;
+    } catch {
+      return {
+        plan: 'Community Starter',
+        tier: 'FREE',
+        tokensUsedMonth: 0,
+        tokensLimitMonth: 50000,
+        remainingTokens: 50000,
+        percentageUsed: 0,
+        hasByokKey: false,
+        byokProviders: [],
+        fastPathAvailable: true,
+        gatewayStatus: 'Online',
+        statusMessage: 'Gói FREE: 50,000 tokens khả dụng trong tháng'
+      };
+    }
   }
 };

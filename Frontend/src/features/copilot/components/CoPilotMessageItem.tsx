@@ -52,6 +52,20 @@ export const CoPilotMessageItem: React.FC<CoPilotMessageItemProps> = ({
             </span>
           </>
         )}
+        {!isUser && msg.tokenUsage !== undefined && (
+          <>
+            <span>•</span>
+            <span
+              className={`px-1.5 py-0.2 rounded text-[9px] font-mono border ${
+                msg.tokenUsage === 0
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800/60'
+                  : 'bg-cyan-950 text-cyan-300 border-cyan-800/60'
+              }`}
+            >
+              {msg.tokenUsage === 0 ? '⚡ 0 Token' : `🪙 ${msg.tokenUsage} Tokens`}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Message Bubble */}

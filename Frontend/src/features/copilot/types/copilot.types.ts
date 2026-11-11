@@ -31,6 +31,7 @@ export interface CoPilotMessage {
   modelUsed?: string;
   keySourceUsed?: string;
   latencyMs?: number;
+  tokenUsage?: number;
   timestamp: string;
 }
 
@@ -101,4 +102,18 @@ export interface CoPilotModelGroup {
   providerIcon: string;
   badgeColor: string;
   models: CoPilotModelItem[];
+}
+
+export interface CoPilotQuotaStatus {
+  plan: string;
+  tier: string;
+  tokensUsedMonth: number;
+  tokensLimitMonth: number;
+  remainingTokens: number;
+  percentageUsed: number;
+  hasByokKey: boolean;
+  byokProviders: string[];
+  fastPathAvailable: boolean;
+  gatewayStatus: 'Online' | 'Degraded' | 'ResilientLocal';
+  statusMessage: string;
 }

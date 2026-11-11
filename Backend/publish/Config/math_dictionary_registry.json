@@ -1,5 +1,5 @@
 {
-  "$schema": "https://aegisquiz.internal/schemas/math_dictionary_registry.v1.json",
+  "$schema": "https://aegis.internal/schemas/math_dictionary_registry.v1.json",
   "version": "2026.1",
   "lastUpdated": "2026-09-17T08:55:00Z",
   "symbolGlyphs": [

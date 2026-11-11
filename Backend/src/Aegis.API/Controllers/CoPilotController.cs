@@ -419,6 +419,78 @@ namespace Aegis.API.Controllers
         }
 
         /// <summary>
+        /// [Aegis AI Quota & Health Status Gateway]
+        /// Lấy thông tin hạn mức sử dụng Token AI, gói bản quyền và trạng thái cổng kết nối
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("quota")]
+        public async Task<IActionResult> GetQuotaStatus(CancellationToken ct = default)
+        {
+            var userId = GetCurrentUserId();
+            var tenantId = GetCurrentTenantId();
+
+            string subscriptionTier = "FREE";
+            long tokensLimit = 50000;
+            long tokensUsed = 0;
+            var byokProviders = new List<string>();
+
+            if (_db != null)
+            {
+                var user = await _db.UserAccounts.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, ct);
+                if (user != null)
+                {
+                    subscriptionTier = string.IsNullOrWhiteSpace(user.SubscriptionTier) ? "FREE" : user.SubscriptionTier.ToUpperInvariant();
+                    tokensLimit = subscriptionTier switch
+                    {
+                        "ENTERPRISE" => -1, // Unlimited
+                        "VIP" => 2000000,
+                        "PRO" => 500000,
+                        _ => 50000
+                    };
+                }
+
+                // Kiểm tra các khóa BYOK cá nhân hoặc tenant
+                var byokKeys = await _db.UserAiKeys.AsNoTracking()
+                    .Where(k => (k.UserId == userId || (tenantId != Guid.Empty && k.TenantId == tenantId)) && k.IsActive)
+                    .ToListAsync(ct);
+
+                if (byokKeys.Count > 0)
+                {
+                    byokProviders = byokKeys.Select(k => k.ProviderCompany).Distinct().ToList();
+                    tokensUsed = byokKeys.Sum(k => k.TokensUsedThisMonth);
+                }
+            }
+
+            var hasByok = byokProviders.Count > 0;
+            if (hasByok)
+            {
+                tokensLimit = -1; // BYOK mở khóa hạn mức không giới hạn trên nền tảng
+            }
+
+            long remaining = tokensLimit == -1 ? -1 : Math.Max(0, tokensLimit - tokensUsed);
+            double percentageUsed = tokensLimit <= 0 ? 0.0 : Math.Min(100.0, Math.Round((double)tokensUsed / tokensLimit * 100.0, 1));
+
+            var result = new
+            {
+                plan = hasByok ? "Sovereign BYOK (Tự cấp khóa)" : $"{subscriptionTier} AI Community",
+                tier = subscriptionTier,
+                tokensUsedMonth = tokensUsed,
+                tokensLimitMonth = tokensLimit,
+                remainingTokens = remaining,
+                percentageUsed = percentageUsed,
+                hasByokKey = hasByok,
+                byokProviders = byokProviders,
+                fastPathAvailable = true,
+                gatewayStatus = "Online",
+                statusMessage = hasByok 
+                    ? $"Đã kích hoạt {byokProviders.Count} nhà cung cấp BYOK riêng ({string.Join(", ", byokProviders)}) — Hạn mức không giới hạn"
+                    : $"Gói {subscriptionTier}: {remaining:N0} tokens khả dụng trong tháng (Kèm 0-Token Fast-Path miễn phí)"
+            };
+
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Bảo toàn và kết tinh tri thức từ hội thoại hoặc Artifact vào AegisNotebook
         /// </summary>
         [AllowAnonymous]

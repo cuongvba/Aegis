@@ -1,5 +1,5 @@
 -- ==============================================================================
--- AegisQuiz — RECREATE ALL TABLES (Chuẩn Mới Nhất 2026 - Master DDL)
+-- Aegis — RECREATE ALL TABLES (Chuẩn Mới Nhất 2026 - Master DDL)
 -- CẢNH BÁO: Script này sẽ DROP TOÀN BỘ BẢNG CŨ và TẠO LẠI TỪ ĐẦU theo chuẩn mới nhất.
 -- Áp dụng trực tiếp tại: PostgreSQL Database (dehoc.vn / daotao.dehoc.vn)
 -- ==============================================================================
@@ -365,4 +365,4 @@ VALUES
 ON CONFLICT ("MigrationId") DO NOTHING;
 
 -- HOÀN TẤT
-SELECT 'AegisQuiz 2026: ĐÃ TÁI TẠO TOÀN BỘ BẢNG THEO CHUẨN MỚI NHẤT THÀNH CÔNG!' AS Status;
+SELECT 'Aegis 2026: ĐÃ TÁI TẠO TOÀN BỘ BẢNG THEO CHUẨN MỚI NHẤT THÀNH CÔNG!' AS Status;
