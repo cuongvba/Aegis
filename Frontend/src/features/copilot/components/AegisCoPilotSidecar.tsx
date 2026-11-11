@@ -1,31 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Brain,
-  ChevronRight,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
-  Send,
-  Sparkles,
-  Terminal,
-  X,
-  Zap,
-  GraduationCap,
-  ShieldAlert,
-  BookOpen,
-  ArrowUpRight
+  Brain, ChevronRight, Maximize2, Minimize2, RefreshCw, Send,
+  Sparkles, Terminal, X, GraduationCap, ShieldAlert, BookOpen
 } from 'lucide-react';
 import type {
-  CoPilotPersona,
-  CoPilotMessage,
-  CoPilotSlashCommand,
-  CoPilotModelGroup,
-  CoPilotArtifact
+  CoPilotPersona, CoPilotMessage, CoPilotSlashCommand,
+  CoPilotModelGroup, CoPilotArtifact
 } from '../types/copilot.types';
 import { CoPilotService } from '../services/copilot.service';
-import { CognitiveTraceViewer } from './CognitiveTraceViewer';
-import { ToolActionPill } from './ToolActionPill';
-import { ArtifactCardRenderer } from './ArtifactCardRenderer';
+import { CoPilotMessageItem } from './CoPilotMessageItem';
 import { ModelSelectorDropdown } from './ModelSelectorDropdown';
 
 interface AegisCoPilotSidecarProps {
@@ -70,7 +53,6 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load grouped models and slash commands on mount
   useEffect(() => {
     CoPilotService.getGroupedModels().then(data => {
       if (data && data.length > 0) setModelGroups(data);
@@ -78,7 +60,6 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
     CoPilotService.getCommands(persona).then(setCommands);
   }, []);
 
-  // Update grouped models with dynamic recommendation when prompt changes
   useEffect(() => {
     const timer = setTimeout(() => {
       if (inputMessage.trim().length > 2) {
@@ -90,25 +71,18 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
     return () => clearTimeout(timer);
   }, [inputMessage]);
 
-  // Update commands when persona changes
   useEffect(() => {
     CoPilotService.getCommands(persona).then(setCommands);
   }, [persona]);
 
-  // Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  // Handle slash command suggestions
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputMessage(val);
-    if (val.startsWith('/') && !val.includes(' ')) {
-      setShowCommandsDropdown(true);
-    } else {
-      setShowCommandsDropdown(false);
-    }
+    setShowCommandsDropdown(val.startsWith('/') && !val.includes(' '));
   };
 
   const handleSelectCommand = (cmd: CoPilotSlashCommand) => {
@@ -138,9 +112,7 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
         message: textToSend,
         persona: persona,
         modelCode: selectedModel === 'auto' ? undefined : selectedModel,
-        context: {
-          screenName: currentScreen
-        },
+        context: { screenName: currentScreen },
         history: messages.slice(-4).map(m => ({ role: m.role, content: m.content }))
       });
 
@@ -160,17 +132,13 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
 
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err: any) {
-      const serverError = err?.response?.data?.message || err?.response?.data?.title || (typeof err?.response?.data === 'string' ? err?.response?.data : null) || err?.message;
+      const serverError = err?.response?.data?.message || err?.message;
       const errorMsg: CoPilotMessage = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `⚠️ **Không thể kết nối tới mô hình AI đã chọn.**\n\n* **Chi tiết sự cố**: \`${serverError || 'Lỗi mạng hoặc không phản hồi từ máy chủ'}\`\n* **Giải pháp khuyến nghị**: Hãy chuyển bộ chọn mô hình sang **'🌟 Miễn phí / Cục bộ'** (như Gemini Flash hoặc DeepSeek-R1) hoặc chọn **'🎯 Tự Động Tối Ưu'** để hệ thống tự động định tuyến qua Bầy Sói WPSE!`,
+        content: `⚠️ **Không thể kết nối tới mô hình AI đã chọn.**\n\n* **Chi tiết**: \`${serverError || 'Lỗi mạng hoặc không phản hồi'}\`\n* **Giải pháp**: Chọn **'🌟 Miễn phí / Cục bộ'** hoặc kích hoạt các Slash Command sẵn có!`,
         modelUsed: 'WPSE:ResilientFallback',
-        suggestedActions: [
-          '/soan Toán tài chính lãi suất kép',
-          '/kiem-dinh Câu hỏi trên màn hình',
-          '/hoithao Đạo đức khảo thí AI'
-        ],
+        suggestedActions: ['/soan Toán tài chính lãi suất kép', '/hoithao Đạo đức khảo thí AI'],
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -179,19 +147,12 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
     <aside
       className={`fixed top-0 right-0 h-screen z-50 flex flex-col bg-slate-950/95 text-slate-100 border-l border-cyan-800/50 shadow-2xl backdrop-blur-xl transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-full md:w-[650px]' : 'w-full md:w-[420px]'
+        isExpanded ? 'w-full md:w-[650px]' : 'w-full md:w-[430px]'
       }`}
       aria-label="Aegis Sovereign Co-Pilot Sidecar"
     >
@@ -223,7 +184,7 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
             <button
               type="button"
               onClick={() => setIsExpanded(!isExpanded)}
-              title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng toàn màn hình'}
+              title={isExpanded ? 'Thu nhỏ cửa sổ' : 'Mở rộng'}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
             >
               {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -249,168 +210,66 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
 
         {/* Persona Switcher Chips */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
-          <button
-            type="button"
-            onClick={() => setPersona('AssessmentArchitect')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all shrink-0 flex items-center gap-1 ${
-              persona === 'AssessmentArchitect'
-                ? 'bg-cyan-600 text-white shadow-sm shadow-cyan-500/20'
-                : 'bg-slate-800/70 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Sparkles className="w-3 h-3" />
-            Khảo Thí
-          </button>
-          <button
-            type="button"
-            onClick={() => setPersona('SocraticMentor')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all shrink-0 flex items-center gap-1 ${
-              persona === 'SocraticMentor'
-                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/20'
-                : 'bg-slate-800/70 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <GraduationCap className="w-3 h-3" />
-            Gia Sư
-          </button>
-          <button
-            type="button"
-            onClick={() => setPersona('GovernanceFinOps')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all shrink-0 flex items-center gap-1 ${
-              persona === 'GovernanceFinOps'
-                ? 'bg-amber-600 text-white shadow-sm shadow-amber-500/20'
-                : 'bg-slate-800/70 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <ShieldAlert className="w-3 h-3" />
-            Quản Trị
-          </button>
-          <button
-            type="button"
-            onClick={() => setPersona('ResearchScholar')}
-            className={`px-2.5 py-1 rounded-full font-medium transition-all shrink-0 flex items-center gap-1 ${
-              persona === 'ResearchScholar'
-                ? 'bg-purple-600 text-white shadow-sm shadow-purple-500/20'
-                : 'bg-slate-800/70 text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <BookOpen className="w-3 h-3" />
-            Hội Thảo
-          </button>
+          {[
+            { id: 'AssessmentArchitect', label: 'Khảo Thí', icon: Sparkles, color: 'bg-cyan-600' },
+            { id: 'SocraticMentor', label: 'Gia Sư', icon: GraduationCap, color: 'bg-emerald-600' },
+            { id: 'GovernanceFinOps', label: 'Quản Trị', icon: ShieldAlert, color: 'bg-amber-600' },
+            { id: 'ResearchScholar', label: 'Hội Thảo', icon: BookOpen, color: 'bg-purple-600' }
+          ].map(p => {
+            const Icon = p.icon;
+            const active = persona === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPersona(p.id as CoPilotPersona)}
+                className={`px-2.5 py-1 rounded-full font-medium transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  active ? `${p.color} text-white shadow-sm` : 'bg-slate-800/70 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-3 h-3" />
+                {p.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* ── Messages Stream ── */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth">
-        {messages.map((msg) => (
-          <div
+        {messages.map(msg => (
+          <CoPilotMessageItem
             key={msg.id}
-            className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
-          >
-            {/* Header info */}
-            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mb-1 px-1">
-              <span>{msg.role === 'user' ? 'Bạn' : 'Aegis Co-Pilot'}</span>
-              <span>•</span>
-              <span>{msg.timestamp}</span>
-              {msg.modelUsed && (
-                <>
-                  <span>•</span>
-                  <span className="font-mono text-cyan-400/80">{msg.modelUsed}</span>
-                </>
-              )}
-              {msg.keySourceUsed && (
-                <>
-                  <span>•</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono border ${
-                    msg.keySourceUsed === 'UserBYOK'
-                      ? 'bg-blue-950 text-blue-300 border-blue-700/60'
-                      : msg.keySourceUsed === 'TenantBYOK'
-                      ? 'bg-amber-950 text-amber-300 border-amber-700/60'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
-                  }`}>
-                    {msg.keySourceUsed === 'UserBYOK' ? '👤 User BYOK' : msg.keySourceUsed === 'TenantBYOK' ? '🏢 Tenant BYOK' : '🌐 System'}
-                  </span>
-                </>
-              )}
-            </div>
-
-            {/* Bubble */}
-            <div
-              className={`rounded-2xl px-4 py-3 text-xs leading-relaxed max-w-[92%] shadow-md ${
-                msg.role === 'user'
-                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-tr-sm'
-                  : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-sm'
-              }`}
-            >
-              {/* Cognitive Trace (Thinking...) */}
-              {msg.thoughtTrace && <CognitiveTraceViewer thoughtTrace={msg.thoughtTrace} />}
-
-              {/* Action Pills */}
-              {msg.toolCalls && msg.toolCalls.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 my-2">
-                  {msg.toolCalls.map((t, idx) => (
-                    <ToolActionPill key={idx} tool={t} />
-                  ))}
-                </div>
-              )}
-
-              {/* Content body */}
-              <div className="whitespace-pre-wrap leading-relaxed select-text font-normal">
-                {msg.content}
-              </div>
-
-              {/* Interactive Artifact Card */}
-              {msg.artifact && (
-                <ArtifactCardRenderer
-                  artifact={msg.artifact}
-                  onApply={onApplyArtifact}
-                />
-              )}
-            </div>
-
-            {/* Suggested actions chips */}
-            {msg.suggestedActions && msg.suggestedActions.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2.5 max-w-[92%]">
-                {msg.suggestedActions.map((action, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => handleSend(action)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-900/60 hover:border-cyan-500/50 transition-colors shadow-sm"
-                  >
-                    <span>{action}</span>
-                    <ArrowUpRight className="w-2.5 h-2.5 opacity-70" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            msg={msg}
+            onApplyArtifact={onApplyArtifact}
+            onSendAction={handleSend}
+          />
         ))}
 
         {isLoading && (
           <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-900/80 border border-cyan-900/40 text-xs text-cyan-300">
             <Brain className="w-4 h-4 animate-spin text-cyan-400" />
-            <span className="animate-pulse">Đang kích hoạt vết tư duy & điều phối nhận thức...</span>
+            <span className="animate-pulse">Đang phân tích nhận thức & điều phối mô hình...</span>
           </div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* ── Slash Commands Autocomplete Popup ── */}
+      {/* ── Slash Commands Autocomplete ── */}
       {showCommandsDropdown && (
         <div className="mx-4 mb-2 p-2 rounded-xl bg-slate-900/95 border border-cyan-800/80 shadow-2xl backdrop-blur-xl">
           <div className="text-[10px] font-mono uppercase text-slate-400 px-2 py-1 flex items-center justify-between">
             <span>Slash Commands Khả Dụng</span>
             <Terminal className="w-3 h-3 text-cyan-400" />
           </div>
-          <div className="space-y-1">
-            {commands.map((cmd) => (
+          <div className="space-y-1 max-h-40 overflow-y-auto">
+            {commands.map(cmd => (
               <button
                 key={cmd.command}
                 type="button"
                 onClick={() => handleSelectCommand(cmd)}
-                className="w-full text-left p-2 rounded-lg hover:bg-slate-800/80 flex items-center justify-between text-xs transition-colors"
+                className="w-full text-left p-2 rounded-lg hover:bg-slate-800/80 flex items-center justify-between text-xs transition-colors cursor-pointer"
               >
                 <div>
                   <div className="font-mono font-bold text-cyan-300">{cmd.command}</div>
@@ -423,36 +282,38 @@ export const AegisCoPilotSidecar: React.FC<AegisCoPilotSidecarProps> = ({
         </div>
       )}
 
-      {/* ── Input Bar ── */}
-      <div className="p-3 border-t border-slate-800 bg-slate-900/90 shrink-0">
-        <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1.5 px-1">
+      {/* ── Bottom Input & Model Selector Bar ── */}
+      <div className="p-3 border-t border-slate-800/90 bg-slate-900/90 shrink-0 space-y-2">
+        <div className="flex items-center justify-between gap-2">
           <ModelSelectorDropdown
-            groups={modelGroups}
             selectedModelCode={selectedModel}
+            groups={modelGroups}
             onSelectModel={setSelectedModel}
             currentPrompt={inputMessage}
           />
-          <span className="font-mono text-[9px] text-slate-500">Phím tắt: Ctrl + J</span>
+          <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">Phím tắt: Ctrl + J</span>
         </div>
 
-        <div className="relative flex items-center">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            placeholder="Hỏi Co-Pilot hoặc gõ '/' để xem lệnh soạn đề..."
-            className="w-full pl-3 pr-10 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputMessage}
+              onChange={handleInputChange}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
+              placeholder="Hỏi Co-Pilot hoặc gõ '/' để xem lệnh soạn đề..."
+              disabled={isLoading}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-xs text-white placeholder-slate-500 outline-none transition-all disabled:opacity-50"
+            />
+          </div>
           <button
             type="button"
             onClick={() => handleSend()}
-            disabled={isLoading || !inputMessage.trim()}
-            className="absolute right-1.5 p-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 disabled:hover:bg-cyan-600 text-white transition-all shadow-sm"
+            disabled={!inputMessage.trim() || isLoading}
+            className="p-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 text-white disabled:text-slate-600 transition-all flex items-center justify-center shrink-0 shadow-lg shadow-cyan-600/20 cursor-pointer disabled:cursor-not-allowed"
           >
-            <Send className="w-3.5 h-3.5" />
+            <Send className="w-4 h-4" />
           </button>
         </div>
       </div>

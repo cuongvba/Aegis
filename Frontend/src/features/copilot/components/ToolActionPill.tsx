@@ -12,7 +12,7 @@ export const ToolActionPill: React.FC<ToolActionPillProps> = ({ tool }) => {
       <Zap className="w-3 h-3 text-amber-400" />
       <span className="font-medium text-cyan-300">{tool.toolName}</span>
       <span className="text-slate-500">•</span>
-      <span className="text-slate-400 text-[10px] truncate max-w-[180px]">{tool.description}</span>
+      <span className="text-slate-400 text-[10px] truncate max-w-[280px]">{tool.description}</span>
       {tool.durationMs > 0 && (
         <span className="inline-flex items-center gap-0.5 text-[9px] text-slate-500 font-normal">
           <Clock className="w-2.5 h-2.5" />

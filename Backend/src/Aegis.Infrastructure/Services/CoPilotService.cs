@@ -116,6 +116,14 @@ namespace Aegis.Infrastructure.Services
         private async Task<CoPilotResponseDto> HandleGeneralDeliberationAsync(
             CoPilotRequestDto request, string rawMessage, Stopwatch sw, CancellationToken ct)
         {
+            // 1. Phản xạ hội thoại siêu tốc (Fast-Path Zero-Token Reflex):
+            // Nếu người dùng chào hỏi, giới thiệu bản thân hoặc yêu cầu trợ giúp ban đầu
+            if (IsGreetingOrStatusQuery(rawMessage))
+            {
+                sw.Stop();
+                return GenerateConversationalWelcomeResponse(request, rawMessage, sw);
+            }
+
             try
             {
                 var aiRequest = new AiExecutionRequest
@@ -135,12 +143,19 @@ namespace Aegis.Infrastructure.Services
                     aiResponse = await _aiRouter.ExecuteAsync(aiRequest);
                 }
 
+                if (!aiResponse.Success || string.IsNullOrWhiteSpace(aiResponse.Content))
+                {
+                    throw new InvalidOperationException(!string.IsNullOrWhiteSpace(aiResponse.ErrorMessage)
+                        ? aiResponse.ErrorMessage
+                        : "Không nhận được phản hồi nội dung từ các cổng AI đám mây.");
+                }
+
                 sw.Stop();
                 return new CoPilotResponseDto
                 {
                     SessionId = Guid.NewGuid().ToString("N"),
                     ThoughtTrace = "Phân tích yêu cầu và ngữ cảnh làm việc hiện tại qua UniversalAiRouter (UAR).\n" +
-                                  "Áp dụng Persona tương thích và tối ưu hóa phản hồi chuẩn mực khoa học.",
+                                  $"Định tuyến thành công qua mô hình {aiResponse.ModelUsed} với độ trễ {sw.ElapsedMilliseconds}ms.",
                     ToolCalls = new List<CoPilotToolCallDto>
                     {
                         new CoPilotToolCallDto
@@ -152,13 +167,7 @@ namespace Aegis.Infrastructure.Services
                         }
                     },
                     Content = aiResponse.Content,
-                    SuggestedActions = new List<string>
-                    {
-                        "Lưu cuộc trao đổi này vào AegisNotebook",
-                        "Chuyển ý tưởng này thành câu hỏi trắc nghiệm (/soan)",
-                        "Triệu tập Bầy Sói kiểm định chuyên sâu (/kiem-dinh)",
-                        "Triệu tập Đại Hội Thảo 9 Viện Hàn Lâm (/hoithao)"
-                    },
+                    SuggestedActions = GenerateSuggestedActionsForPersona(request.Persona),
                     ModelUsed = aiResponse.ModelUsed,
                     LatencyMs = sw.ElapsedMilliseconds,
                     TokenUsage = aiResponse.TokensUsed
@@ -169,41 +178,130 @@ namespace Aegis.Infrastructure.Services
                 _logger.LogWarning(ex, "UniversalAiRouter exception, applying elegant fallback deliberation");
                 sw.Stop();
 
-                return new CoPilotResponseDto
-                {
-                    SessionId = Guid.NewGuid().ToString("N"),
-                    ThoughtTrace = "Chế độ phản hồi tự hành ngoại tuyến (Resilient Fallback Mode).\n" +
-                                  "Bảo toàn nhận thức và hướng dẫn người dùng qua các lệnh chuyên biệt.",
-                    ToolCalls = new List<CoPilotToolCallDto>
-                    {
-                        new CoPilotToolCallDto
-                        {
-                            ToolName = "LocalCognitiveFallback",
-                            Description = "Xử lý bằng động cơ nhận thức nội tại Aegis",
-                            Status = "completed",
-                            DurationMs = 10
-                        }
-                    },
-                    Content = "Tôi là **Aegis Sovereign Co-Pilot** đang ở chế độ đồng hành cùng bạn.\n\n" +
-                              "Bạn có thể sử dụng các lệnh siêu tốc:\n" +
-                              "* `/soan [chủ đề]`: Soạn câu hỏi chuẩn IRT & Bloom.\n" +
-                              "* `/kiem-dinh`: Bầy Sói Đa Mô Hình (WPSE) thẩm định chất lượng và cú pháp KaTeX.\n" +
-                              "* `/hoithao [chủ đề]`: Triệu tập 9 Viện Hàn Lâm phản biện biện chứng.\n" +
-                              "* `/ma-tran`: Lập ma trận đặc tả đề thi 6 cấp độ Bloom.\n" +
-                              "* `/gia-su`: Hướng dẫn tư duy phương pháp Socratic.",
-                    SuggestedActions = new List<string>
-                    {
-                        "/soan Toán tài chính lãi kép",
-                        "/kiem-dinh Câu hỏi hiện tại",
-                        "/hoithao Đạo đức khảo thí AI",
-                        "/ma-tran Đề thi Kinh tế vi mô 40 câu"
-                    },
-                    ModelUsed = "UniversalAiRouter:ResilientFallback",
-                    LatencyMs = sw.ElapsedMilliseconds,
-                    TokenUsage = 150
-                };
+                return GenerateResilientFallbackResponse(request, rawMessage, ex.Message, sw);
             }
         }
+
+        private static bool IsGreetingOrStatusQuery(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            var t = text.Trim().ToLowerInvariant().Replace("!", "").Replace(".", "").Replace("?", "").Replace(",", "");
+            return t is "chào" or "chào bạn" or "chào hệ thống" or "chao he thong" or "xin chào" or "xin chao" or
+                   "hello" or "hi" or "hey" or "alo" or "bạn là ai" or "ban la ai" or "giới thiệu" or "help" or "trợ giúp";
+        }
+
+        private static CoPilotResponseDto GenerateConversationalWelcomeResponse(CoPilotRequestDto request, string rawMessage, Stopwatch sw)
+        {
+            var screen = request.Context?.ScreenName ?? "Dashboard";
+            var personaName = request.Persona switch
+            {
+                CoPilotPersona.AssessmentArchitect => "Chuyên Gia Khảo Thí & Thiết Kế Đề Thi (Assessment Architect)",
+                CoPilotPersona.SocraticMentor => "Gia Sư Trí Tuệ Socratic (Socratic Mentor)",
+                CoPilotPersona.GovernanceFinOps => "Cố Vấn Quản Trị & Tối Ưu Chi Phí FinOps",
+                CoPilotPersona.ResearchScholar => "Học Giả Nghiên Cứu Viện Hàn Lâm (Research Scholar)",
+                _ => "Aegis Sovereign Co-Pilot"
+            };
+
+            var content = $"Xin chào bạn! Tôi là **Aegis Sovereign Co-Pilot** — trợ lý nhận thức tối cao đang đồng hành cùng bạn tại **{screen}** trong vai trò **{personaName}**.\n\n" +
+                          "⚡ **Các tác vụ trọng tâm bạn có thể kích hoạt tức thời:**\n" +
+                          "* **✍️ Soạn câu hỏi chuẩn mực**: Gõ `/soan [chủ đề]` (ví dụ: `/soan Tích phân hàm ẩn 2025`)\n" +
+                          "* **🐺 Kiểm định Bầy Sói (WPSE)**: Gõ `/kiem-dinh` để thẩm định ma trận đề và triệt tiêu bẫy ảo giác\n" +
+                          "* **🏛️ Đại Hội Thảo Hàn Lâm**: Gõ `/hoithao [đề tài]` để triệu tập 9 Viện Hàn Lâm tranh biện 6 pha\n" +
+                          "* **📊 Lập ma trận Bloom**: Gõ `/ma-tran [môn học]` để phân bổ 6 cấp độ nhận thức\n" +
+                          "* **🎓 Gia sư phát vấn**: Gõ `/gia-su [bài toán]` để luyện tập theo phương pháp Socratic\n\n" +
+                          "💡 *Bạn có thể ra lệnh bằng các nút gợi ý nhanh bên dưới, hoặc gõ trực tiếp câu hỏi vào thanh lệnh!*";
+
+            return new CoPilotResponseDto
+            {
+                SessionId = Guid.NewGuid().ToString("N"),
+                ThoughtTrace = "Phát hiện tín hiệu giao tiếp khởi đầu (Conversational Handshake).\n" +
+                              $"Kích hoạt phản xạ nhận thức tức thì theo vai trò {request.Persona} và ngữ cảnh màn hình {screen}.",
+                ToolCalls = new List<CoPilotToolCallDto>
+                {
+                    new CoPilotToolCallDto
+                    {
+                        ToolName = "SovereignFastPath",
+                        Description = $"Phản xạ hội thoại tức thì ({sw.ElapsedMilliseconds}ms, 0 Token)",
+                        Status = "completed",
+                        DurationMs = sw.ElapsedMilliseconds
+                    }
+                },
+                Content = content,
+                SuggestedActions = GenerateSuggestedActionsForPersona(request.Persona),
+                ModelUsed = "SovereignFastPath:ZeroToken",
+                LatencyMs = sw.ElapsedMilliseconds,
+                TokenUsage = 0
+            };
+        }
+
+        private static CoPilotResponseDto GenerateResilientFallbackResponse(
+            CoPilotRequestDto request, string rawMessage, string errorDetail, Stopwatch sw)
+        {
+            var content = $"Tôi đã tiếp nhận yêu cầu: **\"{rawMessage}\"**.\n\n" +
+                          "🛡️ **Trạng thái Điều phối Nhận thức (Resilient Fallback Mode):**\n" +
+                          "* Cổng kết nối AI đám mây bên ngoài hiện đang bảo trì hoặc chưa cấu hình khóa API hợp lệ.\n" +
+                          "* Hệ thống tự động chuyển sang **Động cơ Nhận thức Nội tại Aegis (Sovereign Local Engine)** để bảo toàn trải nghiệm liên tục.\n\n" +
+                          "💡 **Hướng xử lý tối ưu:**\n" +
+                          "1. **Sử dụng Slash Commands siêu tốc**: Các lệnh `/soan`, `/hoithao`, `/ma-tran`, `/gia-su` được trang bị sẵn khuôn mẫu tri thức chuyên sâu chuẩn mực.\n" +
+                          "2. **Cấu hình Khóa riêng (BYOK)**: Bạn có thể nhập API Key cá nhân (Google Gemini, DeepSeek, OpenAI) tại mục **Thiết Lập AI** để kích hoạt sức mạnh tối đa.";
+
+            return new CoPilotResponseDto
+            {
+                SessionId = Guid.NewGuid().ToString("N"),
+                ThoughtTrace = "Kích hoạt Chế độ Tự Phục Hồi Nhận Thức (Resilient Cognitive Mode).\n" +
+                              "Bảo toàn nhận thức và hướng dẫn người dùng qua các lệnh chuyên biệt.",
+                ToolCalls = new List<CoPilotToolCallDto>
+                {
+                    new CoPilotToolCallDto
+                    {
+                        ToolName = "LocalCognitiveFallback",
+                        Description = "Bảo toàn nhận thức nội tại Aegis (Cloud Gateway Isolated)",
+                        Status = "completed",
+                        DurationMs = sw.ElapsedMilliseconds
+                    }
+                },
+                Content = content,
+                SuggestedActions = GenerateSuggestedActionsForPersona(request.Persona),
+                ModelUsed = "UniversalAiRouter:ResilientFallback",
+                LatencyMs = sw.ElapsedMilliseconds,
+                TokenUsage = 150
+            };
+        }
+
+        private static List<string> GenerateSuggestedActionsForPersona(CoPilotPersona persona) => persona switch
+        {
+            CoPilotPersona.AssessmentArchitect => new List<string>
+            {
+                "/soan Toán tài chính lãi suất kép",
+                "/soan Tích phân từng phần hàm ẩn GDPT 2025",
+                "/kiem-dinh Câu hỏi trên màn hình",
+                "/ma-tran Đề thi Kinh tế học 40 câu"
+            },
+            CoPilotPersona.SocraticMentor => new List<string>
+            {
+                "/gia-su Biện luận nghiệm phương trình bậc hai có tham số m",
+                "/gia-su Giải thích định lý Pytago tổng quát",
+                "/gia-su Bản chất của số phức và hình học phẳng"
+            },
+            CoPilotPersona.GovernanceFinOps => new List<string>
+            {
+                "Kiểm toán chi phí Token toàn hệ thống tháng này",
+                "Chính sách bảo mật 3 tầng RLS và phân quyền Tenant",
+                "Quy trình đối soát ngân quỹ Aegis Treasury"
+            },
+            CoPilotPersona.ResearchScholar => new List<string>
+            {
+                "/hoithao Đạo đức khảo thí trong kỷ nguyên Trí tuệ Nhân tạo",
+                "/hoithao Nghịch lý Fermi dưới góc nhìn xác suất Bayesian",
+                "Lưu cuộc trao đổi này vào AegisNotebook"
+            },
+            _ => new List<string>
+            {
+                "/soan Toán tài chính lãi suất kép",
+                "/hoithao Đạo đức khảo thí AI",
+                "/ma-tran Đề thi Kinh tế học 40 câu"
+            }
+        };
 
         public async Task<IReadOnlyList<CoPilotModelGroupDto>> GetGroupedModelsAsync(
             string? prompt = null,
