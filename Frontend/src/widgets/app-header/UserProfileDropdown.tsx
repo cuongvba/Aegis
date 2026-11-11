@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — UserProfileDropdown Widget
+ * Aegis — UserProfileDropdown Widget
  * ========================================
  * Avatar + dropdown menu — tách từ MainLayout.tsx.
  * Dùng useAuthContext thay vì localStorage trực tiếp.

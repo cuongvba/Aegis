@@ -1,6 +1,6 @@
 # 🏛️ Tài Liệu Kiến Trúc Tổng Thể Hệ Thống (System Architecture)
 
-> **Dự án**: AegisQuiz — Nền Tảng Khảo Thí & Đấu Trường Gameshow Trí Tuệ Thế Hệ Mới  
+> **Dự án**: Aegis — Nền Tảng Khảo Thí & Đấu Trường Gameshow Trí Tuệ Thế Hệ Mới  
 > **Phiên bản tài liệu**: 2.0  
 > **Cập nhật gần nhất**: Tháng 9/2026
 
@@ -8,7 +8,7 @@
 
 ## 1. Mục Tiêu & Nguyên Lý Thiết Kế
 
-Hệ thống **AegisQuiz** được xây dựng dựa trên 4 nguyên lý kiến trúc nền tảng:
+Hệ thống **Aegis** được xây dựng dựa trên 4 nguyên lý kiến trúc nền tảng:
 1. **Clean Architecture & Separation of Concerns (SoC)**: Tách biệt hoàn toàn giữa Tầng Miền (Domain), Tầng Ứng dụng (Application), Tầng Hạ tầng (Infrastructure) và Tầng Giao diện/API (Presentation/API).
 2. **Microservices & Polyglot Architecture**:
    - .NET 10 Web API đảm nhận các nghiệp vụ cốt lõi, quản lý phòng thi, giao dịch, xác thực và truyền thông thời gian thực (SignalR WebSockets).
@@ -76,23 +76,23 @@ graph TB
 ## 3. Chi Tiết Các Tầng Kiến Trúc
 
 ### 3.1. Lớp Trình Diễn (Presentation & API Layer)
-- **`AegisQuiz.API`**:
+- **`Aegis.API`**:
   - `Controllers/`: Xử lý các REST request chuẩn hóa, xác thực phân quyền, rate limiting.
   - `Hubs/ArenaHub.cs`: Trạm tiếp nhận và phát sóng sự kiện Real-time hai chiều cho các phòng đấu trường Gameshow.
   - `Program.cs`: Nơi cấu hình Dependency Injection (DI) cho tất cả các Service, Plugin, SignalR Hub và Middleware.
 
 ### 3.2. Lớp Ứng Dụng (Application Layer)
-- **`AegisQuiz.Application`**:
+- **`Aegis.Application`**:
   - `Interfaces/IArenaGamePlugin.cs`: Bản hợp đồng quy định mọi hành vi của một Gameshow (Khởi tạo, Bấm chuông, Tính điểm, Xử lý hành động, Chuyển vòng).
   - `DTOs/`: Chứa các đối tượng truyền dữ liệu độc lập với cấu trúc bảng cơ sở dữ liệu.
 
 ### 3.3. Lớp Nghiệp Vụ Cốt Lõi (Domain Layer)
-- **`AegisQuiz.Domain`**:
+- **`Aegis.Domain`**:
   - Không phụ thuộc vào bất kỳ thư viện bên ngoài hay cơ sở dữ liệu nào.
   - Chứa các thực thể: `QuestionItem`, `QuizAttempt`, `ExamSession`, `UserAchievement`, `TopicPath`.
 
 ### 3.4. Lớp Hạ Tầng (Infrastructure Layer)
-- **`AegisQuiz.Infrastructure`**:
+- **`Aegis.Infrastructure`**:
   - `Arena/ArenaRoomManager.cs`: Engine điều phối phòng thi đấu in-memory độ trễ thấp với độ chính xác microsecond.
   - `Arena/ArenaGamePlugins.cs`: Nơi chứa mã nguồn thực thi của 6 thể thức Gameshow (`OlympiaPlugin`, `GoldenBellPlugin`, `LuckyWheelPlugin`, `UniversityChallengePlugin`, `JeopardyPlugin`, `LightningPlugin`).
   - `Data/`: Chứa DbContext của Entity Framework Core kết nối PostgreSQL.

@@ -1,4 +1,4 @@
-# 💎 AEGISQUIZ — MODULAR B2B SAAS ENTITLEMENT & 4-TIER GOVERNANCE ARCHITECTURE
+# 💎 AEGIS — MODULAR B2B SAAS ENTITLEMENT & 4-TIER GOVERNANCE ARCHITECTURE
 ## Kiến Trúc Nền Tảng Phân Quyền & Đóng Gói Sản Phẩm B2B Thương Mại Hóa Chuẩn Toàn Cầu
 
 > **Tài liệu tham chiếu chuẩn Living Documentation**: `docs/architecture/AEGIS_MODULAR_B2B_SAAS_ENTITLEMENT_ARCHITECTURE.md`  
@@ -11,14 +11,14 @@
 
 ## I. TỔNG QUAN CHIẾN LƯỢC KINH DOANH & BỐI CẢNH KIẾN TRÚC
 
-Trong quá trình tiến hóa từ một nền tảng thi trắc nghiệm thuần túy sang **Hệ sinh thái Khảo thí & Tri thức Toàn cầu**, AegisQuiz đã tích lũy hàng loạt "vũ khí công nghệ tối tân": *Universal Exam Transpiler, Hội đồng AI Symposium 3 đại diện, Đấu trường trực tiếp 6 gameshows, Động cơ bóc tách MathType vector WMF, và Mô hình đo lường thích ứng IRT 3-PL CAT*.
+Trong quá trình tiến hóa từ một nền tảng thi trắc nghiệm thuần túy sang **Hệ sinh thái Khảo thí & Tri thức Toàn cầu**, Aegis đã tích lũy hàng loạt "vũ khí công nghệ tối tân": *Universal Exam Transpiler, Hội đồng AI Symposium 3 đại diện, Đấu trường trực tiếp 6 gameshows, Động cơ bóc tách MathType vector WMF, và Mô hình đo lường thích ứng IRT 3-PL CAT*.
 
 Tuy nhiên, việc để toàn bộ các tính năng này hiển thị cào bằng trên giao diện (Monolithic Super-App Syndrome) gây ra 3 hệ lụy nghiêm trọng:
 1. **Khủng hoảng nhận thức người dùng (Cognitive Overload)**: Giáo viên và gia sư phổ thông bị choáng ngợp bởi hàng loạt tính năng công nghiệp phức tạp.
 2. **Bế tắc thương mại hóa SaaS (Zero Packaging & Monetization)**: Khách hàng không có ranh giới gói cước; doanh thu B2B không thể tối ưu hóa khi không có cơ chế **Feature Gates (Cổng kiểm soát tính năng)** và **Upgrade Triggers (Kích hoạt mua thêm)**.
 3. **Thủng lưới quản trị phân cấp doanh nghiệp (Enterprise Governance Void)**: Ngân hàng và tập đoàn đa chi nhánh đòi hỏi sự cô lập quyền lực tuyệt đối giữa các đơn vị thành viên.
 
-Kiến trúc **Modular B2B SaaS Entitlement Engine** ra đời nhằm giải quyết triệt để bài toán trên, biến AegisQuiz thành cỗ máy kinh doanh B2B tự động (*Product-Led Growth - PLG*) vận hành trên ma trận phân quyền 4 tầng.
+Kiến trúc **Modular B2B SaaS Entitlement Engine** ra đời nhằm giải quyết triệt để bài toán trên, biến Aegis thành cỗ máy kinh doanh B2B tự động (*Product-Led Growth - PLG*) vận hành trên ma trận phân quyền 4 tầng.
 
 ---
 
@@ -97,7 +97,7 @@ flowchart TD
                    ▲
 [Application]   Interfaces, DTOs (TenantEntitlementsDto)
                    ▲
-[Infrastructure]AegisQuizDbContext, MultiTenantQueryFilter
+[Infrastructure]AegisDbContext, MultiTenantQueryFilter
                    ▲
 [API Gateway]   EntitlementsController.cs (GET /api/entitlements/current)
 ```
@@ -154,10 +154,10 @@ sequenceDiagram
 
 ## VI. QUY TRÌNH PHÁT TRIỂN TÍNH NĂNG MỚI (DEVELOPER GOLDEN WORKFLOW)
 
-Mọi kỹ sư hoặc AI Agent khi bổ sung tính năng mới vào hệ thống AegisQuiz bắt buộc phải tuân thủ quy trình 5 bước:
+Mọi kỹ sư hoặc AI Agent khi bổ sung tính năng mới vào hệ thống Aegis bắt buộc phải tuân thủ quy trình 5 bước:
 
 1. **Bước 1 — Khai báo FeatureKey tại Domain Backend**:
-   Thêm hằng số vào `AegisQuiz.Domain.Entities.FeatureKeys`.
+   Thêm hằng số vào `Aegis.Domain.Entities.FeatureKeys`.
 2. **Bước 2 — Định cấu hình gói tại PlanFeatureCatalog**:
    Quy định tính năng này thuộc gói nào (`Starter`, `Professional`, `Enterprise`, `Global`).
 3. **Bước 3 — Đồng bộ hóa TypeScript Types**:

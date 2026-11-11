@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
- * ║  AEGISQUIZ — TIER 2: SEMANTIC TOKENS                           ║
+ * ║  AEGIS — TIER 2: SEMANTIC TOKENS                           ║
  * ║  Purpose-driven tokens. Components PHẢI tham chiếu layer này.  ║
  * ║  Không tham chiếu primitive.css trực tiếp từ component.        ║
  * ╚══════════════════════════════════════════════════════════════════╝
@@ -23,7 +23,7 @@
   --surface-inverse:     var(--palette-slate-900);    /* Dark panels */
 
   /* ══════════════════════════════════════════════════
-   * BRAND — Core brand identity (default AegisQuiz)
+   * BRAND — Core brand identity (default Aegis)
    * ══════════════════════════════════════════════════ */
   --brand-primary:         var(--palette-cyan-500);
   --brand-primary-hover:   var(--palette-cyan-600);

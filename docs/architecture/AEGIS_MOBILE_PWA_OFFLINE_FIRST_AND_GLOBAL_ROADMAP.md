@@ -1,6 +1,6 @@
 # 📱 LỘ TRÌNH CHIẾN LƯỢC TOÀN CẦU & KIẾN TRÚC ỨNG DỤNG DI ĐỘNG CHUYÊN BIỆT (PWA / MOBILE METAMORPHIC OFFLINE-FIRST MASTER PLAN)
 
-> **Cơ quan ban hành**: Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz (No.1 Charter)  
+> **Cơ quan ban hành**: Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis (No.1 Charter)  
 > **Phiên bản**: v2.0.0 (Living Architecture Dossier — Pha 1 Hoàn Thành & Tích Hợp ACSE)  
 > **Trạng thái**: Hoạt động thực tế trên Docker Desktop (Port 3000, Chunk Mobile 9.24 KB gzip)  
 > **Tiêu chuẩn kỹ thuật**: W3C PWA 2026, Service Worker Cache-First, IndexedDB Merkle Chain, Cognitive Micro-Course Transpiler, 60fps Native Touch Ergonomics.
@@ -76,7 +76,7 @@ Khi mở phiên làm việc mới, Kỹ sư / AI Agent chỉ cần thực hiện
 - **Môi trường Docker Desktop**: Các container đang chạy:
   - Frontend: `http://localhost:3000` (Nginx SPA, chunk mobile 9.24 KB).
   - Backend: `http://localhost:8080` (.NET 9 Web API).
-  - Postgres: `localhost:5432` (`aegisquiz` DB).
+  - Postgres: `localhost:5432` (`aegis` DB).
 - **Các URL kiểm chứng**:
   - Giao diện Admin: `http://localhost:3000/admin/tenants`
   - Giao diện Trẻ Em: `http://localhost:3000/m?app=kids`
@@ -94,4 +94,4 @@ Khi mở phiên làm việc mới, Kỹ sư / AI Agent chỉ cần thực hiện
    - Triển khai xuất/nhập gói chuẩn QTI 3.0 để tích hợp LMS quốc tế (Canvas, Moodle, Blackboard).
 
 ---
-*Tài liệu được bảo chứng bởi Kiến Trúc Sư Trưởng Hệ Sinh Thái AegisQuiz (No.1 Charter).*
+*Tài liệu được bảo chứng bởi Kiến Trúc Sư Trưởng Hệ Sinh Thái Aegis (No.1 Charter).*

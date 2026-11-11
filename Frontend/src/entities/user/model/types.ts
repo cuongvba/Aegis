@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — User Entity Types
+ * Aegis — User Entity Types
  * =============================
  * FSD Layer: entities/user/model/types.ts
  */

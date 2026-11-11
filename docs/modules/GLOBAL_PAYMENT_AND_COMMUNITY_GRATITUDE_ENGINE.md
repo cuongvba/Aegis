@@ -3,7 +3,7 @@
 
 ---
 
-> **Tài liệu chuẩn mực**: Tuân thủ tuyệt đối [Aegis Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).  
+> **Tài liệu chuẩn mực**: Tuân thủ tuyệt đối [Aegis Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).  
 > **Áp dụng các cảnh giới**: Cảnh giới 5 (Động cơ Kinh tế & Tiền tệ hóa Toàn cầu) và Cam kết Vàng Bất Biến (AGENTS.md).
 
 ---
@@ -11,7 +11,7 @@
 ## I. TRỤ CỘT 1: ARCHITECTURAL BLUEPRINT & FORMAL SPECIFICATION
 
 ### 1. Tầm Nhìn Kiến Trúc
-Hệ thống AegisQuiz phục vụ người học và tổ chức trên toàn cầu thông qua kiến trúc thanh toán mở (**Open Payment Gateway Architecture - OCP**):
+Hệ thống Aegis phục vụ người học và tổ chức trên toàn cầu thông qua kiến trúc thanh toán mở (**Open Payment Gateway Architecture - OCP**):
 1. **Thị Trường Nội Địa (Việt Nam)**:
    - **PayOS**: Tự động hóa tạo liên kết thanh toán VietQR ngân hàng với Webhook xác thực chữ ký SHA-256 đối soát thời gian thực.
    - **Napas 24/7 (VietQR P2P Direct)**: Cơ chế sinh mã QR Chuyển khoản Nhanh quốc gia theo chuẩn EMVCo MPM (Merchant-Presented Mode) trực tiếp đến tài khoản thụ hưởng của hệ thống (Agribank `8888912600688`).
@@ -72,18 +72,18 @@ sequenceDiagram
 Mọi thành phần trong phân hệ thanh toán được cài đặt tuân thủ chặt chẽ nguyên tắc **Clean Architecture** và **Open/Closed Principle (OCP)**:
 
 ### 1. Thành Phần Mã Nguồn Backend (.NET 10)
-* [`VietQrEmvCoGenerator.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Payments/VietQrEmvCoGenerator.cs): Động cơ sinh chuỗi Napas 24/7 TLV (Tag-Length-Value) và CRC16-CCITT nội bộ.
-* [`IPaymentGatewayStrategy.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Payments/IPaymentGatewayStrategy.cs): Interface chuẩn cho các cổng thanh toán (PayOS, Stripe, Alipay, WeChatPay, Web3Polygon).
-* [`PaymentDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Payments/PaymentDtos.cs): Khai báo Data Contracts (`CreateCoffeeDonationRequest`, `CoffeeDonationResponseDto`, `CoffeeDonationItemDto`).
-* [`PaymentOrchestratorService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Payments/PaymentOrchestratorService.cs): Bộ điều phối trung tâm, kết nối API VietQR, quản lý cấu hình thụ hưởng động từ DB và lưu trữ giao dịch tri ân.
-* [`PaymentController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/PaymentController.cs): API endpoints tiếp nhận đóng góp (`POST /api/payment/coffee-donation`) và danh sách tri ân (`GET /api/payment/coffee-donations`).
+* [`VietQrEmvCoGenerator.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Payments/VietQrEmvCoGenerator.cs): Động cơ sinh chuỗi Napas 24/7 TLV (Tag-Length-Value) và CRC16-CCITT nội bộ.
+* [`IPaymentGatewayStrategy.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Payments/IPaymentGatewayStrategy.cs): Interface chuẩn cho các cổng thanh toán (PayOS, Stripe, Alipay, WeChatPay, Web3Polygon).
+* [`PaymentDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Payments/PaymentDtos.cs): Khai báo Data Contracts (`CreateCoffeeDonationRequest`, `CoffeeDonationResponseDto`, `CoffeeDonationItemDto`).
+* [`PaymentOrchestratorService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Payments/PaymentOrchestratorService.cs): Bộ điều phối trung tâm, kết nối API VietQR, quản lý cấu hình thụ hưởng động từ DB và lưu trữ giao dịch tri ân.
+* [`PaymentController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/PaymentController.cs): API endpoints tiếp nhận đóng góp (`POST /api/payment/coffee-donation`) và danh sách tri ân (`GET /api/payment/coffee-donations`).
 
 ### 2. Thành Phần Mã Nguồn Frontend (React 19 + TypeScript)
-* [`BuyMeCoffeeModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/features/coffee/BuyMeCoffeeModal.tsx): Modal tương tác người dùng, tích hợp QR Vector SVG độ nét cao 160px, nút chuyển đổi Phiếu VietQR, và form ghi nhận thông tin tri ân.
-* [`GratitudeSuccessView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/features/coffee/components/GratitudeSuccessView.tsx): Màn hình vinh danh chứng nhận tri ân và thẻ quà tặng Voucher độc bản.
-* [`SupportersWallView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/features/coffee/components/SupportersWallView.tsx): Bảng Vàng Tri Ân Cộng Đồng hiển thị danh sách người ủng hộ.
-* [`DonorsManagementSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/DonorsManagementSection.tsx): Bảng quản trị Nhà tài trợ trên trang Admin với nút sao chép toàn bộ email phục vụ tri ân/khuyến mãi.
-* [`AdminPaymentsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/AdminPaymentsPage.tsx): Trang quản trị Doanh thu & Cấu hình tài khoản thụ hưởng đa cổng.
+* [`BuyMeCoffeeModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/features/coffee/BuyMeCoffeeModal.tsx): Modal tương tác người dùng, tích hợp QR Vector SVG độ nét cao 160px, nút chuyển đổi Phiếu VietQR, và form ghi nhận thông tin tri ân.
+* [`GratitudeSuccessView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/features/coffee/components/GratitudeSuccessView.tsx): Màn hình vinh danh chứng nhận tri ân và thẻ quà tặng Voucher độc bản.
+* [`SupportersWallView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/features/coffee/components/SupportersWallView.tsx): Bảng Vàng Tri Ân Cộng Đồng hiển thị danh sách người ủng hộ.
+* [`DonorsManagementSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/DonorsManagementSection.tsx): Bảng quản trị Nhà tài trợ trên trang Admin với nút sao chép toàn bộ email phục vụ tri ân/khuyến mãi.
+* [`AdminPaymentsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/AdminPaymentsPage.tsx): Trang quản trị Doanh thu & Cấu hình tài khoản thụ hưởng đa cổng.
 
 ---
 
@@ -146,7 +146,7 @@ Bảng quản trị tại `/admin/payments` (Tab "Nhà Tài Trợ & Tri Ân") gh
 
 ## VI. TRỤ CỘT BẢO MẬT CẤP ĐỘ 3: QUẢN TRỊ TÀI KHOẢN THỤ HƯỞNG & XÁC THỰC ĐA YẾU TỐ (MFA / SUDO MODE)
 
-Nhằm bảo vệ tuyệt đối an ninh tài chính của hệ thống, loại trừ triệt để nguy cơ tài khoản ma, gõ nhầm số tài khoản, hoặc hành vi chiếm quyền thay đổi người nhận tiền trái phép, AegisQuiz thiết lập **3 Lớp Phòng Thủ Cấp Độ 3 (Level-3 Financial Bastion)**:
+Nhằm bảo vệ tuyệt đối an ninh tài chính của hệ thống, loại trừ triệt để nguy cơ tài khoản ma, gõ nhầm số tài khoản, hoặc hành vi chiếm quyền thay đổi người nhận tiền trái phép, Aegis thiết lập **3 Lớp Phòng Thủ Cấp Độ 3 (Level-3 Financial Bastion)**:
 
 ### 1. Cơ Chế Tra Cứu & Xác Minh Tài Khoản Thụ Hưởng Thời Gian Thực (Real-Time Napas Account Lookup)
 * **API Xác Thực**: `POST /api/payment/lookup-account`

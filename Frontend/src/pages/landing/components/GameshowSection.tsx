@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — GameshowSection (Landing Page)
+ * Aegis — GameshowSection (Landing Page)
  * =============================================
  * Showcase 6 Gameshow học thuật đã build thật — điểm khác biệt lớn nhất so
  * với đối thủ (Kahoot/Quizizz không có).

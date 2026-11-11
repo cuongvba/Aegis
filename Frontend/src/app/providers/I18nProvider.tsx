@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — I18nProvider
+ * Aegis — I18nProvider
  * =========================
  * Quản lý RTL/LTR direction + i18n initialization.
  * FSD Layer: app/providers/

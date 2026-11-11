@@ -1,15 +1,15 @@
-# 📖 Cẩm Nang Sử Dụng: Đấu Trường Gameshow Trí Tuệ AegisQuiz
+# 📖 Cẩm Nang Sử Dụng: Đấu Trường Gameshow Trí Tuệ Aegis
 
-> **Tài liệu hướng dẫn toàn diện dành cho Giáo viên, Giảng viên, Ban Tổ Chức (Host), Trọng Tài và Học sinh - Sinh viên (Thí sinh)** khi tham gia tổ chức hoặc thi đấu trên nền tảng AegisQuiz Arena.
+> **Tài liệu hướng dẫn toàn diện dành cho Giáo viên, Giảng viên, Ban Tổ Chức (Host), Trọng Tài và Học sinh - Sinh viên (Thí sinh)** khi tham gia tổ chức hoặc thi đấu trên nền tảng Aegis Arena.
 
 ---
 
 ## 🎯 1. Giới Thiệu Chung & Mục Đích Sử Dụng
 
-**AegisQuiz Arena** là phân hệ thi đấu đối kháng trực tiếp, biến các buổi học, kỳ thi phong trào, hội trại thanh niên hoặc ngày hội tri thức của nhà trường và doanh nghiệp thành các **Gameshow truyền hình chuyên nghiệp** với hiệu ứng âm thanh, đồ họa và cơ chế bấm chuông phản xạ chuẩn xác từng mili-giây.
+**Aegis Arena** là phân hệ thi đấu đối kháng trực tiếp, biến các buổi học, kỳ thi phong trào, hội trại thanh niên hoặc ngày hội tri thức của nhà trường và doanh nghiệp thành các **Gameshow truyền hình chuyên nghiệp** với hiệu ứng âm thanh, đồ họa và cơ chế bấm chuông phản xạ chuẩn xác từng mili-giây.
 
 ### Cách Truy Cập Đấu Trường:
-1. Đăng nhập vào hệ sinh thái **AegisQuiz**.
+1. Đăng nhập vào hệ sinh thái **Aegis**.
 2. Trên thanh điều hướng Header, nhấp vào mục **"Đấu trường ⚡"** (hoặc truy cập trực tiếp URL: `http://<domain>/arena`).
 3. Bạn sẽ bước vào **Sảnh Đấu Trường (Gameshow Hub)** nơi trưng bày đầy đủ 6 thể thức thi đấu.
 

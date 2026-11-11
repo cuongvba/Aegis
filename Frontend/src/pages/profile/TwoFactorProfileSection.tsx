@@ -168,11 +168,11 @@ export const TwoFactorProfileSection: React.FC<TwoFactorProfileSectionProps> = (
   };
 
   const downloadBackupCodesFile = (codes: string[]) => {
-    const textContent = `=== AEGISQUIZ 2FA RECOVERY CODES ===\nUser: ${user?.email}\nGenerated: ${new Date().toISOString()}\n\n${t('twoFactor.setupModal.backupFileNote')}\n${codes.map((c, i) => `${i + 1}. ${c}`).join('\n')}\n\n${t('twoFactor.setupModal.backupFileWarning')}`;
+    const textContent = `=== AEGIS 2FA RECOVERY CODES ===\nUser: ${user?.email}\nGenerated: ${new Date().toISOString()}\n\n${t('twoFactor.setupModal.backupFileNote')}\n${codes.map((c, i) => `${i + 1}. ${c}`).join('\n')}\n\n${t('twoFactor.setupModal.backupFileWarning')}`;
     const element = document.createElement('a');
     const file = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
     element.href = URL.createObjectURL(file);
-    element.download = `AegisQuiz_2FA_Backup_Codes_${user?.email || 'user'}.txt`;
+    element.download = `Aegis_2FA_Backup_Codes_${user?.email || 'user'}.txt`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);

@@ -17,8 +17,8 @@ Tuy nhiên, **100% các nền tảng khảo thí và LMS hiện hành trên th�
 - **Thiếu Studio Tương Tác Trực Quan & Khả Năng Tự Học (Self-Enrichment)**: Người quản trị hoàn toàn "mù thông tin" khi nạp file: không có giao diện xem trước ma trận cột, không thể can thiệp kéo thả sửa schema mapping, và hệ thống không thể tự học từ các điều chỉnh của người dùng để trở nên thông minh hơn theo thời gian.
 
 ### 2. Định Nghĩa Universal Cognitive Ingestion Studio (UCIS v4.0 Supremacy)
-**Universal Cognitive Ingestion Studio (UCIS v4.0 Supremacy)** của **AegisQuiz** là một bước nhảy vọt cách mạng, thiết lập chuẩn mực công nghệ toàn cầu mới:
-> *"Bất kỳ file Excel nào, từ bất kỳ ngành nghề nào trên hành tinh, được biên soạn theo bất kỳ ngôn ngữ hay cấu trúc bảng biểu nào, AegisQuiz đều có khả năng tự động thấu cảm, bóc tách, tái cấu trúc và số hóa hoàn hảo vào Ngân hàng Khảo thí Chuẩn Quốc tế chỉ trong 1 cú nhấp chuột. Hệ thống tự động làm giàu tri thức (Self-Enrichment) qua mỗi lần tương tác để ngày càng thông minh và mạnh mẽ hơn."*
+**Universal Cognitive Ingestion Studio (UCIS v4.0 Supremacy)** của **Aegis** là một bước nhảy vọt cách mạng, thiết lập chuẩn mực công nghệ toàn cầu mới:
+> *"Bất kỳ file Excel nào, từ bất kỳ ngành nghề nào trên hành tinh, được biên soạn theo bất kỳ ngôn ngữ hay cấu trúc bảng biểu nào, Aegis đều có khả năng tự động thấu cảm, bóc tách, tái cấu trúc và số hóa hoàn hảo vào Ngân hàng Khảo thí Chuẩn Quốc tế chỉ trong 1 cú nhấp chuột. Hệ thống tự động làm giàu tri thức (Self-Enrichment) qua mỗi lần tương tác để ngày càng thông minh và mạnh mẽ hơn."*
 
 ---
 
@@ -26,7 +26,7 @@ Tuy nhiên, **100% các nền tảng khảo thí và LMS hiện hành trên th�
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────────────┐
-│              UNIVERSAL COGNITIVE EXCEL INGESTION STUDIO v4.0 (AEGISQUIZ UCIS SUPREMACY)            │
+│              UNIVERSAL COGNITIVE EXCEL INGESTION STUDIO v4.0 (AEGIS UCIS SUPREMACY)            │
 └─────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
                                                   │
  ┌────────────────────────────────────────────────┴────────────────────────────────────────────────┐
@@ -313,16 +313,16 @@ graph TD
 ## III. LIÊN KẾT MÃ NGUỒN ĐỘNG & HỢP ĐỒNG GIAO TIẾP (LIVE CODE & API CONTRACTS)
 
 ### 1. Mã Nguồn Cốt Lõi Hệ Thống (Live Code Links)
-- **Động cơ phân tích Excel & Tô pô Workbook**: [ExcelParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Excel/ExcelParserService.cs)
-- **Ma trận phân loại trọng số & Tự làm giàu tri thức**: [UniversalColumnTaxonomyMatrix.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Excel/UniversalColumnTaxonomyMatrix.cs)
-- **Thực thể phân cấp phả hệ & Đa Tenant**: [BankTopic.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/BankTopic.cs)
-- **Thực thể danh mục ngành nghề động**: [DynamicDomain.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/DynamicDomain.cs)
-- **API Controller Khảo thí & Ingestion Studio**: [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs)
-- **API Controller Quản trị Phân cấp Cây Chủ Đề**: [TopicsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs)
-- **Giao diện Workbench & Live Schema Mapper**: [ExcelIngestionStudioModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/ExcelIngestionStudioModal.tsx)
-- **Thành phần Đồ Thị Nhận Thức Luyện Thi (Domain & Tree Explorer)**: [CognitiveTopicExplorer.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/quiz/CognitiveTopicExplorer.tsx)
-- **Tích hợp Màn Hình Thiết Lập Luyện Thi**: [PracticeSetup.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/quiz/PracticeSetup.tsx)
-- **Bộ Kiểm Thử Đơn Vị Tự Động Toàn Diện**: [DynamicExcelIngestionTests.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DynamicExcelIngestionTests.cs)
+- **Động cơ phân tích Excel & Tô pô Workbook**: [ExcelParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Excel/ExcelParserService.cs)
+- **Ma trận phân loại trọng số & Tự làm giàu tri thức**: [UniversalColumnTaxonomyMatrix.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Excel/UniversalColumnTaxonomyMatrix.cs)
+- **Thực thể phân cấp phả hệ & Đa Tenant**: [BankTopic.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/BankTopic.cs)
+- **Thực thể danh mục ngành nghề động**: [DynamicDomain.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/DynamicDomain.cs)
+- **API Controller Khảo thí & Ingestion Studio**: [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs)
+- **API Controller Quản trị Phân cấp Cây Chủ Đề**: [TopicsController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs)
+- **Giao diện Workbench & Live Schema Mapper**: [ExcelIngestionStudioModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/ExcelIngestionStudioModal.tsx)
+- **Thành phần Đồ Thị Nhận Thức Luyện Thi (Domain & Tree Explorer)**: [CognitiveTopicExplorer.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/quiz/CognitiveTopicExplorer.tsx)
+- **Tích hợp Màn Hình Thiết Lập Luyện Thi**: [PracticeSetup.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/quiz/PracticeSetup.tsx)
+- **Bộ Kiểm Thử Đơn Vị Tự Động Toàn Diện**: [DynamicExcelIngestionTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/DynamicExcelIngestionTests.cs)
 
 ### 2. DTO Làm Giàu Tri Thức (Self-Enrichment Request)
 ```csharp
@@ -488,5 +488,5 @@ Tất cả các hình ảnh dưới đây là căn cứ thực nghiệm được
 
 ## VII. KẾT LUẬN
 
-**Universal Cognitive Ingestion Studio (UCIS v4.2 Century-Proof Edition)** cùng tài liệu chuẩn **ALDS v1.0** thiết lập cột mốc lịch sử mới cho **AegisQuiz**: một hệ sinh thái khảo thí thông minh vượt trội, tự học, tự thích ứng, linh hoạt tối đa trong phân cấp và quản trị chủ đề, đồng nhất toàn diện 27 trường nhận thức giữa Excel và DOCX/PDF, làm chủ đồ thị nhận thức đa lĩnh vực toàn cầu với độ phức tạp $O(1)$ và mô hình phân quyền kép bền vững hàng thế kỷ, được bảo chứng bằng 127/127 unit tests tự động và hệ thống tài sản thực nghiệm bất khả chối cãi.
+**Universal Cognitive Ingestion Studio (UCIS v4.2 Century-Proof Edition)** cùng tài liệu chuẩn **ALDS v1.0** thiết lập cột mốc lịch sử mới cho **Aegis**: một hệ sinh thái khảo thí thông minh vượt trội, tự học, tự thích ứng, linh hoạt tối đa trong phân cấp và quản trị chủ đề, đồng nhất toàn diện 27 trường nhận thức giữa Excel và DOCX/PDF, làm chủ đồ thị nhận thức đa lĩnh vực toàn cầu với độ phức tạp $O(1)$ và mô hình phân quyền kép bền vững hàng thế kỷ, được bảo chứng bằng 127/127 unit tests tự động và hệ thống tài sản thực nghiệm bất khả chối cãi.
 

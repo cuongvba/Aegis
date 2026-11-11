@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aegis-backend
-  namespace: aegisquiz-prod
+  namespace: aegis-prod
   labels:
     app.kubernetes.io/name: aegis-backend
     app.kubernetes.io/part-of: aegis-os
@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: cuongvba/aegisquiz-api:v9.2-latest
+        image: cuongvba/aegis-api:v9.2-latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: http

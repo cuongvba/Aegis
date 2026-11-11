@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — k6 Load Test Suite
+ * Aegis — k6 Load Test Suite
  * =================================
  * Mục tiêu Phase 0: 500 CCU, P99 < 500ms
  * Mục tiêu Phase 1: 5,000 CCU, P99 < 300ms
@@ -152,7 +152,7 @@ export function handleSummary(data) {
   const p99      = data.metrics['http_req_duration']?.values?.['p(99)'] ?? 0;
 
   console.log('\n========================================');
-  console.log('   AegisQuiz Load Test Summary');
+  console.log('   Aegis Load Test Summary');
   console.log('========================================');
   console.log(`Total Requests : ${data.metrics.http_reqs?.values?.count ?? 0}`);
   console.log(`Error Rate     : ${errorPct.toFixed(2)}%`);

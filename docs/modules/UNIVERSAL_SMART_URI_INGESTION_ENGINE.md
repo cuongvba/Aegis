@@ -27,7 +27,7 @@ Trong quy trình làm việc truyền thống tại các cơ quan, ngân hàng, 
   `Mở trình duyệt` $\rightarrow$ `Vào File` $\rightarrow$ `Tải xuống dạng .docx/.xlsx` $\rightarrow$ `Lưu về ổ cứng` $\rightarrow$ `Kéo thả file lên web`.
 - Nếu file chứa phiên bản cập nhật mới, người dùng lại phải lặp lại toàn bộ chu trình trên, dễ gây nhầm lẫn phiên bản và tốn tài nguyên ổ cứng.
 
-**Giải pháp của AegisQuiz:**
+**Giải pháp của Aegis:**
 Trang bị **Universal Smart URI Ingestion Engine** — Chỉ cần dán link URL của Google Docs/Sheets vào hệ thống:
 1. Hệ thống tự động phân tích định dạng và chuyển đổi sang luồng nhị phân OpenXML (`.docx` / `.xlsx`).
 2. Tự động kiểm tra an ninh (chống tấn công mạng nội bộ SSRF).
@@ -150,7 +150,7 @@ private static bool IsPrivateOrLocalIp(IPAddress ip)
 
 Khi tài liệu Google Docs ở chế độ riêng tư hoặc chủ sở hữu chưa cho phép người xem tải tệp xuống:
 - Google Drive sẽ phản hồi mã `200 OK` nhưng trả về một trang HTML thông báo lỗi thay vì nhị phân file Word.
-- **Hệ thống AegisQuiz phát hiện trang HTML này thông qua chữ ký nhận dạng:**
+- **Hệ thống Aegis phát hiện trang HTML này thông qua chữ ký nhận dạng:**
   - Tiêu đề: `Google Drive - Virus scan warning` hoặc `Google Drive – Access Denied`
   - Nội dung: *"Sorry, the owner hasn't given you permission to download this file"* hoặc *"Bạn cần có quyền truy cập"*.
 - **Phản hồi người dùng thân thiện**:
@@ -217,7 +217,7 @@ Khi tài liệu Google Docs ở chế độ riêng tư hoặc chủ sở hữu c
 
 ## 7. TRẢI NGHIỆM GIAO DIỆN NGƯỜI DÙNG ĐỈNH CAO (SMARTURLIMPORTMODAL)
 
-Tệp cài đặt: [SmartUrlImportModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/SmartUrlImportModal.tsx)
+Tệp cài đặt: [SmartUrlImportModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/SmartUrlImportModal.tsx)
 
 ### Các Điểm Nhấn Thiết Kế:
 1. **Universal Smart Bar**:
@@ -248,4 +248,4 @@ Toàn bộ hệ thống đã được biên dịch, dựng container và kiểm 
 | **Profile Navigation & 2FA QR** | Local Docker (`:3000`) | Truy cập `/profile` | Hiển thị nút "Quay lại" và mở QR Authenticator | QR code hiển thị rõ ràng, mã dự phòng đầy đủ | ✅ Đạt |
 
 ---
-*Tài liệu được phát hành và bảo chứng chất lượng bởi Kiến trúc sư trưởng No.1 — AegisQuiz Core Team.*
+*Tài liệu được phát hành và bảo chứng chất lượng bởi Kiến trúc sư trưởng No.1 — Aegis Core Team.*

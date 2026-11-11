@@ -1,5 +1,5 @@
 # ==============================================================================
-# AegisQuiz — Go-Live Pre-Flight Verification Script (PowerShell)
+# Aegis — Go-Live Pre-Flight Verification Script (PowerShell)
 # Tự động kiểm toán toàn diện tính sẵn sàng trước khi triển khai Production (dehoc.vn)
 # ==============================================================================
 
@@ -8,7 +8,7 @@ $RootPath = (Resolve-Path "$PSScriptRoot\..").Path
 Set-Location $RootPath
 
 Write-Host "==================================================================" -ForegroundColor Cyan
-Write-Host "[*] AEGISQUIZ PRODUCTION GO-LIVE PRE-FLIGHT AUDIT" -ForegroundColor Cyan
+Write-Host "[*] AEGIS PRODUCTION GO-LIVE PRE-FLIGHT AUDIT" -ForegroundColor Cyan
 Write-Host "    Target: Production Platform (https://dehoc.vn)" -ForegroundColor Cyan
 Write-Host "==================================================================" -ForegroundColor Cyan
 Write-Host ""
@@ -49,13 +49,13 @@ if (Test-Path $nginxConfPath) {
 
 # 2. Kiểm tra appsettings.Production.json
 Write-Host "[2/7] Kiem tra Backend Production Config..." -ForegroundColor Yellow
-$prodSettingsPath = "$RootPath\Backend\src\AegisQuiz.API\appsettings.Production.json"
+$prodSettingsPath = "$RootPath\Backend\src\Aegis.API\appsettings.Production.json"
 if (Test-Path $prodSettingsPath) {
     $prodJson = Get-Content $prodSettingsPath -Raw
     $hasOrigins = $prodJson -match "dehoc.vn"
     Report-Check "Backend appsettings.Production.json" $hasOrigins "File ton tai voi cau hinh AllowedOrigins cho dehoc.vn"
 } else {
-    Report-Check "Backend appsettings.Production.json" $false "Thieu file Backend/src/AegisQuiz.API/appsettings.Production.json"
+    Report-Check "Backend appsettings.Production.json" $false "Thieu file Backend/src/Aegis.API/appsettings.Production.json"
 }
 
 # 3. Kiểm tra Docker Compose Production & Dockerfile
@@ -80,13 +80,13 @@ Report-Check "Docker Compose & Multi-stage Dockerfiles" $dockerAllOk "Compose ho
 
 # 4. Kiểm tra Backend Unit Tests
 Write-Host "[4/7] Chay Backend Unit Tests (xUnit)..." -ForegroundColor Yellow
-$testResult = & dotnet test "$RootPath\Backend\tests\AegisQuiz.UnitTests\AegisQuiz.UnitTests.csproj" --nologo -v q
+$testResult = & dotnet test "$RootPath\Backend\tests\Aegis.UnitTests\Aegis.UnitTests.csproj" --nologo -v q
 $testSuccess = ($LASTEXITCODE -eq 0)
 Report-Check "Backend Unit Tests (142/142 Tests)" $testSuccess "100% Bo kiem thu Unit Tests vuot qua chuan muc"
 
 # 5. Kiểm tra Backend Release Build (C# .NET 10)
 Write-Host "[5/7] Build Backend .NET Release Package..." -ForegroundColor Yellow
-$buildOutput = & dotnet publish "$RootPath\Backend\src\AegisQuiz.API\AegisQuiz.API.csproj" -c Release --nologo -v q
+$buildOutput = & dotnet publish "$RootPath\Backend\src\Aegis.API\Aegis.API.csproj" -c Release --nologo -v q
 $buildSuccess = ($LASTEXITCODE -eq 0)
 Report-Check "Backend Release Compilation (.NET 10)" $buildSuccess "Bien dich Release thanh cong, khong phat sinh loi"
 

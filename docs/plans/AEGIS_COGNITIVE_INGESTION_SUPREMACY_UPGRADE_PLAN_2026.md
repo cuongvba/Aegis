@@ -3,19 +3,19 @@
 ### Chuyển Dịch Từ Rule-Based Regex Sang Hybrid Semantic Anchoring, Edge WASM & Multimodal AI
 
 > **Chủ nhiệm Đồ án:** No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
-> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz)*  
-> **Căn cứ phân tích:** Nghiên cứu sâu tệp [nangcap.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/nangcap.md), cấu hình [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json) và tập dữ liệu thực nghiệm 63 bộ đề tại `D:\Cuong\DuAn\DETHI`.  
+> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis)*  
+> **Căn cứ phân tích:** Nghiên cứu sâu tệp [nangcap.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/nangcap.md), cấu hình [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json) và tập dữ liệu thực nghiệm 63 bộ đề tại `D:\Cuong\DuAn\DETHI`.  
 > **Phiên bản:** v4.0 — Master Cognitive Supremacy Edition  
 > **Ngày phê duyệt:** 2026-10-14  
-> **Tiêu chuẩn kiểm soát:** Tuân thủ 100% [AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/AGENTS.md) và [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).
+> **Tiêu chuẩn kiểm soát:** Tuân thủ 100% [AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md) và [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).
 
 ---
 
 ## I. TỔNG QUAN HIỆN TRẠNG & BẢN CHẤT KỸ THUẬT CẦN ĐỘT PHÁ
 
 ### 1. Bức Tranh Tổng Thể & Vị Trí Của Hệ Thống Hiện Tại
-Hệ thống bóc tách đề thi AegisQuiz thế hệ 3.0 (CHIP v3.0) đã đạt được những thành tựu kiến trúc vượt trội:
-* **Nguyên lý Grammar-as-Data**: Toàn bộ ngữ pháp đề thi được đưa vào [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json), code C# đóng vai trò là Generic Virtual Machine (GVM).
+Hệ thống bóc tách đề thi Aegis thế hệ 3.0 (CHIP v3.0) đã đạt được những thành tựu kiến trúc vượt trội:
+* **Nguyên lý Grammar-as-Data**: Toàn bộ ngữ pháp đề thi được đưa vào [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json), code C# đóng vai trò là Generic Virtual Machine (GVM).
 * **Dual-Layer Language Cognition**: Bộ lọc 2 lớp (Unicode Script Patterns + Diacritic Pattern + Keyword Hints) ngăn chặn triệt để xung đột chéo giữa 7 ngôn ngữ (`vi, en, zh, ko, ja, fr, de`).
 * **MTEF Binary Vectorization**: Chuyển đổi thành công 72.9% công thức MathType WMF nhúng trong Word sang mã KaTeX vector chuẩn xác.
 
@@ -200,27 +200,27 @@ gantt
 
 ### 1. Trạng Thái Hoàn Thành Các Giai Đoạn
 * [x] **Giai Đoạn 1 — Core CIG Fix (Đã Hoàn Thành 100%)**:
-  * Kích hoạt và tinh chuẩn 4 quy tắc cốt lõi trong [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json): `VN_THCS_MATH_ESSAY` (Priority 95, DefaultType `ESSAY`), `VN_HIERARCHICAL_STEPPED_ESSAY` (Priority 96), `UNIVERSAL_DETACHED_ANSWER_MATRIX`, `VN_THCS_INLINE_KEY`.
+  * Kích hoạt và tinh chuẩn 4 quy tắc cốt lõi trong [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json): `VN_THCS_MATH_ESSAY` (Priority 95, DefaultType `ESSAY`), `VN_HIERARCHICAL_STEPPED_ESSAY` (Priority 96), `UNIVERSAL_DETACHED_ANSWER_MATRIX`, `VN_THCS_INLINE_KEY`.
   * Bổ sung 4 quy tắc quốc tế: `INTERNATIONAL_AP_COLLEGEBOARD`, `INTERNATIONAL_IB_DIPLOMA`, `INTERNATIONAL_GMAT_GRE`, `INTERNATIONAL_INDIA_JEE_NEET`.
   * Cấu hình tính năng nhận diện bảng ô gộp (`supportMergedCells`), phân nhánh cột dọc (`multiColumnBranching`), và tự động ngắt ngữ cảnh đọc hiểu (`autoTerminateOnNextSection`).
 * [-] **Giai Đoạn 2 — Hybrid NLP Semantic Anchoring & Rust Core**: Được thống nhất tạm hoãn theo quyết định tối ưu hóa nguồn lực của dự án để ưu tiên hoàn thành ngay Giai đoạn 3 và 4.
 * [x] **Giai Đoạn 3 — Vision-Language Math Transpiler (Đã Hoàn Thành 100%)**:
-  * Hiện thực hóa [IVisionMathService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IVisionMathService.cs) và [VisionMathService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/VisionMathService.cs) tích hợp trí tuệ thị giác Gemini Flash Vision OCR.
+  * Hiện thực hóa [IVisionMathService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IVisionMathService.cs) và [VisionMathService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/VisionMathService.cs) tích hợp trí tuệ thị giác Gemini Flash Vision OCR.
   * Tự động chuyển đổi công thức phức tạp (Vertical Spread Factor > 0.55) thành chuỗi KaTeX Text thuần túy.
 * [x] **Giai Đoạn 4 — Client-Side Ingestion & Shadow Testing Pipeline (Đã Hoàn Thành 100%)**:
-  * **Dual Ingestion Architecture**: Xây dựng [client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/ingestion/client-docx-extractor.ts) xử lý bóc tách ngay trên RAM trình duyệt, đồng thời bảo toàn trọn vẹn bộ bóc tách Server C# làm chốt chặn vững chắc (fallback) khi client yếu hoặc cấu hình thấp.
-  * **Shadow Regression Pipeline**: Hiện thực hóa [IShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IShadowTestingService.cs), [ShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ShadowTestingService.cs) và [AdminParsingRulesController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/AdminParsingRulesController.cs) kiểm thử tự động quy tắc mới qua 5 chuẩn đề thi quốc gia/quốc tế trước khi kích hoạt Production (Safety Score $\ge 95\%$, Zero Regression).
+  * **Dual Ingestion Architecture**: Xây dựng [client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/ingestion/client-docx-extractor.ts) xử lý bóc tách ngay trên RAM trình duyệt, đồng thời bảo toàn trọn vẹn bộ bóc tách Server C# làm chốt chặn vững chắc (fallback) khi client yếu hoặc cấu hình thấp.
+  * **Shadow Regression Pipeline**: Hiện thực hóa [IShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IShadowTestingService.cs), [ShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ShadowTestingService.cs) và [AdminParsingRulesController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/AdminParsingRulesController.cs) kiểm thử tự động quy tắc mới qua 5 chuẩn đề thi quốc gia/quốc tế trước khi kích hoạt Production (Safety Score $\ge 95\%$, Zero Regression).
 
 ### 2. Nghiệm Thu Đặc Thù: Đột Phá Bóc Tách Đề Thi Tuyển Sinh 10
 * **Đề Toán Tuyển sinh 10 (THPT Ngô Quyền - Thái Nguyên)**:
-  * **Khắc phục lỗi mất Câu 7**: Bổ sung tiền xử lý làm phẳng paragraph [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L93-L104), tự động chèn ngắt dòng trước neo câu hỏi bị dính sau ảnh Drawing OOXML $\to$ Bóc tách đủ 8/8 câu (Câu 7 đạt barem 2.0 điểm).
+  * **Khắc phục lỗi mất Câu 7**: Bổ sung tiền xử lý làm phẳng paragraph [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L93-L104), tự động chèn ngắt dòng trước neo câu hỏi bị dính sau ảnh Drawing OOXML $\to$ Bóc tách đủ 8/8 câu (Câu 7 đạt barem 2.0 điểm).
   * **Khắc phục nhận sai loại câu hỏi (`Essay Safeguard`)**: Nhận diện chính xác 100% câu hỏi tự luận (`Type = ESSAY`), bảo toàn trọn vẹn các ý con $a), b)$ và $1), 2)$ trong thân bài tự luận, không bị phân mảnh thành trắc nghiệm `SINGLE`, `SHORT_ANSWER` hay `MULTI_TRUE_FALSE`.
   * **Bảo toàn môn học**: Giữ vững `documentSubject = "MATH"` quét từ đầu đề thi, loại trừ việc nhận nhầm `"LỚP 10"` thành `"ĐỀ 10"` trong `TryMatchExamHeading`.
 * **Đề Tiếng Anh Tuyển sinh 10 (Sở GD&ĐT Hà Nội)**:
   * Nhận diện chính xác ngữ cảnh bài đọc hiểu Câu 11 - 16 (`ContextId = CTX_DEFAULT_11`).
   * Tự động ngắt ngữ cảnh (`isInstructionDirective`), triệt tiêu hoàn toàn lỗi chảy tràn sang các câu hỏi tiếp theo.
   * Bắt trọn vẹn ngữ cảnh đoạn văn Cloze Test điền từ 6 vị trí khuyết Câu 27 - 32 (`ContextId = CTX_DEFAULT_27`).
-* **Kiểm thử tự động hóa**: Bộ test [DiagnosisTuyenSinh10Tests.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DiagnosisTuyenSinh10Tests.cs) đạt tỷ lệ Pass **100% (2/2 tests)**.
+* **Kiểm thử tự động hóa**: Bộ test [DiagnosisTuyenSinh10Tests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/DiagnosisTuyenSinh10Tests.cs) đạt tỷ lệ Pass **100% (2/2 tests)**.
 
 ---
 

@@ -605,7 +605,7 @@ export function TenantsPage() {
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">Tên Miền Phụ (Subdomain)</label>
                   <input
                     type="text"
-                    placeholder="agribank.aegisquiz.com"
+                    placeholder="agribank.aegis.com"
                     value={formDomain}
                     onChange={(e) => setFormDomain(e.target.value)}
                     className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-cyan-500"

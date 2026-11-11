@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — HeroSection (Landing Page)
+ * Aegis — HeroSection (Landing Page)
  * =========================================
  * Màn hình đầu tiên — quyết định phần lớn tỉ lệ ở lại của khách truy cập.
  * FSD Layer: pages/landing/components/

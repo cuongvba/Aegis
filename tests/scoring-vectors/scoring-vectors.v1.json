@@ -1,5 +1,5 @@
 {
-  "$comment": "AegisQuiz Golden Scoring Vectors v1 — nguồn chân lý DUY NHẤT cho chấm điểm. Được chạy bởi Vitest (Frontend/tests) và xUnit (Backend/tests). Thêm dạng câu hỏi mới = thêm case tại đây trước khi viết code.",
+  "$comment": "Aegis Golden Scoring Vectors v1 — nguồn chân lý DUY NHẤT cho chấm điểm. Được chạy bởi Vitest (Frontend/tests) và xUnit (Backend/tests). Thêm dạng câu hỏi mới = thêm case tại đây trước khi viết code.",
   "version": 1,
   "cases": [
     { "id": "single.letter-key.correct", "question": { "questionType": "SINGLE", "options": ["Đỏ", "Xanh", "Vàng", "Tím"], "answerRaw": "B", "points": 1 }, "answer": { "selectedOption": "2" }, "expected": { "score": 1, "status": "scored", "answered": true } },

@@ -1,4 +1,4 @@
-# [Cảnh giới 4: Cloud Provisioning] Hạ tầng GCP cho AegisQuiz
+# [Cảnh giới 4: Cloud Provisioning] Hạ tầng GCP cho aegis
 # Lệnh triển khai: terraform init && terraform apply
 
 terraform {
@@ -31,8 +31,8 @@ variable "gemini_api_key" {
 }
 
 # ===== CLOUD SQL (PostgreSQL) =====
-resource "google_sql_database_instance" "aegisquiz_db" {
-  name             = "aegisquiz-db"
+resource "google_sql_database_instance" "aegis_db" {
+  name             = "aegis-db"
   database_version = "POSTGRES_17"
   region           = var.region
 
@@ -48,14 +48,14 @@ resource "google_sql_database_instance" "aegisquiz_db" {
   deletion_protection = false
 }
 
-resource "google_sql_database" "aegisquiz" {
-  name     = "aegisquiz"
-  instance = google_sql_database_instance.aegisquiz_db.name
+resource "google_sql_database" "aegis" {
+  name     = "aegis"
+  instance = google_sql_database_instance.aegis_db.name
 }
 
 # ===== REDIS (Memorystore) =====
-resource "google_redis_instance" "aegisquiz_cache" {
-  name           = "aegisquiz-cache"
+resource "google_redis_instance" "aegis_cache" {
+  name           = "aegis-cache"
   tier           = "BASIC"
   memory_size_gb = 1
   region         = var.region
@@ -63,12 +63,12 @@ resource "google_redis_instance" "aegisquiz_cache" {
 
 # ===== CLOUD RUN: BACKEND =====
 resource "google_cloud_run_v2_service" "backend" {
-  name     = "aegisquiz-backend"
+  name     = "aegis-backend"
   location = var.region
 
   template {
     containers {
-      image = "gcr.io/${var.project_id}/aegisquiz-backend:latest"
+      image = "gcr.io/${var.project_id}/aegis-backend:latest"
 
       ports {
         container_port = 8080
@@ -76,12 +76,12 @@ resource "google_cloud_run_v2_service" "backend" {
 
       env {
         name  = "ConnectionStrings__DefaultConnection"
-        value = "Host=${google_sql_database_instance.aegisquiz_db.private_ip_address};Database=aegisquiz;Username=postgres;Password=SET_IN_SECRET_MANAGER"
+        value = "Host=${google_sql_database_instance.aegis_db.private_ip_address};Database=aegis;Username=postgres;Password=SET_IN_SECRET_MANAGER"
       }
 
       env {
         name  = "ConnectionStrings__Redis"
-        value = "${google_redis_instance.aegisquiz_cache.host}:${google_redis_instance.aegisquiz_cache.port}"
+        value = "${google_redis_instance.aegis_cache.host}:${google_redis_instance.aegis_cache.port}"
       }
 
       env {
@@ -106,12 +106,12 @@ resource "google_cloud_run_v2_service" "backend" {
 
 # ===== CLOUD RUN: FRONTEND =====
 resource "google_cloud_run_v2_service" "frontend" {
-  name     = "aegisquiz-frontend"
+  name     = "aegis-frontend"
   location = var.region
 
   template {
     containers {
-      image = "gcr.io/${var.project_id}/aegisquiz-frontend:latest"
+      image = "gcr.io/${var.project_id}/aegis-frontend:latest"
 
       ports {
         container_port = 3000
@@ -148,7 +148,7 @@ resource "google_cloud_run_v2_service_iam_member" "frontend_public" {
 # ===== OUTPUTS =====
 output "frontend_url" {
   value       = google_cloud_run_v2_service.frontend.uri
-  description = "URL trang web AegisQuiz (Cho học sinh)"
+  description = "URL trang web aegis (Cho học sinh)"
 }
 
 output "backend_url" {

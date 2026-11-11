@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — TenantProvider
+ * Aegis — TenantProvider
  * ===========================
  * GIẢI QUYẾT GAP-01 & GAP-02:
  *  - Zero full-page reload khi switch tenant
@@ -249,6 +249,6 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
 export function useTenant(): TenantContextValue {
   const ctx = useContext(TenantContext);
-  if (!ctx) throw new Error('[AegisQuiz] useTenant phải được dùng bên trong <TenantProvider>');
+  if (!ctx) throw new Error('[Aegis] useTenant phải được dùng bên trong <TenantProvider>');
   return ctx;
 }

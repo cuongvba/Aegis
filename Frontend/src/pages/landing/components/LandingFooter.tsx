@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — LandingFooter (Landing Page)
+ * Aegis — LandingFooter (Landing Page)
  * ===========================================
  * Chân trang động 100% quản trị từ Admin (/admin/white-label):
  * - Hiển thị thông tin Tổ chức, Trụ sở, Hotline, Email, Chứng nhận An ninh từ Database.

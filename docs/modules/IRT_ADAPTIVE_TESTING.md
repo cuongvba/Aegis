@@ -1,6 +1,6 @@
 # 🧠 Khảo Thí Thích Ứng Máy Tính & Mô Hình IRT (Item Response Theory)
 
-Tài liệu này mô tả cơ sở toán học xác suất và kiến trúc dịch vụ vi mô Python (**IRT/CAT Service**) phục vụ bài toán thi thích ứng thích nghi theo trình độ thí sinh trong **AegisQuiz**.
+Tài liệu này mô tả cơ sở toán học xác suất và kiến trúc dịch vụ vi mô Python (**IRT/CAT Service**) phục vụ bài toán thi thích ứng thích nghi theo trình độ thí sinh trong **Aegis**.
 
 ---
 

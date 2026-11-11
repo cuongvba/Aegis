@@ -1,6 +1,6 @@
 # 🎓 Cẩm Nang Người Học (Learner User Manual)
 
-Chào mừng các bạn học sinh và sinh viên đến với nền tảng khảo thí thông minh **AegisQuiz**! Tài liệu này sẽ hướng dẫn bạn tận dụng tối đa các tính năng của nền tảng để bứt phá kết quả học tập.
+Chào mừng các bạn học sinh và sinh viên đến với nền tảng khảo thí thông minh **Aegis**! Tài liệu này sẽ hướng dẫn bạn tận dụng tối đa các tính năng của nền tảng để bứt phá kết quả học tập.
 
 ---
 

@@ -10,18 +10,18 @@
 
 ## I. TỔNG QUAN NÂNG CẤP & BỐI CẢNH KỸ THUẬT
 
-Theo yêu cầu từ ban điều hành hệ thống AegisQuiz, chiến dịch nâng cấp bóc tách đề thi thông minh đã hoàn tất xuất sắc 3 mục tiêu chiến lược:
+Theo yêu cầu từ ban điều hành hệ thống Aegis, chiến dịch nâng cấp bóc tách đề thi thông minh đã hoàn tất xuất sắc 3 mục tiêu chiến lược:
 
 1. **Triển khai Kiến trúc Bóc tách Kép (Dual-Engine Ingestion Architecture)**:
-   - **Engine Client-Side ([client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/ingestion/client-docx-extractor.ts))**: Cho phép trình duyệt giải nén OOXML trực tiếp trong bộ nhớ RAM, phân tích cấu trúc DOM và chuyển đổi công thức MathType WMF sang PNG/KaTeX. Giúp giảm tải **90% áp lực tính toán và băng thông** cho hạ tầng Server.
-   - **Engine Server-Side Fallback ([DocxParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs) & [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))**: Được giữ nguyên vẹn 100%. Đóng vai trò chốt chặn kiên cố tự động tiếp quản khi thiết bị người dùng (máy cấu hình yếu, thiết bị di động cũ) gặp sự cố giải mã trên trình duyệt, đảm bảo cam kết **Zero Failure**.
+   - **Engine Client-Side ([client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/ingestion/client-docx-extractor.ts))**: Cho phép trình duyệt giải nén OOXML trực tiếp trong bộ nhớ RAM, phân tích cấu trúc DOM và chuyển đổi công thức MathType WMF sang PNG/KaTeX. Giúp giảm tải **90% áp lực tính toán và băng thông** cho hạ tầng Server.
+   - **Engine Server-Side Fallback ([DocxParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs) & [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))**: Được giữ nguyên vẹn 100%. Đóng vai trò chốt chặn kiên cố tự động tiếp quản khi thiết bị người dùng (máy cấu hình yếu, thiết bị di động cũ) gặp sự cố giải mã trên trình duyệt, đảm bảo cam kết **Zero Failure**.
 
 2. **Chẩn đoán & Xử lý Triệt để Dạng Đề Tuyển sinh 10 Khó**:
    - **Đề Toán Tự luận (Thái Nguyên)**: Xử lý dứt điểm tình trạng nuốt mất câu hình học do dính Paragraph OOXML (`<w:drawing>`), triệt tiêu hiện tượng nhận nhầm các ý con chứng minh $a), b)$ thành phương án trắc nghiệm bằng cơ chế `Essay Safeguard`, và tự động nhận diện dạng câu hỏi `ESSAY` khi có thang điểm chi tiết `(X,X điểm)`.
    - **Đề Tiếng Anh Ngữ Cảnh (Hà Nội)**: Bổ sung chỉ thị biên giới `isInstructionDirective` để tự động ngắt đoạn văn đọc hiểu khi chuyển dạng bài, ngăn chặn hoàn toàn hiện tượng tràn context sang các câu trắc nghiệm ngữ pháp độc lập, đồng thời mở rộng bộ nhận diện đoạn văn điền từ (Cloze Test Pattern) với các chỗ trống số `(27)`, `(28)`.
 
 3. **Thiết lập Shadow Ingestion Pipeline & Bộ Benchmark Hồi quy**:
-   - Dịch vụ [`ShadowTestingService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/ShadowTestingService.cs) chạy ngầm kiểm tra đối chiếu delta, bảo đảm 100% không hồi quy (Zero Regression) trên toàn bộ kho đề thi mẫu.
+   - Dịch vụ [`ShadowTestingService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/ShadowTestingService.cs) chạy ngầm kiểm tra đối chiếu delta, bảo đảm 100% không hồi quy (Zero Regression) trên toàn bộ kho đề thi mẫu.
 
 ---
 
@@ -86,7 +86,7 @@ stateDiagram-v2
 
 ## III. CHI TIẾT GIẢI PHÁP KỸ THUẬT & LIÊN KẾT MÃ NGUỒN (LIVE CODE LINKS)
 
-### 1. Engine Bóc tách Client-Side ([client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/ingestion/client-docx-extractor.ts))
+### 1. Engine Bóc tách Client-Side ([client-docx-extractor.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/ingestion/client-docx-extractor.ts))
 - **Giải pháp**: Xử lý nén file `.docx` trực tiếp trên tầng Presentation bằng thư viện `jszip` và API `DOMParser` của trình duyệt.
 - **Tính năng nổi bật**:
   - Trích xuất toàn bộ Media nhúng trong `word/media/`.
@@ -94,7 +94,7 @@ stateDiagram-v2
   - Tự động làm phẳng text run `<w:t>` và phân tách đoạn `<w:p>`.
   - Giảm thiểu hoàn toàn thời gian chờ đợi tải file lên server, loại bỏ nguy cơ quá tải server khi mùa thi tuyển sinh cao điểm.
 
-### 2. State Machine Phân loại CIG v4.0 ([DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))
+### 2. State Machine Phân loại CIG v4.0 ([DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))
 - **Giải pháp**: Hiện thực hóa máy trạng thái hữu hạn (FSM) tuân thủ triệt để nguyên lý Open/Closed Principle (OCP) và 4 thông số CIG (Anchor, Stimulus, Interaction, Evaluation).
 - **Các cải tiến đột phá vừa thực hiện**:
   - **Flat Paragraph OOXML (Dòng 130-150)**: Phân tách các container `<w:drawing>` và `<w:pict>` thành các block riêng biệt, bảo đảm các đoạn văn bản liền kề chứa nhãn câu hỏi (như Câu 7 đề Toán) không bị nuốt gộp vào đoạn trước.
@@ -102,8 +102,8 @@ stateDiagram-v2
   - **Instruction Directive Boundaries (Dòng 340-360)**: Tự động ngắt `pendingContext` khi gặp các dòng lệnh điều hướng dạng `Mark the letter A, B, C, or D...` hoặc `Read the following...`, đảm bảo ngữ cảnh bài đọc chỉ gắn duy nhất cho các câu hỏi thuộc bài đọc đó.
   - **Cloze Test Pattern Ingestion (Dòng 310-335)**: Mở rộng Regex để nhận diện các bài đọc điền từ có cấu trúc đánh số chỗ trống `(27)`, `(28)` và tự động kích hoạt `StimulusContext`.
 
-### 3. Bộ Giám sát Hồi quy Shadow Ingestion ([ShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/ShadowTestingService.cs))
-- **Giao diện chuẩn**: [`IShadowTestingService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IServices.cs).
+### 3. Bộ Giám sát Hồi quy Shadow Ingestion ([ShadowTestingService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/ShadowTestingService.cs))
+- **Giao diện chuẩn**: [`IShadowTestingService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IServices.cs).
 - **Nghiệp vụ**: Thực thi phân tích song song giữa Engine mới và bản ghi Golden Benchmark chuẩn, tính toán điểm tương đồng (Similarity Score), ghi cảnh báo vi phạm hồi quy qua Serilog mà không ảnh hưởng đến luồng giao dịch chính của người dùng.
 
 ---
@@ -124,16 +124,16 @@ Total tests: 23
 
 | Test Suite | File Kiểm thử | Số ca kiểm thử / Quy mô | Kết quả | Thời gian | Mục tiêu xác minh |
 |---|---|:---:|:---:|:---:|---|
-| **Tuyển sinh 10 Chẩn đoán** | [DiagnosisTuyenSinh10Tests.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DiagnosisTuyenSinh10Tests.cs) | **2 tests** | **PASS (100%)** | 120 ms | Đề Toán Thái Nguyên & Đề Tiếng Anh Hà Nội |
+| **Tuyển sinh 10 Chẩn đoán** | [DiagnosisTuyenSinh10Tests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/DiagnosisTuyenSinh10Tests.cs) | **2 tests** | **PASS (100%)** | 120 ms | Đề Toán Thái Nguyên & Đề Tiếng Anh Hà Nội |
 | **CIG Dynamic Grammar** | `DynamicQuestionIngestionTests.cs` | **17 tests** | **PASS (100%)** | 450 ms | 9 dạng câu hỏi CIG & Hot-reload Rules |
 | **Shadow Pipeline Suite** | `ShadowTestingServiceTests.cs` | **4 tests** | **PASS (100%)** | 180 ms | Bất đối xứng, AST Delta, Similarity Score |
-| **Kiến trúc FSM & Sentinel** | [DocxStateMachineClassifierArchitectureTests.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DocxStateMachineClassifierArchitectureTests.cs) | **6 tests** | **PASS (100%)** | 2.1 s | DI Clean Architecture, Sentinel Boundaries, TableMatrix Isolation |
-| **Toàn bộ Corpus Thực Chiến** | [FullCorpusBatchDiagnosisTests.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/FullCorpusBatchDiagnosisTests.cs) | **53 tệp Word thực tế**<br/>(3.800+ câu hỏi) | **PASS (100%)**<br/>(0 dirty questions) | ~2 phút | 10 Đề TNPT, 19 Đề Tuyển sinh 10, 24 Đề THCS (Lớp 7, 8, 9) |
+| **Kiến trúc FSM & Sentinel** | [DocxStateMachineClassifierArchitectureTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/DocxStateMachineClassifierArchitectureTests.cs) | **6 tests** | **PASS (100%)** | 2.1 s | DI Clean Architecture, Sentinel Boundaries, TableMatrix Isolation |
+| **Toàn bộ Corpus Thực Chiến** | [FullCorpusBatchDiagnosisTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/FullCorpusBatchDiagnosisTests.cs) | **53 tệp Word thực tế**<br/>(3.800+ câu hỏi) | **PASS (100%)**<br/>(0 dirty questions) | ~2 phút | 10 Đề TNPT, 19 Đề Tuyển sinh 10, 24 Đề THCS (Lớp 7, 8, 9) |
 
 ### Chi tiết Phân tích Thực nghiệm trên Đề thi Thực tế
 
 #### 1. Đề thi Tuyển sinh 10 môn Toán (Sở GD&ĐT Thái Nguyên)
-- **Tệp nguồn:** `Backend/tests/AegisQuiz.UnitTests/tuyensinh10/toan/ThaiNguyen_TS10_2025.docx`
+- **Tệp nguồn:** `Backend/tests/Aegis.UnitTests/tuyensinh10/toan/ThaiNguyen_TS10_2025.docx`
 - **Kết quả trước khi sửa:**
   - Nhận diện thiếu câu (Câu 7 bị nuốt do dính paragraph chứa ảnh đồ thị).
   - Các ý con $a), b)$ của bài toán giải phương trình bị bốc nhầm thành lựa chọn trắc nghiệm A, B, C, D.
@@ -144,7 +144,7 @@ Total tests: 23
   - Các ý con chứng minh $a), b)$ được giữ nguyên trong nội dung câu hỏi; số lượng options trắc nghiệm = **0** (chuẩn tuyệt đối).
 
 #### 2. Đề thi Tuyển sinh 10 môn Tiếng Anh (Sở GD&ĐT Hà Nội)
-- **Tệp nguồn:** `Backend/tests/AegisQuiz.UnitTests/tuyensinh10/tienganh/HaNoi_TS10_2025.docx`
+- **Tệp nguồn:** `Backend/tests/Aegis.UnitTests/tuyensinh10/tienganh/HaNoi_TS10_2025.docx`
 - **Kết quả trước khi sửa:**
   - Ngữ cảnh bài đọc hiểu (Reading Passage) câu 11-16 bị tràn sang toàn bộ các câu 17-26 phía sau.
   - Đoạn văn điền từ câu 27-32 không nhận diện được context (context rỗng).

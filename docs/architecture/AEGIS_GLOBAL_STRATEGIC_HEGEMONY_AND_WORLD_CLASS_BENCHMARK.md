@@ -104,17 +104,17 @@ graph LR
 ### 1. Trụ cột 1: Tam Giác Vàng Bóc Tách Đề Thi & Giải Mã Nhị Phân MathType WMF
 * **Vấn đề toàn cầu**: Các công cụ như Mathpix chỉ đọc được ảnh chụp qua OCR (tỷ lệ lỗi ký hiệu toán như $\subset$, $\in$, $\Rightarrow$ lên tới 8-12%). Các nền tảng như iQuiz nạp đề toán mất phí nhưng sinh ra chuỗi ký tự rác, vỡ công thức hoặc biến thành dấu `?`.
 * **Giải pháp đột phá của Aegis**:
-  - [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs): Vận hành như một **Skinny State Orchestrator** ($\le 1,200$ LOC) duyệt qua cây OpenXML với chi phí $O(N)$ bộ nhớ tối thiểu.
-  - [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs): Nhận diện 4 đặc tả ngữ pháp đề thi (CIG 4-Specs), tách đề - phương án - đáp án - lời giải với độ chính xác **99.94%**.
-  - [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs): Giải mã nhị phân trực tiếp từ luồng nhúng OLE Object và WMF Header, chuyển hóa thành Vector SVG tinh khiết.
-  - [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx): Client-side renderer khử lỗi co nhỏ ScriptStyle của KaTeX bằng `\displaystyle` động và tinh chỉnh tỷ lệ khung nhìn mũi tên vector `normalizeVectorSvg` về tỷ lệ vàng 7.6:1.
+  - [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs): Vận hành như một **Skinny State Orchestrator** ($\le 1,200$ LOC) duyệt qua cây OpenXML với chi phí $O(N)$ bộ nhớ tối thiểu.
+  - [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs): Nhận diện 4 đặc tả ngữ pháp đề thi (CIG 4-Specs), tách đề - phương án - đáp án - lời giải với độ chính xác **99.94%**.
+  - [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs): Giải mã nhị phân trực tiếp từ luồng nhúng OLE Object và WMF Header, chuyển hóa thành Vector SVG tinh khiết.
+  - [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx): Client-side renderer khử lỗi co nhỏ ScriptStyle của KaTeX bằng `\displaystyle` động và tinh chỉnh tỷ lệ khung nhìn mũi tên vector `normalizeVectorSvg` về tỷ lệ vàng 7.6:1.
 
 ### 2. Trụ cột 2: Hệ Ba Ngôi AI Biện Chứng (Epistemic AI Triad)
 * **Vấn đề toàn cầu**: Các ứng dụng thông thường gọi thẳng API ChatGPT/Claude. Khi gặp bài toán hóc búa, LLM bị "ảo giác" (hallucination), bịa đáp án sai với giọng văn tự tin, gây nguy hại cho giáo dục.
 * **Giải pháp đột phá của Aegis**:
-  - **Tầng 1 - Universal AI Router ([`UniversalAiRouter.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/AI/UniversalAiRouter.cs))**: Điều phối Pareto FinOps thông minh giữa các mô hình (Gemini Flash/Pro, Claude Sonnet, GPT-4o, DeepSeek-R1) kèm Semantic Cache $0\text{ token}$.
-  - **Tầng 2 - Wolf Pack Swarm Engine ([`WolfPackSwarmEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/AI/WolfPackSwarmEngine.cs))**: Mô hình bầy sói gồm 3 vai trò: *Alpha* (Chỉ huy khởi xướng), *Beta* (Phản biện tìm điểm sơ hở), *Delta* (Trọng tài đo lường chỉ số đồng thuận SCI). Chỉ nghiệm thu kết quả khi $\text{SCI} \ge 0.85$.
-  - **Tầng 3 - Universal Symposium Engine ([`UniversalSymposiumEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/AI/UniversalSymposiumEngine.cs))**: Đại hội thảo học thuật 6 pha (Khởi xướng $\rightarrow$ Tranh luận chéo $\rightarrow$ Phản biện Popper $\rightarrow$ Cập nhật niềm tin Bayes $\rightarrow$ Suy luận thoái lùi Peirce $\rightarrow$ Đồng thuận tối cao).
+  - **Tầng 1 - Universal AI Router ([`UniversalAiRouter.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/AI/UniversalAiRouter.cs))**: Điều phối Pareto FinOps thông minh giữa các mô hình (Gemini Flash/Pro, Claude Sonnet, GPT-4o, DeepSeek-R1) kèm Semantic Cache $0\text{ token}$.
+  - **Tầng 2 - Wolf Pack Swarm Engine ([`WolfPackSwarmEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/AI/WolfPackSwarmEngine.cs))**: Mô hình bầy sói gồm 3 vai trò: *Alpha* (Chỉ huy khởi xướng), *Beta* (Phản biện tìm điểm sơ hở), *Delta* (Trọng tài đo lường chỉ số đồng thuận SCI). Chỉ nghiệm thu kết quả khi $\text{SCI} \ge 0.85$.
+  - **Tầng 3 - Universal Symposium Engine ([`UniversalSymposiumEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/AI/UniversalSymposiumEngine.cs))**: Đại hội thảo học thuật 6 pha (Khởi xướng $\rightarrow$ Tranh luận chéo $\rightarrow$ Phản biện Popper $\rightarrow$ Cập nhật niềm tin Bayes $\rightarrow$ Suy luận thoái lùi Peirce $\rightarrow$ Đồng thuận tối cao).
 
 ### 3. Trụ cột 3: Tâm Trắc Học IRT 3-PL, Deep Knowledge Tracing & Khoa Học Sư Phạm Sweller
 * **Vấn đề toàn cầu**: Điểm số truyền thống (ví dụ: $8/10$) là phi khoa học vì không phản ánh đề dễ hay khó, học sinh khoanh bừa trúng hay thực lực.
@@ -124,15 +124,15 @@ graph LR
     Đo lường chính xác năng lực thực sự $\theta$ của thí sinh độc lập với độ khó của đề thi.
   - **FSRS v5 Spaced Repetition**: Tính toán khoảng cách quên lãng theo đường cong Ebbinghaus:
     $$R(t) = \left(1 + \text{factor} \cdot \frac{t}{S}\right)^{-w}$$
-    Đưa các câu hỏi làm sai từ [`errorVault.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/errorVault.service.ts) quay lại đúng thời điểm vàng trước khi não bộ quên hẳn.
+    Đưa các câu hỏi làm sai từ [`errorVault.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/errorVault.service.ts) quay lại đúng thời điểm vàng trước khi não bộ quên hẳn.
   - **ACSE Micro-Course & Thuyết Tải Nhận Thức Sweller**: Phân tách lời giải thành 4 phân đoạn nhận thức độc lập (`Clue -> Concept -> Step -> Hook`), giảm thiểu tối đa Ngoại Lai Tải Nhận Thức (Extraneous Cognitive Load) để thí sinh tiếp thu bài học sau mỗi câu sai trong $< 45\text{ giây}$.
 
 ### 4. Trụ cột 4: Zen UX 3 Chạm & Đấu Trường Tốc Biến <2ms
 * **Vấn đề toàn cầu**: Thầy cô giáo sợ công nghệ vì các phần mềm quá rườm rà. Học sinh chán nản vì giao diện khô khan.
 * **Giải pháp đột phá của Aegis**:
-  - **Creator Zen Studio ([`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx))**: **Kéo thả Word $\rightarrow$ Kiểm duyệt thông minh $\rightarrow$ Phát mã PIN phòng thi**. Toàn bộ quy trình gói gọn trong đúng **10 giây**. Bắt buộc bảo vệ qua `ProtectedRoute`.
-  - **Zero-Scroll Live Arena ([`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaArenaView.tsx))**: Giao diện bao quát 100vh màn hình chuẩn mực, không cuộn chuột, tích hợp bàn phím tốc biến `[A][B][C][D]` và phím `[Space]` bấm chuông giật quyền trả lời với Web Audio synthesizer $<2\text{ms}$.
-  - **Thẻ Khoe Thành Tích Cyber Flex Holographic ([`StudentFlexBragModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/quiz/components/StudentFlexBragModal.tsx))**: Kích thích tâm lý lan tỏa (Product-Led Growth), cho phép học sinh chia sẻ thành tích và thách đấu solo 1-Click qua mã QR trên Zalo/Facebook/TikTok.
+  - **Creator Zen Studio ([`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx))**: **Kéo thả Word $\rightarrow$ Kiểm duyệt thông minh $\rightarrow$ Phát mã PIN phòng thi**. Toàn bộ quy trình gói gọn trong đúng **10 giây**. Bắt buộc bảo vệ qua `ProtectedRoute`.
+  - **Zero-Scroll Live Arena ([`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaArenaView.tsx))**: Giao diện bao quát 100vh màn hình chuẩn mực, không cuộn chuột, tích hợp bàn phím tốc biến `[A][B][C][D]` và phím `[Space]` bấm chuông giật quyền trả lời với Web Audio synthesizer $<2\text{ms}$.
+  - **Thẻ Khoe Thành Tích Cyber Flex Holographic ([`StudentFlexBragModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/quiz/components/StudentFlexBragModal.tsx))**: Kích thích tâm lý lan tỏa (Product-Led Growth), cho phép học sinh chia sẻ thành tích và thách đấu solo 1-Click qua mã QR trên Zalo/Facebook/TikTok.
 
 ---
 
@@ -171,12 +171,12 @@ flowchart LR
 
 ### 1. Điểm nghẽn 1: File Docx Chứa Toàn Bộ Ảnh Chụp Scan Thuần (Pure Scanned Images)
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L131-L141)
+* **Mã nguồn thực thi**: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L131-L141)
 * **Cơ chế triển khai**: Tích hợp cảm biến đo lường mật độ văn bản `totalTextLength` đối chiếu với số lượng `imageCount`. Khi phát hiện tài liệu có $\ge 80\%$ diện tích là ảnh scan không chứa text chạy, hệ thống tự động ghi nhận cờ `HYBRID_VISION_SCANNED_DOCUMENT` để kích hoạt luồng AI thị giác cắt lát câu hỏi thay vì làm hỏng cấu trúc đề.
 
 ### 2. Điểm nghẽn 2: Khởi Động Lạnh (Cold-Start Problem) Của Mô Hình IRT 3-PL
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`AdaptiveController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/AdaptiveController.cs#L58-L86)
+* **Mã nguồn thực thi**: [`AdaptiveController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/AdaptiveController.cs#L58-L86)
 * **Cơ chế triển khai**: Loại bỏ việc gán cứng $a=1.2$ và $b$ thô sơ bậc thang. Hệ thống tự động tính toán phân phối tiên nghiệm **Empirical Bayesian Prior**:
   - Độ phân biệt $a_0 \in [0.8, 2.2]$: Tự động điều chỉnh tăng theo mức độ chuyên sâu của bài toán (chứa công thức toán KaTeX: $+0.35$, bảng biểu / code: $+0.25$).
   - Độ khó $b_0 \in [-3.0, +3.0]$: Làm mịn liên tục dựa trên độ khó gốc kết hợp độ dài ngữ nghĩa câu hỏi.
@@ -184,19 +184,19 @@ flowchart LR
 
 ### 3. Điểm nghẽn 3: Rớt Mạng Tạm Thời & Bất Đồng Bộ Dữ Liệu Khi Thí Sinh Dùng 4G
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`ArenaRoomPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/ArenaRoomPage.tsx#L25-L60)
+* **Mã nguồn thực thi**: [`ArenaRoomPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/ArenaRoomPage.tsx#L25-L60)
 * **Cơ chế triển khai**: 
   - Tích hợp **Optimistic Client-Side State Hydration**: Toàn bộ điểm số, streak và vị trí câu hỏi được backup tự động vào `sessionStorage`. Khi rớt mạng, chuyển mạng 4G hoặc reload trang, dữ liệu được phục hồi tức thời.
   - Bổ sung **Offline Resilience Banner** thông báo cho thí sinh ngay khi mất tín hiệu mạng: *"Tín hiệu mạng 4G/WiFi gián đoạn. Điểm số và tiến độ của bạn được lưu an toàn tại máy và sẽ đồng bộ bù tức thì!"*.
 
 ### 4. Điểm nghẽn 4: Nguy Cơ Botnet Spam Cạn Kiệt Bộ Nhớ RAM Tại Public Arena
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`CreatorStudioController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/CreatorStudioController.cs#L28-L125)
+* **Mã nguồn thực thi**: [`CreatorStudioController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/CreatorStudioController.cs#L28-L125)
 * **Cơ chế triển khai**: Triển khai `ConcurrentDictionary` theo dõi **Sliding Window Rate Limiter** thread-safe trên IP người gọi. Giới hạn tối đa 10 phòng/phút/IP. Chặn đứng 100% các cuộc tấn công DDoS bot spam tạo phòng ảo gây cạn kiệt bộ nhớ RAM Prewarm Redis.
 
 ### 5. Điểm nghẽn 5: Bàn Phím Ảo (Virtual Keyboard) Che Mất Ô Trả Lời Trên Mobile
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`Frontend/index.html`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/index.html#L5) và [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaArenaView.tsx#L193-L198)
+* **Mã nguồn thực thi**: [`Frontend/index.html`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/index.html#L5) và [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaArenaView.tsx#L193-L198)
 * **Cơ chế triển khai**:
   - Cập nhật chuẩn Viewport W3C mới nhất:
     `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, interactive-widget=resizes-content" />`
@@ -204,7 +204,7 @@ flowchart LR
 
 ### 6. Điểm nghẽn 6: Lệch Đối Soát Tự Động VietQR Khi Người Dùng Gõ Sai Cú Pháp
 * **Trạng thái**: ✅ **ĐÃ KHẮC PHỤC TRIỆT ĐỂ (RESOLVED 100%)**
-* **Mã nguồn thực thi**: [`PaymentOrchestratorService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Payments/PaymentOrchestratorService.cs#L540-L615)
+* **Mã nguồn thực thi**: [`PaymentOrchestratorService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Payments/PaymentOrchestratorService.cs#L540-L615)
 * **Cơ chế triển khai**: Xây dựng thuật toán `ComputeLevenshteinDistance` và `ReconcileVietQrTransferAsync`. Khi người dùng chuyển khoản bằng tay gõ nhầm cú pháp (thiếu dấu cách `CAFE12345` thay vì `CAFE 12345`, hoặc nhầm chữ cái tương đồng $O/0, I/1$ với khoảng cách Levenshtein $\le 2$), hệ thống tự động đối soát khớp lệnh và kích hoạt tài khoản trong **$< 3\text{ giây}$** mà không cần can thiệp thủ công.
 
 ---

@@ -46,7 +46,7 @@ function resolveDownloadFileName(
   }
 
   // 3. Tự sinh tên gợi nhớ bảo toàn Unicode tiếng Việt
-  const raw = (preferredTitle || 'De_Thi_AegisQuiz').trim();
+  const raw = (preferredTitle || 'De_Thi_Aegis').trim();
   // Loại bỏ các ký tự cấm của OS: \ / : * ? " < > |
   const safe = raw
     .replace(/[\\/:*?"<>|]+/g, '_')
@@ -188,7 +188,7 @@ export const convertService = {
       a.href = url;
 
       const disposition = response.headers?.['content-disposition'];
-      a.download = resolveDownloadFileName(disposition, options.examTitle || 'De_Thi_AegisQuiz', templateCode);
+      a.download = resolveDownloadFileName(disposition, options.examTitle || 'De_Thi_Aegis', templateCode);
 
       document.body.appendChild(a);
       a.click();
@@ -301,7 +301,7 @@ export const convertService = {
       const disposition = response.headers?.['content-disposition'] as string | undefined;
       a.download = resolveDownloadFileName(
         disposition, 
-        options.examTitle || 'AegisQuiz_Transpiled', 
+        options.examTitle || 'Aegis_Transpiled', 
         formatCode,
         undefined
       ).replace(/\.xlsx$/, defaultExt);

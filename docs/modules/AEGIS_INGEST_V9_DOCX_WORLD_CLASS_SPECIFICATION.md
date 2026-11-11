@@ -1,7 +1,7 @@
 # 🏆 ĐẶC TẢ KIẾN TRÚC & QUY TRÌNH NHẬP ĐỀ THI TỪ FILE DOCX ĐẲNG CẤP THẾ GIỚI
 ## AEGIS-INGEST V9.0: Universal Multi-Modal Question Ingestion & Declarative Math Engine
 
-> **Hệ Thống:** AegisQuiz Enterprise Educational Intelligence Platform  
+> **Hệ Thống:** Aegis Enterprise Educational Intelligence Platform  
 > **Phiên bản:** AEGIS-INGEST V9.0 (Thế hệ Đột phá 2026)  
 > **Kiến trúc:** Clean Architecture & Hexagonal Ports/Adapters  
 > **Hiệu năng:** In-Memory $O(1)$ Concurrent Cache • Zero-Downtime Hot-Reload • 100% Fail-Safe Guarantee  
@@ -89,7 +89,7 @@ flowchart TD
 
 #### GIAI ĐOẠN 4: Động Hóa P2 (Declarative Structural Simplification Engine)
 - Bóc tách tọa độ không gian Bounding Box của các record WMF (`LineTo`, `ExtTextOut`).
-- So khớp với hệ quy tắc cấu trúc động nạp từ [math_dictionary_registry.json](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/math_dictionary_registry.json) mà không sử dụng bất kỳ lệnh `if/else` cố định nào trong mã C#.
+- So khớp với hệ quy tắc cấu trúc động nạp từ [math_dictionary_registry.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/math_dictionary_registry.json) mà không sử dụng bất kỳ lệnh `if/else` cố định nào trong mã C#.
 - Hấp thu các đường nét hình học (gạch phân số, nóc căn, ngoặc nhọn hệ phương trình) và thay thế cụm token tương ứng bằng mã KaTeX chuẩn như `\frac{a}{b}`, `\sqrt{x}`, `\vec{u}`.
 
 #### GIAI ĐOẠN 5: Chuẩn Hóa Toán Học Hai Pha (Two-Phase Normalization Pipeline)
@@ -135,7 +135,7 @@ flowchart TD
 ## 5. Hướng Dẫn Cấu Hình Toàn Diện Tệp JSON `math_dictionary_registry.json`
 
 Tệp cấu hình nằm tại đường dẫn:
-- `Backend/src/AegisQuiz.Infrastructure/Config/math_dictionary_registry.json`
+- `Backend/src/Aegis.Infrastructure/Config/math_dictionary_registry.json`
 - `Backend/publish/Config/math_dictionary_registry.json`
 
 ### Cấu Trúc Tổng Thể Của Tệp JSON:
@@ -450,4 +450,4 @@ Toàn bộ các thao tác trên giao diện đều được hỗ trợ đầy đ
    - Nhờ cơ chế **Fail-Safe Fallback**, trong trường hợp gặp các hình vẽ hình học quá phức tạp (nhiều đường cong Bezier, biểu đồ thống kê), hệ thống sẽ chủ động bảo tồn nguyên vẹn dưới dạng Vector SVG, cam kết **không bao giờ làm mất nội dung hoặc gián đoạn kỳ thi của học sinh**.
 
 ---
-*Tài liệu được ban hành và bảo chứng chất lượng bởi Kiến Trúc Sư Hệ Thống AegisQuiz.*
+*Tài liệu được ban hành và bảo chứng chất lượng bởi Kiến Trúc Sư Hệ Thống Aegis.*

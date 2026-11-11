@@ -187,7 +187,7 @@ export function LoginPage() {
       const normalizedProfile: UserProfile = {
         id: user.id,
         name: user.name || 'Cán bộ PKI',
-        email: user.email || 'pki.user@aegisquiz.com',
+        email: user.email || 'pki.user@aegis.com',
         role: normalizeRole(user.role),
         isPremium: Boolean(user.isPremium),
         subscriptionTier: user.subscriptionTier || 'ENTERPRISE',

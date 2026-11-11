@@ -37,7 +37,7 @@ export const PwaInstallBanner: React.FC = () => {
       {/* Banner cài đặt PWA di động */}
       {(canInstall || isIos) && (
         <aside
-          aria-label="Cài đặt ứng dụng AegisQuiz lên thiết bị"
+          aria-label="Cài đặt ứng dụng Aegis lên thiết bị"
           className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 p-3.5 rounded-2xl bg-slate-950/95 border border-purple-500/50 shadow-2xl shadow-purple-950/60 backdrop-blur-xl animate-in fade-in slide-in-from-bottom duration-300"
         >
           <div className="flex items-start gap-3">
@@ -47,7 +47,7 @@ export const PwaInstallBanner: React.FC = () => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black text-white">Cài Đặt App AegisQuiz</span>
+                <span className="text-xs font-black text-white">Cài Đặt App Aegis</span>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-900/80 text-purple-300 border border-purple-700/50">
                   Offline-Ready
                 </span>

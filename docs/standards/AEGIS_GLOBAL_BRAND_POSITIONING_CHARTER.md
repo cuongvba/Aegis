@@ -3,7 +3,7 @@
 
 > **Cơ quan ban hành**: Hội Đồng Kiến Trúc Tối Cao Aegis Global  
 > **Chủ nhiệm đề án**: No.1 — Lead System Analyst, Master Living Documentarian & Supreme Architect  
-> **Áp dụng chuẩn mực**: [Aegis Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
+> **Áp dụng chuẩn mực**: [Aegis Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
 > **Tầm nhìn chiến lược**: Chuyển dịch từ Ứng dụng Thi Trắc Nghiệm Đơn Lẻ (*Single Quiz Software*) sang **Hạ Tầng Nhận Thức & Chuẩn Mực Kiểm Chứng Toàn Cầu (*Global Cognitive Infrastructure & Verification Standard*)**.
 
 ---
@@ -28,7 +28,7 @@
 
 ## I. BỐI CẢNH & BƯỚC NGOẶT ĐỊNH VỊ (THE STRATEGIC INFLECTION POINT)
 
-### 1. Giới Hạn Của Tư Duy Sản Phẩm Cũ ("AegisQuiz")
+### 1. Giới Hạn Của Tư Duy Sản Phẩm Cũ ("Aegis")
 Từ *"Quiz"* trong danh xưng cũ vô hình trung tự trói buộc hệ thống vào định kiến của một ứng dụng học đường nhỏ hẹp, đối kháng với các nền tảng bài tập cơ bản như Kahoot hay Quizizz. 
 
 Tuy nhiên, trong thực tế kiến trúc, hệ thống đã vượt xa ranh giới đó:
@@ -123,13 +123,13 @@ graph TD
 
 | Danh Xưng Cũ | Danh Xưng Mới Chuẩn Hóa | Phân Hệ / Module Tương Ứng |
 | :--- | :--- | :--- |
-| *AegisQuiz Platform* | **Aegis** / **Aegis Global** | Toàn bộ hệ thống & Cổng thông tin |
-| *AegisQuiz Engine* | **Aegis Core** / **Aegis Cognitive Engine (ACE)** | Backend & CIG Ingestion Service |
+| *Aegis Platform* | **Aegis** / **Aegis Global** | Toàn bộ hệ thống & Cổng thông tin |
+| *Aegis Engine* | **Aegis Core** / **Aegis Cognitive Engine (ACE)** | Backend & CIG Ingestion Service |
 | *Aegis Documentation* | **Aegis ALDS Studio** | Hệ thống tài liệu sống động & Kiểm chứng |
-| *AegisQuiz Scoring* | **Aegis IRT Metrics** | Phân hệ đo lường tâm trắc học & CAT |
+| *Aegis Scoring* | **Aegis IRT Metrics** | Phân hệ đo lường tâm trắc học & CAT |
 | *Aegis Quiz Arena* | **Aegis Arena** | Đấu trường thi đấu & Mô phỏng thời gian thực |
-| *AegisQuiz Solution* | **Aegis Enterprise Solution** | Giải pháp theo ngành (Banking, Corp, Gov) |
-| *AegisQuiz Payment* | **Aegis Global Treasury** | Phân hệ thanh toán đa cổng & Quỹ tri ân |
+| *Aegis Solution* | **Aegis Enterprise Solution** | Giải pháp theo ngành (Banking, Corp, Gov) |
+| *Aegis Payment* | **Aegis Global Treasury** | Phân hệ thanh toán đa cổng & Quỹ tri ân |
 
 ---
 
@@ -138,7 +138,7 @@ graph TD
 Để hiện thực hóa triết lý kiến trúc **Cognitive Dual-Space Architecture (CDSA)**, hệ sinh thái thiết lập chuẩn mực **Chủ Quyền Thương Hiệu Doanh Nghiệp (Enterprise Brand Sovereignty)**: mỗi Khách thuê Doanh nghiệp / Ngân hàng (Tenant) được toàn quyền sở hữu và kiểm soát 100% không gian thị giác của mình mà không để lộ dấu vết của nền tảng bên thứ ba:
 
 ### 1. Ma Trận Căn Cước Thị Giác 5 Tầng (5-Layer Brand Architecture)
-Chi tiết kỹ thuật và sổ tay vận hành được quy định tại [Cẩm Nang Quản Trị Bản Sắc Thương Hiệu Doanh Nghiệp](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/manuals/AEGIS_ENTERPRISE_WHITE_LABEL_AND_BRAND_SOVEREIGNTY_GUIDE.md):
+Chi tiết kỹ thuật và sổ tay vận hành được quy định tại [Cẩm Nang Quản Trị Bản Sắc Thương Hiệu Doanh Nghiệp](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/manuals/AEGIS_ENTERPRISE_WHITE_LABEL_AND_BRAND_SOVEREIGNTY_GUIDE.md):
 * **Tầng 1 — Căn cước Thị giác Cốt lõi (Visual Identity Core)**:
   - *Logo chính (Horizontal Topbar Logo)*: Tỉ lệ ngang, nền trong suốt SVG/PNG, chiều cao điều chỉnh linh hoạt $24\text{px} - 64\text{px}$.
   - *Biểu tượng vuông (Favicon & Mobile App Icon)*: Tỉ lệ 1:1 ($32\times 32\text{px}$, $192\times 192\text{px}$) cho Tab trình duyệt và PWA.
@@ -156,8 +156,8 @@ Chi tiết kỹ thuật và sổ tay vận hành được quy định tại [C�
   - Xem trước tức thì 3 không gian trọng yếu: Màn hình Đăng nhập (Login View), Phòng thi Sát hạch (Exam Arena View), và Giấy Chứng nhận Tốt nghiệp (Digital Certificate View).
 
 ### 2. Live Source Links & Database Contract
-* Controller Quản trị Thương hiệu: [`TenantsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TenantsController.cs) (`GET/PUT /api/admin/tenants/branding`).
-* UI Quản Trị Đạt Chuẩn Zero-Monolith ($\le 250$ LOC): [`TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx), [`BrandIdentityHub.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/BrandIdentityHub.tsx), [`SurfaceBackgroundConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/SurfaceBackgroundConfig.tsx), [`MultiSurfaceLivePreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/MultiSurfaceLivePreview.tsx), [`FooterAndLegalConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/FooterAndLegalConfig.tsx).
+* Controller Quản trị Thương hiệu: [`TenantsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TenantsController.cs) (`GET/PUT /api/admin/tenants/branding`).
+* UI Quản Trị Đạt Chuẩn Zero-Monolith ($\le 250$ LOC): [`TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx), [`BrandIdentityHub.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/BrandIdentityHub.tsx), [`SurfaceBackgroundConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/SurfaceBackgroundConfig.tsx), [`MultiSurfaceLivePreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/MultiSurfaceLivePreview.tsx), [`FooterAndLegalConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/FooterAndLegalConfig.tsx).
 
 ---
 

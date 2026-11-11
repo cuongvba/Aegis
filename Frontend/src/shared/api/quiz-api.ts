@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Quiz API Client (HTTP calls only)
+ * Aegis — Quiz API Client (HTTP calls only)
  * ===============================================
  * Tách từ learner-quiz.service.ts — chỉ chứa HTTP calls thuần.
  * Tất cả parsing/normalization logic đã chuyển vào:

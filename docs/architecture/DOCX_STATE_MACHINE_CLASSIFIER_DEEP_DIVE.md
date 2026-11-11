@@ -11,7 +11,7 @@
 
 ## I. TỔNG QUAN & VỊ TRÍ TRONG HỆ SINH THÁI KHẢO THÍ
 
-Trong hệ sinh thái khảo thí thông minh của AegisQuiz, [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) đóng vai trò là **Bộ điều phối Máy trạng thái Hữu hạn (Skinny State Orchestrator - FSM)** cấp tài liệu, tách bạch hoàn toàn với động cơ nhận thức [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) và [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
+Trong hệ sinh thái khảo thí thông minh của Aegis, [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) đóng vai trò là **Bộ điều phối Máy trạng thái Hữu hạn (Skinny State Orchestrator - FSM)** cấp tài liệu, tách bạch hoàn toàn với động cơ nhận thức [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) và [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
 
 ### 1. Phân định ranh giới trách nhiệm (Separation of Concerns & Single Source of Truth)
 Quy trình bóc tách tệp Word `.docx` được phân chia thành 3 phân tầng có ranh giới trách nhiệm tuyệt đối:
@@ -59,7 +59,7 @@ Quy trình bóc tách tệp Word `.docx` được phân chia thành 3 phân tầ
 | Tiêu chuẩn Kiến trúc | Điểm Trước Cải tổ | Điểm Sau Cải tổ (v4.0) | Đột phá Kỹ thuật & Minh chứng Hiện thực |
 |---|:---:|:---:|---|
 | **Separation of Concerns (SoC) & SSoT** | 4.0 / 10 | **10.0 / 10** | **Triệt tiêu 100% mã nguồn trùng lặp giữa DSMC và CIG**. Đưa 20+ phương thức nghiệp vụ (Structure, Bottom-Up Extraction, Lifecycle Finalize, SubItem Linking) về đúng CIG Engine và Universal Taxonomy Engine. DSMC chỉ đóng vai trò Skinny Orchestrator. |
-| **Clean Architecture (CA)** | 6.5 / 10 | **9.9 / 10** | Đưa `CognitiveCoordinateTaxonomyResult` và `ParsedOptionDto` về `AegisQuiz.Application.DTOs`. Triệt tiêu hoàn toàn sự phụ thuộc trực tiếp vào Singleton trong vòng đời; tiêm `IDynamicQuestionIngestionEngine` qua DI. |
+| **Clean Architecture (CA)** | 6.5 / 10 | **9.9 / 10** | Đưa `CognitiveCoordinateTaxonomyResult` và `ParsedOptionDto` về `Aegis.Application.DTOs`. Triệt tiêu hoàn toàn sự phụ thuộc trực tiếp vào Singleton trong vòng đời; tiêm `IDynamicQuestionIngestionEngine` qua DI. |
 | **Open/Closed Principle (OCP)** | 5.5 / 10 | **10.0 / 10** | Triệt tiêu mọi if-else / switch-case gán tên môn học cứng (`"MATH" => "Toán học"`). Lan tỏa chủ đề chiếm ưu thế (Dominant Topic Propagation $\ge 40\%$) được chuyển 100% về `UniversalCoordinateTaxonomyEngine`. |
 | **Đa ngôn ngữ (MultiLang / i18n)** | 5.0 / 10 | **9.8 / 10** | Toàn bộ mẫu tiêu đề phân đoạn, chỉ dẫn lời giải, từ khóa dẫn nhập được nạp động từ `LinguisticKeys` và `QuestionParsingRuleDto` CSDL. Hỗ trợ đầy đủ tiếng Anh, tiếng Pháp, tiếng Trung và RTL. |
 | **Độ tin cậy Khảo thí (Resilience)** | 8.0 / 10 | **10.0 / 10** | Bảo toàn 100% chữ ký public methods thông qua Facade Delegation. Scoped Test Suite chạy 64/64 tests PASS 100% (Zero Regression). |
@@ -68,7 +68,7 @@ Quy trình bóc tách tệp Word `.docx` được phân chia thành 3 phân tầ
 
 ## III. SƠ ĐỒ MÁY TRẠNG THÁI HỮU HẠN & BỘ ĐIỀU PHỐI NHẬN THỨC (SGI)
 
-Toàn bộ quá trình phân tích văn bản trong `ParseParagraphList` hoạt động theo mô hình máy trạng thái hữu hạn với 8 trạng thái chính được điều phối bởi [CognitiveScopeManager.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/CognitiveScopeManager.cs):
+Toàn bộ quá trình phân tích văn bản trong `ParseParagraphList` hoạt động theo mô hình máy trạng thái hữu hạn với 8 trạng thái chính được điều phối bởi [CognitiveScopeManager.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/CognitiveScopeManager.cs):
 
 ```mermaid
 sequenceDiagram
@@ -121,7 +121,7 @@ Thay vì kiểm tra chuỗi cứng:
 // ❌ PHI THIẾT KẾ (VI PHẠM OCP):
 if (q.QuestionType == "ESSAY" || q.QuestionType == "SHORT_ANSWER") { ... }
 ```
-Hệ thống chuyển đổi hoàn toàn sang truy vấn Năng lực (Capabilities) thông qua [QuestionTypeProfileDto.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionTypeProfileDto.cs):
+Hệ thống chuyển đổi hoàn toàn sang truy vấn Năng lực (Capabilities) thông qua [QuestionTypeProfileDto.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionTypeProfileDto.cs):
 ```csharp
 //  CHUẨN KIẾN TRÚC OCP:
 if (Has(cig, q.QuestionType, QuestionTypeProfileDto.CapFreeText)) { ... }
@@ -141,7 +141,7 @@ public static class QuestionTypeProfileDto
 }
 ```
 
-Bảng đăng ký mặc định trong [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs):
+Bảng đăng ký mặc định trong [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs):
 ```json
 "questionTypeProfiles": {
   "SINGLE": {
@@ -211,12 +211,12 @@ Hàm `ResolveQuestionBlockBottomUp` và `TryExtractOptionsBottomUp` được gia
 Toàn bộ cụm kiểm thử hồi quy bao gồm 82 bài test chuyên sâu đã được thực thi và đạt tỷ lệ **PASS 100%**:
 
 ```bash
-dotnet test Backend/tests/AegisQuiz.UnitTests/AegisQuiz.UnitTests.csproj --nologo \
+dotnet test Backend/tests/Aegis.UnitTests/Aegis.UnitTests.csproj --nologo \
   --filter "FullyQualifiedName~DocxClassifierRegistryComplianceTests|FullyQualifiedName~DocxStateMachineClassifierArchitectureTests|FullyQualifiedName~UniversalCigCoverageTests|FullyQualifiedName~DeToanParserTests|FullyQualifiedName~MultiTrueFalseIsolationTests|FullyQualifiedName~ThcsExamIngestionTests|FullyQualifiedName~DynamicDomainIngestionTests|FullyQualifiedName~AnchorMatchDebugTests|FullyQualifiedName~TrackQuestionCreationTests|FullyQualifiedName~LosslessRoundTripExportTests"
 ```
 
 ```text
-Passed!  - Failed: 0, Passed: 82, Skipped: 0, Total: 82, Duration: 8 s - AegisQuiz.UnitTests.dll (net10.0)
+Passed!  - Failed: 0, Passed: 82, Skipped: 0, Total: 82, Duration: 8 s - Aegis.UnitTests.dll (net10.0)
 ```
 
 ### Các nhóm kiểm thử tiêu biểu đã vượt qua:
@@ -230,9 +230,9 @@ Passed!  - Failed: 0, Passed: 82, Skipped: 0, Total: 82, Duration: 8 s - AegisQu
 
 ## VIII. KẾT LUẬN & CAM KẾT KIẾN TRÚC
 
-Cuộc đại phẫu kiến trúc v4.0 đã đưa [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) đạt chuẩn mực thiết kế phần mềm tối cao:
+Cuộc đại phẫu kiến trúc v4.0 đã đưa [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) đạt chuẩn mực thiết kế phần mềm tối cao:
 1. **Triệt tiêu Nợ kỹ thuật (Zero Technical Debt):** Giảm từ 2,306 dòng xuống còn ~1,060 dòng (-54% dung lượng mã); xóa bỏ hoàn toàn 20+ phương thức duplicate và các hardcode phân nhánh môn học.
-2. **Khẳng định Chân lý duy nhất (SSoT):** Mọi logic bóc tách văn bản, quy tắc Bottom-up, trích xuất phương án, vòng đời gộp câu hỏi thuộc bản quyền của [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs); hệ 5 trục tọa độ và chủ đề khảo thí thuộc bản quyền của [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
+2. **Khẳng định Chân lý duy nhất (SSoT):** Mọi logic bóc tách văn bản, quy tắc Bottom-up, trích xuất phương án, vòng đời gộp câu hỏi thuộc bản quyền của [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs); hệ 5 trục tọa độ và chủ đề khảo thí thuộc bản quyền của [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
 3. **Bảo toàn 100% Khả năng Tương thích ngược (Zero Regression):** Sử dụng Facade Pattern ủy quyền toàn bộ public static methods của DSMC sang CIG Engine; toàn bộ test suites đều PASS 100% mà không cần sửa đổi bất kỳ mã kiểm thử nào.
 4. **Tuân thủ 100% Clean Architecture & OCP:** Đưa DTOs về đúng Application Layer, cấu hình động qua CIG Grammar và Dynamic Domain Context.
 
@@ -242,7 +242,7 @@ Cuộc đại phẫu kiến trúc v4.0 đã đưa [DocxStateMachineClassifier.cs
 
 ### 1. Cơ Chế Đóng Ranh Giới Lời Giải Kháng Nuốt Bối Cảnh (Explanation Boundary Termination)
 - **Điểm nghẽn cũ**: Khi FSM bước vào pha Lời giải (`inExplanation = true`), nếu gặp bài đọc hiểu (`Read the following passage...`) hoặc chỉ thị làm bài mới (`Choose the word...`) mà không có từ khóa kết thúc lời giải, FSM tiếp tục gộp các đoạn văn này vào trường `Explanation` của câu hỏi trước đó (hiện tượng **Context Swallowing** tại Câu 22 Đề 7).
-- **Giải pháp triệt để**: Tại [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs), thiết lập chốt chặn cấu trúc chủ động:
+- **Giải pháp triệt để**: Tại [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs), thiết lập chốt chặn cấu trúc chủ động:
   ```csharp
   // Bất kỳ ranh giới cấu trúc mới nào (Chỉ thị, Bài đọc, Phân đoạn, Đề thi)
   // đều buộc FSM đóng ngay lập tức phạm vi lời giải của câu hỏi đang mở:
@@ -289,7 +289,7 @@ Trong phiên bản cập nhật tháng 10/2026:
 
 ## X. ĐẶC TẢ QUY TRÌNH BÓC TÁCH TOÀN TRÌNH TỪ FILE ĐẾN CSDL (ALDS v1.0)
 Hồ sơ nghiệm thu kiến trúc chi tiết 7 giai đoạn bóc tách (Client Web -> Tenant Scoping -> OOXML Decompress & MathType WMF Vector -> DSMC Skinny Orchestration -> CIG 8-Priority Classification -> SHA-256 Deduplication -> PostgreSQL JSONB 27 trường) tuân thủ 5 Trụ cột ALDS v1.0 được lưu trữ tại:
-👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
 
 ---
 

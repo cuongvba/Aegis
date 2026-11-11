@@ -76,13 +76,13 @@ Giải thích: Hành vi buông cả hai tay khi đang điều khiển xe máy l�
 [Key: A]
 [Rationale] First solve for x: 3x = 15 => x = 5. Then substitute into 6(5) - 5 = 30 - 5 = 25.`,
 
-  WEIRD_UNCONVENTIONAL: `# 1. Đâu là kiến trúc tối thượng của Hệ Thống Đấu Trường Trí Tuệ AegisQuiz?
+  WEIRD_UNCONVENTIONAL: `# 1. Đâu là kiến trúc tối thượng của Hệ Thống Đấu Trường Trí Tuệ Aegis?
 >>A<< Microservices kết hợp CIG Engine động
 >>B<< Monolith cũ kỹ thập niên 90
 >>C<< Ứng dụng desktop đơn máy
 >>D<< Trang HTML tĩnh
 FLAG: A
-Lời giải: AegisQuiz tích hợp CIG Engine và Arena Gameshow Plugin System độc nhất vô nhị.`,
+Lời giải: Aegis tích hợp CIG Engine và Arena Gameshow Plugin System độc nhất vô nhị.`,
 
   GAOKAO_CHINA: `第一部分  阅读理解
 1. 中国的首都是哪个城市？

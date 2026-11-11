@@ -1,20 +1,20 @@
-# 🛡️ AEGISQUIZ — BẢN THIẾT KẾ KIẾN TRÚC PHÂN HỆ NHẬP ĐỀ THÔNG MINH & CHIẾN LƯỢC QUẢNG BÁ TOÀN CẦU
+# 🛡️ AEGIS — BẢN THIẾT KẾ KIẾN TRÚC PHÂN HỆ NHẬP ĐỀ THÔNG MINH & CHIẾN LƯỢC QUẢNG BÁ TOÀN CẦU
 ## (Aegis Universal Cognitive Ingestion Engine & Global Expansion Master Plan)
 
 > **Căn Cứ Pháp Lệnh & Vai Trò Chỉ Đạo**:  
 > Biên soạn bởi **No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist**  
-> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz)*  
-> Tuân thủ tuyệt đối [Hiến chương AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/AGENTS.md) và Chuẩn tài liệu sống [AEGIS_LIVING_DOCUMENTATION_STANDARD.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).
+> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis)*  
+> Tuân thủ tuyệt đối [Hiến chương AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md) và Chuẩn tài liệu sống [AEGIS_LIVING_DOCUMENTATION_STANDARD.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md).
 
 ---
 
 ## I. XÁC LẬP VAI TRÒ TỐI CAO CỦA No.1 TRONG HỆ THỐNG
 
-Trong hệ sinh thái **AegisQuiz**, **No.1** không đơn thuần là một lập trình viên hay trợ lý hội thoại thông thường, mà là **Chủ Thể Tư Duy & Thẩm Quyền Kiến Trúc Cao Nhất (Supreme Role Anchor)** của toàn bộ nền tảng:
+Trong hệ sinh thái **Aegis**, **No.1** không đơn thuần là một lập trình viên hay trợ lý hội thoại thông thường, mà là **Chủ Thể Tư Duy & Thẩm Quyền Kiến Trúc Cao Nhất (Supreme Role Anchor)** của toàn bộ nền tảng:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│             No.1 — TỔNG CÔNG TRÌNH SƯ & CHỦ NHIỆM KIẾN TRÚC HỆ SINH THÁI AEGISQUIZ      │
+│             No.1 — TỔNG CÔNG TRÌNH SƯ & CHỦ NHIỆM KIẾN TRÚC HỆ SINH THÁI AEGIS      │
 ├───────────────────────────────┬────────────────────────────────────────────────────────┤
 │ TRỌNG TRÁCH CHUYÊN GIA        │ PHẠM VI ỨNG DỤNG THỰC TẾ TRONG HỆ THỐNG                │
 ├───────────────────────────────┼────────────────────────────────────────────────────────┤
@@ -73,7 +73,7 @@ flowchart TD
 
 ### 2. So sánh Năng lực Toàn diện với các Nền tảng Quốc tế
 
-| Tiêu Chí Kỹ Thuật & Khảo Thí | Moodle / Canvas LMS | Mathpix Snip / EquatIO | Các Nền Tảng VN (Azota, OLM) | **AegisQuiz Ingestion Engine** |
+| Tiêu Chí Kỹ Thuật & Khảo Thí | Moodle / Canvas LMS | Mathpix Snip / EquatIO | Các Nền Tảng VN (Azota, OLM) | **Aegis Ingestion Engine** |
 |:---|:---:|:---:|:---:|:---:|
 | **1. Bóc tách MathType Vector WMF** | ❌ Chuyển thành ảnh bitmap vỡ nét | ⚠️ Dùng Cloud OCR, phụ thuộc mạng & tính phí API | ⚠️ Lỗi font, mất ký hiệu vector/tích phân | **✅ Giải mã nhị phân Bytecode MTEF trực tiếp (0ms, 100% nội bộ)** |
 | **2. Khớp phân cấp Đề - Phần - Lời giải** | ❌ Không hỗ trợ, phải nhập tay từng phần | ❌ Không có nhận thức cấu trúc đề thi | ⚠️ Chỉ nhận diện câu trắc nghiệm đơn lẻ | **✅ Tự động phân cấp Đề -> Phần -> Câu -> Lời giải -> Bảng đáp án** |
@@ -89,21 +89,21 @@ flowchart TD
 
 Tất cả các tuyên bố năng lực đều được hiện thực hóa bằng mã nguồn thực tế trong hệ thống:
 
-* **Bộ giải mã nhị phân MTEF**: [MtefToLatexConverter.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/MtefToLatexConverter.cs)  
+* **Bộ giải mã nhị phân MTEF**: [MtefToLatexConverter.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/MtefToLatexConverter.cs)  
   *Xử lý bytecode nhị phân, tái tạo chính xác các toán tử tích phân, ma trận, vector $\overrightarrow{a}$, góc $\widehat{ABC}$, hệ phương trình $\begin{cases}$.*
-* **Giao diện Hợp đồng Clean Architecture**: [IDocxStateMachineClassifier](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IServices.cs#L73-L86) & [DocxStateMachineClassifierService](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs)  
-  *Tuân thủ nghiêm ngặt Clean Architecture, cho phép tiêm phụ thuộc linh hoạt qua DI Container trong [Program.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Program.cs).*
-* **Máy trạng thái điều hướng bóc tách FSM**: [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs)  
+* **Giao diện Hợp đồng Clean Architecture**: [IDocxStateMachineClassifier](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IServices.cs#L73-L86) & [DocxStateMachineClassifierService](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs)  
+  *Tuân thủ nghiêm ngặt Clean Architecture, cho phép tiêm phụ thuộc linh hoạt qua DI Container trong [Program.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Program.cs).*
+* **Máy trạng thái điều hướng bóc tách FSM**: [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs)  
   *Quản lý phân tầng trạng thái Đề thi, Phần thi, Câu hỏi, Lời giải, Bảng ma trận và chốt chặn ngắt đề tức thì khi gặp ranh giới kết thúc.*
-* **Cơ chế ranh giới Sentinel & Khử rác chỉ thị coi thi**: [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs#L39-L51) & [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L220-L240)  
+* **Cơ chế ranh giới Sentinel & Khử rác chỉ thị coi thi**: [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs#L39-L51) & [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L220-L240)  
   *Bộ đôi `EndOfExamMarkers` và `ProctorInstructionMarkers` bảo đảm câu hỏi cuối cùng không bao giờ bị ô nhiễm bởi các chuỗi `HẾT`, `THE END` hay chỉ thị giám thị.*
-* **Cơ chế gom dòng đa tầng**: [DocxStateMachineClassifier.cs:L1017-L1145](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L1017-L1145)  
+* **Cơ chế gom dòng đa tầng**: [DocxStateMachineClassifier.cs:L1017-L1145](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L1017-L1145)  
   *Triển khai `TryExtractTrueFalseOptions` và `TryExtractUppercaseMultilineOptions` gom công thức toán ở dòng mới.*
-* **Trích xuất Bảng Đáp án Ma trận**: [DocxTableQuestionExtractor.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs)  
+* **Trích xuất Bảng Đáp án Ma trận**: [DocxTableQuestionExtractor.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs)  
   *Bóc tách tự động bảng đáp án Phần I, Phần II, Phần III ma trận n hàng m cột.*
-* **Hệ Ngữ pháp Nhận thức Khảo thí CIG**: [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json)  
+* **Hệ Ngữ pháp Nhận thức Khảo thí CIG**: [parsing_rules_registry.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json)  
   *Tập luật 4-Specs định nghĩa mẫu đề thi GDPT 2025, GPLX, Ngoại ngữ, SAT.*
-* **Giao diện hiển thị trực quan KaTeX**: [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx) & [MathRenderer.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx)  
+* **Giao diện hiển thị trực quan KaTeX**: [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx) & [MathRenderer.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx)  
   *Hiển thị công thức toán sắc nét, đồng bộ CSS KaTeX toàn hệ thống.*
 
 ---
@@ -148,7 +148,7 @@ Outcome: Passed! (Duration: 9.8s)
 
 ## V. TRỤ CỘT 4: VISUAL PROOF-OF-WORK (CĂN CỨ THỊ GIÁC)
 
-Dữ liệu sau khi trích xuất hiển thị sắc nét trên giao diện người dùng [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx):
+Dữ liệu sau khi trích xuất hiển thị sắc nét trên giao diện người dùng [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx):
 * Công thức toán học multiline hiển thị căn lề chuẩn mực theo định dạng KaTeX:
   $$\begin{aligned} P(A) = P(B)P(A|B) + P(C)P(A|C) \end{aligned}$$
 * Các ký hiệu hình học không gian, vector $\overrightarrow{u}$, $\overrightarrow{v}$, góc $\widehat{ABC}$ và dấu tích phân $\int_{a}^{b} f(x)dx$ hiển thị mượt mà với độ tương phản cao, tối ưu hóa cho cả Dark Mode và Light Mode.
@@ -183,12 +183,12 @@ gantt
 ```
 
 #### Giai đoạn 1: Đóng gói Headless Ingestion Engine (Quý 4/2026)
-* Tách lõi [DocxParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs) thành dịch vụ độc lập phân tán (Microservice / Serverless container).
+* Tách lõi [DocxParserService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs) thành dịch vụ độc lập phân tán (Microservice / Serverless container).
 * Xuất bản REST API & gRPC Endpoint chuẩn OpenAPI 3.0: `POST /api/v1/ingestion/docx/parse-stream`.
-* Phát hành NuGet Package `AegisQuiz.Ingestion.Core` và npm package `@aegisquiz/ingestion-client`.
+* Phát hành NuGet Package `Aegis.Ingestion.Core` và npm package `@aegis/ingestion-client`.
 
 #### Giai đoạn 2: Khởi động Product-Led Growth (PLG) qua Free Playground (Quý 1/2027)
-* Xây dựng cổng web công khai: **`aegisquiz.com/convert`** (hoặc `exam2latex.org`).
+* Xây dựng cổng web công khai: **`aegis.com/convert`** (hoặc `exam2latex.org`).
 * Cho phép giáo viên, giảng viên trên toàn cầu kéo thả file Word chứa đề thi Toán/Lý/Hóa/Tiếng Anh bất kỳ:
   * Xem Preview đề thi KaTeX tức thì trong 1 giây.
   * Tải về file kết quả chuẩn JSON, LaTeX hoặc Moodle XML hoàn toàn miễn phí.
@@ -196,7 +196,7 @@ gantt
 
 #### Giai đoạn 3: Chuẩn hóa Quốc tế 1EdTech QTI 3.0 & LTI 1.3 Advantage (Quý 2/2027)
 * Triển khai bộ xuất khẩu (Exporter) tương thích chuẩn **QTI 3.0** (Question and Test Interoperability) của tổ chức *1EdTech Consortium*.
-* Tích hợp chuẩn kết nối **LTI 1.3 Advantage**: Cho phép các trường đại học sử dụng Canvas, Blackboard, Schoology hoặc Moodle tích hợp AegisQuiz Ingestion như một plugin bản quyền chỉ với 1 cú click của quản trị viên.
+* Tích hợp chuẩn kết nối **LTI 1.3 Advantage**: Cho phép các trường đại học sử dụng Canvas, Blackboard, Schoology hoặc Moodle tích hợp Aegis Ingestion như một plugin bản quyền chỉ với 1 cú click của quản trị viên.
 
 #### Giai đoạn 4: Đột phá các Thị trường Trọng điểm Toàn cầu (Quý 3 - 4/2027)
 1. **Hoa Kỳ & Châu Âu**:  
@@ -243,4 +243,4 @@ gantt
 | `v1.1` | 2026-10-14 | **No.1 (Tổng Công Trình Sư)** | Chuẩn hóa Clean Architecture DI (IDocxStateMachineClassifier), tích hợp ranh giới Sentinel (EndOfExamMarkers & ProctorInstructionMarkers) và nghiệm thu thực chiến toàn bộ kho 53 đề thi (3.800+ câu hỏi, 0 câu dirty). | **100% Passed (53/53 files, ~2m)** |
 
 ---
-*Tài liệu được ký số bởi Kiến trúc sư Trưởng No.1 — Hệ sinh thái Khảo thí Trực tuyến Chủ quyền AegisQuiz.*
+*Tài liệu được ký số bởi Kiến trúc sư Trưởng No.1 — Hệ sinh thái Khảo thí Trực tuyến Chủ quyền Aegis.*

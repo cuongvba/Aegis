@@ -1,7 +1,7 @@
 ﻿import api from '@/services/api';
 import type { LearnerQuestion, QuestionType } from '@/types/quiz';
 
-// AegisQuiz backend endpoints (trỏ về /api/quiz — proxy qua Vite → localhost:8080)
+// Aegis backend endpoints (trỏ về /api/quiz — proxy qua Vite → localhost:8080)
 const QUIZ_API = '/api/quiz';
 const BANK_API_BASE = `${QUIZ_API}/bank`;
 

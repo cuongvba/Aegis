@@ -1,0 +1,676 @@
+using Microsoft.EntityFrameworkCore;
+using Aegis.Domain.Entities;
+using Aegis.Application.Interfaces;
+
+namespace Aegis.Infrastructure.Data
+{
+    // [World-Class Upgrade] DbContext nâng cấp theo quiz-service
+    public class AegisDbContext : DbContext
+    {
+        private readonly ITenantContext? _tenantContext;
+
+        public AegisDbContext(
+            DbContextOptions<AegisDbContext> options,
+            ITenantContext? tenantContext = null)
+            : base(options)
+        {
+            _tenantContext = tenantContext;
+        }
+
+        // ── Core Quiz Engine ───────────────────────────────────────────────────
+        public DbSet<QuestionBase> Questions { get; set; } = null!;
+        public DbSet<QuestionContext> QuestionContexts { get; set; } = null!;
+        public DbSet<QuestionAttempt> QuestionAttempts { get; set; } = null!;
+        public DbSet<QuestionAttemptAnswer> QuestionAttemptAnswers { get; set; } = null!;
+
+        // ── Multi-Tenancy, Hierarchy & Dynamic Taxonomy ──────────────
+        public DbSet<Tenant> Tenants { get; set; } = null!;
+        public DbSet<OrganizationUnit> OrganizationUnits { get; set; } = null!;
+        public DbSet<DynamicDomain> DynamicDomains { get; set; } = null!;
+        public DbSet<TenantDomainConfig> TenantDomainConfigs { get; set; } = null!;
+        public DbSet<TenantCoordinatePreset> TenantCoordinatePresets { get; set; } = null!;
+
+        // ── RBAC & Team Management ───────────────────────────────────────────
+        public DbSet<UserRole> UserRoles { get; set; } = null!;
+        public DbSet<UserAccount> UserAccounts { get; set; } = null!;
+
+        // ── Payment ───────────────────────────────────────────────────────────
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; } = null!;
+
+        // ── AegisNotebook ─────────────────────────────────────────────────────
+        public DbSet<Notebook> Notebooks { get; set; } = null!;
+        public DbSet<NotebookSource> NotebookSources { get; set; } = null!;
+        public DbSet<NotebookChapter> NotebookChapters { get; set; } = null!;
+        public DbSet<NotebookChatMessage> NotebookChatMessages { get; set; } = null!;
+
+        // ── Question Bank ─────────────────────────────────────────────────────
+        public DbSet<BankTopic> BankTopics { get; set; } = null!;
+        public DbSet<HomeworkSubmission> HomeworkSubmissions { get; set; } = null!;
+
+        // ── Exam Session (Proctoring) ──────────────────────────────────────────
+        public DbSet<ExamSession> ExamSessions { get; set; } = null!;
+
+        // ── Assessment Campaigns (Enterprise Exam Suite) ──────────────────────
+        public DbSet<AssessmentCampaign> AssessmentCampaigns { get; set; } = null!;
+        public DbSet<ExamTrack> ExamTracks { get; set; } = null!;
+        public DbSet<ExamPaper> ExamPapers { get; set; } = null!;
+        public DbSet<ExamPaperItem> ExamPaperItems { get; set; } = null!;
+        public DbSet<CampaignCandidate> CampaignCandidates { get; set; } = null!;
+
+        // ── Gamification ──────────────────────────────────────────────────────
+        public DbSet<LearnerLeaderboardEntry> LeaderboardEntries { get; set; } = null!;
+        public DbSet<LearningAchievement> LearningAchievements { get; set; } = null!;
+        public DbSet<PersonAchievement> PersonAchievements { get; set; } = null!;
+
+        // ── Learning Path ─────────────────────────────────────────────────────
+        public DbSet<LearningPath> LearningPaths { get; set; } = null!;
+        public DbSet<LearningPathStep> LearningPathSteps { get; set; } = null!;
+        public DbSet<LearningPathProgress> LearningPathProgresses { get; set; } = null!;
+
+        // ── Poly-Tenant Membership (Workspace Switcher) ─────────────────────────
+        public DbSet<TenantMembership> TenantMemberships { get; set; } = null!;
+
+        // ── Creator Economy & Educator Strategic Partners (90-Day Trial, Rev-Share) ──
+        public DbSet<EducatorPartnership> EducatorPartnerships { get; set; } = null!;
+        public DbSet<CreatorMarketingPolicy> CreatorMarketingPolicies { get; set; } = null!;
+
+        // ── Cognitive Intelligence (FSRS Spaced Repetition) ────────────────────
+        public DbSet<QuestionNeuralState> QuestionNeuralStates { get; set; } = null!;
+
+        // ── Enterprise Fortress (Tamper-Evident Audit Trail) ───────────────────
+        public DbSet<ExamAuditLog> ExamAuditLogs { get; set; } = null!;
+
+        // ── Community Ecosystem (Proof-of-Learning Economy) ────────────────────
+        public DbSet<AegisCoinWallet> AegisCoinWallets { get; set; } = null!;
+        public DbSet<AegisCoinTransaction> AegisCoinTransactions { get; set; } = null!;
+
+        // ── CognitiveOS (Metacognitive Knowledge Graph) ────────────────────────
+        public DbSet<KnowledgeConcept> KnowledgeConcepts { get; set; } = null!;
+        public DbSet<ConceptRelationship> ConceptRelationships { get; set; } = null!;
+
+        // ── Cognitive Ingestion Grammar (CIG): quy tắc bóc tách câu hỏi động ──
+        public DbSet<QuestionParsingRule> QuestionParsingRules { get; set; } = null!;
+
+        // ── Dynamic AI Model Registry & BYOK Swarm ────────────────────────────
+        public DbSet<AiModelRegistry> AiModelRegistries { get; set; } = null!;
+        public DbSet<UserAiKey> UserAiKeys { get; set; } = null!;
+
+        // ── Universal Epistemic Councils & Symposium ──────────────────────────
+        public DbSet<UniversalAiCouncil> UniversalAiCouncils { get; set; } = null!;
+        public DbSet<UniversalCouncilSeat> UniversalCouncilSeats { get; set; } = null!;
+        public DbSet<SymposiumSession> SymposiumSessions { get; set; } = null!;
+        public DbSet<SymposiumPromptTemplate> SymposiumPromptTemplates { get; set; } = null!;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            // Auto-healing DDL chạy trước Migrate() nên model có thể lệch nhẹ so với snapshot — không coi là lỗi chặn khởi động.
+            optionsBuilder.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
+
+        private Guid CurrentTenantId => _tenantContext?.CurrentTenantId ?? Guid.Empty;
+        private bool IsTenantFilterBypassed => _tenantContext == null || _tenantContext.IsSystemAdmin || _tenantContext.CurrentTenantId == Guid.Empty;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<HomeworkSubmission>(entity =>
+            {
+                entity.ToTable("homework_submissions");
+                entity.Property(e => e.TopicCode).HasColumnName("topic_code");
+                entity.Property(e => e.StudentName).HasColumnName("student_name");
+                entity.Property(e => e.StudentClass).HasColumnName("student_class");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.IsGuest).HasColumnName("is_guest");
+                entity.Property(e => e.Score).HasColumnName("score");
+                entity.Property(e => e.CorrectCount).HasColumnName("correct_count");
+                entity.Property(e => e.TotalQuestions).HasColumnName("total_questions");
+                entity.Property(e => e.TimeSpentSeconds).HasColumnName("time_spent_seconds");
+                entity.Property(e => e.TabSwitchCount).HasColumnName("tab_switch_count");
+                entity.Property(e => e.WrongQuestionIndexes).HasColumnName("wrong_question_indexes").HasColumnType("jsonb");
+                entity.Property(e => e.GroupCategory).HasColumnName("group_category");
+                entity.Property(e => e.SubmittedAt).HasColumnName("submitted_at");
+                entity.Property(e => e.TeacherUserId).HasColumnName("teacher_user_id");
+                entity.Property(e => e.TenantId).HasColumnName("tenant_id");
+            });
+
+            // Bỏ qua các POCO / JSONB payload models không phải bảng DB
+            
+            modelBuilder.Entity<CreatorMarketingPolicy>(entity =>
+            {
+                entity.ToTable("creator_marketing_policies");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CampaignCode).HasColumnName("campaign_code");
+                entity.Property(e => e.CampaignName).HasColumnName("campaign_name");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.TrialDays).HasColumnName("trial_days");
+                entity.Property(e => e.RevenueShareRate).HasColumnName("revenue_share_rate");
+                entity.Property(e => e.KarmaBonusPoints).HasColumnName("karma_bonus_points");
+                entity.Property(e => e.CoffeeProDays).HasColumnName("coffee_pro_days");
+                entity.Property(e => e.CoffeePriceVnd).HasColumnName("coffee_price_vnd");
+                entity.Property(e => e.CoffeeBankBin).HasColumnName("coffee_bank_bin");
+                entity.Property(e => e.CoffeeAccountNumber).HasColumnName("coffee_account_number");
+                entity.Property(e => e.CoffeeAccountName).HasColumnName("coffee_account_name");
+                entity.Property(e => e.IsActive).HasColumnName("is_active");
+                entity.Property(e => e.StartDate).HasColumnName("start_date");
+                entity.Property(e => e.EndDate).HasColumnName("end_date");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
+            modelBuilder.Ignore<ProvenanceAppearance>();
+            modelBuilder.Ignore<ExamClusterMatch>();
+
+            // [Phase B — B3] Global Query Filters — Tự động cô lập dữ liệu theo Tenant động per-request
+            modelBuilder.Entity<OrganizationUnit>()
+                .HasQueryFilter(o =>
+                    IsTenantFilterBypassed ||
+                    o.TenantId == Guid.Empty ||
+                    o.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<TenantDomainConfig>()
+                .HasQueryFilter(c =>
+                    IsTenantFilterBypassed ||
+                    c.TenantId == Guid.Empty ||
+                    c.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<TenantCoordinatePreset>()
+                .HasQueryFilter(p =>
+                    IsTenantFilterBypassed ||
+                    p.TenantId == Guid.Empty ||
+                    p.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<QuestionBase>()
+                .HasQueryFilter(q =>
+                    IsTenantFilterBypassed ||
+                    q.TenantId == Guid.Empty ||
+                    q.TenantId == Tenant.CommunityTenantId ||
+                    q.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<QuestionContext>()
+                .HasQueryFilter(c =>
+                    IsTenantFilterBypassed ||
+                    c.TenantId == Guid.Empty ||
+                    c.TenantId == Tenant.CommunityTenantId ||
+                    c.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<BankTopic>()
+                .HasQueryFilter(t =>
+                    IsTenantFilterBypassed ||
+                    t.TenantId == Guid.Empty ||
+                    t.TenantId == Tenant.CommunityTenantId ||
+                    t.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<AiModelRegistry>()
+                .HasQueryFilter(m =>
+                    IsTenantFilterBypassed ||
+                    m.TenantId == Guid.Empty ||
+                    m.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<UserAiKey>()
+                .HasQueryFilter(k =>
+                    IsTenantFilterBypassed ||
+                    k.TenantId == Guid.Empty ||
+                    k.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<SymposiumPromptTemplate>()
+                .HasQueryFilter(t =>
+                    IsTenantFilterBypassed ||
+                    t.TenantId == null ||
+                    t.TenantId == Guid.Empty ||
+                    t.TenantId == CurrentTenantId);
+
+            modelBuilder.Entity<UniversalAiCouncil>()
+                .HasMany(c => c.Seats)
+                .WithOne()
+                .HasForeignKey(s => s.CouncilId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ── Questions (TPH) + JSONB Payload ──────────────────────────────
+            modelBuilder.Entity<QuestionBase>()
+                .HasDiscriminator(q => q.QuestionType)
+                .HasValue<SingleChoiceQuestion>("SINGLE")
+                .HasValue<EssayQuestion>("ESSAY")
+                .HasValue<MultiChoiceQuestion>("MULTI")
+                .HasValue<TrueFalseQuestion>("TRUE_FALSE")
+                .HasValue<MultiTrueFalseQuestion>("MULTI_TRUE_FALSE")
+                .HasValue<ShortAnswerQuestion>("SHORT_ANSWER")
+                .HasValue<FillBlankQuestion>("FILL_BLANK")
+                .HasValue<OrderingQuestion>("ORDERING")
+                .HasValue<MatchingQuestion>("MATCHING");
+
+            modelBuilder.Entity<QuestionBase>(entity =>
+            {
+                if (Database.IsNpgsql())
+                {
+                    entity.Property(q => q.Payload).HasColumnType("jsonb");
+                    entity.Property(q => q.QuestionType).HasColumnType("text");
+                    entity.Property(q => q.CorrectOption).HasColumnType("text");
+                    entity.PrimitiveCollection(q => q.Options).HasColumnType("text[]");
+                    entity.PrimitiveCollection(q => q.Tags).HasColumnType("text[]");
+                    entity.Property(q => q.ContentType).HasColumnType("text").HasDefaultValue("text");
+                    entity.Property(q => q.OptionType).HasColumnType("text").HasDefaultValue("text");
+                    entity.Property(q => q.DomainCode).HasColumnType("text").HasDefaultValue("EDUCATION");
+                }
+                else
+                {
+                    entity.Property(q => q.Payload)
+                        .HasConversion(
+                            v => v == null ? null : v.RootElement.GetRawText(),
+                            v => string.IsNullOrEmpty(v) ? null : System.Text.Json.JsonDocument.Parse(v, default));
+                    entity.Property(q => q.Options)
+                        .HasConversion(
+                            v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                            v => string.IsNullOrEmpty(v) ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>());
+                    entity.Property(q => q.Tags)
+                        .HasConversion(
+                            v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                            v => string.IsNullOrEmpty(v) ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>());
+                    entity.Property(q => q.DomainCode).HasDefaultValue("EDUCATION");
+                }
+                entity.HasIndex(q => q.CategoryCode);
+                entity.HasIndex(q => q.DomainCode);
+                entity.HasIndex(q => q.ContextId);
+
+                entity.HasOne(q => q.Context)
+                      .WithMany(c => c.Questions)
+                      .HasForeignKey(q => q.ContextId)
+                      .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ── QuestionContext (Shared Stimulus / Reading Passages) ────────
+            modelBuilder.Entity<QuestionContext>(entity =>
+            {
+                entity.HasIndex(c => c.ContentHash);
+                entity.HasIndex(c => c.TenantId);
+            });
+
+            // ── QuestionAttempt ────────────────────────────────────────────
+            modelBuilder.Entity<QuestionAttempt>(entity =>
+            {
+                entity.HasIndex(q => new { q.UserId, q.AttemptDate });
+                entity.HasIndex(q => q.AttemptDate);
+            });
+
+            // ── QuestionAttemptAnswer — per-question tracking ──────────────
+            modelBuilder.Entity<QuestionAttemptAnswer>(entity =>
+            {
+                entity.HasIndex(a => a.AttemptId);
+                entity.HasIndex(a => new { a.AttemptId, a.CategoryCode });
+                entity.HasIndex(a => a.UserId);
+            });
+
+            // ── PaymentTransaction ─────────────────────────────────────────
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasIndex(p => p.PaymentCode)
+                .IsUnique();
+
+            // ── BankTopic ─────────────────────────────────────────────────
+            modelBuilder.Entity<BankTopic>(entity =>
+            {
+                entity.HasIndex(t => t.Code).IsUnique();
+                entity.HasIndex(t => t.CategoryCode);
+                entity.Property(t => t.VisibilityScope).HasDefaultValue("PRIVATE");
+
+                entity.HasOne(t => t.Parent)
+                    .WithMany(t => t.Children)
+                    .HasForeignKey(t => t.ParentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── ExamSession ────────────────────────────────────────────────
+            modelBuilder.Entity<ExamSession>(entity =>
+            {
+                var finalAnswersComparer = new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<Dictionary<Guid, System.Text.Json.JsonElement>>(
+                    (c1, c2) => c1 == c2 || (c1 != null && c2 != null && c1.Count == c2.Count && !c1.Except(c2).Any()),
+                    c => c == null ? 0 : c.Aggregate(0, (a, p) => HashCode.Combine(a, p.Key.GetHashCode())),
+                    c => c == null ? new Dictionary<Guid, System.Text.Json.JsonElement>() : c.ToDictionary(entry => entry.Key, entry => entry.Value.Clone()));
+
+                var snapshotComparer = new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<Guid>?>(
+                    (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+                    c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                    c => c == null ? null : c.ToList());
+
+                entity.Property(e => e.FinalAnswers)
+                    .HasColumnType("jsonb")
+                    .HasConversion(
+                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                        v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, System.Text.Json.JsonElement>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                             ?? new Dictionary<Guid, System.Text.Json.JsonElement>())
+                    .Metadata.SetValueComparer(finalAnswersComparer);
+
+                entity.Property(e => e.SnapshotQuestionIds)
+                    .HasColumnType("jsonb")
+                    .HasConversion(
+                        v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                        v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null))
+                    .Metadata.SetValueComparer(snapshotComparer);
+
+                entity.HasIndex(e => e.ApplicantId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => new { e.ApplicantId, e.Status });
+            });
+
+            // ── Leaderboard ───────────────────────────────────────────────
+            modelBuilder.Entity<LearnerLeaderboardEntry>(entity =>
+            {
+                entity.HasIndex(e => new { e.Period, e.PeriodStart, e.Rank });
+                entity.HasIndex(e => new { e.UserId, e.Period, e.PeriodStart }).IsUnique();
+            });
+
+            // ── LearningAchievement ────────────────────────────────────────
+            modelBuilder.Entity<LearningAchievement>(entity =>
+            {
+                entity.HasIndex(a => a.Code).IsUnique();
+                if (Database.IsNpgsql())
+                {
+                    entity.Property(a => a.TriggerCondition).HasColumnType("jsonb");
+                }
+            });
+
+            modelBuilder.Entity<PersonAchievement>(entity =>
+            {
+                entity.HasIndex(a => a.UserId);
+                entity.HasIndex(a => new { a.UserId, a.AchievementId });
+                if (Database.IsNpgsql())
+                {
+                    entity.Property(a => a.ContextJson).HasColumnType("jsonb");
+                }
+            });
+
+            // ── LearningPath ──────────────────────────────────────────────
+            modelBuilder.Entity<LearningPath>(entity =>
+            {
+                entity.HasIndex(p => p.Code).IsUnique();
+                entity.HasMany(p => p.Steps)
+                    .WithOne(s => s.LearningPath)
+                    .HasForeignKey(s => s.LearningPathId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<LearningPathStep>(entity =>
+            {
+                entity.HasIndex(s => new { s.LearningPathId, s.StepOrder });
+            });
+
+            modelBuilder.Entity<LearningPathProgress>(entity =>
+            {
+                entity.HasIndex(p => new { p.UserId, p.LearningPathId }).IsUnique();
+                entity.HasIndex(p => p.UserId);
+            });
+
+            // ── DynamicDomain & Seed Defaults ─────────────────────────────
+            modelBuilder.Entity<DynamicDomain>(entity =>
+            {
+                entity.HasKey(d => d.Code);
+                entity.HasIndex(d => d.IsSystemStandard);
+                entity.HasIndex(d => d.TenantId);
+
+                entity.HasOne(d => d.ParentDomain)
+                    .WithMany(d => d.SubDomains)
+                    .HasForeignKey(d => d.ParentDomainCode)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Seed 7 standard universal domains
+                entity.HasData(
+                    new DynamicDomain { Code = "EDUCATION", Name = "Giáo dục & Học thuật", Description = "Khảo thí đại học, phổ thông, học thuật tổng quát", Icon = "GraduationCap", ColorBadge = "#2563eb", IsSystemStandard = true, DisplayOrder = 1 },
+                    new DynamicDomain { Code = "BANKING", Name = "Tài chính - Ngân hàng", Description = "Nghiệp vụ tín dụng, thanh toán, ngân quỹ, quản trị rủi ro", Icon = "Landmark", ColorBadge = "#059669", IsSystemStandard = true, DisplayOrder = 2 },
+                    new DynamicDomain { Code = "HEALTHCARE", Name = "Y tế - Sức khỏe", Description = "Y học, dược lâm sàng, quy trình điều dưỡng, kiểm soát nhiễm khuẩn", Icon = "HeartPulse", ColorBadge = "#dc2626", IsSystemStandard = true, DisplayOrder = 3 },
+                    new DynamicDomain { Code = "HSE", Name = "An toàn - Môi trường LĐ", Description = "An toàn vệ sinh lao động, PCCC, quy chuẩn ISO 45001", Icon = "HardHat", ColorBadge = "#d97706", IsSystemStandard = true, DisplayOrder = 4 },
+                    new DynamicDomain { Code = "GOV_DRIVING", Name = "Sát hạch Lái xe Quốc gia", Description = "Bộ 600 câu GPLX Bộ GTVT, 60 câu điểm liệt, sa hình AI", Icon = "Car", ColorBadge = "#7c3aed", IsSystemStandard = true, DisplayOrder = 5 },
+                    new DynamicDomain { Code = "IT_SECURITY", Name = "An toàn TT & CNTT", Description = "Bảo mật an ninh mạng, kiến trúc hệ thống, chứng chỉ CISSP/CompTIA", Icon = "ShieldCheck", ColorBadge = "#0284c7", IsSystemStandard = true, DisplayOrder = 6 },
+                    new DynamicDomain { Code = "GENERAL", Name = "Tổng hợp / Đại cương", Description = "Kiến thức đại cương, kỹ năng mềm, văn hóa doanh nghiệp", Icon = "Layers", ColorBadge = "#4b5563", IsSystemStandard = true, DisplayOrder = 7 }
+                );
+            });
+
+            // ── TenantDomainConfig ─────────────────────────────────────────
+            modelBuilder.Entity<TenantDomainConfig>(entity =>
+            {
+                entity.HasIndex(c => c.TenantId);
+                entity.HasIndex(c => new { c.TenantId, c.DomainCode }).IsUnique();
+
+                entity.HasOne(c => c.Domain)
+                    .WithMany()
+                    .HasForeignKey(c => c.DomainCode)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── TenantCoordinatePreset ─────────────────────────────────────
+            modelBuilder.Entity<TenantCoordinatePreset>(entity =>
+            {
+                entity.HasIndex(p => p.TenantId);
+                entity.HasIndex(p => new { p.TenantId, p.DomainCode, p.CoordinateType });
+            });
+
+            // ── OrganizationUnit (Self-referencing Tree) ───────────────────
+            modelBuilder.Entity<OrganizationUnit>(entity =>
+            {
+                entity.HasIndex(o => o.TenantId);
+                entity.HasIndex(o => o.ParentId);
+                entity.HasIndex(o => new { o.TenantId, o.Code }).IsUnique();
+
+                entity.HasOne(o => o.Parent)
+                    .WithMany(o => o.Children)
+                    .HasForeignKey(o => o.ParentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── BankTopic (Materialized Path & Omni-Century Taxonomy) ──────
+            modelBuilder.Entity<BankTopic>(entity =>
+            {
+                entity.HasIndex(t => t.Code);
+                entity.HasIndex(t => t.TenantId);
+                entity.HasIndex(t => t.Scope);
+                entity.HasIndex(t => t.DomainCode);
+                entity.HasIndex(t => t.MaterializedPath);
+                entity.HasIndex(t => t.ParentId);
+
+                entity.HasOne(t => t.Parent)
+                    .WithMany(t => t.Children)
+                    .HasForeignKey(t => t.ParentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ── UserRole (RBAC & Multi-Scope) ──────────────────────────────
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasIndex(r => new { r.TenantId, r.UserId });
+                entity.HasIndex(r => new { r.TenantId, r.OrgUnitId });
+                entity.HasIndex(r => r.Role);
+            });
+
+            // ── UserAccount (Identity & Credentials) ──────────────────────
+            modelBuilder.Entity<UserAccount>(entity =>
+            {
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.HasIndex(u => u.TenantId);
+                entity.HasIndex(u => u.OrgUnitId);
+                entity.HasIndex(u => u.Role);
+                entity.HasIndex(u => u.SubscriptionTier);
+            });
+
+            // ── TenantMembership (Poly-Tenant Membership) ─────────────────
+            modelBuilder.Entity<TenantMembership>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+                entity.HasIndex(m => new { m.UserId, m.TenantId }).IsUnique();
+                entity.HasIndex(m => m.TenantId);
+                entity.HasIndex(m => m.UserId);
+
+                entity.HasOne(m => m.User)
+                    .WithMany(u => u.Memberships)
+                    .HasForeignKey(m => m.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(m => m.Tenant)
+                    .WithMany()
+                    .HasForeignKey(m => m.TenantId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(m => m.OrgUnit)
+                    .WithMany()
+                    .HasForeignKey(m => m.OrgUnitId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ── QuestionNeuralState (FSRS Spaced Repetition) ──────────────
+            modelBuilder.Entity<QuestionNeuralState>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.HasIndex(s => new { s.UserId, s.QuestionId }).IsUnique();
+                entity.HasIndex(s => new { s.UserId, s.DueAt });
+                entity.HasIndex(s => s.TenantId);
+
+                entity.HasOne(s => s.Question)
+                    .WithMany()
+                    .HasForeignKey(s => s.QuestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(s => s.User)
+                    .WithMany()
+                    .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ── Enterprise Fortress: ExamAuditLog ─────────────────────────
+            modelBuilder.Entity<ExamAuditLog>(entity =>
+            {
+                entity.HasIndex(a => a.TenantId);
+                entity.HasIndex(a => a.ExamId);
+                entity.HasIndex(a => new { a.ExamId, a.SequenceNumber }).IsUnique();
+                entity.HasIndex(a => new { a.ExamId, a.UserId });
+                entity.HasIndex(a => a.TimestampUtc);
+            });
+
+            // ── Community Ecosystem: AegisCoin Wallet & Transactions ───────
+            modelBuilder.Entity<AegisCoinWallet>(entity =>
+            {
+                entity.HasIndex(w => w.TenantId);
+                entity.HasIndex(w => w.UserId).IsUnique();
+            });
+
+            modelBuilder.Entity<AegisCoinTransaction>(entity =>
+            {
+                entity.HasIndex(t => t.WalletId);
+                entity.HasIndex(t => t.UserId);
+                entity.HasIndex(t => t.CreatedAt);
+            });
+
+            // ── CognitiveOS: Knowledge Concepts & Relationships ───────────
+            modelBuilder.Entity<KnowledgeConcept>(entity =>
+            {
+                entity.HasIndex(c => c.TenantId);
+                entity.HasIndex(c => c.ConceptCode).IsUnique();
+                entity.HasIndex(c => c.DomainCode);
+            });
+
+            modelBuilder.Entity<ConceptRelationship>(entity =>
+            {
+                entity.HasIndex(r => r.TenantId);
+                entity.HasIndex(r => new { r.SourceConceptCode, r.TargetConceptCode }).IsUnique();
+            });
+
+            // ── CIG Rules: QuestionParsingRules ───────────────────────────
+            modelBuilder.Entity<QuestionParsingRule>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+                entity.HasIndex(r => new { r.TenantId, r.RuleCode }).IsUnique();
+                entity.HasIndex(r => r.Priority);
+                entity.HasIndex(r => r.IsActive);
+            });
+
+            // ── AegisNotebook Sovereign ───────────────────────────────────
+            modelBuilder.Entity<Notebook>(entity =>
+            {
+                entity.HasKey(n => n.Id);
+                entity.HasIndex(n => n.TenantId);
+                entity.HasIndex(n => n.DomainCode);
+                entity.HasIndex(n => n.Status);
+                entity.HasIndex(n => n.CreatedAt);
+            });
+
+            modelBuilder.Entity<NotebookChapter>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.HasIndex(c => c.NotebookId);
+                entity.HasIndex(c => new { c.NotebookId, c.OrderIndex });
+
+                entity.HasOne(c => c.Notebook)
+                    .WithMany(n => n.Chapters)
+                    .HasForeignKey(c => c.NotebookId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<NotebookSource>(entity =>
+            {
+                entity.HasKey(s => s.Id);
+                entity.HasIndex(s => s.NotebookId);
+                entity.HasIndex(s => s.Type);
+                entity.HasIndex(s => s.Authority);
+
+                entity.HasOne(s => s.Notebook)
+                    .WithMany(n => n.Sources)
+                    .HasForeignKey(s => s.NotebookId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<NotebookChatMessage>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+                entity.HasIndex(m => m.NotebookId);
+                entity.HasIndex(m => m.CreatedAt);
+
+                entity.HasOne(m => m.Notebook)
+                    .WithMany(n => n.ChatMessages)
+                    .HasForeignKey(m => m.NotebookId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AiModelRegistry>(entity =>
+            {
+                entity.HasKey(m => m.Id);
+                entity.HasIndex(m => m.ModelCode).IsUnique();
+                entity.HasIndex(m => m.CognitiveArchetype);
+                entity.HasIndex(m => m.IsEnabled);
+            });
+
+            modelBuilder.Entity<UserAiKey>(entity =>
+            {
+                entity.HasKey(k => k.Id);
+                entity.HasIndex(k => k.UserId);
+                entity.HasIndex(k => k.TenantId);
+                entity.HasIndex(k => k.Scope);
+                entity.HasIndex(k => k.IsActive);
+            });
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ApplyTenantAndAudit();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            ApplyTenantAndAudit();
+            return base.SaveChanges();
+        }
+
+        private void ApplyTenantAndAudit()
+        {
+            var currentTenantId = _tenantContext?.CurrentTenantId ?? Guid.Empty;
+
+            foreach (var entry in ChangeTracker.Entries<ITenantEntity>())
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    if (entry.Entity.TenantId == Guid.Empty && currentTenantId != Guid.Empty)
+                    {
+                        entry.Entity.TenantId = currentTenantId;
+                    }
+                }
+            }
+        }
+    }
+}

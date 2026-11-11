@@ -1,6 +1,6 @@
 # 🧩 Phân Hệ Đấu Trường Gameshow (Arena Plugin Engine)
 
-Tài liệu này cung cấp cái nhìn toàn cảnh về phân hệ **Đấu Trường Trí Tuệ (AegisQuiz Arena)**, cơ chế cắm rút Plugin, phân luồng SignalR và bộ tổng hợp âm thanh Web Audio SFX.
+Tài liệu này cung cấp cái nhìn toàn cảnh về phân hệ **Đấu Trường Trí Tuệ (Aegis Arena)**, cơ chế cắm rút Plugin, phân luồng SignalR và bộ tổng hợp âm thanh Web Audio SFX.
 
 ---
 
@@ -37,9 +37,9 @@ Aegis Arena vận hành theo nguyên lý **Open-Closed Principle (OCP)**: Lõi h
     - 🐻 *Các Gameshow lớp học tự tạo của Giáo viên*
 
 Chi tiết mã nguồn của các plugin được đặt tại:
-- Backend: [`ArenaGamePlugins.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Arena/ArenaGamePlugins.cs) & [`DynamicArenaGamePlugin.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Arena/DynamicArenaGamePlugin.cs)
-- Frontend: [`DynamicUniversalArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/DynamicUniversalArenaView.tsx) & [`ArenaStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/ArenaStudioPage.tsx)
-- Cẩm nang hướng dẫn giáo viên: [`TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/manuals/TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md)
+- Backend: [`ArenaGamePlugins.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Arena/ArenaGamePlugins.cs) & [`DynamicArenaGamePlugin.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Arena/DynamicArenaGamePlugin.cs)
+- Frontend: [`DynamicUniversalArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/DynamicUniversalArenaView.tsx) & [`ArenaStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/ArenaStudioPage.tsx)
+- Cẩm nang hướng dẫn giáo viên: [`TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/manuals/TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md)
 
 ---
 

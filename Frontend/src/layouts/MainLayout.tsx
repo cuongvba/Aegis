@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — MainLayout (Refactored Composition Shell)
+ * Aegis — MainLayout (Refactored Composition Shell)
  * ======================================================
  * TRƯỚC: God Component 244 dòng — Header + Nav + Profile + i18n + Auth logic
  * SAU:   ~50 dòng shell — compose widgets độc lập
@@ -29,7 +29,7 @@ export function MainLayout() {
     if (path.includes('arena')) return 'Arena Sân Đấu';
     if (path.includes('symposium')) return 'Đại Hội Thảo AI';
     if (path.includes('practice')) return 'Luyện Tập Khảo Thí';
-    return 'Tổng Quan AegisQuiz';
+    return 'Tổng Quan Aegis';
   };
 
   return (

@@ -3,7 +3,7 @@
 
 > **Tác giả**: No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
 > **Phiên bản**: v1.0.0 (Living Architecture Dossier)  
-> **Trạng thái**: Hoạt động thực tế trên Docker Desktop (Container `aegisquiz-frontend-1`)  
+> **Trạng thái**: Hoạt động thực tế trên Docker Desktop (Container `aegis-frontend-1`)  
 > **Tiêu chuẩn áp dụng**: [AEGIS LIVING VISUAL DOCUMENTATION STANDARD (ALDS v1.0)](file:///docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)
 
 ---
@@ -144,4 +144,4 @@ export interface LessonSlice {
 | **2026-10-11 15:58** | `HEAD` | Xuất bản tài liệu chuẩn ALDS v1.0 và triển khai Explanation-to-Slice Transpiler Engine cho toàn bộ tri thức. | 5 Trụ Cột ALDS, Zero Hard-code, 100% Config-Driven. |
 
 ---
-*Tài liệu được bảo chứng bởi Kiến Trúc Sư Trưởng Hệ Sinh Thái AegisQuiz (No.1 Architect).*
+*Tài liệu được bảo chứng bởi Kiến Trúc Sư Trưởng Hệ Sinh Thái Aegis (No.1 Architect).*

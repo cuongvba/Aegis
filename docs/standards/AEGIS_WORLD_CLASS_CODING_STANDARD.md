@@ -1,9 +1,9 @@
-# AEGISQUIZ — WORLD-CLASS CODING STANDARD v1.0
+# AEGIS — WORLD-CLASS CODING STANDARD v1.0
 Nguyen Tac Lap Trinh Chuan Tac Hang Dau The Gioi
 
 **Soan thao boi:** No.1 — IT Architect, AI Specialist & Nha Kien Truc Phan Mem
 **Phien ban:** 1.0 · **Ngay:** 2026-09-17
-**Pham vi ap dung:** Toan bo codebase AegisQuiz (Backend C#/.NET 8 + Frontend React/TypeScript)
+**Pham vi ap dung:** Toan bo codebase Aegis (Backend C#/.NET 8 + Frontend React/TypeScript)
 
 ---
 
@@ -28,7 +28,7 @@ Nguyen Tac Lap Trinh Chuan Tac Hang Dau The Gioi
 
 No.1 la:
 > **Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist**  
-> *(Tong Cong Trinh Su & Chu Nhiem Kien Truc He Sinh Thai AegisQuiz)*
+> *(Tong Cong Trinh Su & Chu Nhiem Kien Truc He Sinh Thai Aegis)*
 
 Vai tro nay khong don thuan la "viet code" — ma la thiet ke he sinh thai phan mem song dong,
 co kha nang tu mo rong, tu thich nghi va ton tai ben vung qua nhieu the he ky thuat.
@@ -138,7 +138,7 @@ PHAI den tu DB hoac Config, khong bao gio cung trong code."
 
 ### 3.2 Phan Loai: Cai Gi Nen Dong?
 
-| Loai du lieu       | Nguon      | Vi du AegisQuiz                          |
+| Loai du lieu       | Nguon      | Vi du Aegis                          |
 |-------------------|------------|------------------------------------------|
 | Business Constants | DB Table   | Danh sach domain, loai cau hoi, kho      |
 | Feature Flags      | DB/Config  | Bat/tat AI Solver, bat Timer cau hoi     |
@@ -396,7 +396,7 @@ Tuyệt đối cấm viết các component "quái vật" (Monolithic God-Compone
 
 ### 6.6 Dynamic Question Micro-Widget Registry (Triệt Tiêu Switch-Case UI)
 
-Theo nguyên lý Open/Closed (OCP), tuyệt đối không dùng khối `switch(question.type)` hoặc `if-else` khổng lồ để render dạng câu hỏi trong [QuestionCard.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/quiz/QuestionCard.tsx). Toàn bộ 9 dạng câu hỏi phải được cấu hình qua Dynamic Registry:
+Theo nguyên lý Open/Closed (OCP), tuyệt đối không dùng khối `switch(question.type)` hoặc `if-else` khổng lồ để render dạng câu hỏi trong [QuestionCard.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/quiz/QuestionCard.tsx). Toàn bộ 9 dạng câu hỏi phải được cấu hình qua Dynamic Registry:
 
 ```typescript
 // widgets/quiz/QuestionWidgetRegistry.ts
@@ -674,7 +674,7 @@ var questions = await _db.Questions
 +------------------------------------------------------------------+
 ```
 
-*Tai lieu nay la nen tang kien truc bat bien cua AegisQuiz.*
+*Tai lieu nay la nen tang kien truc bat bien cua Aegis.*
 *Moi thanh vien team can doc va cam ket tuan thu truoc khi dong gop code vao production.*
 
 Phien ban tiep theo (v2.0): Event-Driven Architecture, CQRS day du, GraphQL Federation cho da tenant.

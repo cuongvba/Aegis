@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — TrustSection (Landing Page)
+ * Aegis — TrustSection (Landing Page)
  * ==========================================
  * Huy hiệu tin cậy — quan trọng nhất với nhóm khách Banking/Enterprise.
  * FSD Layer: pages/landing/components/

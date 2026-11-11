@@ -1,6 +1,6 @@
 /**
  * @file logger.ts
- * @description [World-Class] AegisQuiz Structured Frontend Logger
+ * @description [World-Class] Aegis Structured Frontend Logger
  *
  * Tính năng:
  * - Log levels: debug | info | warn | error
@@ -40,7 +40,7 @@ const MIN_LEVEL: LogLevel =
   import.meta.env.PROD ? 'warn' : 'debug';
 
 function formatMessage(entry: LogEntry): string {
-  return `${LEVEL_ICONS[entry.level]} [AegisQuiz:${entry.context}] ${entry.timestamp} — ${entry.message}`;
+  return `${LEVEL_ICONS[entry.level]} [Aegis:${entry.context}] ${entry.timestamp} — ${entry.message}`;
 }
 
 function shouldLog(level: LogLevel): boolean {
@@ -102,6 +102,6 @@ export function createLogger(context: string) {
 }
 
 /** Logger mặc định toàn cục cho những nơi không muốn tạo context riêng */
-export const logger = createLogger('AegisQuiz');
+export const logger = createLogger('Aegis');
 
 export default logger;

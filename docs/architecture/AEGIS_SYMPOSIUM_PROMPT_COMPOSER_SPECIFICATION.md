@@ -5,7 +5,7 @@
 
 > **Mã văn kiện**: `AEGIS-SYMPOSIUM-PROMPT-COMPOSER-SPEC-2026`  
 > **Chủ tọa Hội đồng**: No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
-> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Toàn Cầu AegisQuiz  
+> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Toàn Cầu Aegis  
 > **Trạng thái kiểm chứng**: **100% VERIFIED LIVE ON DOCKER PRODUCTION & POSTGRESQL**  
 > **Tài liệu liên quan**: [AEGIS_UNIVERSAL_EPISTEMIC_SYMPOSIUM_MASTER_PLAN.md](file:///docs/architecture/AEGIS_UNIVERSAL_EPISTEMIC_SYMPOSIUM_MASTER_PLAN.md)  
 > **Ngày phê duyệt & ban hành**: 05/10/2026  
@@ -144,12 +144,12 @@ Tất cả các thành phần kiến trúc đều được ánh xạ 1-1 với m
 
 | Hợp Đồng / Lớp | Vị Trí Mã Nguồn Sống | Trách Nhiệm Kỹ Thuật |
 | :--- | :--- | :--- |
-| **Interface** | [ISymposiumPromptComposer.cs](file:///Backend/src/AegisQuiz.Application/Interfaces/ISymposiumPromptComposer.cs) | Hợp đồng giao tiếp tầng Application: `ComposeSeatPromptAsync`, `ComposeArchitectPromptAsync`, `InvalidateCache` |
-| **Implementation** | [SymposiumPromptComposer.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs) | Hiện thực hóa bộ ghép 6 tầng, giải quyết placeholder, caching và fallback |
-| **Entity** | [SymposiumPromptTemplate.cs](file:///Backend/src/AegisQuiz.Domain/Entities/SymposiumPromptTemplate.cs) | Cấu trúc dữ liệu Entity EF Core lưu mẫu prompt |
-| **Context & Result** | [ISymposiumPromptComposer.cs#L24-L60](file:///Backend/src/AegisQuiz.Application/Interfaces/ISymposiumPromptComposer.cs#L24-L60) | DTO ngữ cảnh `PromptCompositionContext` và kết quả `ComposedSystemPrompt` |
-| **DI Registration** | [Program.cs#L141](file:///Backend/src/AegisQuiz.API/Program.cs#L141) | Đăng ký Singleton `ISymposiumPromptComposer` vào container |
-| **Caller Core** | [UniversalSymposiumEngine.cs#L137-L149](file:///Backend/src/AegisQuiz.Infrastructure/AI/UniversalSymposiumEngine.cs#L137-L149) | Nhạc trưởng điều phối triệu tập Prompt Composer cho từng turn |
+| **Interface** | [ISymposiumPromptComposer.cs](file:///Backend/src/Aegis.Application/Interfaces/ISymposiumPromptComposer.cs) | Hợp đồng giao tiếp tầng Application: `ComposeSeatPromptAsync`, `ComposeArchitectPromptAsync`, `InvalidateCache` |
+| **Implementation** | [SymposiumPromptComposer.cs](file:///Backend/src/Aegis.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs) | Hiện thực hóa bộ ghép 6 tầng, giải quyết placeholder, caching và fallback |
+| **Entity** | [SymposiumPromptTemplate.cs](file:///Backend/src/Aegis.Domain/Entities/SymposiumPromptTemplate.cs) | Cấu trúc dữ liệu Entity EF Core lưu mẫu prompt |
+| **Context & Result** | [ISymposiumPromptComposer.cs#L24-L60](file:///Backend/src/Aegis.Application/Interfaces/ISymposiumPromptComposer.cs#L24-L60) | DTO ngữ cảnh `PromptCompositionContext` và kết quả `ComposedSystemPrompt` |
+| **DI Registration** | [Program.cs#L141](file:///Backend/src/Aegis.API/Program.cs#L141) | Đăng ký Singleton `ISymposiumPromptComposer` vào container |
+| **Caller Core** | [UniversalSymposiumEngine.cs#L137-L149](file:///Backend/src/Aegis.Infrastructure/AI/UniversalSymposiumEngine.cs#L137-L149) | Nhạc trưởng điều phối triệu tập Prompt Composer cho từng turn |
 
 ### Hợp Đồng Phương Thức `ISymposiumPromptComposer`:
 ```csharp

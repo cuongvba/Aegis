@@ -166,7 +166,7 @@ export const VietQRPayOSSection: React.FC<VietQRPayOSSectionProps> = ({
             {/* Chủ tài khoản */}
             <div className="flex justify-between items-center p-2 rounded-lg bg-slate-800/40">
               <span className="text-slate-400">{t('vietqr.account_name')}:</span>
-              <span className="font-bold text-slate-200 uppercase">{accountName || 'AEGISQUIZ CORP'}</span>
+              <span className="font-bold text-slate-200 uppercase">{accountName || 'AEGIS GLOBAL CORP'}</span>
             </div>
 
             {/* Số tiền */}

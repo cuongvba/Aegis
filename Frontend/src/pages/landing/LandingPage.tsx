@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — LandingPage (Public Marketing Homepage)
+ * Aegis — LandingPage (Public Marketing Homepage)
  * ======================================================
  * Mặt tiền công khai duy nhất của hệ thống, KHÔNG yêu cầu đăng nhập.
  * Route: "/" (thay thế Dashboard — Dashboard đã chuyển sang "/dashboard").

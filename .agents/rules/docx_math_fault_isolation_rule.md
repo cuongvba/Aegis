@@ -1,7 +1,7 @@
 # QUY CHUẨN BẮT BUỘC: PHÂN LẬP & XỬ LÝ LỖI ĐỌC ĐỀ DOCX VÀ TOÁN HỌC (DOCX & MATH FAULT ISOLATION DIRECTIVE)
 
 > **Mã quy chuẩn**: `DOCX_MATH_FAULT_ISOLATION_RULE_v2026`  
-> **Phạm vi áp dụng**: Toàn bộ hệ thống AegisQuiz (Backend .NET 10, Frontend React 19/TS, Module Docx Parser, MathType WMF Engine, MathRenderer).  
+> **Phạm vi áp dụng**: Toàn bộ hệ thống Aegis (Backend .NET 10, Frontend React 19/TS, Module Docx Parser, MathType WMF Engine, MathRenderer).  
 > **Nguyên tắc tối thượng**: **KHI GẶP LỖI ĐỌC ĐỀ TỪ FILE DOCX HOẶC HIỂN THỊ CÔNG THỨC TOÁN, TUYỆT ĐỐI KHÔNG ĐƯỢC KIỂM TRA TOÀN BỘ HỆ THỐNG. BẮT BUỘC ĐỐI CHIẾU MA TRẬN PHÂN LẬP 1 BƯỚC ĐỂ CAN THIỆP ĐÚNG 1 ĐIỂM DUY NHẤT.**
 
 ---
@@ -24,7 +24,7 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
 * **Quy luật xử lý**: Lỗi thiếu ánh xạ mã byte nhị phân của font `Symbol` hoặc font `MT Extra` sang Unicode.
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Bổ sung 1 dòng JSON vào Registry (Zero-Code):**
-  [`Backend/src/AegisQuiz.Infrastructure/Config/math_dictionary_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/math_dictionary_registry.json)  
+  [`Backend/src/Aegis.Infrastructure/Config/math_dictionary_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/math_dictionary_registry.json)  
   *Tuyệt đối không sửa đổi thuật toán cốt lõi của Backend hay Frontend.*
 
 ---
@@ -35,7 +35,7 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
 * **Quy luật xử lý**: WMF chứa record metadata OLE/Escape (`0x0538 META_POLYPOLYGON` hoặc `0x0626 META_ESCAPE`) bị render nhầm thành hình học.
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Kiểm tra bộ lọc record WMF trong:**
-  [`Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs#L861-L865)
+  [`Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs#L861-L865)
 
 ---
 
@@ -48,7 +48,7 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
   - Giá trị `NaN` làm hỏng `viewBox` của SVG (`viewBox="... NaN ... NaN"`), khiến trình duyệt từ chối render và mất chiều cao hợp lệ.
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Kiểm tra chỉ số nhóm Capture Regex trong:**
-  [`Frontend/src/shared/lib/quiz/wmfDecoder.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/wmfDecoder.ts#L530-L545)
+  [`Frontend/src/shared/lib/quiz/wmfDecoder.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/wmfDecoder.ts#L530-L545)
 
 ---
 
@@ -59,7 +59,7 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
 * **Quy luật xử lý**: Sai lệch hệ số `vAlign` hoặc thiếu thuộc tính `inline-block`.
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Tinh chỉnh công thức tính vAlign trong:**
-  [`Frontend/src/components/common/MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx#L64)
+  [`Frontend/src/components/common/MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx#L64)
 
 ---
 
@@ -70,7 +70,7 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
 * **Quy luật xử lý**: Regex nhận diện mốc câu hỏi nuốt mất phần ký tự toán học.
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Cấu hình lại mẫu Regex trong:**
-  [`Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json)
+  [`Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json)
 
 ---
 
@@ -83,9 +83,9 @@ Khi nhận diện triệu chứng lỗi trực quan trên màn hình (View), k�
   - Phân tích và sinh mã KaTeX inline với nhận diện số mũ `^{...}`, chỉ số dưới `_{...}`, ánh xạ Symbol ($A'$, $\pm$, $\in$, $\le$, $\ge$, $\pi$, $\alpha$, $\beta$, $\Delta$).
 * **Điểm can thiệp DUY NHẤT**:
   👉 **Hàm `TryExtractSimpleMathText` trong:**
-  [`Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs)
+  [`Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs)
   👉 **Và nơi gọi tích hợp trong:**
-  [`Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L309)
+  [`Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs#L309)
 
 ---
 

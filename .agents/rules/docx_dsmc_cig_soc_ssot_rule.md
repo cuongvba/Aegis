@@ -2,14 +2,14 @@
 
 > **Mã quy chuẩn**: `AEGIS-RULE-INGEST-SOC-SSOT-2026`  
 > **Cấp độ pháp lý**: Tối cao — Bắt buộc tuân thủ 100% không ngoại lệ (Zero-Tolerance Architectural Directive)  
-> **Phạm vi áp dụng**: Mọi tác vụ đọc, sửa, thêm mới, bảo trì liên quan đến [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs), [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) và [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).  
-> **Tác giả phê chuẩn**: No.1 — Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz.
+> **Phạm vi áp dụng**: Mọi tác vụ đọc, sửa, thêm mới, bảo trì liên quan đến [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs), [DynamicQuestionIngestionEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) và [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).  
+> **Tác giả phê chuẩn**: No.1 — Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis.
 
 ---
 
 ## I. MÔ HÌNH RANH GIỚI TRÁCH NHIỆM TAM GIÁC VÀNG (THE GOLDEN TRIANGLE)
 
-Hệ thống bóc tách đề thi AegisQuiz tuân thủ nghiêm ngặt mô hình phân tách ranh giới 3 phân tầng. Tuyệt đối không để rò rỉ logic giữa các tầng:
+Hệ thống bóc tách đề thi Aegis tuân thủ nghiêm ngặt mô hình phân tách ranh giới 3 phân tầng. Tuyệt đối không để rò rỉ logic giữa các tầng:
 
 ```
                   ┌─────────────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ Khi can thiệp vào mã nguồn bóc tách đề thi, bất kỳ kỹ sư hoặ
    Mọi phương thức `public static` hiện có trên `DocxStateMachineClassifier` (như `ResolveQuestionBlockBottomUp`, `ExtractUppercaseOptionsFromLine`, `FinalizeQuestion`, `InferTopicFromContent`, v.v.) bắt buộc phải được giữ nguyên chữ ký và đóng vai trò **Facade mỏng (Thin Delegation)** ủy quyền sang `DynamicQuestionIngestionEngine` hoặc `UniversalCoordinateTaxonomyEngine`. Không được phép gây vỡ bất kỳ unit test, controller hay client nào đang gọi.
 
 5. **CẤM VƯỢT NGƯỠNG DUNG LƯỢNG MÃ NGUỒN CỦA DSMC:**
-   [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) sau cuộc cải tổ v4.0 được giới hạn tối đa **$\le 1,200$ dòng code**. Mọi hành vi làm phình to file này bằng việc nhồi nhét logic nghiệp vụ đều vi phạm quy chuẩn Skinny Orchestrator.
+   [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) sau cuộc cải tổ v4.0 được giới hạn tối đa **$\le 1,200$ dòng code**. Mọi hành vi làm phình to file này bằng việc nhồi nhét logic nghiệp vụ đều vi phạm quy chuẩn Skinny Orchestrator.
 
 ---
 
@@ -68,14 +68,14 @@ Trước khi viết bất kỳ dòng mã nào, hãy tra cứu bảng phân bổ 
 
 | Loại Nghiệp vụ / Thuật toán | Vị trí Độc tôn (SSoT File) | Ghi chú & Trách nhiệm |
 |---|---|---|
-| **Làm phẳng OpenXML & Header** | [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs) | `FlattenDocument`, `ProfileHeader`, `TryExtractExamCode`, `TryExtractDurationMinutes`, `SanitizeSubjectHeading`, `BuildExamCode`. |
-| **Quét ngược Bottom-Up** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `ResolveQuestionBlockBottomUp`, `TryExtractOptionsBottomUp`, `TryExtractUppercaseMultilineOptions`, `TryExtractTrueFalseOptions`. |
-| **Bóc tách Phương án & Đáp án** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `ExtractUppercaseOptionsFromLine`, `ExtractOptionsFromLine`, `TryExtractAnswer`, `NormalizeSectionKey`. |
-| **Nối Lời giải & Ý con (SubItems)** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `AppendExplanationLine`, `UpdateTrueFalseAnswer`, `AppendSubItemExplanation`. |
-| **Vòng đời & Gộp Câu hỏi (Merge)** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `FinalizeQuestion`, `FinalizeAndMergeQuestion`, `FindQuestionByHierarchy`, `GetEquivalentSections`. |
-| **5 Trục Tọa độ & Thẻ thông minh** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | `SniffCoordinates`, `AutoEnrichTaxonomyAndTags`, `EnrichExamTaxonomy`. |
-| **Suy luận Môn học & Lan tỏa Đề thi** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | `InferTopicFromContent`, `PropagateDominantTopic` ($\ge 40\%$). |
-| **Điều phối vòng lặp trạng thái FSM** | [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) | `ParseParagraphList`: Duyệt đoạn văn, chuyển đổi cờ trạng thái, gọi CIG Engine và Taxonomy Engine. |
+| **Làm phẳng OpenXML & Header** | [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs) | `FlattenDocument`, `ProfileHeader`, `TryExtractExamCode`, `TryExtractDurationMinutes`, `SanitizeSubjectHeading`, `BuildExamCode`. |
+| **Quét ngược Bottom-Up** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `ResolveQuestionBlockBottomUp`, `TryExtractOptionsBottomUp`, `TryExtractUppercaseMultilineOptions`, `TryExtractTrueFalseOptions`. |
+| **Bóc tách Phương án & Đáp án** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `ExtractUppercaseOptionsFromLine`, `ExtractOptionsFromLine`, `TryExtractAnswer`, `NormalizeSectionKey`. |
+| **Nối Lời giải & Ý con (SubItems)** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `AppendExplanationLine`, `UpdateTrueFalseAnswer`, `AppendSubItemExplanation`. |
+| **Vòng đời & Gộp Câu hỏi (Merge)** | [DynamicQuestionIngestionEngine.Extraction.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Extraction.cs) | `FinalizeQuestion`, `FinalizeAndMergeQuestion`, `FindQuestionByHierarchy`, `GetEquivalentSections`. |
+| **5 Trục Tọa độ & Thẻ thông minh** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | `SniffCoordinates`, `AutoEnrichTaxonomyAndTags`, `EnrichExamTaxonomy`. |
+| **Suy luận Môn học & Lan tỏa Đề thi** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | `InferTopicFromContent`, `PropagateDominantTopic` ($\ge 40\%$). |
+| **Điều phối vòng lặp trạng thái FSM** | [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) | `ParseParagraphList`: Duyệt đoạn văn, chuyển đổi cờ trạng thái, gọi CIG Engine và Taxonomy Engine. |
 
 ---
 

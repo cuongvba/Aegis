@@ -1,4 +1,4 @@
-# 🚀 BÁO CÁO CÁC ĐỘT PHÁ CÔNG NGHỆ & TÍNH NĂNG VƯỢT TRỘI GẦN ĐÂY CỦA AEGISQUIZ (2026 SUPREME INNOVATIONS)
+# 🚀 BÁO CÁO CÁC ĐỘT PHÁ CÔNG NGHỆ & TÍNH NĂNG VƯỢT TRỘI GẦN ĐÂY CỦA AEGIS (2026 SUPREME INNOVATIONS)
 
 **Tác giả & Kiến trúc sư trưởng:** No.1 — IT Architect, AI Specialist & Nhà Biên Soạn Kỹ Thuật Hàng Đầu Thế Giới  
 **Phiên bản:** 2026 Supreme Release · **Trạng thái:** Production Ready & Live trên Docker Containers ✅  
@@ -26,13 +26,13 @@
 
 ## 1. TỔNG QUAN CÁC BƯỚC NHẢY VỌT CÔNG NGHỆ GẦN ĐÂY
 
-Trong chuỗi nâng cấp mới nhất, nền tảng **AegisQuiz** đã giải quyết triệt để các bài toán hóc búa nhất về trải nghiệm người dùng, độ chính xác của dữ liệu và kiến trúc cơ sở dữ liệu:
+Trong chuỗi nâng cấp mới nhất, nền tảng **Aegis** đã giải quyết triệt để các bài toán hóc búa nhất về trải nghiệm người dùng, độ chính xác của dữ liệu và kiến trúc cơ sở dữ liệu:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                   8 ĐỘT PHÁ CÔNG NGHỆ TỐI THƯỢNG CỦA AEGISQUIZ (2026 EDITION)                    │
+│                   8 ĐỘT PHÁ CÔNG NGHỆ TỐI THƯỢNG CỦA AEGIS (2026 EDITION)                    │
 ├──────────────────────────┬───────────────────────────────────────┬───────────────────────────────┤
-│ Đột Phá                  │ Điểm Nghẽn Truyền Thống Cũ            │ Bước Nhảy Vọt Của AegisQuiz    │
+│ Đột Phá                  │ Điểm Nghẽn Truyền Thống Cũ            │ Bước Nhảy Vọt Của Aegis    │
 ├──────────────────────────┼───────────────────────────────────────┼───────────────────────────────┤
 │ 1. Nhận thức tọa độ file │ Phải mở modal gõ tay 5 trục tọa độ   │ Tự động bóc tách từ biểu ngữ  │
 │ 2. Bảo toàn đáp án Admin │ Xáo trộn bừa bãi làm lệch đáp án gốc │ Giữ nguyên 100% thứ tự A,B,C,D│
@@ -57,7 +57,7 @@ Khi người dùng tải lên các tài liệu ngân hàng, y tế hay tổ ch�
 Các hệ thống truyền thống chỉ đọc từ hàng tiêu đề cột trở đi và hoàn toàn "mù" trước thông tin quý giá này.
 
 ### 2.2. Kiến Trúc UniversalCoordinateTaxonomyEngine
-AegisQuiz xây dựng động cơ bóc tách biểu ngữ thông minh tại tầng Infrastructure:
+Aegis xây dựng động cơ bóc tách biểu ngữ thông minh tại tầng Infrastructure:
 1. **Quét trước Header**: Thu thập toàn bộ các hàng từ dòng `0` tới trước dòng nhận diện tiêu đề cột (`colMap.HeaderRowIndex`).
 2. **Regex Nhận Thức Tiếng Việt Siêu Chuẩn**:
    - `VỊ TRÍ: TÍN DỤNG KHÁCH HÀNG DOANH NGHIỆP` ➔ Trích xuất `TargetLevel = "Tín dụng Khách hàng Doanh nghiệp"`.
@@ -83,7 +83,7 @@ AegisQuiz xây dựng động cơ bóc tách biểu ngữ thông minh tại tầ
   2. Việc chỉnh sửa, kiểm duyệt đáp án trở nên hỗn loạn vì vị trí hiển thị không khớp với tài liệu ban hành.
 
 ### 3.2. Giải Pháp "Phân Định Nhận Thức" (Decoupled Option Shuffler Architecture)
-AegisQuiz phân định ranh giới rạch ròi 100%:
+Aegis phân định ranh giới rạch ròi 100%:
 - **Tại Vùng Quản Trị & Biên Tập (Admin Workspace & File Ingestion)**:
   - **TUYỆT ĐỐI BẢO TOÀN 100%** thứ tự ban đầu của các phương án (A, B, C, D) đúng như trong file gốc của người dùng.
   - Loại bỏ hoàn toàn việc gọi `ShuffleOptions` trong API lấy danh sách quản trị (`GetQuestions`), API import Excel (`ExcelParserService`) và API import Docx.
@@ -116,18 +116,18 @@ AegisQuiz phân định ranh giới rạch ròi 100%:
 
 ## 5. ĐỘT PHÁ 4: BỘ ĐÔI MODAL TỰ ĐỘNG ĐIỀN & NÚT 1-CLICK "⚡ NHẬN DIỆN TỰ ĐỘNG AI"
 
-### 5.1. Nâng Cấp Modal "Gán Thẻ & Tọa Độ Đa Ngành Hàng Loạt" ([DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx))
+### 5.1. Nâng Cấp Modal "Gán Thẻ & Tọa Độ Đa Ngành Hàng Loạt" ([DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx))
 - **Tự Động Điền Sẵn (Auto Pre-populate)**: Người dùng vừa import file xong, mở modal lên là toàn bộ 5 trục tọa độ và thẻ thông minh **đã có sẵn thông tin đầy đủ và chính xác**, không còn bị rỗng như trước.
 - **Nút "⚡ Nhận diện tự động AI"**: Đặt ngay cạnh nút đóng modal với hiệu ứng gradient tím-hồng lấp lánh. Khi bấm vào, thuật toán lập tức tái quét toàn bộ mẫu câu hỏi và tiêu đề để làm mới tọa độ.
 - **Banner Trạng Thái "✓ AI Ready"**: Hiển thị dòng tóm tắt thông minh ngay đầu modal:
   `Nhận diện tự động từ tiêu đề: Tín dụng Khách hàng Doanh nghiệp • Kiểm tra chuyên môn định kỳ Đợt 2 (2026)`.
 - **Nút "Auto AI" Trên Toolbar**: 1 click áp dụng đồng loạt cho toàn bộ danh sách hàng trăm câu hỏi đang duyệt.
 
-### 5.2. Nâng Cấp Modal Gán Thẻ Danh Sách Câu Hỏi ([BatchTagModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/BatchTagModal.tsx))
+### 5.2. Nâng Cấp Modal Gán Thẻ Danh Sách Câu Hỏi ([BatchTagModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/BatchTagModal.tsx))
 - Bổ sung nút **"⚡ Nhận diện tự động AI"** kết nối trực tiếp với endpoint backend `POST api/quiz/questions/auto-sniff-coordinates`.
 - Bổ sung trường dữ liệu `Chuẩn mực / Văn bản quy chiếu (BenchmarkStandard)`.
 
-### 5.3. Nâng Cấp Modal Xem Trước Excel ([index.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/index.tsx))
+### 5.3. Nâng Cấp Modal Xem Trước Excel ([index.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/index.tsx))
 - Tích hợp Card tóm tắt **"Hệ Tọa Độ Tri Thức Nhận Diện Tự Động Từ Tiêu Đề File"** hiển thị rõ ràng Vị trí, Mục đích, Đơn vị, Năm và dải Thẻ nghiệp vụ trước khi người dùng nhấn Xác nhận nhập.
 
 ---
@@ -135,7 +135,7 @@ AegisQuiz phân định ranh giới rạch ròi 100%:
 ## 6. ĐỘT PHÁ 5: LƯU TRỮ ĐA HÌNH JSONB PAYLOAD, CHỈ MỤC GIN SIÊU TỐC & DOCKER PIPELINE
 
 ### 6.1. Thiết Kế Bền Vững Đa Hình
-- Thay vì phải tạo thêm hàng chục cột CSDL mỗi khi có một trục tọa độ mới, AegisQuiz sử dụng thuộc tính `Payload` dạng `JsonDocument` trên PostgreSQL:
+- Thay vì phải tạo thêm hàng chục cột CSDL mỗi khi có một trục tọa độ mới, Aegis sử dụng thuộc tính `Payload` dạng `JsonDocument` trên PostgreSQL:
   ```json
   {
     "targetLevel": "Tín dụng Khách hàng Doanh nghiệp",
@@ -228,7 +228,7 @@ Khảo thí trực tuyến truyền thống thường rơi vào 2 cực đoan:
 1. **Một người dùng có nhiều vai trò ở các đơn vị khác nhau:** Một chuyên gia đào tạo vừa là Trưởng ban ra đề thi tại Hội sở (`TeamLeader`), vừa là học viên thi chứng chỉ tại Chi nhánh (`Learner`). Các hệ thống thông thường chỉ gắn 1 vai trò phẳng (Flat RBAC), dẫn tới xung đột đặc quyền hoặc phải lập nhiều tài khoản rườm rà.
 2. **Nguy cơ an ninh khi cấp phát mật khẩu mới:** Quản trị viên hay gửi mật khẩu qua Zalo, Email dạng văn bản thô (Cleartext), vi phạm nghiêm trọng NIST SP 800-63B và ISO 27001. Thêm vào đó, nếu không có cơ chế chống User Enumeration, tin tặc có thể quét dò danh sách cán bộ qua form quên mật khẩu.
 
-### 9.2. Giải Pháp Đột Phá Toàn Diện Của AegisQuiz
+### 9.2. Giải Pháp Đột Phá Toàn Diện Của Aegis
 1. **Mô Hình Scoped RBAC Đa Tầng & B2B Federation:**
    - Hỗ trợ quan hệ thực thể `UserRole = (UserId, TenantId, OrgUnitId, Role)`: Cho phép tài khoản đồng thời mang nhiều vai trò theo từng cây đơn vị (OrgUnit) và chuyển đổi ngữ cảnh làm việc tức thì.
    - Hỗ trợ liên minh định danh B2B: 1 tài khoản đăng nhập có thể được ủy nhiệm vào nhiều Tenant khác nhau trong hệ sinh thái Dehoc.
@@ -315,7 +315,7 @@ Khảo thí trực tuyến truyền thống thường rơi vào 2 cực đoan:
    - Tự động vinh danh danh hiệu (`☕ Người Gieo Mầm Tri Thức`, `🍰 Người Tiếp Lửa Thầm Lặng`, `🌟 Nhà Bảo Trợ Vàng`).
    - Cấp mã Voucher độc bản tự động (`AEGIS-THANKS-xxxx`).
    - Giao diện Admin `/admin/payments` (Tab "Nhà Tài Trợ & Tri Ân") hiển thị thống kê tổng quỹ, danh sách nhà hảo tâm và 1-click **Sao chép email gửi Tri ân**.
-   - Chi tiết hồ sơ nghiệm thu thực chiến: [GLOBAL_PAYMENT_AND_COMMUNITY_GRATITUDE_ENGINE.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/modules/GLOBAL_PAYMENT_AND_COMMUNITY_GRATITUDE_ENGINE.md).
+   - Chi tiết hồ sơ nghiệm thu thực chiến: [GLOBAL_PAYMENT_AND_COMMUNITY_GRATITUDE_ENGINE.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/modules/GLOBAL_PAYMENT_AND_COMMUNITY_GRATITUDE_ENGINE.md).
 
 ---
 
@@ -377,7 +377,7 @@ ightarrow$ `SINGLE`.
 
 ---
 
-> 🌟 **Lời kết:** Với những đột phá mang tính bản lề nói trên, AegisQuiz không chỉ hoàn thiện về mặt công nghệ mà còn nâng tầm trải nghiệm của người dùng lên mức vượt trội, thông minh và tinh tế nhất theo đúng triết lý của Nhà kiến tạo No.1 thế giới!
+> 🌟 **Lời kết:** Với những đột phá mang tính bản lề nói trên, Aegis không chỉ hoàn thiện về mặt công nghệ mà còn nâng tầm trải nghiệm của người dùng lên mức vượt trội, thông minh và tinh tế nhất theo đúng triết lý của Nhà kiến tạo No.1 thế giới!
 
 
 
@@ -386,16 +386,16 @@ ightarrow$ `SINGLE`.
 ## 15. ĐỘT PHÁ CẢNH GIỚI 8: ĐẶC TẢ KIẾN TRÚC BÓC TÁCH TOÀN TRÌNH WORD (.DOCX) ĐẠT CHUẨN ALDS v1.0
 
 Để phục vụ công tác thanh kiểm tra, chuyển giao công nghệ và nghiệm thu cấp quốc gia/toàn cầu, toàn bộ chu trình sống 7 giai đoạn của quá trình nạp đề thi từ tệp Word (.docx) đến cơ sở dữ liệu PostgreSQL đã được đóng gói thành hồ sơ kiến trúc sống:
-👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
-👉 **[AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md)**
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+👉 **[AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/architecture/AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md)**
 
 ### Tóm tắt 7 Giai đoạn Độc lập (Decoupled 7-Stage Architecture):
-1. **Giai đoạn 1 (Client Ingestion & Validation)**: Tiếp nhận tệp tin, kiểm tra MIME OpenXML, đóng gói cờ AI Autopilot tại [DocxCigRulesPanel.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx).
-2. **Giai đoạn 2 (Tenant Scoping & Domain Context)**: Phân giải định danh đa khách thuê và nạp cấu hình bộ quy tắc CIG tại [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs).
-3. **Giai đoạn 3 (OOXML Decompress & Media/Math Transformation)**: Giải nén gói zip, bóc tách word/media/, giải mã vector MathType WMF/OLE và OMML sang KaTeX LaTeX bởi [MathTypeWmfEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs).
-4. **Giai đoạn 4 (DSMC Finite State Machine & Scope Manager)**: Máy trạng thái hạn định Skinny Orchestrator [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) kết hợp CognitiveScopeManager tạo chỉ số tọa độ phân cấp $	ext{HierarchyIndex} = E\_P\_S\_D$ và kích hoạt Explanation Boundary Guard.
-5. **Giai đoạn 5 (CIG Engine & 8-Priority QuestionType Inference)**: Suy luận loại câu hỏi theo 8 tầng ưu tiên từ chỉ thị nhóm (SINGLE, MULTI_TRUE_FALSE, SHORT_ANSWER,...) tại [DynamicQuestionIngestionEngine.Classification.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs).
-6. **Giai đoạn 6 (Cognitive Deduplication & Preview State)**: Tính toán mã băm SHA-256 Canonical Hash, đánh dấu trùng lặp và ghi nhận xuất xứ _provenance bởi [ExamDeduplicationEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs).
+1. **Giai đoạn 1 (Client Ingestion & Validation)**: Tiếp nhận tệp tin, kiểm tra MIME OpenXML, đóng gói cờ AI Autopilot tại [DocxCigRulesPanel.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx).
+2. **Giai đoạn 2 (Tenant Scoping & Domain Context)**: Phân giải định danh đa khách thuê và nạp cấu hình bộ quy tắc CIG tại [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs).
+3. **Giai đoạn 3 (OOXML Decompress & Media/Math Transformation)**: Giải nén gói zip, bóc tách word/media/, giải mã vector MathType WMF/OLE và OMML sang KaTeX LaTeX bởi [MathTypeWmfEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs).
+4. **Giai đoạn 4 (DSMC Finite State Machine & Scope Manager)**: Máy trạng thái hạn định Skinny Orchestrator [DocxStateMachineClassifier.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) kết hợp CognitiveScopeManager tạo chỉ số tọa độ phân cấp $	ext{HierarchyIndex} = E\_P\_S\_D$ và kích hoạt Explanation Boundary Guard.
+5. **Giai đoạn 5 (CIG Engine & 8-Priority QuestionType Inference)**: Suy luận loại câu hỏi theo 8 tầng ưu tiên từ chỉ thị nhóm (SINGLE, MULTI_TRUE_FALSE, SHORT_ANSWER,...) tại [DynamicQuestionIngestionEngine.Classification.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs).
+6. **Giai đoạn 6 (Cognitive Deduplication & Preview State)**: Tính toán mã băm SHA-256 Canonical Hash, đánh dấu trùng lặp và ghi nhận xuất xứ _provenance bởi [ExamDeduplicationEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs).
 7. **Giai đoạn 7 (ACID Transaction & PostgreSQL JSONB Storage)**: Giao dịch nguyên tử, lưu ngữ cảnh dùng chung QuestionContext duy nhất một lần, đồng bộ cây chủ đề MaterializedPath và lưu bản ghi JSONB đa hình 27 trường.
 
 
@@ -427,7 +427,7 @@ Nâng cấp `CognitiveScopeManager.ParseRankNumber` hỗ trợ toàn diện:
 - Đảm bảo tuân thủ 100% Quy luật 1 của AGENTS.md (Zero Hard-code & 100% Config-Driven).
 
 ### 16.5. Bằng Chứng Kiểm Thử Định Lượng
-- Thực thi 20/20 Scoped Unit Tests tại [`AdaptiveHierarchyIngestionTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/AdaptiveHierarchyIngestionTests.cs) (100% Green).
+- Thực thi 20/20 Scoped Unit Tests tại [`AdaptiveHierarchyIngestionTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/AdaptiveHierarchyIngestionTests.cs) (100% Green).
 - Toàn bộ các kịch bản $H(x, 0, 0, 0)$, $H(x, 0, 0, d)$, $H(x, p, 0, 0)$ và $H(x, p, s, d)$ vận hành hoàn hảo với độ trễ $< 80$ms.
 
 
@@ -440,8 +440,8 @@ Tệp `DocumentStructureDictionaryDtos.cs` trước đây chứa đồng thời 
 
 ### 17.2. Giải Pháp Triển Khai
 Hệ thống thiết lập lớp nhà máy hạt giống chuyên biệt:
-- **Tạo mới [`DocumentStructureSeedFactory.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Services/DocumentStructureSeedFactory.cs):** Đóng gói toàn bộ các mẫu Regex mặc định cho Phân đoạn (`SectionMarkers`), Pha lời giải (`SolutionPhaseMarkers`), Bảng đáp án (`AnswerPhaseMarkers`), Chỉ thị dạng câu (`ScopeDirectiveMarkers`), Biên giới đề (`ExamBoundaryMarkers`), Quy tắc quốc gia (`SovereignRules`) và Hạt nhân phổ quát (`UniversalCore`).
-- **Chuẩn hóa [`DocumentStructureDictionaryDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs):** Trở về bản chất Pure POCO DTO với các thuộc tính sạch sẽ. Đồng thời duy trì các **Static Forwarders** ủy nhiệm sang `DocumentStructureSeedFactory`, đảm bảo **100% Zero Breaking Changes** đối với mọi mã nguồn gọi và bài kiểm thử unit tests hiện hữu.
+- **Tạo mới [`DocumentStructureSeedFactory.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Services/DocumentStructureSeedFactory.cs):** Đóng gói toàn bộ các mẫu Regex mặc định cho Phân đoạn (`SectionMarkers`), Pha lời giải (`SolutionPhaseMarkers`), Bảng đáp án (`AnswerPhaseMarkers`), Chỉ thị dạng câu (`ScopeDirectiveMarkers`), Biên giới đề (`ExamBoundaryMarkers`), Quy tắc quốc gia (`SovereignRules`) và Hạt nhân phổ quát (`UniversalCore`).
+- **Chuẩn hóa [`DocumentStructureDictionaryDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs):** Trở về bản chất Pure POCO DTO với các thuộc tính sạch sẽ. Đồng thời duy trì các **Static Forwarders** ủy nhiệm sang `DocumentStructureSeedFactory`, đảm bảo **100% Zero Breaking Changes** đối với mọi mã nguồn gọi và bài kiểm thử unit tests hiện hữu.
 
 ### 17.3. Bằng Chứng Thực Nghiệm
 - **Biên dịch:** `dotnet build` đạt kết quả `0 Error(s)`.
@@ -460,29 +460,29 @@ Hệ thống thiết lập lớp nhà máy hạt giống chuyên biệt:
 
 ### 18.2. Giải Pháp Kháng Rò Rỉ DOM (Zero-DOM-Leak Pipeline)
 Hệ thống thiết lập cơ chế bảo vệ 3 tầng hợp nhất:
-1. **OpenXML Run-level Guard**: Tại [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L378), chèn ký tự ẩn Zero-Width Space `\u200B` trước các thẻ code (`<ol>`, `<li>`, `<h1>`, `<style>`, `<u>`, `<mark>`, `<b>`) để cô lập tuyệt đối khỏi các thuộc tính Run formatting của Word OpenXML (`underlined`, `highlighted`).
-2. **State Machine Boundary Isolation**: Tại [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L231,L475), thay thế regex quét mở rộng bằng regex khoanh vùng chặt chẽ `^<(?:u|mark|b|i|strong|em)>`, loại bỏ hoàn toàn việc nhận nhầm các dòng code Tin học thành dòng đáp án hoặc phân đoạn.
-3. **Four-Phase Tokenized Safe Escaping**: Tại [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx#L162-L235):
+1. **OpenXML Run-level Guard**: Tại [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs#L378), chèn ký tự ẩn Zero-Width Space `\u200B` trước các thẻ code (`<ol>`, `<li>`, `<h1>`, `<style>`, `<u>`, `<mark>`, `<b>`) để cô lập tuyệt đối khỏi các thuộc tính Run formatting của Word OpenXML (`underlined`, `highlighted`).
+2. **State Machine Boundary Isolation**: Tại [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L231,L475), thay thế regex quét mở rộng bằng regex khoanh vùng chặt chẽ `^<(?:u|mark|b|i|strong|em)>`, loại bỏ hoàn toàn việc nhận nhầm các dòng code Tin học thành dòng đáp án hoặc phân đoạn.
+3. **Four-Phase Tokenized Safe Escaping**: Tại [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx#L162-L235):
    - **Pha 1**: Token hóa và bảo vệ công thức toán LaTeX Block (`$$...$$`) và Inline (`$...$`), các cấu trúc KaTeX phức hợp (`\displaystyle`), bảng Markdown và Media Tokens.
    - **Pha 2**: Token hóa định dạng gạch chân thật `<u>...</u>`, tô sáng `<mark>...</mark>`, và khối code `` `code` ``.
    - **Pha 3**: Escape an toàn toàn bộ ký tự `<` thành `&lt;` và `>` thành `&gt;`, đồng thời loại bỏ sạch sẽ ký tự `\u200B`.
    - **Pha 4**: Phục hồi tokens, bảo đảm các đoạn mã HTML/CSS trong câu hỏi Tin học được hiển thị nguyên vẹn 100%, sắc nét và an toàn tuyệt đối.
 
 ### 18.3. Động Cơ Ánh Xạ Tri Thức Cộng Đồng (Community Knowledge Mapping Engine)
-- **Kiến trúc Endpoint**: Bổ sung `POST api/quiz/topics/{id}/contribute-community` tại [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs#L1242).
+- **Kiến trúc Endpoint**: Bổ sung `POST api/quiz/topics/{id}/contribute-community` tại [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs#L1242).
 - **Tự động sinh phả hệ**:
   - Gốc cộng đồng: `COMMUNITY` (`/COMMUNITY/`, `Scope = COMMUNITY`, `VisibilityScope = PUBLIC`).
   - Nhánh cộng đồng: `COM_{sourceTopic.Code}` (`/COMMUNITY/COM_{sourceTopic.Code}/`, `ParentId = communityRoot.Id`).
 - **Liên kết đa chiều (N - M Mapping)**:
-  - Sử dụng [`ExamDeduplicationEngine.cs:AssociateTopicToQuestion()`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs#L380) để ánh xạ mã `COM_...` vào mảng `Tags` (`#topic:COM_...`) và `Payload.linkedTopicCodes` (JSONB).
+  - Sử dụng [`ExamDeduplicationEngine.cs:AssociateTopicToQuestion()`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs#L380) để ánh xạ mã `COM_...` vào mảng `Tags` (`#topic:COM_...`) và `Payload.linkedTopicCodes` (JSONB).
   - Tái cấp phát `List<string>` mới cho `question.Tags` để ChangeTracker của EF Core / Npgsql phát hiện biến động mảng PostgreSQL 100%.
 - **Chủ quyền kép**: Giáo viên gốc bảo toàn 100% quyền sở hữu tác giả (`CreatedByUserId`), trong khi học sinh toàn cầu có thể truy vấn và luyện thi theo cả hai cây thư mục.
 
 ### 18.4. Thanh Điều Khiển Nổi & Nút Hủy Bỏ Tức Thì (Instant Cancel UX)
-- Tại [`ZenPaginationBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenPaginationBar.tsx#L167): Bổ sung nút **"Hủy Bỏ"** (`Cancel`) với icon `X` đỏ dịu ngay sau nút "Kích Hoạt Đấu Trường".
-- Tại [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx#L87): Kết nối `onCancel={onReset}`, lập tức dọn dẹp bộ đệm câu hỏi và trả về màn hình kéo thả file sạch sẽ chỉ với 1 chạm.
+- Tại [`ZenPaginationBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenPaginationBar.tsx#L167): Bổ sung nút **"Hủy Bỏ"** (`Cancel`) với icon `X` đỏ dịu ngay sau nút "Kích Hoạt Đấu Trường".
+- Tại [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx#L87): Kết nối `onCancel={onReset}`, lập tức dọn dẹp bộ đệm câu hỏi và trả về màn hình kéo thả file sạch sẽ chỉ với 1 chạm.
 
 ### 18.5. Bằng Chứng Thực Nghiệm & Scoped Verification
-- **Unit Tests Scoped**: 15/15 bài kiểm thử kiến trúc tại [`DocxStateMachineClassifierArchitectureTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/DocxStateMachineClassifierArchitectureTests.cs) đạt **100% Green** (Duration: 2s).
+- **Unit Tests Scoped**: 15/15 bài kiểm thử kiến trúc tại [`DocxStateMachineClassifierArchitectureTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/DocxStateMachineClassifierArchitectureTests.cs) đạt **100% Green** (Duration: 2s).
 - **Frontend Build**: `npm run build` hoàn thành trong 2.95s với **0 lỗi TypeScript**.
 - **Docker Deployment**: Đã triển khai và xác nhận hoạt động trên container `aegis-backend` và `aegis-frontend`.

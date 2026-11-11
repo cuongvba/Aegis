@@ -18,7 +18,7 @@ Trong các hệ thống AI truyền thống, việc gọi mô hình ngôn ngữ 
 2. **Chi phí token bùng nổ** do thiếu tối ưu hóa Pareto giữa năng lực và giá thành.
 3. **Vi phạm nguyên lý OCP**: Mỗi lần thêm một mô hình hoặc một nhà cung cấp mới, hệ thống phải sửa code, viết lại adapter và redeploy toàn bộ.
 
-Để giải quyết triệt để vấn đề này, AegisQuiz kiến tạo **Hệ Ba Ngôi Nhận Thức (Aegis Epistemic Triad)**:
+Để giải quyết triệt để vấn đề này, Aegis kiến tạo **Hệ Ba Ngôi Nhận Thức (Aegis Epistemic Triad)**:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
@@ -185,10 +185,10 @@ Nếu WPSE không kế thừa UAR mà tự xây dựng pipeline riêng (như tì
 ## IV. BẢN THIẾT KẾ MÃ NGUỒN XÁC MINH (LIVE CODE CONTRACTS)
 
 ### 1. Hạt Nhân `IUniversalAiRouter.cs` Mở Rộng
-Vị trí: [`IUniversalAiRouter.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IUniversalAiRouter.cs)
+Vị trí: [`IUniversalAiRouter.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IUniversalAiRouter.cs)
 
 ```csharp
-namespace AegisQuiz.Application.Interfaces
+namespace Aegis.Application.Interfaces
 {
     public interface IUniversalAiRouter
     {
@@ -230,7 +230,7 @@ namespace AegisQuiz.Application.Interfaces
 ```
 
 ### 2. Tinh Giản `WolfPackSwarmEngine.cs` — Nhạc Trưởng Thuần Khiết
-Vị trí: [`WolfPackSwarmEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/AI/WolfPackSwarmEngine.cs)
+Vị trí: [`WolfPackSwarmEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/AI/WolfPackSwarmEngine.cs)
 
 * **Trước nâng cấp**: WPSE trực tiếp ôm `IModelProtocolDriver`, gọi HTTP client, decrypt key, switch-case URL.
 * **Sau nâng cấp**: WPSE chỉ cần inject `IUniversalAiRouter` và tập trung toàn lực vào:
@@ -285,4 +285,4 @@ Vị trí: [`WolfPackSwarmEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Bac
 | `v3.0` | 2026-10-07 | **No.1 — Supreme Architect** | **Tái cấu trúc toàn diện OCP: Hạt nhân hóa UAR, WPSE kế thừa UAR, Triệt tiêu 100% hardcode static presets, Tự động phân vai Viện Phản Biện.** | **100% Verified (0 Errors, E2E Tested)** |
 
 ---
-*Tài liệu này được lưu trữ vĩnh viễn tại `docs/architecture/AEGIS_EPITEMIC_TRIAD_UAR_WPSE_COUNCILS_SPECIFICATION.md` và là kim chỉ nam bắt buộc cho mọi sửa đổi liên quan đến hạ tầng AI của AegisQuiz.*
+*Tài liệu này được lưu trữ vĩnh viễn tại `docs/architecture/AEGIS_EPITEMIC_TRIAD_UAR_WPSE_COUNCILS_SPECIFICATION.md` và là kim chỉ nam bắt buộc cho mọi sửa đổi liên quan đến hạ tầng AI của Aegis.*

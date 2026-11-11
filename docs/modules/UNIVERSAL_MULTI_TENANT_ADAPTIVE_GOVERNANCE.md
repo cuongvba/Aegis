@@ -1,4 +1,4 @@
-# AEGISQUIZ UNIVERSAL MULTI-TENANT & ADAPTIVE GOVERNANCE ARCHITECTURE
+# AEGIS UNIVERSAL MULTI-TENANT & ADAPTIVE GOVERNANCE ARCHITECTURE
 ## Kiến Trúc Quản Trị Đa Khách Thuê Tùy Biến Đa Tầng Từ Cá Nhân Đến Tập Đoàn Toàn Cầu
 
 > **Phiên bản:** 3.0 Enterprise Core  
@@ -9,7 +9,7 @@
 
 ## 1. TỔNG QUAN CHIẾN LƯỢC
 
-Hệ thống **AegisQuiz** định vị phục vụ đồng thời cho các đối tượng khách hàng có quy mô và cấu trúc tổ chức hoàn toàn khác biệt:
+Hệ thống **Aegis** định vị phục vụ đồng thời cho các đối tượng khách hàng có quy mô và cấu trúc tổ chức hoàn toàn khác biệt:
 - **Cá nhân (Nano / 1 User):** Giảng viên, gia sư, chuyên gia khảo thí độc lập, người tự học.
 - **Nhóm (Micro / 2-15 Users):** Tổ bộ môn, nhóm nghiên cứu, squad phát triển dự án.
 - **Lớp học (Meso-Edu / 15-100 Users):** Lớp phổ thông, lớp giảng đường đại học, khóa đào tạo ngắn hạn.
@@ -30,7 +30,7 @@ Hệ thống **AegisQuiz** định vị phục vụ đồng thời cho các đ�
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        AEGISQUIZ SPECTRUM OF SCALE ARCHITECTURE                         │
+│                        AEGIS SPECTRUM OF SCALE ARCHITECTURE                         │
 ├──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬─────────────┤
 │ 1. CÁ NHÂN   │ 2. NHÓM      │ 3. LỚP HỌC   │ 4. TRƯỜNG/SME│ 5. TẬP ĐOÀN  │ 6. TOÀN CẦU │
 │ (Individual) │ (Squad/Team) │ (Classroom)  │ (School/SME) │ (Enterprise) │ (Global)    │
@@ -155,7 +155,7 @@ Hệ thống tích hợp các Agent AI vận hành tự trị tương ứng vớ
 
 ## 7. KẾT LUẬN & GIÁ TRỊ VƯỢT TRỘI
 
-Thiết kế này biến AegisQuiz từ một phần mềm thi trắc nghiệm đơn thuần trở thành **Nền tảng Quản trị Đánh giá Năng lực Toàn cầu (Global Assessment & Competency Operating System)**:
+Thiết kế này biến Aegis từ một phần mềm thi trắc nghiệm đơn thuần trở thành **Nền tảng Quản trị Đánh giá Năng lực Toàn cầu (Global Assessment & Competency Operating System)**:
 - Không gây quá tải cho người dùng cá nhân (Zero learning curve).
 - Đáp ứng hoàn hảo các yêu cầu bảo mật, phân quyền và dữ liệu cô lập của các Định chế Tài chính hàng đầu và Tập đoàn toàn cầu.
 - Thích ứng tương lai với kiến trúc Agent tự hành và Đồ thị tri thức ngành động.

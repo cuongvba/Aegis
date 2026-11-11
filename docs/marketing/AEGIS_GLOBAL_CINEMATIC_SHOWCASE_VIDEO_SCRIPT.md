@@ -49,9 +49,9 @@ flowchart LR
 
 ### PHÂN CẢNH 2: TAM GIÁC VÀNG BÓC TÁCH ĐỀ THI 0MS (0:15 – 0:33)
 * **Hình ảnh (Visuals):** Đồ họa 3 đỉnh của Tam Giác Vàng phát sáng rực rỡ:
-  1. [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) (Skinny State Orchestrator $\le 1,200$ LOC).
-  2. [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) (CIG 4-Specs SSoT).
-  3. [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) (5 Trục tọa độ trực giao & 3 Lăng kính xoay Pivot $O(1)$).
+  1. [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) (Skinny State Orchestrator $\le 1,200$ LOC).
+  2. [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs) (CIG 4-Specs SSoT).
+  3. [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) (5 Trục tọa độ trực giao & 3 Lăng kính xoay Pivot $O(1)$).
 * **Chữ trên màn hình:**  
   `TAM GIÁC VÀNG BÓC TÁCH 0MS`  
   *Skinny Orchestrator • CIG Grammar • 5 Trục Tọa Độ UCTE*

@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — NavMenu Widget
+ * Aegis — NavMenu Widget
  * ===========================
  * Desktop navigation menu — tách từ MainLayout.tsx.
  * FSD Layer: widgets/app-header/

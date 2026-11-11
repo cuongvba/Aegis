@@ -69,7 +69,7 @@ const enDict: Dictionary = {
   noQuestionForSetup: 'No questions found for the selected setup.',
   loadingQuiz: 'Loading quiz experience...',
   unableLoadBank: 'Unable to load question bank',
-  verifyApi: 'Please verify AegisQuiz API or try mock fallback.',
+  verifyApi: 'Please verify Aegis API or try mock fallback.',
   retry: 'Retry',
   submitAttempt: 'Submit Attempt',
   confirmSubmitBeforeTimeUp: 'Submit before time is up?',
@@ -294,7 +294,7 @@ const viDict: Dictionary = {
   noQuestionForSetup: 'Không có câu hỏi phù hợp với cấu hình đã chọn.',
   loadingQuiz: 'Đang tải dữ liệu bài làm...',
   unableLoadBank: 'Không thể tải ngân hàng câu hỏi',
-  verifyApi: 'Vui lòng kiểm tra AegisQuiz API hoặc dùng fallback mock.',
+  verifyApi: 'Vui lòng kiểm tra Aegis API hoặc dùng fallback mock.',
   retry: 'Thử lại',
   submitAttempt: 'Nộp bài',
   confirmSubmitBeforeTimeUp: 'Có nộp bài trước khi hết thời gian không?',
@@ -625,7 +625,8 @@ const DICT: Record<LearnerLanguage, Dictionary> = {
   },
 };
 
-const STORAGE_KEY = 'aegisquiz-lang';
+const STORAGE_KEY = 'aegis-lang';
+const LEGACY_STORAGE_KEY = 'aegisquiz-lang';
 const ALT_STORAGE_KEY = 'i18nextLng';
 
 const VALID_LANGS: LearnerLanguage[] = ['vi', 'en', 'zh', 'es', 'fr', 'ru', 'hi', 'pt', 'id', 'lo', 'ja', 'ko', 'ar'];
@@ -638,7 +639,7 @@ function resolveCurrentLang(): LearnerLanguage {
   if (typeof window === 'undefined') return 'vi';
   const queryLang = new URLSearchParams(window.location.search).get('lang');
   if (isValidLang(queryLang)) return queryLang;
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
   if (isValidLang(saved)) return saved;
   const alt = localStorage.getItem(ALT_STORAGE_KEY);
   if (isValidLang(alt)) return alt;

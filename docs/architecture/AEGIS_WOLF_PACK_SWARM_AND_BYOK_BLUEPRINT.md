@@ -1,10 +1,10 @@
-# 🐺 HỘI ĐỒNG KHOA HỌC & KIẾN TRÚC TOÀN CẦU AEGISQUIZ (GLOBAL SCIENTIFIC & ARCHITECTURAL COUNCIL)
+# 🐺 HỘI ĐỒNG KHOA HỌC & KIẾN TRÚC TOÀN CẦU AEGIS (GLOBAL SCIENTIFIC & ARCHITECTURAL COUNCIL)
 # ĐẶC TẢ KIẾN TRÚC BẦY SÓI TIẾN HÓA VÔ HẠN (DYNAMIC ADAPTIVE WOLF PACK SWARM)
 ## Phân Loại Mô Hình Động (Cognitive Archetypes) & Hệ Thống Khóa Cộng Đồng Bất Biến (BYOK Tokenomics)
 
 > **Mã định danh văn kiện**: `AEGIS-COUNCIL-WOLF-PACK-DYNAMIC-2026-V2`  
 > **Chủ tọa Hội đồng**: No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
-> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Khảo Thí & Đấu Trường Gameshow Enterprise AegisQuiz  
+> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Khảo Thí & Đấu Trường Gameshow Enterprise Aegis  
 > **Tiêu chuẩn chất lượng**: [AEGIS LIVING VISUAL DOCUMENTATION STANDARD (ALDS v1.0)](file:///docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)
 
 ---
@@ -15,7 +15,7 @@ Hội đồng Khoa học & Kiến trúc trân trọng tiếp thu và khắc sâu
 > *"Tại thời điểm này mô hình này có thể tốt nhất, nhưng chỉ trong vài tuần hoặc vài tháng tới thế giới sẽ xuất hiện những mô hình đột phá hơn gấp bội. Việc hard-code tên mô hình (như DeepSeek R1, GPT-4o, Claude 3.5, Gemini 2.0) trong kiến trúc là một sai lầm chết người, tạo ra nợ kỹ thuật và tự bóp nghẹt khả năng tiến hóa của hệ thống."*
 
 Tuân thủ nghiêm ngặt **Cam kết Vàng số 3 trong AGENTS.md: Mở rộng vô hạn (Scalability - OCP)** và **Nguyên tắc Zero Hard-code**:
-Hệ thống AI của AegisQuiz chuyển dịch triệt để từ mô hình *"Cố định theo Hãng"* sang **"Mô Hình Nhận Thức Động Theo Mẫu Hình Năng Lực & 100% Cấu Hình Hóa Bằng Cơ Sở Dữ Liệu" (Dynamic Cognitive Archetypes & Database-Driven Model Registry)**.
+Hệ thống AI của Aegis chuyển dịch triệt để từ mô hình *"Cố định theo Hãng"* sang **"Mô Hình Nhận Thức Động Theo Mẫu Hình Năng Lực & 100% Cấu Hình Hóa Bằng Cơ Sở Dữ Liệu" (Dynamic Cognitive Archetypes & Database-Driven Model Registry)**.
 
 ---
 
@@ -66,7 +66,7 @@ Hội đồng chuẩn hóa hệ thống quanh 3 Wire Protocol Adapters:
 
 1. **`OpenAiCompatibleProtocolAdapter`**:
    - Hiện nay, **95% các mô hình AI trên thế giới** (DeepSeek, Groq, Together AI, Mistral, vLLM, Ollama, OpenRouter, SiliconFlow, Sambanova, Perplexity, Cerebras, Qwen, Baichuan...) đều cung cấp Endpoint tuân theo chuẩn `/v1/chat/completions`.
-   - Chỉ với adapter duy nhất này, AegisQuiz có thể kết nối ngay lập tức tới **hàng nghìn mô hình AI hiện tại và tương lai** chỉ bằng cách nhập `BaseUrl` và `ModelIdentifier` vào Database!
+   - Chỉ với adapter duy nhất này, Aegis có thể kết nối ngay lập tức tới **hàng nghìn mô hình AI hiện tại và tương lai** chỉ bằng cách nhập `BaseUrl` và `ModelIdentifier` vào Database!
 2. **`GoogleGenerativeAiProtocolAdapter`**:
    - Tối ưu hóa cho hệ sinh thái Google Gemini với giao thức RPC/REST chuyên biệt.
 3. **`AnthropicMessagesProtocolAdapter`**:
@@ -200,7 +200,7 @@ sequenceDiagram
 ### 4.1. Enum Phân Loại Nhận Thức (Thay Thế Cho Enum Hãng Sản Xuất Cứng)
 
 ```csharp
-namespace AegisQuiz.Domain.Entities
+namespace Aegis.Domain.Entities
 {
     // Mẫu hình Năng lực Nhận thức của Mô hình AI (Không phụ thuộc tên thương mại)
     public enum CognitiveArchetype
@@ -227,7 +227,7 @@ namespace AegisQuiz.Domain.Entities
 ### 4.2. Giao Thức Generic Protocol Driver Trong C#
 
 ```csharp
-namespace AegisQuiz.Infrastructure.AI.Protocols
+namespace Aegis.Infrastructure.AI.Protocols
 {
     // Driver giao thức mở: Kết nối tới bất kỳ mô hình nào tuân theo chuẩn OpenAI Chat Completions
     public class OpenAiCompatibleProtocolDriver : IModelProtocolDriver
@@ -273,7 +273,7 @@ namespace AegisQuiz.Infrastructure.AI.Protocols
 
 ## VI. BẢNG SO SÁNH VƯỢT TRỘI SO VỚI THẾ GIỚI
 
-| Tiêu Chí Đánh Giá | Nền Tảng AI Cũ (Khóa Chết Cứng Model) | AegisQuiz Sovereign Dynamic Swarm |
+| Tiêu Chí Đánh Giá | Nền Tảng AI Cũ (Khóa Chết Cứng Model) | Aegis Sovereign Dynamic Swarm |
 | :--- | :--- | :--- |
 | **Tính Khả Biến (Adaptability)**| Bị khóa cứng với 1 vài nhà cung cấp cố định | **Thích ứng vô hạn**: Kết nối tới bất kỳ mô hình nào qua 3 Open Protocols |
 | **Phản Ứng Khi Có Model Mới**| Phải sửa code, build lại phần mềm, deploy lại server | **0ms Hot-Reload**: Chỉ cần 1 dòng INSERT trong Database là xong |
@@ -284,4 +284,4 @@ namespace AegisQuiz.Infrastructure.AI.Protocols
 
 ---
 
-*Văn kiện đã hoàn thiện và được Hội đồng Khoa học Toàn Cầu phê chuẩn ở cấp độ Tối Thượng — Bảo đảm hệ thống AI AegisQuiz dẫn đầu thời đại, bất biến trước mọi sự thay đổi công nghệ trong tương lai!*
+*Văn kiện đã hoàn thiện và được Hội đồng Khoa học Toàn Cầu phê chuẩn ở cấp độ Tối Thượng — Bảo đảm hệ thống AI Aegis dẫn đầu thời đại, bất biến trước mọi sự thay đổi công nghệ trong tương lai!*

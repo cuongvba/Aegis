@@ -37,7 +37,7 @@ export function LeaderboardPage() {
     staleTime: 60_000,
   });
 
-  // Xử lý response từ AegisQuiz API: { period, source, data: [...] } hoặc mảng trực tiếp
+  // Xử lý response từ Aegis API: { period, source, data: [...] } hoặc mảng trực tiếp
   const entries: LeaderboardEntry[] = Array.isArray(rawData)
     ? rawData
     : Array.isArray(rawData?.data)

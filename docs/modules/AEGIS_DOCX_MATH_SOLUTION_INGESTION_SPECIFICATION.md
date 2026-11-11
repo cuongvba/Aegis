@@ -1,7 +1,7 @@
 # 🛡️ AEGIS-INGEST — KIẾN TRÚC TRÍCH XUẤT ĐÁP ÁN ĐÚNG & LỜI GIẢI CHI TIẾT ĐỀ THI TOÁN HỌC (ALDS v1.0)
 ## Chuẩn Mực Phân Tách Ngữ Cảnh Đa Tầng, Khử Xung Đột Pha & Cơ Chế Ưu Tiên Bằng Chứng Toán Học (Proof-Over-Lookup)
 
-> **Hệ Thống:** AegisQuiz Enterprise Educational Intelligence Platform  
+> **Hệ Thống:** Aegis Enterprise Educational Intelligence Platform  
 > **Module:** Document Ingestion Engine (`DocxStateMachineClassifier` & `DynamicQuestionIngestionEngine`)  
 > **Cấp độ kiến trúc:** L5 Sovereign Architecture — Chuẩn ALDS v1.0 Living Document  
 > **Trạng thái:** Production Ready ✅ (6/6 Unit Tests Passed 100% — Zero Regression)
@@ -79,12 +79,12 @@ sequenceDiagram
 Toàn bộ các quy tắc cấu trúc và logic máy trạng thái tuân thủ nguyên lý **Zero Hard-code** và **CLEAR Architecture**:
 
 ### 2.1 Cấu Hình Mẫu Chuyển Pha Cấp Tài Liệu (Macro Phase Signatures)
-Tệp: [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L34-L35)
+Tệp: [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L34-L35)
 * **`BuiltInSolutionPhasePattern`**: Chỉ nhận diện các tiêu đề phân đoạn lớn của toàn tài liệu (như `ĐÁP ÁN VÀ LỜI GIẢI CHI TIẾT`, `HƯỚNG DẪN CHẤM VÀ BIỂU ĐIỂM`, `SOLUTIONS AND EXPLANATIONS`), loại bỏ hoàn toàn từ khóa `Lời giải` đơn lẻ để tránh nuốt lời giải câu hỏi.
 * **`BuiltInAnswerPhasePattern`**: Bao phủ mẫu `BẢNG ĐÁP ÁN TRẮC NGHIỆM`, `ANSWER KEY`, `KEY`.
 
 ### 2.2 Bộ Bảo Vệ Ngăn Chặn Đóng Câu Hỏi Non Nớt (Scope Guard)
-Tệp: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L220-L235)
+Tệp: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L220-L235)
 ```csharp
 bool isSolPhaseMatch = cig.TryMatchSolutionPhase(line);
 bool isAnsTableMatch = cig.TryMatchAnswerTablePhase(line);
@@ -109,11 +109,11 @@ else if (isSolPhaseMatch || isAnsTableMatch)
 ```
 
 ### 2.3 Đồng Bộ Tiêu Đề Đề Thi Trong Bảng Tiêu Đề (Table Exam Heading Synchronization)
-Tệp: [`DocxTableQuestionExtractor.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs#L120-L145)
+Tệp: [`DocxTableQuestionExtractor.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs#L120-L145)
 Tự động quét các ô đoạn văn bên trong các bảng đầu trang (`w:tbl`) để bắt các tiêu đề `ĐỀ 1`, `ĐỀ 2`..., loại bỏ hiện tượng tất cả các bảng đáp án bị dồn vào `DEFAULT`.
 
 ### 2.4 Trích Xuất Đa Hình Mẫu Chứng Minh Toán Học (Mathematical Proof Overwrite)
-Tệp: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L775-L815)
+Tệp: [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L775-L815)
 Hỗ trợ cả câu đứng đầu dòng và câu kết luận ở giữa/cuối đoạn lời giải:
 * `Suy ra đáp án [A-D]`
 * `Chọn [A-D]` / `Do đó ta chọn đáp án [A-D]`
@@ -139,14 +139,14 @@ Kiểm thử tự động thực hiện trên tệp đề thi toán chuẩn GDPT
 *\* Ghi chú: 31 câu không có lời giải là do các đề thi số 3, 6, 7 trong tài liệu gốc của tác giả chỉ cung cấp bảng đáp án trắc nghiệm mà không soạn văn bản lời giải chi tiết.*
 
 ### Kết Quả Chạy Kiểm Thử Scoped Test Suite
-Tệp kiểm thử: [`TrackQuestionCreationTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/TrackQuestionCreationTests.cs)
+Tệp kiểm thử: [`TrackQuestionCreationTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/TrackQuestionCreationTests.cs)
 ```text
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.ParseMathExam_ShouldExtractHighFidelityAnswersAndExplanations [12 s]
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.StructuralSentenceBoundary_EdgeCases_ShouldNotSplitNaturalSentences [2 ms]
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.ParseEnglish1102_ShouldExtractExactly40Questions_WithoutFakeHeaderQuestion [868 ms]
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.ParseAllEnglishTnptExams_ShouldExtractCleanly [2 s]
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.TraceMathExamParagraphs765To865 [225 ms]
-Passed AegisQuiz.UnitTests.TrackQuestionCreationTests.FindLinesBeforeQuestion1 [844 ms]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.ParseMathExam_ShouldExtractHighFidelityAnswersAndExplanations [12 s]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.StructuralSentenceBoundary_EdgeCases_ShouldNotSplitNaturalSentences [2 ms]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.ParseEnglish1102_ShouldExtractExactly40Questions_WithoutFakeHeaderQuestion [868 ms]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.ParseAllEnglishTnptExams_ShouldExtractCleanly [2 s]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.TraceMathExamParagraphs765To865 [225 ms]
+Passed Aegis.UnitTests.TrackQuestionCreationTests.FindLinesBeforeQuestion1 [844 ms]
 
 Test Run Successful.
 Total tests: 6 | Passed: 6 | Failed: 0 | Skipped: 0

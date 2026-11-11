@@ -140,7 +140,8 @@ const DEFAULT_SETTINGS: MathEngineSettings = {
   }
 };
 
-const STORAGE_KEY = 'aegisquiz_math_engine_config';
+const STORAGE_KEY = 'aegis_math_engine_config';
+const LEGACY_STORAGE_KEY = 'aegisquiz_math_engine_config';
 
 const MathConfigContext = createContext<MathConfigContextValue | null>(null);
 
@@ -148,7 +149,7 @@ export const MathConfigProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [settings, setSettings] = useState<MathEngineSettings>(DEFAULT_SETTINGS);
   const [baseFontUnit, setBaseFontUnitState] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed.baseFontUnit === 'number') return parsed.baseFontUnit;
@@ -159,7 +160,7 @@ export const MathConfigProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const [letterSpacing, setLetterSpacingState] = useState<string>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (typeof parsed.letterSpacing === 'string') return parsed.letterSpacing;

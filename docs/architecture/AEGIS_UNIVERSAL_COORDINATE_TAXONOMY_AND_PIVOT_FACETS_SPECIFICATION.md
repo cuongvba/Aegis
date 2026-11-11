@@ -4,20 +4,20 @@
 > **Mã hồ sơ**: `ALDS-UCTE-V3.0`  
 > **Chủ nhiệm kiến trúc**: No.1 — Lead System Analyst, Master Living Documentarian, IT Architect  
 > **Mức độ bảo mật**: Public Engineering Standard  
-> **Áp dụng quy chuẩn**: [AEGIS LIVING VISUAL DOCUMENTATION STANDARD (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)
+> **Áp dụng quy chuẩn**: [AEGIS LIVING VISUAL DOCUMENTATION STANDARD (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)
 
 ---
 
 ### TRỤ CỘT 1: ARCHITECTURAL BLUEPRINT & FORMAL SPECIFICATION
 
 #### 1. Mô hình Không gian Toạ độ 5 Chiều Trực giao
-Mỗi câu hỏi, đề thi hoặc nút tri thức trong AegisQuiz được định vị bởi bộ 5 chiều độc lập:
+Mỗi câu hỏi, đề thi hoặc nút tri thức trong Aegis được định vị bởi bộ 5 chiều độc lập:
 
 $$\mathbf{C} = \big\langle \text{DomainCode}, \text{TopicCode}, \text{TargetLevel}, \text{SemesterPhase}, \text{CurriculumSeries} \big\rangle$$
 
 ```mermaid
 graph TD
-    subgraph Multi_Dimensional_Coordinates["Không Gian Toạ Độ 5 Chiều AegisQuiz"]
+    subgraph Multi_Dimensional_Coordinates["Không Gian Toạ Độ 5 Chiều Aegis"]
         D1["DomainCode (EDUCATION, BANKING, GOV_DRIVING)"]
         D2["TopicCode (ISCED-UNESCO / Aliases: MATH, CHEM, NAT_SCI, LANG_EN)"]
         D3["TargetLevel / Grade (K01..K12, CHUYEN_VIEN, BAC_SI)"]
@@ -55,13 +55,13 @@ Tất cả các thành phần mã nguồn thật tại Backend:
 
 | Thành phần | Đường dẫn tệp sống | Trách nhiệm kiến trúc |
 | :--- | :--- | :--- |
-| **DTOs & Seed Loader** | [TaxonomyResourceSeedLoader.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Services/TaxonomyResourceSeedLoader.cs) | Nạp động danh mục môn học hạt giống từ JSON nhúng, không hard-code C# |
-| **Topic DTOs** | [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs) | Khai báo `TopicTaxonomyEntryDto` (ISCED, LocalizedNames đa ngữ, Aliases) |
-| **Pivot & Matrix DTOs** | [TaxonomyPivotDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/TaxonomyPivotDtos.cs) | Khai báo `TaxonomyPivotTreeNodeDto` và `TaxonomyMatrixSummaryDto` |
-| **Query Specification** | [IPagination.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IPagination.cs) | `QuestionPagedQuery` mở rộng các trường `TopicCode`, `Grade`, `CanonicalTopicCode`, `TreePath` |
-| **Engine Nhận thức** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | Điều phối nhận diện 5 trục toạ độ, phân giải bí danh, tổng hợp chuẩn tắc |
-| **API Endpoints** | [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs) | `GET api/quiz/questions` hỗ trợ lọc cắt lát đa chiều Composable |
-| **API Pivot & Matrix** | [TopicsController.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs) | `GET api/quiz/topics/pivot-tree` và `GET api/quiz/topics/matrix-summary` |
+| **DTOs & Seed Loader** | [TaxonomyResourceSeedLoader.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Services/TaxonomyResourceSeedLoader.cs) | Nạp động danh mục môn học hạt giống từ JSON nhúng, không hard-code C# |
+| **Topic DTOs** | [DocumentStructureDictionaryDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs) | Khai báo `TopicTaxonomyEntryDto` (ISCED, LocalizedNames đa ngữ, Aliases) |
+| **Pivot & Matrix DTOs** | [TaxonomyPivotDtos.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/TaxonomyPivotDtos.cs) | Khai báo `TaxonomyPivotTreeNodeDto` và `TaxonomyMatrixSummaryDto` |
+| **Query Specification** | [IPagination.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IPagination.cs) | `QuestionPagedQuery` mở rộng các trường `TopicCode`, `Grade`, `CanonicalTopicCode`, `TreePath` |
+| **Engine Nhận thức** | [UniversalCoordinateTaxonomyEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs) | Điều phối nhận diện 5 trục toạ độ, phân giải bí danh, tổng hợp chuẩn tắc |
+| **API Endpoints** | [QuestionsController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs) | `GET api/quiz/questions` hỗ trợ lọc cắt lát đa chiều Composable |
+| **API Pivot & Matrix** | [TopicsController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs) | `GET api/quiz/topics/pivot-tree` và `GET api/quiz/topics/matrix-summary` |
 
 #### API Contracts Mới:
 ```http
@@ -86,13 +86,13 @@ GET /api/quiz/questions?canonicalTopicCode=EDU_KHTN_K07_HK1_MID_KNTT
 Toàn bộ các bộ Scoped Unit Test kiểm thử hệ thống toạ độ và phân phối đa chiều:
 
 ```
-Test run for D:\Cuong\DuAn\mybank\AegisQuiz\Backend\tests\AegisQuiz.UnitTests\bin\Debug\net10.0\AegisQuiz.UnitTests.dll
+Test run for D:\Cuong\DuAn\mybank\AegisGlobal\Backend\tests\Aegis.UnitTests\bin\Debug\net10.0\Aegis.UnitTests.dll
 VSTest version 18.0.1 (x64)
 
 Starting test execution, please wait...
 A total of 1 test files matched the specified pattern.
 
-Passed!  - Failed: 0, Passed: 18, Skipped: 0, Total: 18, Duration: 2 s - AegisQuiz.UnitTests.dll (net10.0)
+Passed!  - Failed: 0, Passed: 18, Skipped: 0, Total: 18, Duration: 2 s - Aegis.UnitTests.dll (net10.0)
 ```
 
 1. `CanonicalTaxonomy_Synthesis_ShouldProduceCorrectMaterializedPathAndCode`: Kiểm tra tổng hợp phả hệ $O(1)$ từ đề thi thực tế THCS `thuvienhoclieu.com-...-KHTN-7-KNTT.docx`.
@@ -125,4 +125,4 @@ Frontend cấu trúc theo các thành phần chuyên biệt (Zero-Monolith, $\le
 | **v3.1.0** | 2026-10-27 | Nâng cấp `TopicTaxonomyEntryDto` chuẩn ISCED-UNESCO và ISO 639-1; hỗ trợ đa ngữ `LocalizedNames` và `Aliases` | ✅ PASSED |
 | **v3.2.0** | 2026-10-27 | Bổ sung `QuestionPagedQuery` facets và API `pivot-tree`, `matrix-summary` trong `TopicsController` | ✅ PASSED |
 | **v3.3.0** | 2026-10-27 | Hoàn tất kiểm thử định lượng 18/18 Scoped Tests, bảo toàn tương thích ngược 100% | ✅ VERIFIED |
-| **v3.4.0** | 2026-10-31 | **Hierarchical Knowledge Graph & Cognitive Cascade 3.0**: Xóa bỏ hoàn toàn hiện tượng nhồi nhét chủ đề phẳng (Flat Monolith Topic); tự động phân giải xuống Node Lá (Leaf Node) theo Cây Phân Cấp Tri Thức UNESCO ISCED-F cho Giáo dục (Tiểu học K01..K05, THCS K06..K09, THPT K10..K12, Đại học Calculus/Linear Algebra/ProbStat) và các miền nghiệp vụ (Banking Credit SME/Retail/Appraisal/Treasury/AML, Driving Critical/Signs/Simulation, Healthcare Pharmacy/Clinical); tích hợp Động cơ Ánh xạ Khảo thí Quốc tế [`CognitiveCrosswalkEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/CognitiveCrosswalkEngine.cs) (Bloom, Webb DOK, QTI 3.0) và kiểm chứng 100% qua [`GlobalTaxonomyAndCrosswalkTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/GlobalTaxonomyAndCrosswalkTests.cs) | ✅ VERIFIED |
+| **v3.4.0** | 2026-10-31 | **Hierarchical Knowledge Graph & Cognitive Cascade 3.0**: Xóa bỏ hoàn toàn hiện tượng nhồi nhét chủ đề phẳng (Flat Monolith Topic); tự động phân giải xuống Node Lá (Leaf Node) theo Cây Phân Cấp Tri Thức UNESCO ISCED-F cho Giáo dục (Tiểu học K01..K05, THCS K06..K09, THPT K10..K12, Đại học Calculus/Linear Algebra/ProbStat) và các miền nghiệp vụ (Banking Credit SME/Retail/Appraisal/Treasury/AML, Driving Critical/Signs/Simulation, Healthcare Pharmacy/Clinical); tích hợp Động cơ Ánh xạ Khảo thí Quốc tế [`CognitiveCrosswalkEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/CognitiveCrosswalkEngine.cs) (Bloom, Webb DOK, QTI 3.0) và kiểm chứng 100% qua [`GlobalTaxonomyAndCrosswalkTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/GlobalTaxonomyAndCrosswalkTests.cs) | ✅ VERIFIED |

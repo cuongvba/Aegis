@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — ErrorBoundary
+ * Aegis — ErrorBoundary
  * ==========================
  * Global error boundary để bắt lỗi runtime từ lazy-loaded pages.
  * Giải quyết GAP-10: Không có ErrorBoundary.
@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error('[AegisQuiz ErrorBoundary]', error, info);
+    console.error('[Aegis ErrorBoundary]', error, info);
     this.props.onError?.(error, info);
 
     // Auto heal stale chunk errors when new build deployed

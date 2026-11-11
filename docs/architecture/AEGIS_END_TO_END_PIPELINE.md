@@ -1,7 +1,7 @@
 # 🌐 BÁO CÁO KIỂM TOÁN KIẾN TRÚC TOÀN DIỆN: QUY TRÌNH BÓC TÁCH ĐỀ THI WORD (.DOCX) TỪ GIAO DIỆN ĐẾN CƠ SỞ DỮ LIỆU
 **Hệ sinh thái:** AEGIS Global Cognitive Infrastructure (AGCI)  
 **Tác giả:** No.1 — World-Class Polymath Chief Architect & Master Living Documentarian  
-**Tiêu chuẩn:** Tuân thủ 5 Trụ cột [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md) & [Tam Giác Vàng SoC & SSoT](file:///d:/Cuong/DuAn/mybank/AegisQuiz/.agents/rules/docx_dsmc_cig_soc_ssot_rule.md)
+**Tiêu chuẩn:** Tuân thủ 5 Trụ cột [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md) & [Tam Giác Vàng SoC & SSoT](file:///d:/Cuong/DuAn/mybank/AegisGlobal/.agents/rules/docx_dsmc_cig_soc_ssot_rule.md)
 
 ---
 
@@ -69,7 +69,7 @@ sequenceDiagram
 ## II. ĐIỀU TRA CHI TIẾT 7 GIAI ĐOẠN TỪ FILE ĐẾN DATABASE
 
 ### Giai đoạn 1: Tiếp nhận Tệp & Đóng gói Ngữ cảnh tại Client
-* **Thành phần thực thi:** [`DocxCigRulesPanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx) kết hợp [`QuestionTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/QuestionTableSection.tsx).
+* **Thành phần thực thi:** [`DocxCigRulesPanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx) kết hợp [`QuestionTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/QuestionTableSection.tsx).
 * **Cơ chế hoạt động:**
   1. Kiểm tra Client-side MIME Type: `application/vnd.openxmlformats-officedocument.wordprocessingml.document` (giới hạn dung lượng an toàn $\le 50\text{MB}$).
   2. Thu thập các cờ điều khiển: `useAi` (bật mô hình AI Autopilot giải đề nếu thiếu đáp án), `domainCode` (lĩnh vực môn học định hướng), `targetLevel` (khối lớp).
@@ -78,7 +78,7 @@ sequenceDiagram
 ---
 
 ### Giai đoạn 2: Định tuyến Ngữ cảnh Đa Khách thuê (Tenant Scoping)
-* **Thành phần thực thi:** [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs#L623-L660).
+* **Thành phần thực thi:** [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs#L623-L660).
 * **Cơ chế hoạt động:**
   1. **Khởi tạo Domain Context:** Gọi `_domainContextService.BuildContextAsync(tenantId)` để nạp toàn bộ danh mục cây chủ đề (`BankTopics`), bộ từ điển nhận dạng mẫu đề thi CIG, và bảng ánh xạ `parsing_rules_registry.json`.
   2. Đọc luồng tệp tin dạng `Stream` vào bộ nhớ đệm an toàn, bảo đảm không khóa (lock) tệp tin trên đĩa hệ thống.
@@ -86,20 +86,20 @@ sequenceDiagram
 ---
 
 ### Giai đoạn 3: Giải nén OOXML, Bóc tách Media & Giải mã Nhị phân Toán học
-* **Thành phần thực thi:** [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L80-L220) & [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs).
+* **Thành phần thực thi:** [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs#L80-L220) & [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs).
 * **Cơ chế hoạt động:**
   1. **Decompress OpenXML:** Dùng `System.IO.Compression.ZipArchive` để giải nén gói tin docx, trích xuất hai luồng quan trọng: `word/document.xml` và `word/_rels/document.xml.rels`.
-  2. **Trích xuất Quan hệ & Media:** [`DocxRelationshipReader`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxRelationshipReader.cs) lập chỉ mục toàn bộ hình ảnh, biểu đồ và OLE Objects trong thư mục `word/media/` theo mã định danh quan hệ `rId`.
+  2. **Trích xuất Quan hệ & Media:** [`DocxRelationshipReader`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxRelationshipReader.cs) lập chỉ mục toàn bộ hình ảnh, biểu đồ và OLE Objects trong thư mục `word/media/` theo mã định danh quan hệ `rId`.
   3. **Giải mã Toán học Song song (Hybrid Math Transformation):**
      - **OMML (`<m:oMath>`):** Chuyển đổi trực tiếp qua XSLT / Lexer sang mã LaTeX KaTeX chuẩn dạng `$...$` hoặc `$$...$$`.
-     - **MathType WMF/OLE Binary:** [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs) phân tích header nhị phân `MTEF` (MathType Equation Format). Nếu tìm thấy chuỗi LaTeX nhúng thì ưu tiên trích xuất; nếu là đồ họa vector WMF thì chuyển đổi thành định dạng Vector SVG hoặc Base64 WebP tối ưu.
-  4. **Tiền trinh sát Bảng đáp án:** [`DocxTableQuestionExtractor.ExtractAnswerTables`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs) quét các bảng cuối tài liệu để xây dựng bảng tra cứu trước `answerKeyMap` (ví dụ: `1-A, 2-C, 3-B...`).
+     - **MathType WMF/OLE Binary:** [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs) phân tích header nhị phân `MTEF` (MathType Equation Format). Nếu tìm thấy chuỗi LaTeX nhúng thì ưu tiên trích xuất; nếu là đồ họa vector WMF thì chuyển đổi thành định dạng Vector SVG hoặc Base64 WebP tối ưu.
+  4. **Tiền trinh sát Bảng đáp án:** [`DocxTableQuestionExtractor.ExtractAnswerTables`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxTableQuestionExtractor.cs) quét các bảng cuối tài liệu để xây dựng bảng tra cứu trước `answerKeyMap` (ví dụ: `1-A, 2-C, 3-B...`).
   5. **Định vị 5 Trục Tọa độ (UCTE Sniffing):** Quét 35 node đầu tài liệu để phát hiện: Tổ chức ban hành, Năm chuẩn hóa, Khối lớp và Ngôn ngữ tài liệu.
 
 ---
 
 ### Giai đoạn 4: Máy trạng thái Hạn định DSMC & Bóc tách Phân cấp (Hierarchy Index)
-* **Thành phần thực thi:** [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) (Skinny Orchestrator $\le 1,200$ LOC) phối hợp [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs).
+* **Thành phần thực thi:** [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) (Skinny Orchestrator $\le 1,200$ LOC) phối hợp [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs).
 * **Cơ chế hoạt động:**
   1. **Duyệt luồng Token (Paragraph Token Walk):** Máy trạng thái phân loại từng đoạn văn bản vào các trạng thái hạn định:
      $$\text{State} \in \{\text{EXAM}, \text{PART}, \text{SUB\_PART}, \text{DIRECTIVE}, \text{QUESTION\_STEM}, \text{OPTIONS}, \text{EXPLANATION}\}$$
@@ -115,7 +115,7 @@ sequenceDiagram
 ---
 
 ### Giai đoạn 5: Nhận diện Loại Câu hỏi (CIG Engine) & Đối soát Đáp án
-* **Thành phần thực thi:** [`DynamicQuestionIngestionEngine.Classification.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs) & [`parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json).
+* **Thành phần thực thi:** [`DynamicQuestionIngestionEngine.Classification.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs) & [`parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json).
 * **Cơ chế hoạt động:**
   1. **8 Tầng Ưu tiên Nhận diện (8 Priority Levels):**
      Xác định câu hỏi thuộc loại: `SINGLE` (Trắc nghiệm 1 đáp án), `MULTI_TRUE_FALSE` (Đúng/Sai nhiều ý), `FILL_BLANK`, `SHORT_ANSWER`, hoặc `MATCHING`.
@@ -127,7 +127,7 @@ sequenceDiagram
 ---
 
 ### Giai đoạn 6: Phân tích Trùng lặp Nội dung Toàn cục (SHA-256 Deduplication)
-* **Thành phần thực thi:** [`ExamDeduplicationEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs).
+* **Thành phần thực thi:** [`ExamDeduplicationEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs).
 * **Cơ chế hoạt động:**
   1. **Chuẩn hóa Nội dung (Canonicalization):** Loại bỏ khoảng trắng thừa, đưa toàn bộ văn bản về chữ thường chuẩn hóa UTF-8, bóc tách công thức toán về dạng chuẩn.
   2. **Băm Nhận thức SHA-256:**
@@ -138,7 +138,7 @@ sequenceDiagram
 ---
 
 ### Giai đoạn 7: Lưu trữ Bất biến & Đồng bộ Cơ sở Dữ liệu (ACID Transaction)
-* **Thành phần thực thi:** [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs#L850-L1200) & PostgreSQL Database.
+* **Thành phần thực thi:** [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs#L850-L1200) & PostgreSQL Database.
 * **Cơ chế hoạt động:**
   1. **Giao dịch Nguyên tử (Atomic Transaction):** Toàn bộ quá trình lưu hàng trăm câu hỏi được bọc trong một khối `using var transaction = await _context.Database.BeginTransactionAsync()`.
   2. **Khử trùng lặp Ngữ cảnh Dùng chung (`QuestionContext`):**
@@ -159,8 +159,8 @@ sequenceDiagram
 | Giai đoạn | Dữ liệu đầu vào (Input) | Dữ liệu đầu ra (Output) | Cơ chế bảo đảm tính toàn vẹn |
 | :--- | :--- | :--- | :--- |
 | **1. OOXML Decompress** | Stream file `.docx` nhị phân | XML DOM thô + Dictionary Media Stream | Xác thực MIME Type & Chống zip slip attack |
-| **2. Math & Media Transpilation** | Binary OLE WMF / MathType / OMML | KaTeX LaTeX strings & Clean SVG/WebP Base64 | Bộ chuyển đổi [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs) |
-| **3. Scope Indexing** | Dòng văn bản chứa chỉ thị, phần thi | Mã tọa độ `HierarchyIndex` (Ví dụ: `7_0_0_6`) | [`CognitiveScopeManager`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs) |
+| **2. Math & Media Transpilation** | Binary OLE WMF / MathType / OMML | KaTeX LaTeX strings & Clean SVG/WebP Base64 | Bộ chuyển đổi [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs) |
+| **3. Scope Indexing** | Dòng văn bản chứa chỉ thị, phần thi | Mã tọa độ `HierarchyIndex` (Ví dụ: `7_0_0_6`) | [`CognitiveScopeManager`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs) |
 | **4. Question Block Parse** | Các dòng Paragraph chứa Stem + Options | DTO Câu hỏi tách biệt Stem và 4 Options | Chống lặp Stem, bảo toàn $O(1)$ thứ tự gốc |
 | **5. Boundary Guard** | Lời giải kèm chỉ thị bài thi tiếp theo | Lời giải tinh gọn, ngắt đúng biên chỉ thị | `Explanation Boundary Guard` ngắt scope ngay lập tức |
 | **6. Context Deduplication** | Bài đọc hiểu lặp lại ở nhiều câu hỏi | 1 bản ghi `QuestionContext` duy nhất | Khóa băm SHA-256 Canonical Hash |
@@ -171,9 +171,9 @@ sequenceDiagram
 ## IV. BẢO CHỨNG KIẾN TRÚC & KHẢ NĂNG TỰ PHỤC HỒI (ARCHITECTURAL RESILIENCE)
 
 1. **Tuân thủ Nguyên lý Trách nhiệm Đơn lẻ (SoC & SSoT):**
-   - [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) giữ vững vai trò Skinny State Orchestrator ($\le 1,200$ LOC), không can thiệp sâu vào logic regex bóc tách chi tiết.
-   - Toàn bộ ngữ nghĩa bóc tách và ngắt biên thuộc thẩm quyền độc quyền của [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs).
-   - Toàn bộ tri thức phân loại tọa độ 5 trục thuộc thẩm quyền độc quyền của [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
+   - [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) giữ vững vai trò Skinny State Orchestrator ($\le 1,200$ LOC), không can thiệp sâu vào logic regex bóc tách chi tiết.
+   - Toàn bộ ngữ nghĩa bóc tách và ngắt biên thuộc thẩm quyền độc quyền của [`DynamicQuestionIngestionEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs).
+   - Toàn bộ tri thức phân loại tọa độ 5 trục thuộc thẩm quyền độc quyền của [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs).
 2. **Cơ chế Phục hồi Lỗi Tự động (Fail-Safe & Auto-Heal):**
    - Khi gặp cấu trúc đề thi không chuẩn (thiếu `Part`, thiếu `SubPart`), hệ thống tự động gán rank mặc định `0`, đảm bảo mã phân cấp luôn nhất quán định dạng `E_P_S_D`.
    - Nếu tệp tin chứa hình ảnh hoặc phương trình toán học bị hỏng luồng stream, hệ thống ghi nhận log cảnh báo và thay thế bằng text fallback có ý nghĩa thay vì làm sập toàn bộ tiến trình nạp đề.

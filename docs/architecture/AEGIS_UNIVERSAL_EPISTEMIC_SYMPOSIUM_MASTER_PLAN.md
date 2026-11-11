@@ -5,7 +5,7 @@
 
 > **Mã văn kiện**: `AEGIS-UNIVERSAL-SYMPOSIUM-MASTER-PLAN-2026-v2`  
 > **Chủ tọa Hội đồng**: No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
-> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Toàn Cầu AegisQuiz  
+> **Cơ quan bảo chứng**: Ban Tổng Công Trình Sư Hệ Sinh Thái Toàn Cầu Aegis  
 > **Trạng thái kiểm chứng**: **100% VERIFIED LIVE ON DOCKER PRODUCTION & POSTGRESQL**  
 > **Ngày phê duyệt & ban hành**: 05/10/2026  
 
@@ -103,10 +103,10 @@ Thay thế hoàn toàn cơ chế lọc chuỗi substring thô sơ bằng thuật
 ```
 
 * **Mã nguồn thực thi**:
-  - DTOs: [`PromptForgeDtos.cs`](file:///Backend/src/AegisQuiz.Application/Models/AI/PromptForgeDtos.cs)
-  - Engine Interface: [`IPromptForgeAssistantService.cs`](file:///Backend/src/AegisQuiz.Application/Interfaces/IPromptForgeAssistantService.cs)
-  - Engine Implementation: [`PromptForgeAssistantService.cs`](file:///Backend/src/AegisQuiz.Infrastructure/AI/Prompt/PromptForgeAssistantService.cs)
-  - API Controller: [`PromptForgeController.cs`](file:///Backend/src/AegisQuiz.API/Controllers/PromptForgeController.cs)
+  - DTOs: [`PromptForgeDtos.cs`](file:///Backend/src/Aegis.Application/Models/AI/PromptForgeDtos.cs)
+  - Engine Interface: [`IPromptForgeAssistantService.cs`](file:///Backend/src/Aegis.Application/Interfaces/IPromptForgeAssistantService.cs)
+  - Engine Implementation: [`PromptForgeAssistantService.cs`](file:///Backend/src/Aegis.Infrastructure/AI/Prompt/PromptForgeAssistantService.cs)
+  - API Controller: [`PromptForgeController.cs`](file:///Backend/src/Aegis.API/Controllers/PromptForgeController.cs)
   - Frontend Studio: [`CognitivePromptForgeStudio.tsx`](file:///Frontend/src/features/admin/prompt-forge/CognitivePromptForgeStudio.tsx)
   - Service Frontend: [`prompt-forge.service.ts`](file:///Frontend/src/services/prompt-forge.service.ts)
 
@@ -139,10 +139,10 @@ Thay thế hoàn toàn cơ chế lọc chuỗi substring thô sơ bằng thuật
 ```
 
 * **Mã nguồn thực thi**:
-  - DTO: [`EmpiricalEvidenceDossierDto.cs`](file:///Backend/src/AegisQuiz.Application/Models/AI/EmpiricalEvidenceDossierDto.cs)
-  - Interface: [`IEpistemicDeepResearchScout.cs`](file:///Backend/src/AegisQuiz.Application/Interfaces/IEpistemicDeepResearchScout.cs)
-  - Engine: [`EpistemicDeepResearchScout.cs`](file:///Backend/src/AegisQuiz.Infrastructure/AI/Research/EpistemicDeepResearchScout.cs)
-  - Tích hợp Nhạc trưởng: [`UniversalSymposiumEngine.cs`](file:///Backend/src/AegisQuiz.Infrastructure/AI/UniversalSymposiumEngine.cs#L127-L149)
+  - DTO: [`EmpiricalEvidenceDossierDto.cs`](file:///Backend/src/Aegis.Application/Models/AI/EmpiricalEvidenceDossierDto.cs)
+  - Interface: [`IEpistemicDeepResearchScout.cs`](file:///Backend/src/Aegis.Application/Interfaces/IEpistemicDeepResearchScout.cs)
+  - Engine: [`EpistemicDeepResearchScout.cs`](file:///Backend/src/Aegis.Infrastructure/AI/Research/EpistemicDeepResearchScout.cs)
+  - Tích hợp Nhạc trưởng: [`UniversalSymposiumEngine.cs`](file:///Backend/src/Aegis.Infrastructure/AI/UniversalSymposiumEngine.cs#L127-L149)
   - Giao diện Hiển thị: [`UniversalSymposiumPage.tsx`](file:///Frontend/src/pages/symposium/UniversalSymposiumPage.tsx)
 
 ---
@@ -283,23 +283,23 @@ Mọi hợp đồng mã nguồn được kết nối trực tiếp đến các f
 
 | Thành Phần Kiến Trúc | Mã Nguồn Thực Thi (Clickable File Link) | Trách Nhiệm Cốt Lõi |
 | :--- | :--- | :--- |
-| **Dynamic Epistemic Genesis** | [EpistemicGenesisEngine.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Genesis/EpistemicGenesisEngine.cs) | **Đại Kiến Trúc Sư Tầng 0**: Tự động hội thảo và khởi sinh Viện Hàn Lâm Mới theo OCP khi gặp miền tri thức chưa được khám phá |
-| **Genesis Engine Interface** | [IEpistemicGenesisEngine.cs](file:///Backend/src/AegisQuiz.Application/Interfaces/IEpistemicGenesisEngine.cs) | Hợp đồng trừu tượng khởi sinh Viện động Just-In-Time |
-| **Orchestration Core** | [UniversalSymposiumEngine.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/UniversalSymposiumEngine.cs) | Nhạc trưởng điều phối 6 giai đoạn tranh biện, kết nối DB và xuất Kỷ yếu |
-| **System Prompt Composer** | [SymposiumPromptComposer.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs) | Bộ ghép prompt 6 tầng độc lập, nội suy biến, hỗ trợ Hot-Reload |
-| **Council Selection Strategy** | [DiverseEpistemicCouncilSelectionStrategy.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Selection/DiverseEpistemicCouncilSelectionStrategy.cs) | Thuật toán tách từ biên từ (`\b`), so khớp CSDL, kích hoạt Genesis Tầng 0 và gắn Viện đối trọng |
-| **Prompt Template Entity** | [SymposiumPromptTemplate.cs](file:///Backend/src/AegisQuiz.Domain/Entities/SymposiumPromptTemplate.cs) | Entity đại diện mẫu System Prompt phân tầng |
-| **Universal Council Entity** | [UniversalAiCouncil.cs](file:///Backend/src/AegisQuiz.Domain/Entities/UniversalAiCouncil.cs) | Entity đại diện Viện Hàn Lâm và Ghế chuyên gia AI |
-| **API Webhook Controller** | [AiModelsController.cs](file:///Backend/src/AegisQuiz.API/Controllers/AiModelsController.cs) | Tiếp nhận lệnh triệu tập, lấy danh sách viện và xuất Kỷ yếu |
-| **Realtime SignalR Hub** | [SymposiumHub.cs](file:///Backend/src/AegisQuiz.API/Hubs/SymposiumHub.cs) & [SignalRSymposiumBroadcaster.cs](file:///Backend/src/AegisQuiz.API/Services/SignalRSymposiumBroadcaster.cs) | Phát sóng trực tiếp tiến trình từng turn và điểm Rubric |
-| **Knowledge Notebook Hub** | [NotebookProcessingService.cs](file:///Backend/src/AegisQuiz.Infrastructure/Services/NotebookProcessingService.cs) | Tự động kết tinh Kỷ yếu thành Hồ sơ Tri thức Chân lý Tối cao (Authority 4) |
-| **Dependency Injection** | [Program.cs](file:///Backend/src/AegisQuiz.API/Program.cs) | Đăng ký dịch vụ DI chuẩn OCP |
+| **Dynamic Epistemic Genesis** | [EpistemicGenesisEngine.cs](file:///Backend/src/Aegis.Infrastructure/AI/Genesis/EpistemicGenesisEngine.cs) | **Đại Kiến Trúc Sư Tầng 0**: Tự động hội thảo và khởi sinh Viện Hàn Lâm Mới theo OCP khi gặp miền tri thức chưa được khám phá |
+| **Genesis Engine Interface** | [IEpistemicGenesisEngine.cs](file:///Backend/src/Aegis.Application/Interfaces/IEpistemicGenesisEngine.cs) | Hợp đồng trừu tượng khởi sinh Viện động Just-In-Time |
+| **Orchestration Core** | [UniversalSymposiumEngine.cs](file:///Backend/src/Aegis.Infrastructure/AI/UniversalSymposiumEngine.cs) | Nhạc trưởng điều phối 6 giai đoạn tranh biện, kết nối DB và xuất Kỷ yếu |
+| **System Prompt Composer** | [SymposiumPromptComposer.cs](file:///Backend/src/Aegis.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs) | Bộ ghép prompt 6 tầng độc lập, nội suy biến, hỗ trợ Hot-Reload |
+| **Council Selection Strategy** | [DiverseEpistemicCouncilSelectionStrategy.cs](file:///Backend/src/Aegis.Infrastructure/AI/Selection/DiverseEpistemicCouncilSelectionStrategy.cs) | Thuật toán tách từ biên từ (`\b`), so khớp CSDL, kích hoạt Genesis Tầng 0 và gắn Viện đối trọng |
+| **Prompt Template Entity** | [SymposiumPromptTemplate.cs](file:///Backend/src/Aegis.Domain/Entities/SymposiumPromptTemplate.cs) | Entity đại diện mẫu System Prompt phân tầng |
+| **Universal Council Entity** | [UniversalAiCouncil.cs](file:///Backend/src/Aegis.Domain/Entities/UniversalAiCouncil.cs) | Entity đại diện Viện Hàn Lâm và Ghế chuyên gia AI |
+| **API Webhook Controller** | [AiModelsController.cs](file:///Backend/src/Aegis.API/Controllers/AiModelsController.cs) | Tiếp nhận lệnh triệu tập, lấy danh sách viện và xuất Kỷ yếu |
+| **Realtime SignalR Hub** | [SymposiumHub.cs](file:///Backend/src/Aegis.API/Hubs/SymposiumHub.cs) & [SignalRSymposiumBroadcaster.cs](file:///Backend/src/Aegis.API/Services/SignalRSymposiumBroadcaster.cs) | Phát sóng trực tiếp tiến trình từng turn và điểm Rubric |
+| **Knowledge Notebook Hub** | [NotebookProcessingService.cs](file:///Backend/src/Aegis.Infrastructure/Services/NotebookProcessingService.cs) | Tự động kết tinh Kỷ yếu thành Hồ sơ Tri thức Chân lý Tối cao (Authority 4) |
+| **Dependency Injection** | [Program.cs](file:///Backend/src/Aegis.API/Program.cs) | Đăng ký dịch vụ DI chuẩn OCP |
 
 ### Hợp Đồng DTO & API Endpoints:
 
 #### 1. Triệu tập Đại Hội Thảo (Hỗ trợ 0-Click Dynamic Genesis):
 * **Endpoint**: `POST /api/ai/symposium/convene`
-* **Request DTO** ([SymposiumDtos.cs](file:///Backend/src/AegisQuiz.Application/Models/AI/SymposiumDtos.cs)):
+* **Request DTO** ([SymposiumDtos.cs](file:///Backend/src/Aegis.Application/Models/AI/SymposiumDtos.cs)):
 ```csharp
 public class ConveneSymposiumRequest
 {
@@ -373,7 +373,7 @@ Tất cả các giao diện của Đại Hội Thảo và Hồ Sơ Kỷ Yếu đ
 | Phiên Bản | Mốc Thời Gian | Tổng Công Trình Sư / Chuyên Gia | Nội Dung Nâng Cấp Chi Tiết | Trạng Thái Kiểm Chứng |
 | :---: | :---: | :---: | :--- | :---: |
 | `v1.0` | 2026-10-04 | No.1 System Architect | Khởi thảo ý tưởng 6 Viện Hàn Lâm cơ bản và quy trình 6 bước lý thuyết. | Draft Baseline |
-| `v2.0` | 2026-10-05 | No.1 System Architect | **ĐẠI NÂNG CẤP TOÀN DIỆN**: <br/>1. Thiết lập **Kiến trúc System Prompt 6 tầng** ([SymposiumPromptComposer.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs)).<br/>2. Hoàn tất **DDL Schema Bước 0** (thêm `UpdatedAt`, `SortOrder`, bảng `SymposiumPromptTemplates`).<br/>3. Xóa bỏ hoàn toàn hardcode `string.Contains`, hiện thực thuật toán **Word-Boundary Token Matching (`\b`) & Contrarian Anchor** ([DiverseEpistemicCouncilSelectionStrategy.cs](file:///Backend/src/AegisQuiz.Infrastructure/AI/Selection/DiverseEpistemicCouncilSelectionStrategy.cs)).<br/>4. Mở rộng thêm 3 Viện: **Nghệ thuật & Mỹ học**, **Luật học & Quản trị**, **Não bộ & Nhận thức học** (Tổng cộng: 9 Viện, 19 Ghế).<br/>5. Tích hợp DI và auto-healing pipeline.<br/>6. Xuất bản Tài liệu Chuẩn Sống ALDS v1.0. | **100% VERIFIED LIVE ON DOCKER & POSTGRESQL** |
+| `v2.0` | 2026-10-05 | No.1 System Architect | **ĐẠI NÂNG CẤP TOÀN DIỆN**: <br/>1. Thiết lập **Kiến trúc System Prompt 6 tầng** ([SymposiumPromptComposer.cs](file:///Backend/src/Aegis.Infrastructure/AI/Prompt/SymposiumPromptComposer.cs)).<br/>2. Hoàn tất **DDL Schema Bước 0** (thêm `UpdatedAt`, `SortOrder`, bảng `SymposiumPromptTemplates`).<br/>3. Xóa bỏ hoàn toàn hardcode `string.Contains`, hiện thực thuật toán **Word-Boundary Token Matching (`\b`) & Contrarian Anchor** ([DiverseEpistemicCouncilSelectionStrategy.cs](file:///Backend/src/Aegis.Infrastructure/AI/Selection/DiverseEpistemicCouncilSelectionStrategy.cs)).<br/>4. Mở rộng thêm 3 Viện: **Nghệ thuật & Mỹ học**, **Luật học & Quản trị**, **Não bộ & Nhận thức học** (Tổng cộng: 9 Viện, 19 Ghế).<br/>5. Tích hợp DI và auto-healing pipeline.<br/>6. Xuất bản Tài liệu Chuẩn Sống ALDS v1.0. | **100% VERIFIED LIVE ON DOCKER & POSTGRESQL** |
 | `v2.2` | **2026-10-06** | **No.1 System Architect** | **HOÀN THIỆN CẢNH GIỚI 5: TRIỆT TIÊU TOÀN PHẦN HARD-CODE & i18n HOÁ 100%**: <br/>1. Ghép nối trực tiếp `ISymposiumPromptComposer` vào `UniversalSymposiumEngine`, `SymposiumSecretariatCouncil`, `IndependentSymposiumJudge`. Triệt tiêu hoàn toàn chuỗi prompt hardcode trong C#.<br/>2. Thêm trường `Locale` vào `ConveneSymposiumRequest` và nội suy tên pha đa ngữ động.<br/>3. Xuất bản tệp bản địa hoá `symposium.json` (vi-VN & en-US) và tích hợp `useTranslation('symposium')` toàn diện cho Frontend. | **100% BUILD & SCOPED TEST VERIFIED** |
 
 ---

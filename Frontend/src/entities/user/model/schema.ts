@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — User Entity Model + Zod Schemas
+ * Aegis — User Entity Model + Zod Schemas
  * =============================================
  * SSOT cho User domain model.
  * Migrate từ: src/types/auth.ts (vẫn giữ file cũ để backward compat)

@@ -7,19 +7,19 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy solution và tất cả csproj (cache layer cho dotnet restore)
-COPY AegisQuiz.sln ./
+COPY Aegis.sln ./
 COPY Directory.Build.props ./
-COPY src/AegisQuiz.Domain/AegisQuiz.Domain.csproj             src/AegisQuiz.Domain/
-COPY src/AegisQuiz.Application/AegisQuiz.Application.csproj   src/AegisQuiz.Application/
-COPY src/AegisQuiz.Infrastructure/AegisQuiz.Infrastructure.csproj src/AegisQuiz.Infrastructure/
-COPY src/AegisQuiz.API/AegisQuiz.API.csproj                   src/AegisQuiz.API/
+COPY src/Aegis.Domain/Aegis.Domain.csproj             src/Aegis.Domain/
+COPY src/Aegis.Application/Aegis.Application.csproj   src/Aegis.Application/
+COPY src/Aegis.Infrastructure/Aegis.Infrastructure.csproj src/Aegis.Infrastructure/
+COPY src/Aegis.API/Aegis.API.csproj                   src/Aegis.API/
 
 # Restore packages (separate layer để cache Docker)
-RUN dotnet restore src/AegisQuiz.API/AegisQuiz.API.csproj
+RUN dotnet restore src/Aegis.API/Aegis.API.csproj
 
 # Copy toàn bộ source và publish
 COPY . .
-RUN dotnet publish src/AegisQuiz.API/AegisQuiz.API.csproj -c Release -o /app/publish
+RUN dotnet publish src/Aegis.API/Aegis.API.csproj -c Release -o /app/publish
 
 # ===== STAGE 2: Runtime =====
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
@@ -32,4 +32,4 @@ COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "AegisQuiz.API.dll"]
+ENTRYPOINT ["dotnet", "Aegis.API.dll"]

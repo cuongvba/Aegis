@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — usePermission Hook
+ * Aegis — usePermission Hook
  * ================================
  * `can(action, subject)` permission interface.
  * Wrap useAuthContext để cung cấp declarative permission checks.

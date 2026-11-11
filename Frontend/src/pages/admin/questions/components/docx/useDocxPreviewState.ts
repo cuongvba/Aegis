@@ -747,7 +747,7 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     try {
       setIsExportingExcel(true);
       setShowExportMenu(false);
-      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_AegisQuiz';
+      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_Aegis';
       await convertService.exportPreviewToExcel(docxPreviewList, {
         templateCode,
         examTitle: title,
@@ -766,7 +766,7 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     try {
       setIsExportingExcel(true);
       setShowExportMenu(false);
-      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_AegisQuiz';
+      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_Aegis';
       await convertService.exportPreviewToCustomTemplate(docxPreviewList, file, {
         examTitle: title,
         includeExplanation: true,
@@ -785,7 +785,7 @@ function inferQuestionTopic(q: any): { topicCode: string; topicName: string; dom
     try {
       setIsTranspilingStandard(true);
       setShowTranspileMenu(false);
-      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_AegisQuiz';
+      const title = processingFileName?.replace(/\.[^/.]+$/, '') || 'DeThi_Aegis';
       await convertService.exportPreviewToStandard(docxPreviewList, formatCode, {
         examTitle: title,
         categoryName: title,

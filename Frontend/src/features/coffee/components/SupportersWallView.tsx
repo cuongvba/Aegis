@@ -25,7 +25,7 @@ export const SupportersWallView: React.FC = () => {
         } else {
           // Dữ liệu ban đầu trang nhã
           setSupporters([
-            { orderCode: 9001, donorName: 'Thầy Hoàng Minh', donorEmail: 'h***@edu.vn', amount: 100000, message: 'Cảm ơn AegisQuiz đã hỗ trợ công cụ bóc tách đề thi toán cực kỳ hữu ích!', rewardTier: '🍰 Người Tiếp Lửa Thầm Lặng', createdAt: '2026-10-22 10:30' },
+            { orderCode: 9001, donorName: 'Thầy Hoàng Minh', donorEmail: 'h***@edu.vn', amount: 100000, message: 'Cảm ơn Aegis đã hỗ trợ công cụ bóc tách đề thi toán cực kỳ hữu ích!', rewardTier: '🍰 Người Tiếp Lửa Thầm Lặng', createdAt: '2026-10-22 10:30' },
             { orderCode: 9002, donorName: 'Minh Trang (Learner)', donorEmail: 't***@gmail.com', amount: 50000, message: 'Chúc hệ thống ngày càng phát triển mạnh mẽ!', rewardTier: '☕☕ Tri Kỷ Đồng Hành', createdAt: '2026-10-22 09:15' },
             { orderCode: 9003, donorName: 'Cựu Sinh Viên Bách Khoa', donorEmail: 'b***@alumni.vn', amount: 200000, message: 'Tài trợ 1 tháng server cho dự án mã nguồn mở giáo dục tuyệt vời.', rewardTier: '🌟 Nhà Bảo Trợ Vàng', createdAt: '2026-10-21 16:40' },
           ]);

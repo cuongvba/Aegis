@@ -22,7 +22,7 @@ Chi tiết xem tại tài liệu chuyên sâu: 📖 **[RECENT_SYSTEM_BREAKTHROUG
 
 ## 🌟 Tổng Quan Hệ Thống
 
-**AegisQuiz** được thiết kế nhằm đáp ứng cả hai nhu cầu cốt lõi trong giáo dục và đào tạo hiện đại:
+**Aegis** được thiết kế nhằm đáp ứng cả hai nhu cầu cốt lõi trong giáo dục và đào tạo hiện đại:
 1. **Khảo thí & Luyện thi thông minh (Assessment & Adaptive Testing)**: Luyện thi phân hóa trình độ bằng thuật toán **Item Response Theory (IRT)** 3 tham số, phòng thi trực tuyến bảo mật chống gian lận (Secure Exam Room), trích xuất đề thi tự động từ file Word chứa công thức toán LaTeX phức tạp.
 2. **Đấu trường Gameshow Tri Thức Trực Tuyến (Arena Gameshow Platform)**: Kiến trúc Plugin đa nền tảng cho phép học sinh, sinh viên và doanh nghiệp tổ chức các cuộc thi mô phỏng chuẩn xác các gameshow hàng đầu như **Đường Lên Đỉnh Olympia**, **Rung Chuông Vàng**, **Chiếc Nón Kỳ Diệu**, **University Challenge**, **Jeopardy!**, **Nhanh Như Chớp** với khả năng cướp chuông mili-giây và đồ họa Studio trực quan.
 
@@ -39,17 +39,17 @@ Chi tiết xem tại tài liệu chuyên sâu: 📖 **[RECENT_SYSTEM_BREAKTHROUG
                           HTTPS REST / WebSocket SignalR
                                                 │
                        ┌────────────────────────▼─────────────────────────┐
-                       │       AegisQuiz.API (.NET 10 Web API)            │
+                       │       Aegis.API (.NET 10 Web API)                │
                        │   Controllers • SignalR ArenaHub • Middleware    │
                        └───────────────┬──────────────────┬───────────────┘
                                        │                  │
                 ┌──────────────────────▼──────┐    ┌──────▼──────────────────────────┐
-                │  AegisQuiz.Application      │    │ Python IRT Microservice         │
+                │  Aegis.Application          │    │ Python IRT Microservice         │
                 │  DTOs, Core Business Rules  │    │ FastAPI • Item Response Theory  │
                 └──────────────┬──────────────┘    │ Tham số độ khó & Khả năng theta │
                                │                   └─────────────────────────────────┘
                 ┌──────────────▼──────────────┐
-                │  AegisQuiz.Infrastructure   │
+                │  Aegis.Infrastructure       │
                 │  • ArenaRoomManager         │
                 │  • IArenaGamePlugin Engine  │
                 │  • Docx Math/Formula Parser │
@@ -85,7 +85,7 @@ Hiện tại, hệ thống đã trang bị sẵn 6 Gameshow kinh điển:
 
 ### 1. Khởi Chạy Backend .NET API:
 ```bash
-cd Backend/src/AegisQuiz.API
+cd Backend/src/Aegis.API
 dotnet run
 ```
 *API Swagger & SignalR Hub sẽ khởi chạy tại: `http://localhost:5000` (hoặc cấu hình trong `launchSettings.json`).*
@@ -100,7 +100,7 @@ npm run dev
 
 ### 3. Chạy Unit Tests:
 ```bash
-cd Backend/tests/AegisQuiz.UnitTests
+cd Backend/tests/Aegis.UnitTests
 dotnet test
 ```
 
@@ -110,12 +110,12 @@ dotnet test
 
 Toàn bộ tài liệu chi tiết từ thiết kế kiến trúc, lược đồ dữ liệu, phân hệ chuyên sâu đến đặc tả API và cẩm nang vận hành được lưu trữ tập trung tại thư mục **[`docs/`](docs/README.md)**:
 
-- 🌌 **[ĐẠI ĐẶC TẢ HỆ THỐNG THỐNG NHẤT TOÀN DIỆN (UNIFIED MASTER SPECIFICATION v4.0)](docs/AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md)**: Tác phẩm chuẩn tắc thống nhất tối cao tích hợp toàn diện Triết lý, Kiến trúc 4 tầng, 7 Kỳ quan công nghệ (kèm ví dụ vui nhộn), Đại sảnh 6 Gameshow kinh điển và Sổ tay vận hành đa đối tượng!
-- 👑 **[Tài Liệu Kỹ Thuật Hệ Thống Chuẩn Quốc Tế v2.0 (78KB)](docs/AEGISQUIZ_SYSTEM_DOCUMENT_V2.0.md)**: Bản thiết kế Software Architecture Document (SAD) toàn diện với 9 đột phá công nghệ, phân tích bài toán, bảo mật và mở rộng.
-- 🌐 **[Bản Thiết Kế Tối Thượng Chuẩn Quốc Tế v3.0](docs/AEGISQUIZ_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md)**: Bản thiết kế 4 Trụ Cột: Military-Grade IT, AI Neuroscience CAT/IRT, Obsessive Gamification, Platform Economics.
+- 🌌 **[ĐẠI ĐẶC TẢ HỆ THỐNG THỐNG NHẤT TOÀN DIỆN (UNIFIED MASTER SPECIFICATION v4.0)](docs/AEGIS_UNIFIED_MASTER_SPECIFICATION.md)**: Tác phẩm chuẩn tắc thống nhất tối cao tích hợp toàn diện Triết lý, Kiến trúc 4 tầng, 7 Kỳ quan công nghệ (kèm ví dụ vui nhộn), Đại sảnh 6 Gameshow kinh điển và Sổ tay vận hành đa đối tượng!
+- 👑 **[Tài Liệu Kỹ Thuật Hệ Thống Chuẩn Quốc Tế v2.0 (78KB)](docs/AEGIS_SYSTEM_DOCUMENT_V2.0.md)**: Bản thiết kế Software Architecture Document (SAD) toàn diện với 9 đột phá công nghệ, phân tích bài toán, bảo mật và mở rộng.
+- 🌐 **[Bản Thiết Kế Tối Thượng Chuẩn Quốc Tế v3.0](docs/AEGIS_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md)**: Bản thiết kế 4 Trụ Cột: Military-Grade IT, AI Neuroscience CAT/IRT, Obsessive Gamification, Platform Economics.
 - 🗺️ **[Mục Lục Điều Hướng Toàn Diện docs/README.md](docs/README.md)**: Bản đồ điều hướng và chỉ mục của toàn bộ hệ thống.
 - 🏛️ **Kiến Trúc & Bảo Mật**:
-  - 🛡️ **[BÁO CÁO ĐÁNH GIÁ TOÀN DIỆN HỆ THỐNG THEO TIÊU CHUẨN CAO NHẤT THẾ GIỚI (GLOBAL SUPREME AUDIT 2026)](docs/architecture/AEGISQUIZ_GLOBAL_SUPREME_AUDIT_REPORT_2026.md)** *(Mới nhất - Đánh giá đa chiều ISO 25010, OWASP ASVS v4.0, Psychometrics IRT 3-PL, CLEAR Architecture)*
+  - 🛡️ **[BÁO CÁO ĐÁNH GIÁ TOÀN DIỆN HỆ THỐNG THEO TIÊU CHUẨN CAO NHẤT THẾ GIỚI (GLOBAL SUPREME AUDIT 2026)](docs/architecture/AEGIS_GLOBAL_SUPREME_AUDIT_REPORT_2026.md)** *(Mới nhất - Đánh giá đa chiều ISO 25010, OWASP ASVS v4.0, Psychometrics IRT 3-PL, CLEAR Architecture)*
   - [Báo Cáo Kiểm Toán Toàn Diện Backend Đạt Cảnh Giới Tối Cao](docs/architecture/BACKEND_WORLD_CLASS_SUPREME_AUDIT_REPORT.md)
   - [Kiến Trúc Tổng Thể Hệ Thống (System Architecture)](docs/architecture/SYSTEM_ARCHITECTURE.md)
   - [Lược Đồ Cơ Sở Dữ Liệu & Entity Models (Data Models)](docs/architecture/DATA_MODELS.md)
@@ -138,4 +138,4 @@ Toàn bộ tài liệu chi tiết từ thiết kế kiến trúc, lược đồ 
 
 ## 🛡️ Bản Quyền & Phát Triển
 
-Phát triển bởi đội ngũ kỹ thuật AegisQuiz. Bảo lưu mọi quyền theo giấy phép nội bộ dự án.
+Phát triển bởi đội ngũ kỹ thuật Aegis Global. Bảo lưu mọi quyền theo giấy phép nội bộ dự án.

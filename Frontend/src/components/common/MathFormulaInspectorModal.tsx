@@ -150,7 +150,7 @@ export const MathFormulaInspectorModal: React.FC<MathFormulaInspectorModalProps>
             </div>
             <div>
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                AegisQuiz Math Formula Inspector & Live Converter
+                Aegis Math Formula Inspector & Live Converter
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
                   v2.5 Vector Engine
                 </span>

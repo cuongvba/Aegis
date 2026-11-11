@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — useTenant Hook (Refactored)
+ * Aegis — useTenant Hook (Refactored)
  * =========================================
  * Wrapper hook cho TenantContext.
  * Thay thế useAdaptiveTenant.ts cũ — backward compatible API.

@@ -1,4 +1,4 @@
-# 🌐 AEGISQUIZ — HEADLESS ADAPTIVE PRACTICE & CREATOR ECONOMY ARCHITECTURE
+# 🌐 AEGIS — HEADLESS ADAPTIVE PRACTICE & CREATOR ECONOMY ARCHITECTURE
 ## Kiến Trúc Nền Tảng Luyện Tập Thích Ứng Đa Phân Khúc & Kinh Tế Người Sáng Tạo (1 Core — Infinite Verticals)
 
 > **Tài liệu tham chiếu chuẩn Living Documentation**: `docs/architecture/AEGIS_HEADLESS_ADAPTIVE_PRACTICE_AND_CREATOR_ECONOMY_ARCHITECTURE.md`  
@@ -16,7 +16,7 @@ Trong thị trường Khảo thí & Học tập trực tuyến (EdTech / Assessm
 * Học sinh tiểu học bị choáng ngợp và mất tập trung khi đề thi của mình nằm chung hàng với đề thi chứng chỉ tài chính.
 * Các tổ chức doanh nghiệp (Ngân hàng, Bệnh viện) từ chối sử dụng phần mềm nếu không có không gian thương hiệu và phạm vi tri thức cô lập.
 
-AegisQuiz chuyển đổi giao diện Practice từ một màn hình chọn chủ đề đơn lẻ thành **Nền tảng Khảo thí Đa Phân Khúc (Headless Adaptive Practice Platform)** theo triết lý:
+Aegis chuyển đổi giao diện Practice từ một màn hình chọn chủ đề đơn lẻ thành **Nền tảng Khảo thí Đa Phân Khúc (Headless Adaptive Practice Platform)** theo triết lý:
 $$\mathbf{One\;Core\;Engine} \;\xrightarrow{\quad}\; \mathbf{Infinite\;Vertical\;Apps} \;\xrightarrow{\quad}\; \mathbf{Creator\;Micro-Portals}$$
 
 Hệ thống cho phép từ một Backend duy nhất sản sinh ra hàng trăm ứng dụng chuyên biệt (Dedicated Vertical Apps) và hàng vạn cổng luyện thi cá nhân hóa cho từng Giáo viên/Chuyên gia (Teacher Creator Economy).
@@ -32,7 +32,7 @@ $$\mathbf{PracticeContext} = \Big\langle \mathbf{Tenant},\; \mathbf{DomainScope}
 ```mermaid
 flowchart TD
     subgraph INGRESS["CỔNG ĐIỀU HƯỚNG ĐẦU VÀO (INGRESS ROUTING)"]
-        R1["Subdomain CNAME: gplx.aegisquiz.com / thaycuongtoan.vn"]
+        R1["Subdomain CNAME: gplx.aegis.com / thaycuongtoan.vn"]
         R2["URL Query: /practice?domain=DRIVING&scope=B2"]
         R3["User Profile: Grade 10 / Agribank Staff / Free Learner"]
     end
@@ -48,7 +48,7 @@ flowchart TD
         V2["📐 MATH ARENA (Toán K-12 GDPT)<br/>• Phân tầng Lớp 1 - 12 & Chuẩn Bloom<br/>• KaTeX MathType & Vector WMF sắc nét<br/>• Bảng nháp số Scratchpad"]
         V3["🏦 BANK COMPLIANCE (Nghiệp Vụ Ngân Hàng)<br/>• Tình huống thẩm định rủi ro đa bước<br/>• Phân cấp cây OrgUnit Chi nhánh O(1)<br/>• Giám sát webcam & Toàn vẹn bảo mật"]
         V4["🇬🇧 ENGLISH PRO (IELTS / TOEIC)<br/>• Split-screen chia đôi bài đọc dài<br/>• Audio Player chuyên dụng tua 5s<br/>• Dạng bài Gap-filling & Ordering"]
-        V5["👨‍🏫 CREATOR WHITE-LABEL PORTAL<br/>• thaycuong.aegisquiz.com<br/>• 100% đề thi của Thầy Cường<br/>• Tự đặt học phí & QR chuyển khoản"]
+        V5["👨‍🏫 CREATOR WHITE-LABEL PORTAL<br/>• thaycuong.aegis.com<br/>• 100% đề thi của Thầy Cường<br/>• Tự đặt học phí & QR chuyển khoản"]
     end
 
     INGRESS --> ENGINE
@@ -82,7 +82,7 @@ flowchart TD
 
 ## IV. MÔ HÌNH CREATOR ECONOMY CHO GIÁO VIÊN & CHUYÊN GIA
 
-AegisQuiz trao quyền cho hàng triệu nhà giáo dục toàn cầu khởi nghiệp trên nền tảng của mình:
+Aegis trao quyền cho hàng triệu nhà giáo dục toàn cầu khởi nghiệp trên nền tảng của mình:
 
 1. **White-Label Creator Subdomain**:
    * Mỗi giáo viên sở hữu một đường dẫn riêng: `/c/:creatorSlug` hoặc gắn tên miền riêng `toanthaycuong.vn`.

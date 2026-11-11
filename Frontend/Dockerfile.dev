@@ -1,5 +1,5 @@
 # ============================================================================
-# AegisQuiz Frontend — DEV Container (Vite Dev Server + Hot Module Replacement)
+# Aegis Frontend — DEV Container (Vite Dev Server + Hot Module Replacement)
 # ============================================================================
 # Khác với `Dockerfile`/`Dockerfile.prod` (build tĩnh + phục vụ qua Nginx cho
 # Production), file này CHỈ dùng cho phát triển cục bộ: source code được mount
@@ -8,9 +8,9 @@
 #
 # Build & chạy độc lập (không cần docker-compose):
 #   cd Frontend
-#   docker build -f Dockerfile.dev -t aegisquiz-frontend-dev .
+#   docker build -f Dockerfile.dev -t aegis-frontend-dev .
 #   docker run --rm -p 3000:3000 -v "${PWD}:/app" -v /app/node_modules `
-#     -e VITE_API_URL=http://localhost:8080 --name aegisquiz-frontend-dev aegisquiz-frontend-dev
+#     -e VITE_API_URL=http://localhost:8080 --name aegis-frontend-dev aegis-frontend-dev
 #
 # Khuyến nghị: chạy qua `docker-compose.dev.yml` ở thư mục gốc để tự động trỏ
 # đúng vào container Backend dev (VITE_API_URL=http://backend:8080):

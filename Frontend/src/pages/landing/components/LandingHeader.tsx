@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — LandingHeader
+ * Aegis — LandingHeader
  * ===========================
  * Header công khai cho Landing Page — tự động nhận diện phiên người dùng:
  * - Khi chưa đăng nhập: hiển thị nút Đăng nhập / Bắt đầu ngay

@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Type-Safe Environment Variables
+ * Aegis — Type-Safe Environment Variables
  * =============================================
  * SSOT cho tất cả VITE_* env vars.
  * KHÔNG đọc import.meta.env trực tiếp ở bất kỳ nơi nào khác.

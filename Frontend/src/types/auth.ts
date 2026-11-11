@@ -1,5 +1,5 @@
 /**
- * [RBAC SSOT] AegisQuiz — Auth Types & Role Constants
+ * [RBAC SSOT] Aegis — Auth Types & Role Constants
  *
  * QUAN TRỌNG: Đây là nguồn sự thật duy nhất cho tất cả role/permission trên Frontend.
  * KHÔNG dùng string literal 'admin'/'student' ở bất kỳ nơi nào khác.

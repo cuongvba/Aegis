@@ -16,7 +16,8 @@ export const DEFAULT_THEME_TOKENS: ThemeTokens = {
   fontFamily: 'Inter, system-ui, sans-serif',
 };
 
-const THEME_STORAGE_KEY = 'aegisquiz_tenant_theme_tokens';
+const THEME_STORAGE_KEY = 'aegis_tenant_theme_tokens';
+const LEGACY_THEME_STORAGE_KEY = 'aegisquiz_tenant_theme_tokens';
 
 /**
  * [Enterprise White-Labeling] Tiêm động các CSS Variables vào `:root` với độ trễ < 1µs.
@@ -37,7 +38,7 @@ export function useThemeInjector(customTokens?: ThemeTokens) {
 
     if (!tokensToApply) {
       try {
-        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        const stored = localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
         if (stored) {
           tokensToApply = JSON.parse(stored);
         }

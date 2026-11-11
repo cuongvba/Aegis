@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Arena Audio SFX Library
+ * Aegis — Arena Audio SFX Library
  * =====================================
  * Web Audio API synthesizer tách ra từ arena.service.ts.
  * Đây là pure utility function — không có React dependency.

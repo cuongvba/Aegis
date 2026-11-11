@@ -1,9 +1,9 @@
-# 🌐 AEGISQUIZ — ĐỀ ÁN THANH TẨY & NÂNG CẤP TOÀN DIỆN FRONTEND ĐẠT ĐỈNH CAO THẾ GIỚI (ALDS v1.0)
+# 🌐 AEGIS — ĐỀ ÁN THANH TẨY & NÂNG CẤP TOÀN DIỆN FRONTEND ĐẠT ĐỈNH CAO THẾ GIỚI (ALDS v1.0)
 ## Chiến Lược Triệt Tiêu Dư Thừa, Xóa Bỏ Trang Mock Giả Lập & Thiết Lập Kiến Trúc Sovereign Frontend 2026
 
-> **Cơ quan ban hành:** Hội đồng Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz (No.1)  
+> **Cơ quan ban hành:** Hội đồng Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis (No.1)  
 > **Cấp độ kiến trúc:** L5 Sovereign Living Document — Chuẩn ALDS v1.0  
-> **Mục tiêu chiến lược:** Loại bỏ triệt để 100% tệp tin chết, trùng lặp và các trang mock không phản ánh thực tế; phân rã các God Component; đưa AegisQuiz trở thành nền tảng thi và khảo thí trực tuyến có hiệu năng, kiến trúc và trải nghiệm người dùng vượt trội thời đại so với toàn cầu.
+> **Mục tiêu chiến lược:** Loại bỏ triệt để 100% tệp tin chết, trùng lặp và các trang mock không phản ánh thực tế; phân rã các God Component; đưa Aegis trở thành nền tảng thi và khảo thí trực tuyến có hiệu năng, kiến trúc và trải nghiệm người dùng vượt trội thời đại so với toàn cầu.
 
 ---
 
@@ -13,11 +13,11 @@
 
 Qua quá trình rà soát toàn diện mã nguồn Frontend (`Frontend/src`), hệ thống hiện đang tồn tại **4 mâu thuẫn kiến trúc cốt lõi**:
 1. **Mâu thuẫn "Bóng ma Next.js" (Ghost App Router)**: Tồn tại cả một cây thư mục `src/app/` kiểu Next.js App Router (`page.tsx`, `layout.tsx`, `app/admin/`, `app/quiz/`, `app/dashboard/`...) hoàn toàn không được `App.tsx` sử dụng nhưng vẫn chiếm dung lượng và gây xung đột cú pháp tooling.
-2. **Mâu thuẫn "Tệp Trùng Lặp Khổng Lồ" (Duplicate Monoliths)**: Tồn tại song song [`AdminQuestionsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/AdminQuestionsPage.tsx) (2,101 dòng) và [`questions/index.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/index.tsx) (1,790 dòng) cùng làm một nhiệm vụ.
+2. **Mâu thuẫn "Tệp Trùng Lặp Khổng Lồ" (Duplicate Monoliths)**: Tồn tại song song [`AdminQuestionsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/AdminQuestionsPage.tsx) (2,101 dòng) và [`questions/index.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/index.tsx) (1,790 dòng) cùng làm một nhiệm vụ.
 3. **Mâu thuẫn "Trang Mock Treo Đầu Dê" (Toy Mock Pages)**:
-   - Đường dẫn `/paths` ([`PathExplorer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/paths/PathExplorer.tsx)) hiển thị lộ trình học "Nhập môn React, State & Props" hoàn toàn là mock dữ liệu tĩnh, không liên quan đến đề thi ngân hàng hay toán học thực tế.
-   - Thanh điều hướng chính [`NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/widgets/app-header/NavMenu.tsx#L30) gắn cứng link thi thử `/quiz/attempt/mock-123`.
-   - Các dịch vụ [`learner-quiz.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/learner-quiz.service.ts#L47) âm thầm `catch { return MOCK_QUESTIONS; }` ("What is the capital city of France?") khi lỗi mạng thay vì hiển thị trạng thái Empty State / Error Banner chuyên nghiệp.
+   - Đường dẫn `/paths` ([`PathExplorer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/paths/PathExplorer.tsx)) hiển thị lộ trình học "Nhập môn React, State & Props" hoàn toàn là mock dữ liệu tĩnh, không liên quan đến đề thi ngân hàng hay toán học thực tế.
+   - Thanh điều hướng chính [`NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/widgets/app-header/NavMenu.tsx#L30) gắn cứng link thi thử `/quiz/attempt/mock-123`.
+   - Các dịch vụ [`learner-quiz.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/learner-quiz.service.ts#L47) âm thầm `catch { return MOCK_QUESTIONS; }` ("What is the capital city of France?") khi lỗi mạng thay vì hiển thị trạng thái Empty State / Error Banner chuyên nghiệp.
 4. **Mâu thuẫn God Components**: Có đến **14 tệp tin vượt quá 700 - 2,000 dòng code**, vi phạm quy định $\le 250$ dòng/component của bản điều lệ AGENTS.md.
 
 ### 1.2 Sơ Đồ Kiến Trúc Đích: Pure FSD v2.1 & Real-Data Driven State
@@ -67,12 +67,12 @@ Toàn bộ các tệp cần được **thanh tẩy, xóa bỏ hoặc tái cấu 
 
 | STT | Đường Dẫn Tệp Tin Sống | Dung Lượng / LOC | Lý Do Thanh Tẩy |
 | :---: | :--- | :---: | :--- |
-| 1 | [`Frontend/src/pages/admin/AdminQuestionsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/AdminQuestionsPage.tsx) | **2,101 dòng** | Tệp cũ trùng lặp hoàn toàn với `pages/admin/questions/index.tsx`. `App.tsx` không hề import file này. |
-| 2 | [`Frontend/src/app/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/app/page.tsx) | 120 dòng | Phế tích Next.js App Router, dự án chạy Vite SPA. |
-| 3 | [`Frontend/src/app/layout.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/app/layout.tsx) | 35 dòng | Phế tích Next.js App Router. |
-| 4 | [`Frontend/src/app/globals.css`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/app/globals.css) | 25 dòng | Trùng lặp với `Frontend/src/index.css`. |
-| 5 | [`Frontend/src/app/admin/questions/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/app/admin/questions/page.tsx) | 15 dòng | File Next.js rỗng không sử dụng. |
-| 6 | [`Frontend/src/app/admin/notebooks/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/app/admin/notebooks/page.tsx) | 15 dòng | File Next.js rỗng không sử dụng. |
+| 1 | [`Frontend/src/pages/admin/AdminQuestionsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/AdminQuestionsPage.tsx) | **2,101 dòng** | Tệp cũ trùng lặp hoàn toàn với `pages/admin/questions/index.tsx`. `App.tsx` không hề import file này. |
+| 2 | [`Frontend/src/app/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/app/page.tsx) | 120 dòng | Phế tích Next.js App Router, dự án chạy Vite SPA. |
+| 3 | [`Frontend/src/app/layout.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/app/layout.tsx) | 35 dòng | Phế tích Next.js App Router. |
+| 4 | [`Frontend/src/app/globals.css`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/app/globals.css) | 25 dòng | Trùng lặp với `Frontend/src/index.css`. |
+| 5 | [`Frontend/src/app/admin/questions/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/app/admin/questions/page.tsx) | 15 dòng | File Next.js rỗng không sử dụng. |
+| 6 | [`Frontend/src/app/admin/notebooks/page.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/app/admin/notebooks/page.tsx) | 15 dòng | File Next.js rỗng không sử dụng. |
 | 7 | `Frontend/src/app/quiz/review/[attemptId]/page.tsx` | 30 dòng | Tên file chứa `[attemptId]` gây lỗi cú pháp PowerShell / Scripting. |
 | 8 | `Frontend/src/app/dashboard/`, `app/leaderboard/`, `app/paywall/`, `app/achievements/` | ~200 dòng | Toàn bộ các thư mục con trong `src/app/` (ngoại trừ `src/app/providers/` đang dùng thực sự). |
 
@@ -82,12 +82,12 @@ Toàn bộ các tệp cần được **thanh tẩy, xóa bỏ hoặc tái cấu 
 
 | STT | Tệp Tin Vi Phạm | Hiện Trạng Mock Giả Lập | Giải Pháp Vượt Trội Thay Thế |
 | :---: | :--- | :--- | :--- |
-| 1 | [`Frontend/src/data/mock-quiz.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/data/mock-quiz.ts) | Chứa câu hỏi tiếng Anh mẫu: "What is the capital city of France?", "Select prime numbers below 10". | **Xóa bỏ**. Chuyển sang nạp câu hỏi thật từ Ngân hàng Đề thi PostgreSQL qua `GET /api/quiz/questions`. |
-| 2 | [`Frontend/src/pages/paths/PathExplorer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/paths/PathExplorer.tsx) | 100% Mock: Bản đồ lộ trình học các môn "Nhập môn React", "State & Props", "Redux". | **Tái cấu trúc**: Kết nối trực tiếp cây chủ đề phân cấp $O(1)$ (`GET /api/quiz/topics/tree`) của Tenant hiện tại. |
-| 3 | [`Frontend/src/widgets/app-header/NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/widgets/app-header/NavMenu.tsx#L30) | Gắn cứng đường dẫn mock: `path: '/quiz/attempt/mock-123'`. | **Sửa đổi**: Chuyển thành link vào Đề Thi Thật (Lấy đề thi mới nhất hoặc mở Modal chọn đề thi). |
-| 4 | [`Frontend/src/services/learner-quiz.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/learner-quiz.service.ts#L47) | `catch { return MOCK_QUESTIONS; }` khi API tạo đề luyện tập lỗi. | **Loại bỏ fallback mock**. Ném lỗi có cấu trúc để UI hiển thị màn hình Empty State / Retry có nút "Thử lại". |
-| 5 | [`Frontend/src/services/arena.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/arena.service.ts#L96-L140) | Mock phòng thi Everest & Lý Công Uẩn khi mất kết nối backend. | **Bỏ mock**. Hiển thị thông báo SignalR tái kết nối (`ReconnectingToast`). |
-| 6 | [`Frontend/src/services/attempt.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/services/attempt.service.ts#L18) | Đọc lịch sử làm bài từ `localStorage.getItem('attempt_review_data')`. | **Đấu nối API**: `GET /api/quiz/attempt/{id}` để hiển thị kết quả chấm điểm thực tế từ Backend. |
+| 1 | [`Frontend/src/data/mock-quiz.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/data/mock-quiz.ts) | Chứa câu hỏi tiếng Anh mẫu: "What is the capital city of France?", "Select prime numbers below 10". | **Xóa bỏ**. Chuyển sang nạp câu hỏi thật từ Ngân hàng Đề thi PostgreSQL qua `GET /api/quiz/questions`. |
+| 2 | [`Frontend/src/pages/paths/PathExplorer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/paths/PathExplorer.tsx) | 100% Mock: Bản đồ lộ trình học các môn "Nhập môn React", "State & Props", "Redux". | **Tái cấu trúc**: Kết nối trực tiếp cây chủ đề phân cấp $O(1)$ (`GET /api/quiz/topics/tree`) của Tenant hiện tại. |
+| 3 | [`Frontend/src/widgets/app-header/NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/widgets/app-header/NavMenu.tsx#L30) | Gắn cứng đường dẫn mock: `path: '/quiz/attempt/mock-123'`. | **Sửa đổi**: Chuyển thành link vào Đề Thi Thật (Lấy đề thi mới nhất hoặc mở Modal chọn đề thi). |
+| 4 | [`Frontend/src/services/learner-quiz.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/learner-quiz.service.ts#L47) | `catch { return MOCK_QUESTIONS; }` khi API tạo đề luyện tập lỗi. | **Loại bỏ fallback mock**. Ném lỗi có cấu trúc để UI hiển thị màn hình Empty State / Retry có nút "Thử lại". |
+| 5 | [`Frontend/src/services/arena.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/arena.service.ts#L96-L140) | Mock phòng thi Everest & Lý Công Uẩn khi mất kết nối backend. | **Bỏ mock**. Hiển thị thông báo SignalR tái kết nối (`ReconnectingToast`). |
+| 6 | [`Frontend/src/services/attempt.service.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/attempt.service.ts#L18) | Đọc lịch sử làm bài từ `localStorage.getItem('attempt_review_data')`. | **Đấu nối API**: `GET /api/quiz/attempt/{id}` để hiển thị kết quả chấm điểm thực tế từ Backend. |
 
 ---
 
@@ -95,14 +95,14 @@ Toàn bộ các tệp cần được **thanh tẩy, xóa bỏ hoặc tái cấu 
 
 | Tệp Tin God Component | LOC Hiện Tại | Kế Hoạch Phân Rã Modular |
 | :--- | :---: | :--- |
-| [`pages/admin/questions/index.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/index.tsx) | **1,790** | Tách: `useQuestionsTable.ts`, `QuestionRowActions.tsx`, `QuestionsPagination.tsx`, `QuestionsBatchActionBar.tsx`. |
-| [`pages/admin/math/MathSettingsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/math/MathSettingsPage.tsx) | **1,265** | Tách: `GlyphRegistryTable.tsx`, `FontMappingCard.tsx`, `useMathDictionary.ts`. |
-| [`pages/admin/org-units/OrganizationUnitsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/org-units/OrganizationUnitsPage.tsx) | **1,169** | Tách: `OrgUnitTreeViewer.tsx`, `OrgUnitUpsertModal.tsx`, `useOrgUnits.ts`. |
-| [`ExcelIngestionStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/ExcelIngestionStudioModal.tsx) | **1,152** | Tách: `ExcelHeaderSnifferView.tsx`, `ExcelGridPreview.tsx`, `useExcelStudio.ts`. |
-| [`NotebookDualPaneStudio.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/notebooks/NotebookDualPaneStudio.tsx) | **1,091** | Tách: `PdfPaneViewer.tsx`, `NotebookExtractionPane.tsx`, `useNotebookSync.ts`. |
-| [`QuestionModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/QuestionModal.tsx) | **1,010** | Tách: `QuestionBasicInfoForm.tsx`, `QuestionOptionsEditor.tsx`, `QuestionExplanationForm.tsx`. |
-| [`pages/practice/PracticePage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/practice/PracticePage.tsx) | **931** | Tách: `PracticeHeaderPresenter.tsx`, `PracticeQuestionCardView.tsx`, `usePracticeSession.ts`. |
-| [`components/quiz/ResultScreen.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/quiz/ResultScreen.tsx) | **858** | Tách: `IrtAbilityGauge.tsx`, `MistakeVaultReview.tsx`, `ResultShareCard.tsx`. |
+| [`pages/admin/questions/index.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/index.tsx) | **1,790** | Tách: `useQuestionsTable.ts`, `QuestionRowActions.tsx`, `QuestionsPagination.tsx`, `QuestionsBatchActionBar.tsx`. |
+| [`pages/admin/math/MathSettingsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/math/MathSettingsPage.tsx) | **1,265** | Tách: `GlyphRegistryTable.tsx`, `FontMappingCard.tsx`, `useMathDictionary.ts`. |
+| [`pages/admin/org-units/OrganizationUnitsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/org-units/OrganizationUnitsPage.tsx) | **1,169** | Tách: `OrgUnitTreeViewer.tsx`, `OrgUnitUpsertModal.tsx`, `useOrgUnits.ts`. |
+| [`ExcelIngestionStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/ExcelIngestionStudioModal.tsx) | **1,152** | Tách: `ExcelHeaderSnifferView.tsx`, `ExcelGridPreview.tsx`, `useExcelStudio.ts`. |
+| [`NotebookDualPaneStudio.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/notebooks/NotebookDualPaneStudio.tsx) | **1,091** | Tách: `PdfPaneViewer.tsx`, `NotebookExtractionPane.tsx`, `useNotebookSync.ts`. |
+| [`QuestionModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/QuestionModal.tsx) | **1,010** | Tách: `QuestionBasicInfoForm.tsx`, `QuestionOptionsEditor.tsx`, `QuestionExplanationForm.tsx`. |
+| [`pages/practice/PracticePage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/practice/PracticePage.tsx) | **931** | Tách: `PracticeHeaderPresenter.tsx`, `PracticeQuestionCardView.tsx`, `usePracticeSession.ts`. |
+| [`components/quiz/ResultScreen.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/quiz/ResultScreen.tsx) | **858** | Tách: `IrtAbilityGauge.tsx`, `MistakeVaultReview.tsx`, `ResultShareCard.tsx`. |
 
 ---
 
@@ -112,7 +112,7 @@ Toàn bộ các tệp cần được **thanh tẩy, xóa bỏ hoặc tái cấu 
 
 ```text
 ========================================================================================
-VITE PRODUCTION BUILD TELEMETRY (AegisQuiz Frontend)
+VITE PRODUCTION BUILD TELEMETRY (Aegis Frontend)
 ========================================================================================
 ✓ Tổng số Chunks được tạo ra: 52 Chunks
 ✓ Thời gian biên dịch (tsc -b + build): 2.72 giây
@@ -132,13 +132,13 @@ CẢNH BÁO CÁC CHUNK VƯỢT QUÁ 300 kB CẦN TỐI ƯU HÓA:
 
 ## IV. TRỤ CỘT 4: QUY CHUẨN TRẢI NGHIỆM ĐỈNH CAO (VISUAL & UX SUPREMACY STANDARDS)
 
-Để xây dựng hệ thống vượt trội thời đại, mọi màn hình trong AegisQuiz bắt buộc phải vượt qua bộ chuẩn **Zero Flaws**:
+Để xây dựng hệ thống vượt trội thời đại, mọi màn hình trong Aegis bắt buộc phải vượt qua bộ chuẩn **Zero Flaws**:
 
 1. **Zero Layout Shift (CLS = 0)**:
    * Tất cả container hiển thị KaTeX, hình ảnh WMF và Audio Player phải được cấp phát trước chiều cao (`min-height` hoặc tỉ lệ `aspect-ratio`).
    * Tuyệt đối không để màn hình giật nảy khi công thức toán học render xong.
 2. **Triệt Tiêu Hoàn Toàn Hard-Coded Nav Items**:
-   * Xóa bỏ link `/quiz/attempt/mock-123` khỏi [`NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/widgets/app-header/NavMenu.tsx).
+   * Xóa bỏ link `/quiz/attempt/mock-123` khỏi [`NavMenu.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/widgets/app-header/NavMenu.tsx).
    * Thay thế bằng:
      * Nút **"Luyện Thi Thông Minh"** (Dẫn tới `/practice`).
      * Nút **"Phòng Thi Chuẩn Hóa"** (Mở danh sách các kỳ thi đang diễn ra của Tenant).
@@ -195,4 +195,4 @@ CẢNH BÁO CÁC CHUNK VƯỢT QUÁ 300 kB CẦN TỐI ƯU HÓA:
 
 ### KẾT LUẬN CỦA TỔNG CÔNG TRÌNH SƯ (NO.1)
 
-Hệ sinh thái AegisQuiz sở hữu tiềm năng công nghệ vô cùng to lớn. Việc mạnh tay **cắt bỏ các khối u xơ dư thừa, xóa sổ dữ liệu mock giả tạo và đưa các component về chuẩn thanh thoát $\le 250$ dòng** chính là chìa khóa then chốt để AegisQuiz vươn lên vị thế nền tảng khảo thí số **hoàn mỹ nhất, chuẩn mực nhất và vượt trội nhất toàn cầu**.
+Hệ sinh thái Aegis sở hữu tiềm năng công nghệ vô cùng to lớn. Việc mạnh tay **cắt bỏ các khối u xơ dư thừa, xóa sổ dữ liệu mock giả tạo và đưa các component về chuẩn thanh thoát $\le 250$ dòng** chính là chìa khóa then chốt để Aegis vươn lên vị thế nền tảng khảo thí số **hoàn mỹ nhất, chuẩn mực nhất và vượt trội nhất toàn cầu**.

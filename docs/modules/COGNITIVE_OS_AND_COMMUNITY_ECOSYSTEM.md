@@ -13,7 +13,7 @@ Trong mô hình giáo dục trực tuyến truyền thống, hai rào cản lớ
 1. **Thiếu động lực nội tại & tính cô lập**: Người học thường cảm thấy đơn độc, thiếu sự tương tác ngang hàng (Peer-to-Peer) và không có sự ghi nhận giá trị thực chất cho nỗ lực rèn luyện của mình.
 2. **Khủng hoảng "Ảo tưởng thông thạo" (Illusion of Competence)**: Người học chỉ làm đi làm lại các dạng bài quen thuộc mà không biết chính xác bản thân đang bị "hổng kiến thức gốc" (Root-Cause Cognitive Gap) ở đâu, dẫn đến việc mất thời gian mà không tiến bộ.
 
-**Epoch 4 (Community Ecosystem)** và **Epoch 5 (CognitiveOS)** ra đời nhằm chuyển hóa AegisQuiz từ một phần mềm khảo thí đơn thuần thành một **Hệ điều hành Nhận thức & Kinh tế Học tập Toàn diện**:
+**Epoch 4 (Community Ecosystem)** và **Epoch 5 (CognitiveOS)** ra đời nhằm chuyển hóa Aegis từ một phần mềm khảo thí đơn thuần thành một **Hệ điều hành Nhận thức & Kinh tế Học tập Toàn diện**:
 - Kết nối cộng đồng thông qua cơ chế Thách đấu đối kháng (Peer Challenge), Bảng xếp hạng lớp học trực tiếp qua SignalR, và Nền kinh tế mã hóa **AegisCoin Proof-of-Learning**.
 - Giải phẫu não bộ người học bằng thuật toán nơ-ron **Deep Knowledge Tracing (DKT)**, dựng bản đồ Đồ thị Tri thức Đa ngành (Knowledge Graph) và trợ giảng Socratic phản biện dẫn xuất từ Sách giáo khoa chuẩn Bộ GD&ĐT không gây ảo giác (Zero-Hallucination RAG).
 

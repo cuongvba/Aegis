@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — useTenantTheme Hook
+ * Aegis — useTenantTheme Hook
  * =================================
  * Tiện ích truy cập và tùy biến theme động theo Tenant.
  * Cung cấp accessors cho primary/secondary colors, CSS inline styles, và custom injection.

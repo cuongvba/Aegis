@@ -23,7 +23,7 @@ export interface EvaluatedMobileItem {
 }
 
 /**
- * Chuyển đổi PracticeQuestionItem sang LearnerQuestion chuẩn của AegisQuiz Web
+ * Chuyển đổi PracticeQuestionItem sang LearnerQuestion chuẩn của Aegis Web
  */
 export function toLearnerQuestion(q: PracticeQuestionItem, idx: number): LearnerQuestion {
   const options = Array.isArray(q.options)

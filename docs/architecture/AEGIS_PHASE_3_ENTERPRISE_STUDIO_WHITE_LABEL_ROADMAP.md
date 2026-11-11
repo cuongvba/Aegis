@@ -8,7 +8,7 @@
 
 ## I. TẦM NHÌN CHIẾN LƯỢC & MỤC TIÊU CỐT LÕI (STRATEGIC HORIZON)
 
-Giai đoạn III là bước nhảy vọt đưa **AegisQuiz** từ một nền tảng khảo thí mạnh mẽ thành một **Hệ Điều Hành Khảo Thí & Tri Thức Doanh Nghiệp Cấp Cao (Enterprise Assessment & Knowledge OS)** có năng lực cạnh tranh sòng phẳng với các tập đoàn EdTech & HR-Tech đa quốc gia.
+Giai đoạn III là bước nhảy vọt đưa **Aegis** từ một nền tảng khảo thí mạnh mẽ thành một **Hệ Điều Hành Khảo Thí & Tri Thức Doanh Nghiệp Cấp Cao (Enterprise Assessment & Knowledge OS)** có năng lực cạnh tranh sòng phẳng với các tập đoàn EdTech & HR-Tech đa quốc gia.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -81,8 +81,8 @@ Theo **Trụ cột 5 trong AGENTS.md**, việc tùy biến giao diện doanh ngh
   ```json
   {
     "brandName": "VietinBank Academy",
-    "logoUrl": "https://cdn.aegisquiz.com/tenants/vietinbank/logo.svg",
-    "faviconUrl": "https://cdn.aegisquiz.com/tenants/vietinbank/favicon.ico",
+    "logoUrl": "https://cdn.aegis.com/tenants/vietinbank/logo.svg",
+    "faviconUrl": "https://cdn.aegis.com/tenants/vietinbank/favicon.ico",
     "fontFamily": "Inter, sans-serif",
     "tokens": {
       "--color-primary": "#005596",
@@ -98,7 +98,7 @@ Theo **Trụ cột 5 trong AGENTS.md**, việc tùy biến giao diện doanh ngh
   }
   ```
 - **Engine nạp giao diện phía Frontend (`useThemeInjector.ts`)**:
-  - Khi người dùng đăng nhập hoặc truy cập qua subdomain (ví dụ: `vietinbank.aegisquiz.com`), Hook tự động tiêm các biến CSS Tokens vào thẻ `:root` của DOM trong vòng chưa đầy **1 phần triệu giây (1 $\mu$s)**.
+  - Khi người dùng đăng nhập hoặc truy cập qua subdomain (ví dụ: `vietinbank.aegis.com`), Hook tự động tiêm các biến CSS Tokens vào thẻ `:root` của DOM trong vòng chưa đầy **1 phần triệu giây (1 $\mu$s)**.
   - Hỗ trợ đổi theme động thời gian thực (Hot-Theming Preview) ngay trong trang quản trị Tenant.
 
 ### 2. Multi-Tenant Query Filter Bảo Toàn Dữ Liệu
@@ -165,32 +165,32 @@ Tuân thủ nghiêm ngặt quy định tại `.agents/rules/aegis_modular_saas_e
 ## VI. BẰNG CHỨNG THỰC THI & TỆP NGUỒN SỐNG (VERIFIED ARTIFACTS)
 
 1. **Hạ tầng B2B Entitlements**:
-   - Backend Domain: [`Backend/src/AegisQuiz.Domain/Entities/FeatureEntitlement.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/FeatureEntitlement.cs)
-   - Backend Unit Test: [`Backend/tests/AegisQuiz.UnitTests/EnterpriseEntitlementMatrixTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/EnterpriseEntitlementMatrixTests.cs) (4/4 tests passed)
-   - Frontend Entitlements: [`Frontend/src/types/entitlement.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/types/entitlement.ts)
+   - Backend Domain: [`Backend/src/Aegis.Domain/Entities/FeatureEntitlement.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/FeatureEntitlement.cs)
+   - Backend Unit Test: [`Backend/tests/Aegis.UnitTests/EnterpriseEntitlementMatrixTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/EnterpriseEntitlementMatrixTests.cs) (4/4 tests passed)
+   - Frontend Entitlements: [`Frontend/src/types/entitlement.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/types/entitlement.ts)
 2. **Đa ngữ 5 Quốc gia (10 tệp i18n mới)**:
-   - `split_studio.json`: [`vi`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/vi/split_studio.json), [`en`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/en/split_studio.json), [`ja`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ja/split_studio.json), [`ko`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ko/split_studio.json), [`ar`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ar/split_studio.json)
-   - `white_label.json`: [`vi`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/vi/white_label.json), [`en`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/en/white_label.json), [`ja`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ja/white_label.json), [`ko`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ko/white_label.json), [`ar`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/public/locales/ar/white_label.json)
+   - `split_studio.json`: [`vi`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/vi/split_studio.json), [`en`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/en/split_studio.json), [`ja`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ja/split_studio.json), [`ko`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ko/split_studio.json), [`ar`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ar/split_studio.json)
+   - `white_label.json`: [`vi`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/vi/white_label.json), [`en`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/en/white_label.json), [`ja`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ja/white_label.json), [`ko`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ko/white_label.json), [`ar`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/public/locales/ar/white_label.json)
 3. **Phân hệ Cognitive Split-Screen Studio**:
-   - Orchestrator: [`Frontend/src/pages/admin/studio/SplitScreenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/SplitScreenStudioPage.tsx) (78 LOC)
-   - 60fps Scroll Hook: [`Frontend/src/pages/admin/studio/hooks/useStudioScrollSync.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/hooks/useStudioScrollSync.ts) (68 LOC)
-   - Data Hook: [`Frontend/src/pages/admin/studio/hooks/useSplitStudioData.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/hooks/useSplitStudioData.ts) (149 LOC)
-   - Source Viewport: [`Frontend/src/pages/admin/studio/components/SourceDocumentViewport.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/components/SourceDocumentViewport.tsx) (133 LOC)
-   - Extracted Viewport: [`Frontend/src/pages/admin/studio/components/CognitiveExtractedViewport.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/components/CognitiveExtractedViewport.tsx) (181 LOC)
-   - Studio Header: [`Frontend/src/pages/admin/studio/components/SplitStudioHeader.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/studio/components/SplitStudioHeader.tsx) (112 LOC)
+   - Orchestrator: [`Frontend/src/pages/admin/studio/SplitScreenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/SplitScreenStudioPage.tsx) (78 LOC)
+   - 60fps Scroll Hook: [`Frontend/src/pages/admin/studio/hooks/useStudioScrollSync.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/hooks/useStudioScrollSync.ts) (68 LOC)
+   - Data Hook: [`Frontend/src/pages/admin/studio/hooks/useSplitStudioData.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/hooks/useSplitStudioData.ts) (149 LOC)
+   - Source Viewport: [`Frontend/src/pages/admin/studio/components/SourceDocumentViewport.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/components/SourceDocumentViewport.tsx) (133 LOC)
+   - Extracted Viewport: [`Frontend/src/pages/admin/studio/components/CognitiveExtractedViewport.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/components/CognitiveExtractedViewport.tsx) (181 LOC)
+   - Studio Header: [`Frontend/src/pages/admin/studio/components/SplitStudioHeader.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/studio/components/SplitStudioHeader.tsx) (112 LOC)
 4. **Phân hệ 100% DB-Driven White-Labeling**:
-   - Theme Injector: [`Frontend/src/shared/hooks/useThemeInjector.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/hooks/useThemeInjector.ts) (52 LOC)
-   - Customizer Page: [`Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx) (139 LOC)
-   - Live 0ms Preview: [`Frontend/src/pages/admin/white-label/components/LivePreviewSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/LivePreviewSection.tsx) (146 LOC)
-   - Color Palette Picker: [`Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx) (128 LOC)
-   - Font & Radius Selector: [`Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx) (97 LOC)
+   - Theme Injector: [`Frontend/src/shared/hooks/useThemeInjector.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/hooks/useThemeInjector.ts) (52 LOC)
+   - Customizer Page: [`Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx) (139 LOC)
+   - Live 0ms Preview: [`Frontend/src/pages/admin/white-label/components/LivePreviewSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/LivePreviewSection.tsx) (146 LOC)
+   - Color Palette Picker: [`Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx) (128 LOC)
+   - Font & Radius Selector: [`Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx) (97 LOC)
 5. **Docker & Build SLA**:
    - Initial Entry Chunk: `index-*.js` **149.25 kB** (gzip: **46.14 kB** $\le 150$ kB).
-   - Docker image: `aegisquiz-frontend:latest` (30.6 MB Alpine Nginx), container `aegisquiz-frontend-1` online tại `http://localhost:3000`.
+   - Docker image: `aegis-frontend:latest` (30.6 MB Alpine Nginx), container `aegis-frontend-1` online tại `http://localhost:3000`.
    - Browser Test: 0 lỗi console, không còn ErrorBoundary, phản hồi tức thì 60 FPS.
 
 ---
 
 ### NGHIỆM THU CHÍNH THỨC TỪ TỔNG CÔNG TRÌNH SƯ (NO.1)
 
-Toàn bộ **Giai đoạn III: Enterprise Split-Screen Studio & White-Labeling** đã được triển khai, kiểm thử và bàn giao thành công mỹ mãn. Hệ thống AegisQuiz đạt chuẩn kiến trúc đẳng cấp thế giới, sẵn sàng phục vụ các tổ chức giáo dục và tập đoàn doanh nghiệp đa quốc gia.
+Toàn bộ **Giai đoạn III: Enterprise Split-Screen Studio & White-Labeling** đã được triển khai, kiểm thử và bàn giao thành công mỹ mãn. Hệ thống Aegis đạt chuẩn kiến trúc đẳng cấp thế giới, sẵn sàng phục vụ các tổ chức giáo dục và tập đoàn doanh nghiệp đa quốc gia.

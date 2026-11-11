@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Root Providers Composition
+ * Aegis — Root Providers Composition
  * ========================================
  * Compose tất cả providers theo đúng thứ tự dependency.
  *

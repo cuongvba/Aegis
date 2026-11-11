@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Feature: Admin Manage Questions
+ * Aegis — Feature: Admin Manage Questions
  * ============================================
  * FSD Layer: features/admin/manage-questions/
  */

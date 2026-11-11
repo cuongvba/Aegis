@@ -24,7 +24,7 @@ export const BuyMeCoffeeModal: React.FC<BuyMeCoffeeModalProps> = ({ isOpen, onCl
   const [customAmount, setCustomAmount] = useState<string>('');
   const [donorName, setDonorName] = useState<string>('');
   const [donorEmail, setDonorEmail] = useState<string>('');
-  const [message, setMessage] = useState<string>('Chúc AegisQuiz ngày càng phát triển!');
+  const [message, setMessage] = useState<string>('Chúc Aegis ngày càng phát triển!');
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -39,7 +39,7 @@ export const BuyMeCoffeeModal: React.FC<BuyMeCoffeeModalProps> = ({ isOpen, onCl
     try {
       const res = await api.post('/api/payment/coffee-donation', {
         donorName: donorName.trim() || 'Bạn Đọc Yêu Quý',
-        donorEmail: donorEmail.trim() || 'supporter@aegisquiz.com',
+        donorEmail: donorEmail.trim() || 'supporter@aegis.com',
         amount: targetAmount,
         message: message.trim() || 'Mời team ly cafe!',
       });

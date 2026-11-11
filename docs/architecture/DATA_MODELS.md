@@ -1,6 +1,6 @@
 # 📊 Đặc Tả Lược Đồ Dữ Liệu & Mô Hình Thực Thể (Data Models & Schema)
 
-Tài liệu này mô tả chi tiết kiến trúc dữ liệu của **AegisQuiz**, bao gồm cả **Cơ sở dữ liệu Quan hệ Lâu dài (PostgreSQL via EF Core)** và **Cấu trúc Trạng thái Bộ nhớ Tạm thời (In-Memory RAM State)**.
+Tài liệu này mô tả chi tiết kiến trúc dữ liệu của **Aegis**, bao gồm cả **Cơ sở dữ liệu Quan hệ Lâu dài (PostgreSQL via EF Core)** và **Cấu trúc Trạng thái Bộ nhớ Tạm thời (In-Memory RAM State)**.
 
 ---
 

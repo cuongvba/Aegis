@@ -5,10 +5,10 @@
 > **Hệ sinh thái**: Aegis Global Cognitive Infrastructure (AGCI)  
 > **Phiên bản**: `ALDS v3.0 — Hierarchical Topic Tree, PDF Spatial Math & Real Team Management Edition` (Cập nhật: `2026-11-10`)  
 > **Thanh điều hướng 4 phân hệ của Giáo viên**:  
-> - ✨ **Zen Studio (Soạn Đề)**: [`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)  
-> - 🗂️ **ZenTopics (Chủ Đề Của Tôi)**: [`/creator/topics`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx)  
-> - 📝 **ZenQuestions (Câu Hỏi Của Tôi)**: [`/creator/questions`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/questions/ZenQuestionsPage.tsx)  
-> - 👥 **Đội Nhóm & Học Viên (Quản Lý Lớp)**: [`/team`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx)  
+> - ✨ **Zen Studio (Soạn Đề)**: [`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)  
+> - 🗂️ **ZenTopics (Chủ Đề Của Tôi)**: [`/creator/topics`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx)  
+> - 📝 **ZenQuestions (Câu Hỏi Của Tôi)**: [`/creator/questions`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/questions/ZenQuestionsPage.tsx)  
+> - 👥 **Đội Nhóm & Học Viên (Quản Lý Lớp)**: [`/team`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/TeamDashboard.tsx)  
 > **Lời hứa với Thầy/Cô**: *"Không cần giỏi máy tính! Chỉ cần biết bấm chuột hoặc chạm màn hình điện thoại là Thầy/Cô làm chủ được toàn bộ hệ thống trong 3 phút."*
 
 ---
@@ -28,7 +28,7 @@
 
 ## 1. BỨC TRANH TOÀN CẢNH: "NGÔI NHÀ ZEN 4 PHÒNG" CỦA THẦY/CÔ
 
-Khi đăng nhập vào hệ thống, Thầy/Cô sẽ thấy ngay **Thanh điều hướng 4 nút màu sắc** ở trên cùng màn hình ([`CreatorWorkspaceNav.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/components/CreatorWorkspaceNav.tsx)). Hãy hình dung đây là **4 căn phòng làm việc riêng tư** của Thầy/Cô (người khác không thể tự ý xóa hay sửa bài của Thầy/Cô):
+Khi đăng nhập vào hệ thống, Thầy/Cô sẽ thấy ngay **Thanh điều hướng 4 nút màu sắc** ở trên cùng màn hình ([`CreatorWorkspaceNav.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/components/CreatorWorkspaceNav.tsx)). Hãy hình dung đây là **4 căn phòng làm việc riêng tư** của Thầy/Cô (người khác không thể tự ý xóa hay sửa bài của Thầy/Cô):
 
 ```mermaid
 flowchart LR
@@ -56,18 +56,18 @@ flowchart LR
 
 ## 2. PHÒNG 1 — ✨ ZEN STUDIO: BIẾN TỜ GIẤY / FILE WORD / PDF / EXCEL THÀNH TRÒ CHƠI TRONG 3 CHẠM
 
-📍 **Cách mở**: Bấm nút **`✨ Zen Studio (Soạn Đề)`** trên thanh menu (hoặc vào địa chỉ [`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)).
+📍 **Cách mở**: Bấm nút **`✨ Zen Studio (Soạn Đề)`** trên thanh menu (hoặc vào địa chỉ [`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)).
 
 ### Thao tác 3 bước cực dễ:
 1. **Bước 1 (Thả file Word, Excel hoặc PDF)**:
    - Thầy/Cô bấm vào khung nét đứt giữa màn hình rồi chọn file **Word (`.docx`)**, **Excel (`.xlsx`)** hoặc **PDF (`.pdf`)** trên máy tính.
-   - **Đặc quyền nâng cấp cho file PDF Toán/Lý/Hóa**: Hệ thống tự động tái tạo công thức phân số $\frac{a}{b}$, dấu vector $\overrightarrow{AB}$, hệ phương trình ngoặc nhọn $\begin{cases}$, chỉ số dưới $u_n$ và chuyển **Bảng số liệu ghép nhóm** trong PDF thành bảng biểu sắc nét, đồng thời tự động lấy chuẩn Đáp án đúng và Hướng dẫn giải như file Word! Với các trang PDF chụp ảnh mờ, hệ thống tự động kích hoạt **AI Vision Fallback** ([`PdfHybridVisionFallbackService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Pdf/PdfHybridVisionFallbackService.cs)) để đọc không sót 1 chữ.
+   - **Đặc quyền nâng cấp cho file PDF Toán/Lý/Hóa**: Hệ thống tự động tái tạo công thức phân số $\frac{a}{b}$, dấu vector $\overrightarrow{AB}$, hệ phương trình ngoặc nhọn $\begin{cases}$, chỉ số dưới $u_n$ và chuyển **Bảng số liệu ghép nhóm** trong PDF thành bảng biểu sắc nét, đồng thời tự động lấy chuẩn Đáp án đúng và Hướng dẫn giải như file Word! Với các trang PDF chụp ảnh mờ, hệ thống tự động kích hoạt **AI Vision Fallback** ([`PdfHybridVisionFallbackService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Pdf/PdfHybridVisionFallbackService.cs)) để đọc không sót 1 chữ.
 2. **Bước 2 (Xem lại, Chỉnh sửa & Chọn Nhánh Chủ Đề Cha)**:
-   - Máy tự động đọc và hiện danh sách câu hỏi ngay trên màn hình ([`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx)).
+   - Máy tự động đọc và hiện danh sách câu hỏi ngay trên màn hình ([`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx)).
    - Khi bấm **`✏️ Sửa`** ở bất kỳ câu hỏi nào:
-     - Bấm nút **`Σ Toán`** để mở **Bàn Phím & Studio Công Thức Toán Học Toàn Màn Hình** ([`MathFormulaStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/math-studio/MathFormulaStudioModal.tsx)) gồm 8 chuyên đề (Đại số, Giải tích, Hình học, Ma trận/Hệ PT, Lượng giác, Vật lý, Hóa học...) chèn 1 chạm ngay tại con trỏ.
+     - Bấm nút **`Σ Toán`** để mở **Bàn Phím & Studio Công Thức Toán Học Toàn Màn Hình** ([`MathFormulaStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/math-studio/MathFormulaStudioModal.tsx)) gồm 8 chuyên đề (Đại số, Giải tích, Hình học, Ma trận/Hệ PT, Lượng giác, Vật lý, Hóa học...) chèn 1 chạm ngay tại con trỏ.
      - Bấm nút **`Bảng`** để chèn bảng số liệu — mọi công thức toán `$...$` nằm bên trong ô bảng đều được hiển thị sắc nét thành công thức chuẩn.
-   - **Chọn Nhánh Chủ Đề Đích (Cây Phân Cấp)**: Ngay trên thanh công cụ đề thi có ô chọn **`Nhánh chủ đề cha`** (hiển thị dạng cây `├─`, `└─`) và nút **`+ Nhánh mới`** ([`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx)) để Thầy/Cô đặt đề thi vào đúng thư mục môn học/khối lớp mong muốn.
+   - **Chọn Nhánh Chủ Đề Đích (Cây Phân Cấp)**: Ngay trên thanh công cụ đề thi có ô chọn **`Nhánh chủ đề cha`** (hiển thị dạng cây `├─`, `└─`) và nút **`+ Nhánh mới`** ([`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx)) để Thầy/Cô đặt đề thi vào đúng thư mục môn học/khối lớp mong muốn.
 3. **Bước 3 (Chọn 1 trong 4 nút ở thanh điều khiển nổi dưới đáy màn hình)**:
    - Nút **💾 Lưu Ngân Hàng**: Cất đề này vào đúng nhánh chủ đề đã chọn trên cây (`ZenTopics` & `ZenQuestions`) để dành hôm sau dùng.
    - Nút **📤 Giao Bài Tập**: Tạo ra **Mã QR** (hình vuông đen trắng) và **Đường link** để gửi vào Zalo cho phụ huynh/học sinh làm ở nhà.
@@ -82,21 +82,21 @@ flowchart LR
 
 ## 3. PHÒNG 2 — 🗂️ ZENTOPICS: "CÂY THƯ MỤC CHỦ ĐỀ PHÂN CẤP" CỦA RIÊNG THẦY/CÔ
 
-📍 **Cách mở**: Bấm nút **`🗂️ ZenTopics (Chủ Đề Của Tôi)`** trên thanh menu ([`/creator/topics`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx)).
+📍 **Cách mở**: Bấm nút **`🗂️ ZenTopics (Chủ Đề Của Tôi)`** trên thanh menu ([`/creator/topics`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/topics/ZenTopicsPage.tsx)).
 
 Hãy tưởng tượng **ZenTopics** giống như chiếc tủ hồ sơ nhiều tầng ngăn kéo (**Cây Phân Cấp Cha $\rightarrow$ Con**). Thầy/Cô có thể tạo Thư mục lớn (VD: *Toán Lớp 12*), bên trong có các Thư mục con (VD: *Chương 1: Hàm số*, *Chương 2: Nguyên hàm - Tích phân*), và bên trong nữa là từng Đề thi cụ thể!
 
-### Các nâng cấp nổi bật trong Cây Chủ Đề Phân Cấp ([`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx)):
+### Các nâng cấp nổi bật trong Cây Chủ Đề Phân Cấp ([`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx)):
 1. **Hiển thị Dạng Cây Đa Tầng & Cộng Dồn Số Lượng Câu Hỏi (`Roll-up Question Count`)**:
    - Các chủ đề được sắp xếp theo cấu trúc phả hệ Cha $\rightarrow$ Con có mũi tên đóng/mở nhánh (`▶` / `▼`) và nhãn cấp độ (`Lv.0`, `Lv.1`, `Lv.2`...).
    - **Tự động cộng dồn câu hỏi**: Thư mục cha tự động tính tổng số câu hỏi của chính nó cộng với tất cả các nhánh con cháu bên dưới (ví dụ: Thư mục gốc `Creator Studio` hiển thị tổng `62 câu` từ các đề con bên trong, không bao giờ bị báo `0 câu` ảo).
 2. **Nút `+ Tạo Chủ Đề Mới` (hoặc tạo Chủ đề nhánh con)**:
-   - Khi bấm **`+ Tạo Chủ Đề Mới`** ([`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicModal.tsx)), Thầy/Cô có thể chọn **`Chủ đề cha (Parent Topic)`** từ danh sách cây phân cấp:
+   - Khi bấm **`+ Tạo Chủ Đề Mới`** ([`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/TopicModal.tsx)), Thầy/Cô có thể chọn **`Chủ đề cha (Parent Topic)`** từ danh sách cây phân cấp:
      - Để trống nếu muốn tạo **Thư mục gốc (Cấp cao nhất)**.
      - Chọn một chủ đề có sẵn nếu muốn tạo **Chủ đề nhánh con** nằm bên trong chủ đề đó.
-   - Hệ thống tự động tính toán đường dẫn phân cấp `MaterializedPath` ([`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs)) giúp tra cứu tức thì.
+   - Hệ thống tự động tính toán đường dẫn phân cấp `MaterializedPath` ([`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs)) giúp tra cứu tức thì.
 3. **Nút `💬 Câu hỏi` (Xem toàn bộ câu hỏi của cả nhánh cây)**:
-   - Khi bấm nút **`💬 Câu hỏi`** trên một thư mục cha ([`TopicQuestionsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/topics/components/TopicQuestionsModal.tsx)), cửa sổ sẽ hiển thị **toàn bộ câu hỏi của thư mục cha đó và tất cả các thư mục con bên dưới** kèm đáp án đúng màu xanh lá cây!
+   - Khi bấm nút **`💬 Câu hỏi`** trên một thư mục cha ([`TopicQuestionsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/topics/components/TopicQuestionsModal.tsx)), cửa sổ sẽ hiển thị **toàn bộ câu hỏi của thư mục cha đó và tất cả các thư mục con bên dưới** kèm đáp án đúng màu xanh lá cây!
 4. **Nút `👁️ Xem chi tiết` & Nút `🌐 Cộng đồng`**:
    - Mở bảng thông tin chi tiết của chủ đề với các nút: **`+ Mới`**, **`✏️ Sửa`** (có thể đổi sang thư mục cha khác bất kỳ lúc nào), **`🌐 Cộng đồng`** (chia sẻ sang nhánh `COM_{mã_chủ_đề}` trên cây Cộng đồng mà vẫn giữ 100% quyền tác giả), **`💬 Câu hỏi`**, và **`🗑️ Xóa`**.
 
@@ -109,7 +109,7 @@ Hãy tưởng tượng **ZenTopics** giống như chiếc tủ hồ sơ nhiều 
 
 ## 4. PHÒNG 3 — 📝 ZENQUESTIONS: "KHO CÂU HỎI CÁ NHÂN", LỌC THEO NHÁNH CÂY & TRỢ LÝ AI SOẠN HỘ
 
-📍 **Cách mở**: Bấm nút **`📝 ZenQuestions (Câu Hỏi Của Tôi)`** trên thanh menu ([`/creator/questions`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/questions/ZenQuestionsPage.tsx)).
+📍 **Cách mở**: Bấm nút **`📝 ZenQuestions (Câu Hỏi Của Tôi)`** trên thanh menu ([`/creator/questions`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/questions/ZenQuestionsPage.tsx)).
 
 ### 3 Cách làm việc cực nhàn tại ZenQuestions:
 
@@ -125,7 +125,7 @@ Hãy tưởng tượng **ZenTopics** giống như chiếc tủ hồ sơ nhiều 
    > *"Hãy tạo cho tôi 5 câu đố vui thật dễ hiểu cho trẻ mẫu giáo 5 tuổi về các loại quả ngọt mùa hè"*
 3. Bấm **Tạo câu hỏi** $\rightarrow$ Chỉ sau vài giây, AI sẽ tự động soạn sẵn 5 câu hỏi có đủ 4 đáp án A, B, C, D và lời giải thích dịu dàng cho bé!
 
-#### Cách 3: Lọc câu hỏi thông minh theo Nhánh Cây Chủ Đề ([`useQuestionFilters.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/hooks/useQuestionFilters.ts))
+#### Cách 3: Lọc câu hỏi thông minh theo Nhánh Cây Chủ Đề ([`useQuestionFilters.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/hooks/useQuestionFilters.ts))
 - Ô lọc **Chủ đề** hiển thị đầy đủ cấu trúc cây phân cấp kèm tổng số câu hỏi cộng dồn ở mỗi nhánh.
 - Khi Thầy/Cô chọn một **Thư mục cha**, bảng câu hỏi sẽ tự động hiển thị **tất cả các câu hỏi thuộc thư mục cha đó và mọi nhánh con bên dưới**!
 
@@ -133,9 +133,9 @@ Hãy tưởng tượng **ZenTopics** giống như chiếc tủ hồ sơ nhiều 
 
 ## 5. PHÒNG 4 — 👥 ĐỘI NHÓM & HỌC VIÊN (`/team`): QUẢN LÝ THÀNH VIÊN LỚP HỌC, DỮ LIỆU THẬT 100% & GIAO BÀI ZALO
 
-📍 **Cách mở**: Bấm nút **`👥 Đội Nhóm & Học Viên`** trên thanh menu ([`/team`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx) hoặc `/creator/team`).
+📍 **Cách mở**: Bấm nút **`👥 Đội Nhóm & Học Viên`** trên thanh menu ([`/team`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/TeamDashboard.tsx) hoặc `/creator/team`).
 
-Đây là **"Trung tâm Quản trị Lớp học & Đội nhóm"** kết nối trực tiếp 100% với cơ sở dữ liệu thực tế PostgreSQL ([`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TeamLeaderController.cs)), giúp Thầy/Cô quản lý danh sách học sinh, giao bài và theo dõi tiến độ thật của từng em:
+Đây là **"Trung tâm Quản trị Lớp học & Đội nhóm"** kết nối trực tiếp 100% với cơ sở dữ liệu thực tế PostgreSQL ([`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TeamLeaderController.cs)), giúp Thầy/Cô quản lý danh sách học sinh, giao bài và theo dõi tiến độ thật của từng em:
 
 ```mermaid
 flowchart TB
@@ -149,25 +149,25 @@ flowchart TB
     end
 ```
 
-### 5.1. Quản lý Thông tin Lớp học & Tạo Lớp mới ([`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx))
+### 5.1. Quản lý Thông tin Lớp học & Tạo Lớp mới ([`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx))
 - **Nút `⚙️ Cài Đặt Nhóm`**: Cho phép Thầy/Cô đổi lại **Tên lớp / đội nhóm** (ví dụ: *Lớp Toán 12A1 - Thầy Cường*), **Mã nhóm** và **Mô tả lớp học**.
 - **Nút `+ Tạo Nhóm Mới`**: Khởi tạo thêm một lớp học hoặc đội tuyển mới trong hệ thống chỉ với 1 chạm.
 
-### 5.2. Quản lý Thành viên Lớp học: Thêm mới, Kết nạp, Chỉnh sửa & Xóa ([`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx))
+### 5.2. Quản lý Thành viên Lớp học: Thêm mới, Kết nạp, Chỉnh sửa & Xóa ([`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx))
 Khi bấm nút màu xanh lá **`+ Thêm Học Viên`**, hộp thoại quản lý thành viên mở ra với **2 chế độ linh hoạt**:
 1. **Chế độ 1 — `✨ Tạo học viên mới` (Dành cho học sinh chưa có tài khoản)**:
    - Thầy/Cô chỉ cần nhập **Họ và tên**, **Email**, **Số điện thoại** (tùy chọn) và **Mật khẩu khởi tạo** (mặc định `Aegis@123`).
    - Hệ thống tự động tạo tài khoản thật trong cơ sở dữ liệu và đưa học sinh vào lớp của Thầy/Cô ngay lập tức!
 2. **Chế độ 2 — `🔍 Chọn tài khoản có sẵn` (Dành cho học sinh đã đăng ký trên hệ thống)**:
    - Gõ tên hoặc email để tìm kiếm trong danh sách người dùng của trường/hệ thống, bấm chọn để kết nạp ngay vào lớp.
-3. **Chỉnh sửa hoặc Xóa thành viên ngay trên bảng ([`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx))**:
+3. **Chỉnh sửa hoặc Xóa thành viên ngay trên bảng ([`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx))**:
    - Trên mỗi dòng học viên đều có nút **`✏️ Sửa`** (cập nhật Họ tên, Email, SĐT) và nút **`🗑️ Xóa`** (gỡ học viên khỏi lớp học hiện tại).
 
 ### 5.3. Cây Chủ Đề & Đề Thi Đã Giao Cho Học Viên
 - Hiển thị các Chủ đề & Đề thi của Thầy/Cô theo **cấu trúc phân cấp Cha $\rightarrow$ Con** kèm tổng số câu hỏi cộng dồn.
 - Trên mỗi thẻ đề thi có **3 nút lệnh 1 chạm**:
   - **🔗 `Giao bài`**: Tự động chép sẵn đường link bài tập để Thầy/Cô dán (`Paste`) gửi vào nhóm Zalo lớp.
-  - **📊 `Báo cáo Lớp`** ([`TeacherCohortDashboardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/TeacherCohortDashboardModal.tsx)): Mở bảng tổng kết điểm trung bình, phát hiện **Câu hỏi nhiều học sinh làm sai nhất** (báo đỏ) và tự động phân 3 nhóm học lực (*Đột Phá*, *Vững Vàng*, *Cần Cứu Trợ*).
+  - **📊 `Báo cáo Lớp`** ([`TeacherCohortDashboardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/TeacherCohortDashboardModal.tsx)): Mở bảng tổng kết điểm trung bình, phát hiện **Câu hỏi nhiều học sinh làm sai nhất** (báo đỏ) và tự động phân 3 nhóm học lực (*Đột Phá*, *Vững Vàng*, *Cần Cứu Trợ*).
   - **📝 `Câu hỏi`**: Nhảy thẳng sang trang `ZenQuestions` của đúng chủ đề đó để xem hoặc sửa câu hỏi.
 
 ### 5.4. Bảng Tiến Độ Học Tập Thực Tế Của Từng Học Viên (100% Dữ Liệu Thật)
@@ -226,7 +226,7 @@ Khi ở trong **`✨ Zen Studio`**, sau khi nạp đề xong, nếu Thầy/Cô b
 
 ## 7C. SỬ DỤNG CÂY CHỦ ĐỀ PHÂN CẤP & KHO CÂU HỎI ĐÃ LƯU NGAY TRONG ZEN STUDIO (GIAO BÀI & ĐẤU TRƯỜNG 1 CHẠM)
 
-Ngoài tính năng nạp đề thi mới từ file Word/Excel/PDF, **`✨ Zen Studio`** ([`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)) được trang bị **Bộ Chuyển Đổi Không Gian Làm Việc Song Hành**:
+Ngoài tính năng nạp đề thi mới từ file Word/Excel/PDF, **`✨ Zen Studio`** ([`/creator/studio`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx)) được trang bị **Bộ Chuyển Đổi Không Gian Làm Việc Song Hành**:
 
 ```
  ┌──────────────────────────────────────┬──────────────────────────────────────┐
@@ -234,13 +234,13 @@ Ngoài tính năng nạp đề thi mới từ file Word/Excel/PDF, **`✨ Zen St
  └──────────────────────────────────────┴──────────────────────────────────────┘
 ```
 
-Khi Thầy/Cô bấm chuyển sang tab **`📚 Chủ Đề & Câu Hỏi Đã Lưu`** ([`ZenSavedBankSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenSavedBankSelector.tsx)):
-1. **Cột Trái — Cây Chủ Đề Phân Cấp Tương Tác ([`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx))**:
+Khi Thầy/Cô bấm chuyển sang tab **`📚 Chủ Đề & Câu Hỏi Đã Lưu`** ([`ZenSavedBankSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenSavedBankSelector.tsx)):
+1. **Cột Trái — Cây Chủ Đề Phân Cấp Tương Tác ([`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx))**:
    - Hiển thị toàn bộ các chủ đề và đề thi của Thầy/Cô theo **cấu trúc cây phân cấp Cha $\rightarrow$ Con** (ví dụ: `STUDIO` $\rightarrow$ `Studio 2026-11-05` $\rightarrow$ `Creator [...]` $\rightarrow$ `Đề thi...`; hoặc `COMMUNITY` $\rightarrow$ `COM_...`).
    - Có nút **`▶` / `▼`** để thu gọn hoặc mở rộng từng nhánh, nút **`Mở rộng hết / Thu gọn`** và nút **`+ Tạo gốc`** để thêm thư mục lớn mới.
-   - **Tổng số câu hỏi cộng dồn (`totalQuestionCount`)**: Mỗi thư mục cha tự động hiển thị tổng số câu hỏi của toàn bộ các nhánh con bên dưới ([`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/topicTreeHelper.ts)).
+   - **Tổng số câu hỏi cộng dồn (`totalQuestionCount`)**: Mỗi thư mục cha tự động hiển thị tổng số câu hỏi của toàn bộ các nhánh con bên dưới ([`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/topicTreeHelper.ts)).
    - **Thao tác nhanh ngay trên từng nhánh cây**: Khi di chuột vào một chủ đề bất kỳ trên cây, 3 nút tiện ích hiện ra ngay:
-     - **`+`** (*Tạo nhánh con*): Mở hộp thoại [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx) để tạo ngay một chủ đề con nằm dưới nhánh đó.
+     - **`+`** (*Tạo nhánh con*): Mở hộp thoại [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx) để tạo ngay một chủ đề con nằm dưới nhánh đó.
      - **`✏️`** (*Sửa nhánh*): Đổi tên chủ đề hoặc chuyển nhánh sang thư mục cha khác.
      - **`🗑️`** (*Xóa nhánh*): Xóa chủ đề nháp không còn sử dụng.
 2. **Cột Phải — Kho Câu Hỏi Theo Nhánh Cây**:

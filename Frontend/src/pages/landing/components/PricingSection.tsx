@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — PricingSection (Landing Page)
+ * Aegis — PricingSection (Landing Page)
  * ============================================
  * 3 cột giá chuẩn SaaS — cột giữa (Pro/Team) luôn được làm nổi bật.
  * FSD Layer: pages/landing/components/

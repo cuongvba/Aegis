@@ -1,7 +1,7 @@
-# 📐 AEGISQUIZ — KIẾN TRÚC BÓC TÁCH TOÁN HỌC & CHUYỂN HÓA LATEX TOÀN NĂNG (ALDS v1.0)
+# 📐 AEGIS — KIẾN TRÚC BÓC TÁCH TOÁN HỌC & CHUYỂN HÓA LATEX TOÀN NĂNG (ALDS v1.0)
 ## Universal Polyglot Math Pipeline (UPMP v2.0), MTEF Native AST Decoder, OMML Parser & MathLocaleNormalizer
 
-> **Hệ Thống:** AegisQuiz Enterprise Educational Intelligence Platform  
+> **Hệ Thống:** Aegis Enterprise Educational Intelligence Platform  
 > **Module:** Document & Mathematical Formula Ingestion Engine (`DocxParserService`, `MtefToLatexConverter`, `OmmlToLatexConverter`, `MathLocaleNormalizer`)  
 > **Cấp độ kiến trúc:** L5 Sovereign Architecture — Chuẩn ALDS v1.0 Living Document  
 > **Trạng thái:** Production Ready ✅ (25/25 Scoped Unit Tests Passed 100% — Zero Regression)
@@ -64,26 +64,26 @@ flowchart TD
 Toàn bộ giải pháp được thiết kế theo đúng quy chuẩn kiến trúc **Clean Architecture** và **Open/Closed Principle**:
 
 ### 2.1 Hợp Đồng Giao Diện Tầng Application
-* [`IMathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IMathLocaleNormalizer.cs):
+* [`IMathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IMathLocaleNormalizer.cs):
   - `Normalize(string latex, string locale = "vi")`: Chuẩn hóa toàn diện.
   - `NormalizeScientificUnits(string latex, string locale = "vi")`: Bọc đơn vị đo lường khoa học vào `\text{...}`.
   - `NormalizeTrigonometryAndFunctions(string latex, string locale = "vi")`: Chuẩn hóa hàm lượng giác đa ngôn ngữ.
   - `NormalizeDecimalCommas(string latex, string locale = "vi")`: Chuẩn hóa dấu phẩy số thập phân bản địa.
 
 ### 2.2 Hiện Thực Hóa Tầng Infrastructure
-* [`MathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/MathLocaleNormalizer.cs):
+* [`MathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/MathLocaleNormalizer.cs):
   - Thuật toán Regex biên dịch hiệu năng cao, không phân bổ bộ nhớ dư thừa.
   - Tự động nhận diện dấu phẩy giữa hai chữ số `(?<=\d),(?=\d)` để tạo nhóm `{,}` trong KaTeX.
   - Tự động tách lũy thừa đơn vị: `dm^3` $\to$ `\text{ dm}^{3}`, `m/s^2` $\to$ `\text{ m/s}^{2}`.
-* [`MtefToLatexConverter.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/MtefToLatexConverter.cs):
+* [`MtefToLatexConverter.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/MtefToLatexConverter.cs):
   - Bổ sung các Template cấu trúc: `tmBOX` (kết quả đóng khung `\boxed{...}`), `tmDIRAC` (ký hiệu lượng tử `\left\langle \phi \middle| \psi \right\rangle`), `tmARCS` (cung tròn SGK `\wideparen{AB}`), `tmSTRIKE` (`\cancel{...}`), `tmINTERVAL`, `tmUBAR`.
   - Mở rộng bảng MTCode 16-bit: Tích phân bội ($\iint, \iiint, \oint$), toán tử logic ($\land, \lor, \neg$), quan hệ bất đẳng thức ($\ll, \gg, \lesssim, \gtrsim$), hằng số Planck $\hbar$.
   - Tích hợp tự động `MathLocaleNormalizer` vào hàm `PostNormalizeLatex`.
-* [`OmmlToLatexConverter.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/OmmlToLatexConverter.cs):
-  - Tích hợp chuẩn hóa `MathLocaleNormalizer` tại cổng ra [Convert](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/OmmlToLatexConverter.cs#L30).
-* [`DynamicMathDictionaryService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicMathDictionaryService.cs) & [`math_dictionary_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/math_dictionary_registry.json):
+* [`OmmlToLatexConverter.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/OmmlToLatexConverter.cs):
+  - Tích hợp chuẩn hóa `MathLocaleNormalizer` tại cổng ra [Convert](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/OmmlToLatexConverter.cs#L30).
+* [`DynamicMathDictionaryService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicMathDictionaryService.cs) & [`math_dictionary_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/math_dictionary_registry.json):
   - Tra cứu $O(1)$ ConcurrentDictionary, cơ chế Hot-Reload 0ms downtime không cần biên dịch lại mã nguồn.
-* [`Program.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Program.cs#L136):
+* [`Program.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Program.cs#L136):
   - Đăng ký DI singleton chuẩn mực: `builder.Services.AddSingleton<IMathLocaleNormalizer>(_ => MathLocaleNormalizer.Default);`.
 
 ---
@@ -95,15 +95,15 @@ Hệ thống đã chạy kiểm nghiệm toàn diện qua 2 bộ test suite khoa
 
 ```text
 ========================================================================================
-TEST EXECUTION REPORT: AegisQuiz Universal Math Pipeline (UPMP v2.0)
+TEST EXECUTION REPORT: Aegis Universal Math Pipeline (UPMP v2.0)
 ========================================================================================
 Suite 1: MathLocaleAndAstOptimizationTests + MtefConversionTests
-- Target: AegisQuiz.UnitTests.dll (.NETCoreApp,Version=v10.0)
+- Target: Aegis.UnitTests.dll (.NETCoreApp,Version=v10.0)
 - Scoped Filter: FullyQualifiedName~MathLocaleAndAstOptimizationTests|FullyQualifiedName~MtefConversionTests
 - Kết Quả: Passed!  - Failed: 0, Passed: 19, Skipped: 0, Total: 19 (Duration: 133 ms)
 
 Suite 2: MathCharacterDiagnosticTest (Đề Thi Thực Địa DeToan.docx)
-- Target: AegisQuiz.UnitTests.dll (.NETCoreApp,Version=v10.0)
+- Target: Aegis.UnitTests.dll (.NETCoreApp,Version=v10.0)
 - Scoped Filter: FullyQualifiedName~MathCharacterDiagnosticTest
 - Kết Quả: Passed!  - Failed: 0, Passed: 6, Skipped: 0, Total: 6 (Duration: 46 ms)
 ========================================================================================
@@ -131,9 +131,9 @@ TỔNG CỘNG: 25/25 UNIT TESTS PASSED (100.0% SUCCESS RATE - ZERO REGRESSION)
 ## IV. TRỤ CỘT 4: CĂN CỨ THỊ GIÁC & QUY CHUẨN HIỂN THỊ TRÌNH DUYỆT (VISUAL PROOF-OF-WORK)
 
 ### 4.1 Quy Chuẩn Render Phía Frontend (Zero Layout Shift)
-* Phía giao diện Web React 19, các công thức LaTeX được hiển thị qua thành phần [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/MathRenderer.tsx) tích hợp KaTeX:
+* Phía giao diện Web React 19, các công thức LaTeX được hiển thị qua thành phần [`MathRenderer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx) tích hợp KaTeX:
   * Trục dòng dọc (`vertical-align: -0.15em` đến `-0.35em`) bảo đảm công thức nằm cân đối ngay ngắn trên dòng chữ, triệt tiêu hiện tượng công thức bị rơi xuống đáy dòng hoặc bay lơ lửng.
-  * Với các biểu thức SVG Vector fallback, bộ giải mã [`wmfDecoder.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/wmfDecoder.ts) bảo đảm `viewBox` luôn có giá trị số hợp lệ (`safeLineFactor > 0`), ngăn chặn triệt để hiện tượng lỗi viên thuốc đen (Black Pill) hay thanh trắng khổng lồ (Blank White Bar).
+  * Với các biểu thức SVG Vector fallback, bộ giải mã [`wmfDecoder.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/wmfDecoder.ts) bảo đảm `viewBox` luôn có giá trị số hợp lệ (`safeLineFactor > 0`), ngăn chặn triệt để hiện tượng lỗi viên thuốc đen (Black Pill) hay thanh trắng khổng lồ (Blank White Bar).
 
 ---
 

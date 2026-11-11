@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Tenant Entity Types
+ * Aegis — Tenant Entity Types
  * ===============================
  * FSD Layer: entities/tenant/model/types.ts
  */

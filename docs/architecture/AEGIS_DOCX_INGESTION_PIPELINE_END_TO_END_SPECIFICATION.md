@@ -2,7 +2,7 @@
 ## Đặc Tả Kiến Trúc Bóc Tách Từ Tệp Tin Đến Lưu Trữ Bất Biến Cơ Sở Dữ Liệu
 
 > **Hệ sinh thái:** AEGIS GLOBAL COGNITIVE INFRASTRUCTURE (AGCI)  
-> **Tiêu chuẩn áp dụng:** [AEGIS Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
+> **Tiêu chuẩn áp dụng:** [AEGIS Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
 > **Chủ nhiệm biên soạn:** No.1 — World-Class Polymath Chief Architect & Master Living Documentarian  
 > **Phiên bản:** `v5.0` (Tháng 10/2026) — Đồng bộ 100% mã nguồn thực thi  
 
@@ -106,23 +106,23 @@ Toàn bộ quy trình được thực thi bởi các module độc lập, có th
 
 | Giai đoạn | Lớp thực thi / File mã nguồn | Phương thức / Chức năng chính |
 | :--- | :--- | :--- |
-| **Giai đoạn 1** | [`DocxCigRulesPanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx#L45-L95) | Tiếp nhận file docx, đóng gói tham số CIG, gọi API |
-| **Giai đoạn 2** | [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs#L623-L660) | Endpoint `ImportQuestionsDocx`, khởi tạo Domain Context theo Tenant |
-| **Giai đoạn 3** | [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs#L80-L170) | `ParseRichDocxStream`: Giải nén ZipArchive, trích xuất hình ảnh `word/media/` |
-| **Giai đoạn 3** | [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs#L35-L120) | Giải mã nhị phân MathType WMF / OLE thành KaTeX và Vector SVG |
-| **Giai đoạn 3** | [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs#L45-L110) | `SniffCoordinates`: Nhận diện 5 trục tọa độ từ 35 node header đầu |
-| **Giai đoạn 4** | [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L120-L240) | Skinny Orchestrator: Quản lý vòng lặp trạng thái, điều phối `CognitiveScopeManager` |
-| **Giai đoạn 4** | [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L640-L710) | `CognitiveScopeManager`: Tạo lập `HierarchyIndex`, thực thi `Explanation Boundary Guard` |
-| **Giai đoạn 5** | [`DynamicQuestionIngestionEngine.Classification.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs#L40-L130) | Ánh xạ loại câu hỏi qua `DirectiveQuestionTypeMap` 8 tầng ưu tiên |
-| **Giai đoạn 6** | [`ExamDeduplicationEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs#L50-L120) | `AnalyzeAndTagDuplicatesAsync`: Tính toán Canonical SHA-256 Hash |
-| **Giai đoạn 7** | [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/QuestionsController.cs#L850-L1200) | `ConfirmImportQuestionsDocx`: Giao dịch nguyên tử, Dedup Context, JSONB 27 trường |
+| **Giai đoạn 1** | [`DocxCigRulesPanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/DocxCigRulesPanel.tsx#L45-L95) | Tiếp nhận file docx, đóng gói tham số CIG, gọi API |
+| **Giai đoạn 2** | [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs#L623-L660) | Endpoint `ImportQuestionsDocx`, khởi tạo Domain Context theo Tenant |
+| **Giai đoạn 3** | [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs#L80-L170) | `ParseRichDocxStream`: Giải nén ZipArchive, trích xuất hình ảnh `word/media/` |
+| **Giai đoạn 3** | [`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs#L35-L120) | Giải mã nhị phân MathType WMF / OLE thành KaTeX và Vector SVG |
+| **Giai đoạn 3** | [`UniversalCoordinateTaxonomyEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/UniversalCoordinateTaxonomyEngine.cs#L45-L110) | `SniffCoordinates`: Nhận diện 5 trục tọa độ từ 35 node header đầu |
+| **Giai đoạn 4** | [`DocxStateMachineClassifier.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs#L120-L240) | Skinny Orchestrator: Quản lý vòng lặp trạng thái, điều phối `CognitiveScopeManager` |
+| **Giai đoạn 4** | [`DynamicQuestionIngestionEngine.Structure.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L640-L710) | `CognitiveScopeManager`: Tạo lập `HierarchyIndex`, thực thi `Explanation Boundary Guard` |
+| **Giai đoạn 5** | [`DynamicQuestionIngestionEngine.Classification.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Classification.cs#L40-L130) | Ánh xạ loại câu hỏi qua `DirectiveQuestionTypeMap` 8 tầng ưu tiên |
+| **Giai đoạn 6** | [`ExamDeduplicationEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs#L50-L120) | `AnalyzeAndTagDuplicatesAsync`: Tính toán Canonical SHA-256 Hash |
+| **Giai đoạn 7** | [`QuestionsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/QuestionsController.cs#L850-L1200) | `ConfirmImportQuestionsDocx`: Giao dịch nguyên tử, Dedup Context, JSONB 27 trường |
 
 ### Bản Thể Học DTO & Hệ Thống Hợp Đồng Ngữ Nghĩa (DTO Ontology)
 Để tìm hiểu chuyên sâu về vai trò của từng DTO, ma trận quan hệ tương tác giữa DocumentStructureDictionaryDto (Macro-Grammar), QuestionParsingRuleDto (CIG 4-Specs) và DocxImportPreviewDto (Preview Output), cùng lý do loại bỏ mắt xích QuestionStructureDto để đạt hiệu năng O(1) và tính co giãn OCP, tham khảo hồ sơ chuyên đề:
-👉 **[AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md)**
+👉 **[AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/architecture/AEGIS_INGESTION_PIPELINE_DTO_ONTOLOGY_AND_RELATIONSHIPS.md)**
 
 ### Cấu Trúc DTO Giao Tiếp Chuẩn Quốc Tế
-Hệ thống sử dụng [`DocxImportPreviewDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionDtos.cs) làm hợp đồng dữ liệu bất biến giữa Ingestion Engine và Giao diện:
+Hệ thống sử dụng [`DocxImportPreviewDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionDtos.cs) làm hợp đồng dữ liệu bất biến giữa Ingestion Engine và Giao diện:
 
 ```csharp
 public class DocxImportPreviewDto
@@ -213,7 +213,7 @@ Dưới đây là các căn cứ thực nghiệm thị giác ghi lại từ quá
 | `v4.0` | 2026-10-25 | Cognitive Scientist | Bổ sung Khử trùng lặp Ngữ cảnh SHA-256 (`QuestionContext`). | 100% Passed |
 | `v5.0` | 2026-10-30 | No.1 Chief Architect | Hoàn thiện Tọa độ Phân cấp 4 tầng `HierarchyIndex` (E_P_S_D), `Explanation Boundary Guard`, Ánh xạ Chỉ thị `SINGLE` 8 tầng ưu tiên, và Chế độ Xem Đề Thi Gốc Dual-View. | **100% Verified (5/5 Scoped Tests)** |
 | `v5.1` | 2026-10-30 | No.1 Chief Architect | Nâng cấp Kiến trúc Phân cấp Hai Tầng `R_GEN` (Universal Core) & `R_SPEC` (Sovereign Plugins), hóa giải đề phẳng $H(x,0,0,0)$ không cần cấu hình, giải mã thứ bậc đa ngôn ngữ (La Mã I..XX, Hán tự, Ả Rập), và triệt tiêu 100% hardcode tại dòng 331 DSMC. | **100% Verified (25/25 Scoped Tests)** |
-| `v5.2` | 2026-10-31 | No.1 Chief Architect | **Global Cognitive Coordinate & Taxonomy 3.0**: Triệt tiêu 100% regex hardcode (`DetectYear`, `ExtractDotNumber`, `DomainTagRules`), bổ sung Động cơ Ánh xạ Đa Chuẩn Khảo thí Quốc tế [`CognitiveCrosswalkEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/CognitiveCrosswalkEngine.cs) (Bloom 2001, Webb DOK, QTI 3.0), và Không gian Tọa độ Mở rộng `ExtensibleCoordinates`. | **100% Verified (14/14 Scoped Tests)** |
+| `v5.2` | 2026-10-31 | No.1 Chief Architect | **Global Cognitive Coordinate & Taxonomy 3.0**: Triệt tiêu 100% regex hardcode (`DetectYear`, `ExtractDotNumber`, `DomainTagRules`), bổ sung Động cơ Ánh xạ Đa Chuẩn Khảo thí Quốc tế [`CognitiveCrosswalkEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/CognitiveCrosswalkEngine.cs) (Bloom 2001, Webb DOK, QTI 3.0), và Không gian Tọa độ Mở rộng `ExtensibleCoordinates`. | **100% Verified (14/14 Scoped Tests)** |
 | `v5.3` | 2026-10-31 | No.1 Chief Architect | **Hierarchical Knowledge Graph & Taxonomy Cascade 3.0**: Xóa bỏ hoàn toàn việc gộp chung chủ đề phẳng; tự động phân giải xuống Node Lá (`MATH_K01`..`K12`, `MATH_CALCULUS`, `CREDIT_SME`, `DRIVING_CRITICAL`, `HEALTHCARE_PHARMACY`) và đồng bộ `ParentTopicCode`, `MaterializedPath` $O(1)$ cho cả mảng Giáo dục K-12/Đại học và các miền Doanh nghiệp. | **100% Verified (20/20 Scoped Tests)** |
 
 ---

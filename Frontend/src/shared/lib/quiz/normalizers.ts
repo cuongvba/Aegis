@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Quiz Normalizers Library
+ * Aegis — Quiz Normalizers Library
  * ======================================
  * Tách từ learner-quiz.service.ts (lines 1–284).
  * Đây là pure functions — không có HTTP calls, không có side effects.

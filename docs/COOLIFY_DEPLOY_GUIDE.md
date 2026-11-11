@@ -1,6 +1,6 @@
-# Hướng Dẫn Triển Khai Go-Live AegisQuiz (Dehoc.vn) Trên Coolify VPS
+# Hướng Dẫn Triển Khai Go-Live Aegis (Dehoc.vn) Trên Coolify VPS
 
-Tài liệu này hướng dẫn chi tiết từng bước triển khai hệ thống **AegisQuiz** lên VPS thông qua giao diện quản trị **Coolify (v4.3.19)** tại địa chỉ `https://panel.dehoc.vn/projects`.
+Tài liệu này hướng dẫn chi tiết từng bước triển khai hệ thống **Aegis** lên VPS thông qua giao diện quản trị **Coolify (v4.3.19)** tại địa chỉ `https://panel.dehoc.vn/projects`.
 
 ---
 
@@ -8,14 +8,14 @@ Tài liệu này hướng dẫn chi tiết từng bước triển khai hệ th�
 
 Hệ sinh thái `dehoc.vn` được thiết kế chuyên biệt hóa:
 - **`dehoc.vn` / `www.dehoc.vn`**: Cổng thông tin trung tâm / Landing Page / Hệ sinh thái chung.
-- **`daotao.dehoc.vn`**: Toàn bộ Nền tảng Khảo thí & Đào tạo AegisQuiz (Frontend SPA + Backend APIs + Realtime Hubs).
+- **`daotao.dehoc.vn`**: Toàn bộ Nền tảng Khảo thí & Đào tạo Aegis (Frontend SPA + Backend APIs + Realtime Hubs).
 - **Khi đăng nhập / đăng xuất**: Hệ thống tự động chuyển hướng về `https://daotao.dehoc.vn` (hoặc `https://daotao.dehoc.vn/login`).
 
 Đảm bảo các bản ghi DNS tại nhà cung cấp tên miền của bạn (PA Vietnam, Viettel, Cloudflare...) đã trỏ về IP của VPS:
 
 | Loại Bản Ghi (Type) | Tên (Host / Name) | Giá Trị (Value / IP Address) | Mục Đích |
 |---|---|---|---|
-| **A** | `daotao` | `[IP_VPS_CỦA_BẠN]` | Phân hệ Khảo thí & Đào tạo AegisQuiz |
+| **A** | `daotao` | `[IP_VPS_CỦA_BẠN]` | Phân hệ Khảo thí & Đào tạo Aegis |
 | **A** | `@` (hoặc `dehoc.vn`) | `[IP_VPS_CỦA_BẠN]` | Cổng trung tâm hệ sinh thái Dehoc |
 | **A** | `panel` *(đã có)* | `[IP_VPS_CỦA_BẠN]` | Trang quản trị Coolify |
 
@@ -29,7 +29,7 @@ Hệ sinh thái `dehoc.vn` được thiết kế chuyên biệt hóa:
 
 1. **Bước 1: Tạo Resource Mới Trong Project**:
    - Truy cập: `https://panel.dehoc.vn/projects`.
-   - Chọn project `AegisQuiz` (môi trường: `production`).
+   - Chọn project `Aegis` (môi trường: `production`).
    - Chọn **`Docker Compose`**.
 
 2. **Bước 2: Cấu Hình Docker Compose**:
@@ -51,21 +51,21 @@ Hệ sinh thái `dehoc.vn` được thiết kế chuyên biệt hóa:
 
 Phương án này giúp bạn kết nối trực tiếp Coolify với GitHub. Mỗi khi bạn cập nhật code và `git push`, Coolify sẽ tự động build lại và cập nhật hệ thống `dehoc.vn` mà không cần thao tác thủ công.
 
-#### Bước 2.1: Đẩy mã nguồn lên GitHub (`cuongvba/AegisQuiz`)
+#### Bước 2.1: Đẩy mã nguồn lên GitHub (`cuongvba/Aegis`)
 
 Kho lưu trữ cục bộ tại máy của bạn đã được khởi tạo và commit đầy đủ mã nguồn (`Initial commit`). Bạn chỉ cần xuất bản lên GitHub theo 1 trong 2 cách cực nhanh sau:
 
 * **Lựa chọn A (1-Click qua GitHub Desktop - Siêu tiện lợi)**:
   1. Mở ứng dụng **GitHub Desktop** trên máy của bạn.
   2. Chọn menu **File** -> **Add Local Repository...** (hoặc phím tắt `Ctrl + O`).
-  3. Chọn thư mục: `D:\Cuong\DuAn\mybank\AegisQuiz`.
+  3. Chọn thư mục: `D:\Cuong\DuAn\mybank\AegisGlobal`.
   4. Bấm nút **`Publish repository`** ở thanh trên cùng.
-  5. Đặt tên: `AegisQuiz`, tích chọn `Keep this code private` (để bảo mật mã nguồn doanh nghiệp).
-  6. Bấm nút xanh **`Publish Repository`** -> Toàn bộ mã nguồn sẽ được đồng bộ lên `https://github.com/cuongvba/AegisQuiz`.
+  5. Đặt tên: `Aegis`, tích chọn `Keep this code private` (để bảo mật mã nguồn doanh nghiệp).
+  6. Bấm nút xanh **`Publish Repository`** -> Toàn bộ mã nguồn sẽ được đồng bộ lên `https://github.com/cuongvba/Aegis`.
 
 * **Lựa chọn B (Qua trình duyệt Web & dòng lệnh Git)**:
   1. Truy cập [https://github.com/new](https://github.com/new).
-  2. Repository name: `AegisQuiz`.
+  2. Repository name: `Aegis`.
   3. Chọn: **Private**.
   4. *Không* tích chọn bất kỳ mục nào khác (README, .gitignore - vì máy bạn đã có sẵn).
   5. Bấm **Create repository**.
@@ -80,12 +80,12 @@ Kho lưu trữ cục bộ tại máy của bạn đã được khởi tạo và 
 
 1. **Ủy quyền Coolify truy cập GitHub**:
    - Tại Coolify (`https://panel.dehoc.vn`), vào menu **Sources** (hoặc **Keys & Tokens** -> **Git Sources**).
-   - Chọn **Add GitHub App**: Bấm nút liên kết với tài khoản GitHub `cuongvba` và cấp quyền cho repo `AegisQuiz`.
+   - Chọn **Add GitHub App**: Bấm nút liên kết với tài khoản GitHub `cuongvba` và cấp quyền cho repo `Aegis`.
    *(Hoặc nếu dùng Deploy Key: Coolify sẽ cung cấp một SSH Public Key, bạn chỉ cần copy và paste vào GitHub Repo -> Settings -> Deploy Keys).*
 
 2. **Tạo Application từ Git**:
    - Vào dự án của bạn trên Coolify -> Bấm **`+ New`** -> Chọn **`Git Repository`**.
-   - Chọn repository: **`cuongvba/AegisQuiz`** và branch: **`main`**.
+   - Chọn repository: **`cuongvba/Aegis`** và branch: **`main`**.
    - **Build Pack**: Chọn **`Docker Compose`**.
    - **Docker Compose Location**: Nhập `/docker-compose.prod.yml` (hoặc để mặc định nếu tệp ở thư mục gốc).
 

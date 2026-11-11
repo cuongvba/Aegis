@@ -1,7 +1,7 @@
 # 🏛️ KẾ HOẠCH TRIỂN KHAI: UNIVERSAL EXAM TRANSPILER (CHUẨN EDTECH QUỐC TẾ)
 > **Phiên bản:** 1.0.0 — Golden Master Architectural Plan  
-> **Tổng Công Trình Sư:** Lead System Analyst & IT Architect Ecosystem AegisQuiz  
-> **Mục tiêu tối thượng:** Đưa AegisQuiz trở thành Bộ chuyển dịch Đề thi Vạn năng (Universal Exam Transpiler) số 1 thế giới, cho phép xuất đề thi nhập từ file ra mọi định dạng chuẩn công nghiệp (**Moodle XML, IMS QTI 2.1/3.0, SCORM 1.2/2004, Moodle GIFT, Azota, Excel**) Plug-and-Play vào Canvas, Moodle, TalentLMS, Blackboard mà không gặp bất kỳ rào cản kỹ thuật nào.
+> **Tổng Công Trình Sư:** Lead System Analyst & IT Architect Ecosystem Aegis  
+> **Mục tiêu tối thượng:** Đưa Aegis trở thành Bộ chuyển dịch Đề thi Vạn năng (Universal Exam Transpiler) số 1 thế giới, cho phép xuất đề thi nhập từ file ra mọi định dạng chuẩn công nghiệp (**Moodle XML, IMS QTI 2.1/3.0, SCORM 1.2/2004, Moodle GIFT, Azota, Excel**) Plug-and-Play vào Canvas, Moodle, TalentLMS, Blackboard mà không gặp bất kỳ rào cản kỹ thuật nào.
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## II. MA TRẬN ÁNH XẠ NGỮ NGHĨA 9 DẠNG CÂU HỎI (SEMANTIC TRANSPILATION MATRIX)
 
-| Dạng Câu Hỏi AegisQuiz | Chuẩn Moodle XML | Chuẩn IMS QTI 2.1/3.0 (Canvas) | Chuẩn Moodle GIFT | Chuẩn SCORM 1.2/2004 |
+| Dạng Câu Hỏi Aegis | Chuẩn Moodle XML | Chuẩn IMS QTI 2.1/3.0 (Canvas) | Chuẩn Moodle GIFT | Chuẩn SCORM 1.2/2004 |
 | :--- | :--- | :--- | :--- | :--- |
 | **SINGLE (Trắc nghiệm đơn)** | `<question type="multichoice">` (`single="true"`) | `<choiceInteraction maxChoices="1">` | `{=Đúng ~Sai ~Sai}` | Micro-Widget SingleChoice JS |
 | **MULTI (Nhiều đáp án)** | `<question type="multichoice">` (`single="false"`) | `<choiceInteraction maxChoices="N">` | `{~%50%Đúng1 ~%50%Đúng2 ~%-100%Sai}` | Micro-Widget MultiChoice JS |
@@ -40,7 +40,7 @@
 
 ### 📌 PHA 1: THIẾT KẾ KIẾN TRÚC LÕI & MOODLE XML STRATEGY (Triển khai ngay)
 - [x] Soạn thảo Living Documentation chuẩn hóa kiến trúc.
-- [ ] Thiết kế `ITranspilerExportStrategy` và `IUniversalExamTranspilerService` trong `AegisQuiz.Application`.
+- [ ] Thiết kế `ITranspilerExportStrategy` và `IUniversalExamTranspilerService` trong `Aegis.Application`.
 - [ ] Hiện thực `MoodleXmlExportStrategy.cs` hỗ trợ toàn diện:
   - 9 dạng câu hỏi với cơ chế Cloze thông minh cho `MULTI_TRUE_FALSE`.
   - Nhúng ảnh Base64 tự động trong thẻ `<file encoding="base64">`.
@@ -60,7 +60,7 @@
   - Sinh file assessment XML dạng `qti.xml` tương thích hoàn toàn Canvas Quiz Engine.
 
 ### 📌 PHA 3: NÂNG CẤP GIAO DIỆN PREVIEW VÀ EXPORT MODAL TRÊN FRONTEND
-- [ ] Bổ sung menu xổ xuống "Xuất bản Chuẩn Quốc Tế" trong [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx):
+- [ ] Bổ sung menu xổ xuống "Xuất bản Chuẩn Quốc Tế" trong [DocxPreviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/DocxPreviewModal.tsx):
   - 🎓 Moodle XML (Kéo thả 1 chạm vào Moodle)
   - 🎨 Canvas / QTI 2.1 Package (Nhập vào Canvas LMS)
   - 📝 Moodle GIFT Format (Văn bản nhẹ)
@@ -69,4 +69,4 @@
 - [ ] Kiểm thử kiểm chứng biên dịch `npm run build` và Docker container.
 
 ---
-*Tài liệu này là cam kết kỹ thuật bất biến, được kiểm duyệt bởi Tổng Công Trình Sư AegisQuiz.*
+*Tài liệu này là cam kết kỹ thuật bất biến, được kiểm duyệt bởi Tổng Công Trình Sư Aegis.*

@@ -2,7 +2,7 @@
 ## COGNITIVE DUAL-SPACE ARCHITECTURE (CDSA) & RESOURCE SOVEREIGNTY SPECIFICATION
 
 > **Tài liệu đặc tả kiến trúc cấp Doanh nghiệp (Enterprise Architectural Specification)**  
-> **Hệ thống:** AegisQuiz Enterprise AI Quiz & Proctoring Platform  
+> **Hệ thống:** Aegis Enterprise AI Quiz & Proctoring Platform  
 > **Phiên bản:** 2.5.0-Enterprise  
 > **Trạng thái:** Đã ban hành & Triển khai chính thức (Production Ready)  
 
@@ -10,7 +10,7 @@
 
 ### 1. TỔNG QUAN VÀ TƯ TƯỞNG THIẾT KẾ (DESIGN PHILOSOPHY)
 
-Nền tảng AegisQuiz được định vị phục vụ hai phân khúc mục tiêu song hành nhưng có tính chất trái ngược:
+Nền tảng Aegis được định vị phục vụ hai phân khúc mục tiêu song hành nhưng có tính chất trái ngược:
 1. **Tính Lan Tỏa Bùng Nổ (Viral Product-Led Growth - PLG):** Tiếp cận hàng triệu học viên, giảng viên tự do, chuyên gia giáo dục đăng nhập bằng Gmail/Google chỉ trong 1 chạm, không yêu cầu thiết lập rườm rà.
 2. **Pháo Đài An Ninh Doanh Nghiệp (Enterprise Sovereign Fortress):** Phục vụ các tập đoàn, ngân hàng, trường đại học toàn cầu với yêu cầu cô lập dữ liệu 100%, tuân thủ GDPR/SOC2, bảo mật đa khách thuê (Multi-Tenancy) và phân quyền theo phạm vi cây tổ chức (Scoped RBAC).
 
@@ -79,7 +79,7 @@ sequenceDiagram
     actor User
     participant Switcher as Workspace Switcher (UI)
     participant AuthAPI as /api/auth/switch-workspace
-    participant DB as AegisQuizDbContext
+    participant DB as AegisDbContext
 
     User->>Switcher: Mở menu chọn Workspace mục tiêu
     Switcher->>AuthAPI: POST { targetTenantId }
@@ -123,7 +123,7 @@ Tại tầng ORM (Entity Framework Core):
 ### 7. ĐỒNG BỘ TOÀN DIỆN CHỦ ĐỀ & CÂU HỎI VỚI KIẾN TRÚC MỚI (TOPICS & QUESTIONS SYNCHRONIZATION)
 
 #### 7.1. Lỗ hổng tiềm ẩn đã được khắc phục (Audit Findings & Remediation):
-- **Hiện trạng trước đây:** `BankTopic` và `QuestionBase` đã có trường `TenantId` và Global Query Filter trong `AegisQuizDbContext`, **tuy nhiên** cả `TopicsController` và `QuestionsController` đều chưa được tiêm `ITenantContext`.
+- **Hiện trạng trước đây:** `BankTopic` và `QuestionBase` đã có trường `TenantId` và Global Query Filter trong `AegisDbContext`, **tuy nhiên** cả `TopicsController` và `QuestionsController` đều chưa được tiêm `ITenantContext`.
 - **Hậu quả nghiêm trọng:** Khi người dùng tạo hoặc import câu hỏi/chủ đề từ file (Excel, Word DOCX, PDF, Smart URI), dữ liệu mặc định bị gán `TenantId = Guid.Empty` (`Scope = COMMUNITY`). Điều này gây ra **nguy cơ rò rỉ đề thi mật của doanh nghiệp thành câu hỏi công khai dùng chung toàn hệ thống**. Đồng thời, `SystemAdmin` không có cơ chế lọc câu hỏi theo từng khách thuê cụ thể.
 
 #### 7.2. Giải pháp Đồng Bộ Hóa Đạt Chuẩn CDSA & RSM:
@@ -201,7 +201,7 @@ Tier 4: Community Fallback ──► TenantId = 00000000-0000-0000-0000-00000000
 | `Domain/Entities/UserAccount.cs` | Thêm `ActiveTenantId`, nav `Memberships` |
 | `Domain/Entities/QuestionBase.cs` | Thêm `IsPublic`, `CreatedBy` |
 | `Domain/Entities/TenantMembership.cs` | **[NEW]** Bảng liên kết Người dùng – Tenant |
-| `Infrastructure/Data/AegisQuizDbContext.cs` | DbSet `TenantMemberships`, Fluent API, QueryFilter Community |
+| `Infrastructure/Data/AegisDbContext.cs` | DbSet `TenantMemberships`, Fluent API, QueryFilter Community |
 | `Infrastructure/Services/TenantMiddleware.cs` | Đọc `active_tenant_id`, fallback về CommunityTenantId |
 | `API/Controllers/AuthController.cs` | Register: 4-Tier Resolution; JWT: claim `active_tenant_id`, `is_community` |
 

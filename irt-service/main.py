@@ -1,5 +1,5 @@
 """
-AegisQuiz IRT/CAT Service
+Aegis IRT/CAT Service
 =========================
 Computerized Adaptive Testing engine dựa trên Item Response Theory (3PL).
 Framework: FastAPI + Pydantic + NumPy + SciPy
@@ -37,7 +37,7 @@ from functools import lru_cache
 
 # ── App Setup ─────────────────────────────────────────────────────────────────
 app = FastAPI(
-    title        = "AegisQuiz IRT/CAT Engine",
+    title        = "Aegis IRT/CAT Engine",
     description  = "Item Response Theory + Computerized Adaptive Testing Service",
     version      = "2.0.0",
     docs_url     = "/docs",
@@ -385,7 +385,7 @@ class CATSession:
 async def health_check():
     return {
         "status"        : "ok",
-        "service"       : "AegisQuiz IRT/CAT Engine",
+        "service"       : "Aegis IRT/CAT Engine",
         "version"       : "2.0.0",
         "active_sessions": len(_sessions),
         "timestamp"     : datetime.utcnow().isoformat()

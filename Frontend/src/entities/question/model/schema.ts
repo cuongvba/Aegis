@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Question Entity Model + Zod Schemas
+ * Aegis — Question Entity Model + Zod Schemas
  * =================================================
  * SSOT cho Question domain model.
  * FSD Layer: entities/question/model/

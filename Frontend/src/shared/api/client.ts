@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Shared API Client
+ * Aegis — Shared API Client
  * ================================
  * Axios instance tập trung với:
  *  - Auto-inject Bearer token + X-Tenant-ID

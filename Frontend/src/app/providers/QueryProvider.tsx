@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — QueryProvider
+ * Aegis — QueryProvider
  * ==========================
  * TanStack Query client setup tập trung.
  * FSD Layer: app/providers/

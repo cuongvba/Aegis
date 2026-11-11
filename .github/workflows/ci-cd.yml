@@ -1,4 +1,4 @@
-name: AegisQuiz CI/CD Pipeline
+name: Aegis CI/CD Pipeline
 # ═══════════════════════════════════════════════════════════════
 # World-Class CI/CD: Test → Security Scan → Build → Deploy GCP
 # Trigger: push/PR to main or develop
@@ -12,12 +12,12 @@ on:
 
 env:
   GCP_REGION:           asia-southeast1
-  GCR_BACKEND:          gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegisquiz-backend
-  GCR_FRONTEND:         gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegisquiz-frontend
-  GCR_IRT:              gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegisquiz-irt
-  CLOUD_RUN_BACKEND:    aegisquiz-backend
-  CLOUD_RUN_FRONTEND:   aegisquiz-frontend
-  CLOUD_RUN_IRT:        aegisquiz-irt
+  GCR_BACKEND:          gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegis-backend
+  GCR_FRONTEND:         gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegis-frontend
+  GCR_IRT:              gcr.io/${{ secrets.GCP_PROJECT_ID }}/aegis-irt
+  CLOUD_RUN_BACKEND:    aegis-backend
+  CLOUD_RUN_FRONTEND:   aegis-frontend
+  CLOUD_RUN_IRT:        aegis-irt
   DOTNET_VERSION:       '10.0.x'
   NODE_VERSION:         '22.x'
   PYTHON_VERSION:       '3.12'
@@ -282,7 +282,7 @@ jobs:
             --memory=1Gi \
             --cpu=1 \
             --port=8080 \
-            --set-secrets="ConnectionStrings__DefaultConnection=aegisquiz-db-conn:latest" \
+            --set-secrets="ConnectionStrings__DefaultConnection=aegis-db-conn:latest" \
             --set-secrets="Gemini__ApiKey=gemini-api-key:latest" \
             --set-secrets="Jwt__Secret=jwt-secret:latest" \
             --set-env-vars="ASPNETCORE_ENVIRONMENT=Production" \

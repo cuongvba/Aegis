@@ -5,7 +5,7 @@
 
 ## 1. TỔNG QUAN & CĂN CỨ PHÁP LÝ
 
-Phân hệ Sát hạch Lái xe Quốc gia (GPLX Subsystem) trên AegisQuiz được thiết kế nhằm mục tiêu:
+Phân hệ Sát hạch Lái xe Quốc gia (GPLX Subsystem) trên Aegis được thiết kế nhằm mục tiêu:
 1. **Chuẩn hóa 100% theo Quy định Quốc gia**: Tuân thủ Thông tư 12/2017/TT-BGTVT, Thông tư 38/2019/TT-BGTVT và bộ 600 câu hỏi lý thuyết sát hạch lái xe cơ giới đường bộ do Cục Đường Bộ Việt Nam ban hành.
 2. **Loại trừ tận gốc tai nạn giao thông**: Thông qua cơ chế **60 câu hỏi điểm liệt tử thần (`isCritical: true`)**, buộc người học phải nắm vững các tình huống tuyệt đối không được vi phạm (nồng độ cồn, ma túy, đường sắt, nhường đường xe ưu tiên, vượt cẩu hẹp...).
 3. **Trí tuệ nhân tạo giải mã Sa hình (AI Diagram Solver)**: Thay thế việc học vẹt đáp án bằng cách phân tích bản chất thế xe theo 4 quy tắc vàng kinh điển của luật giao thông đường bộ.
@@ -88,7 +88,7 @@ export function evaluateGplxAttempt(
 ```
 
 ### 3.2. Chế Độ Luyện Thi Độc Quyền: `gplx_fatal_only`
-AegisQuiz cung cấp chế độ lọc chuyên biệt chỉ gồm **60 câu hỏi điểm liệt**. Người học có thể luyện liên tục cho đến khi đạt tỷ lệ chính xác 100%, tạo phản xạ nhận thức bất khả xâm phạm về các tình huống sinh tử khi tham gia giao thông.
+Aegis cung cấp chế độ lọc chuyên biệt chỉ gồm **60 câu hỏi điểm liệt**. Người học có thể luyện liên tục cho đến khi đạt tỷ lệ chính xác 100%, tạo phản xạ nhận thức bất khả xâm phạm về các tình huống sinh tử khi tham gia giao thông.
 
 ---
 
@@ -131,7 +131,7 @@ Khi người học chọn sai thế sa hình, AI Mentor Socrates lập tức hi�
 
 ## 5. BỘ MÔ PHỎNG 120 TÌNH HUỐNG GIAO THÔNG (HAZARD PERCEPTION SIMULATOR)
 
-Ngoài lý thuyết 600 câu, AegisQuiz hỗ trợ phần mềm thi mô phỏng 120 tình huống giao thông thực tế:
+Ngoài lý thuyết 600 câu, Aegis hỗ trợ phần mềm thi mô phỏng 120 tình huống giao thông thực tế:
 - **Cơ chế bắt sự kiện phím Spacebar**: Người học quan sát video clip (Full HD 60fps) từ góc nhìn người lái xe.
 - **Thời điểm vàng (Golden Window)**: Mỗi tình huống có một cửa sổ thời gian nguy hiểm kéo dài 5 giây, chia thành 5 mốc điểm:
   - Bấm trong giây thứ nhất (vừa xuất hiện dấu hiệu nguy hiểm): **5 điểm**.
@@ -146,7 +146,7 @@ Ngoài lý thuyết 600 câu, AegisQuiz hỗ trợ phần mềm thi mô phỏng 
 
 ## 6. GIAO DIỆN PHÒNG THI SÁT HẠCH LÝ THUYẾT (EXAM ROOM SIMULATION)
 
-Giao diện thi thử GPLX trên AegisQuiz được thiết kế đồng bộ với phần mềm sát hạch chính thức của Tổng cục Đường bộ:
+Giao diện thi thử GPLX trên Aegis được thiết kế đồng bộ với phần mềm sát hạch chính thức của Tổng cục Đường bộ:
 1. **Bảng lưới chọn câu hỏi**: Ô màu xám (chưa làm), ô màu xanh lá (đã chọn đáp án), ô viền vàng (câu hỏi đang chọn).
 2. **Hỗ trợ phím tắt Numpad**: Dùng phím `1`, `2`, `3`, `4` để chọn đáp án; dùng phím `↑`, `↓`, `PageUp`, `PageDown` để chuyển câu; phím `Enter` để xác nhận nộp bài.
 3. **Đồng hồ đếm ngược viền cảnh báo**: Khi thời gian còn dưới 3 phút, viền đồng hồ chuyển sang màu đỏ nhấp nháy kèm âm thanh nhắc nhở tinh tế.
@@ -187,7 +187,7 @@ Khi số hóa ngân hàng 600 câu hỏi sát hạch GPLX cơ giới đường b
 
 ### 7.2. Giải Thuật Phân Khoảng Không Gian Hình Học 2D (Spatial Geometric Y-Interval Matching)
 
-Để giải quyết triệt để vấn đề trên một cách tự động và tổng quát, AegisQuiz triển khai thuật toán **Spatial Geometric Y-Interval Matching** trên tầng trích xuất PDF (`PdfParserService.cs`):
+Để giải quyết triệt để vấn đề trên một cách tự động và tổng quát, Aegis triển khai thuật toán **Spatial Geometric Y-Interval Matching** trên tầng trích xuất PDF (`PdfParserService.cs`):
 
 ```mermaid
 graph TD
@@ -244,7 +244,7 @@ Trong quá trình nạp dữ liệu và liên kết hình ảnh, một lỗi l�
 // Dẫn đến câu hỏi bị ghi đè nhầm ảnh của câu 598!
 ```
 
-**Giải pháp của AegisQuiz:** Áp dụng Regex neo biên giới đầu dòng (Anchor-Strict Matching):
+**Giải pháp của Aegis:** Áp dụng Regex neo biên giới đầu dòng (Anchor-Strict Matching):
 ```csharp
 // Miễn nhiễm 100% với chuỗi nhị phân Base64 ngẫu nhiên
 bool isTargetQuestion = Regex.IsMatch(q.Content, @"^Câu\s*598[\.\:]", RegexOptions.IgnoreCase);
@@ -254,7 +254,7 @@ bool isTargetQuestion = Regex.IsMatch(q.Content, @"^Câu\s*598[\.\:]", RegexOpti
 
 ### 7.5. Minh Chứng Thực Nghiệm Trực Quan Trên Hệ Thống
 
-Kết quả sau khi kích hoạt cơ chế đồng bộ sa hình chuẩn 2023 trên hệ thống AegisQuiz:
+Kết quả sau khi kích hoạt cơ chế đồng bộ sa hình chuẩn 2023 trên hệ thống Aegis:
 - **Tốc độ khởi tạo**: Nạp toàn bộ 600 câu hỏi, biển báo và sa hình trong **2.6 giây**.
 - **Tính toàn vẹn hình ảnh**: Toàn bộ các câu hỏi sa hình từ Câu 487 đến Câu 600 đều sở hữu ảnh minh họa chuẩn sắc nét, đúng từng xe, đúng chiều mũi tên tín hiệu.
 - **Trải nghiệm sát hạch**: Thí sinh quan sát sa hình trực quan, đối chiếu với 4 khẩu quyết *"Nhất chớm - Nhì ưu - Tam đường - Tứ hướng"* và làm bài với độ tin cậy tuyệt đối 100%.

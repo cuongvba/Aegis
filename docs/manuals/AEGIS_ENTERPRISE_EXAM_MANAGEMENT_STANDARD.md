@@ -72,17 +72,17 @@ flowchart TD
 Mọi thành phần trong tài liệu được liên kết trực tiếp với mã nguồn đang chạy trong dự án:
 
 ### 2.1 Backend Domain Entities
-- Domain Entity Chiến dịch: [`AssessmentCampaign.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/AssessmentCampaign.cs)
-- Domain Entity Bộ Đề thi & Câu hỏi: [`ExamPaper.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/ExamPaper.cs)
-- Domain Entity Thí sinh & Kết quả: [`CampaignCandidate.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/CampaignCandidate.cs)
+- Domain Entity Chiến dịch: [`AssessmentCampaign.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/AssessmentCampaign.cs)
+- Domain Entity Bộ Đề thi & Câu hỏi: [`ExamPaper.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/ExamPaper.cs)
+- Domain Entity Thí sinh & Kết quả: [`CampaignCandidate.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/CampaignCandidate.cs)
 
 ### 2.2 Application DTOs & Service Contracts
-- DTO Hợp đồng Dữ liệu: [`ExamCampaignDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/ExamCampaignDtos.cs)
-- Interface Dịch vụ: [`IExamCampaignService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IExamCampaignService.cs)
-- Cài đặt Dịch vụ Khảo thí: [`ExamCampaignService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamCampaignService.cs)
+- DTO Hợp đồng Dữ liệu: [`ExamCampaignDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/ExamCampaignDtos.cs)
+- Interface Dịch vụ: [`IExamCampaignService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IExamCampaignService.cs)
+- Cài đặt Dịch vụ Khảo thí: [`ExamCampaignService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamCampaignService.cs)
 
 ### 2.3 API Controller Endpoints
-- REST Controller: [`ExamCampaignController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/ExamCampaignController.cs)
+- REST Controller: [`ExamCampaignController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/ExamCampaignController.cs)
   - `GET /api/exam-campaigns`: Danh sách chiến dịch & thống kê tổng quan
   - `POST /api/exam-campaigns`: Khởi tạo chiến dịch mới
   - `GET /api/exam-campaigns/{id}/tenant-topics`: Lấy danh mục chủ đề thực tế từ Ngân hàng đề của Tenant kèm số lượng câu hỏi khả dụng
@@ -96,14 +96,14 @@ Mọi thành phần trong tài liệu được liên kết trực tiếp với m
   - `GET /api/exam-campaigns/{id}/results`: Báo cáo kết quả, phổ điểm và xếp hạng toàn diện
 
 ### 2.4 Frontend Zero-Monolith Suite ($\le 250$ LOC/file)
-- Trang điều phối chính: [`AdminExamsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/AdminExamsPage.tsx)
-- Tab Danh sách Chiến dịch: [`CampaignListTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/CampaignListTab.tsx)
-- Tab Xưởng Thiết kế Đề thi (Tự động & Thủ công): [`ExamStudioTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/ExamStudioTab.tsx)
-- Modal Ma Trận Khung Đề & Chủ Đề Tenant: [`ExamStudioMatrixModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/ExamStudioMatrixModal.tsx)
-- Tab Ma trận Điều phối Thí sinh: [`CandidateRosterTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/CandidateRosterTab.tsx)
-- Tab Quản trị Kết quả & Phổ điểm: [`ExamResultsTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/ExamResultsTab.tsx)
-- Tab Ma trận Điều phối Thí sinh: [`CandidateRosterTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/CandidateRosterTab.tsx)
-- Tab Quản trị Kết quả & Phổ điểm: [`ExamResultsTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/components/exams/ExamResultsTab.tsx)
+- Trang điều phối chính: [`AdminExamsPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/AdminExamsPage.tsx)
+- Tab Danh sách Chiến dịch: [`CampaignListTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/CampaignListTab.tsx)
+- Tab Xưởng Thiết kế Đề thi (Tự động & Thủ công): [`ExamStudioTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/ExamStudioTab.tsx)
+- Modal Ma Trận Khung Đề & Chủ Đề Tenant: [`ExamStudioMatrixModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/ExamStudioMatrixModal.tsx)
+- Tab Ma trận Điều phối Thí sinh: [`CandidateRosterTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/CandidateRosterTab.tsx)
+- Tab Quản trị Kết quả & Phổ điểm: [`ExamResultsTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/ExamResultsTab.tsx)
+- Tab Ma trận Điều phối Thí sinh: [`CandidateRosterTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/CandidateRosterTab.tsx)
+- Tab Quản trị Kết quả & Phổ điểm: [`ExamResultsTab.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/components/exams/ExamResultsTab.tsx)
 
 ---
 

@@ -27,7 +27,7 @@ export interface OfflineExamPackage {
 
 class OfflineExamService {
   private readonly STORAGE_PREFIX = 'aegis_offline_exam_';
-  private readonly DB_NAME = 'AegisQuiz_OfflineStorage_v1';
+  private readonly DB_NAME = 'Aegis_OfflineStorage_v1';
   private readonly STORE_EXAMS = 'offline_exam_packages';
   private readonly STORE_SESSIONS = 'offline_sessions';
   private dbPromise: Promise<IDBDatabase> | null = null;

@@ -131,7 +131,7 @@ export const QrConfirmPage: React.FC = () => {
                             </div>
                             <div className="flex justify-between py-1 border-b border-slate-700/50">
                                 <span className="text-slate-400">Tài khoản xác thực</span>
-                                <span className="font-medium text-emerald-400">{user?.email || 'admin@aegisquiz.internal'}</span>
+                                <span className="font-medium text-emerald-400">{user?.email || 'admin@aegis.internal'}</span>
                             </div>
                             <div className="flex justify-between py-1">
                                 <span className="text-slate-400">Mức độ an toàn</span>

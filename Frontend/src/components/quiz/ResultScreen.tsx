@@ -677,7 +677,7 @@ export function ResultScreen({
                   Chẩn đoán: Có {wrongRows.length} câu cần khắc phục để bứt phá điểm số!
                 </h4>
                 <p className="text-xs font-medium text-slate-600">
-                  Khác với IOE giấu câu sai, AegisQuiz giúp bạn học từ vấp ngã để làm chủ 100% kiến thức.
+                  Khác với IOE giấu câu sai, Aegis giúp bạn học từ vấp ngã để làm chủ 100% kiến thức.
                 </p>
               </div>
             </div>

@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — AppHeader Widget
+ * Aegis — AppHeader Widget
  * ==============================
  * Header tổng hợp từ các sub-widgets — tách từ MainLayout.tsx.
  * FSD Layer: widgets/app-header/

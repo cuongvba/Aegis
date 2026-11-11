@@ -1,5 +1,5 @@
 /**
- * AegisQuiz i18n Configuration — World-Class Multilingual & RTL Sovereign Architecture
+ * Aegis i18n Configuration — World-Class Multilingual & RTL Sovereign Architecture
  * ====================================================================================
  * Fully supports:
  * - Vietnamese (vi) 🇻🇳
@@ -38,7 +38,7 @@ i18n
     detection: {
       order            : ['querystring', 'localStorage', 'navigator'],
       lookupQuerystring: 'lang',
-      lookupLocalStorage: 'aegisquiz-lang',
+      lookupLocalStorage: 'aegis-lang',
       caches           : ['localStorage'],
     },
 

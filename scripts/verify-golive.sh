@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# AegisQuiz — Go-Live Pre-Flight Verification Script (Bash for Linux/VPS)
+# Aegis — Go-Live Pre-Flight Verification Script (Bash for Linux/VPS)
 # ==============================================================================
 
 set -e
@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 echo "=================================================================="
-echo "🛡️  AEGISQUIZ PRODUCTION GO-LIVE PRE-FLIGHT AUDIT"
+echo "🛡️  AEGIS PRODUCTION GO-LIVE PRE-FLIGHT AUDIT"
 echo "   Target: Production Platform (https://dehoc.vn)"
 echo "=================================================================="
 echo ""
@@ -39,7 +39,7 @@ else
 fi
 
 # 2. appsettings.Production.json
-if [ -f "Backend/src/AegisQuiz.API/appsettings.Production.json" ]; then
+if [ -f "Backend/src/Aegis.API/appsettings.Production.json" ]; then
     report_check "Backend appsettings.Production.json" 0 "File tồn tại với cấu hình AllowedOrigins cho dehoc.vn"
 else
     report_check "Backend appsettings.Production.json" 1 "Missing appsettings.Production.json"
@@ -53,14 +53,14 @@ else
 fi
 
 # 4. Backend Unit Tests
-if dotnet test Backend/tests/AegisQuiz.UnitTests/AegisQuiz.UnitTests.csproj --nologo -v q; then
+if dotnet test Backend/tests/Aegis.UnitTests/Aegis.UnitTests.csproj --nologo -v q; then
     report_check "Backend Unit Tests (142/142 Tests)" 0 "100% Bộ kiểm thử Unit Tests vượt qua chuẩn mực"
 else
     report_check "Backend Unit Tests (142/142 Tests)" 1 "Unit tests failed"
 fi
 
 # 5. Backend Release Publish
-if dotnet publish Backend/src/AegisQuiz.API/AegisQuiz.API.csproj -c Release --nologo -v q; then
+if dotnet publish Backend/src/Aegis.API/Aegis.API.csproj -c Release --nologo -v q; then
     report_check "Backend Release Compilation (.NET 10)" 0 "Biên dịch Release thành công, không phát sinh lỗi"
 else
     report_check "Backend Release Compilation (.NET 10)" 1 "Release publish failed"

@@ -3,7 +3,7 @@
     <!--
       [AEGIS GLOBAL — SUPPLY CHAIN & BUILD GOVERNANCE]
       NPOI 2.7.6 pulls transitive dependencies (SixLabors.ImageSharp 2.1.11, System.Security.Cryptography.Xml/Pkcs)
-      for legacy spreadsheet image/signature features that AegisQuiz NEVER invokes (all WMF/image rendering uses SkiaSharp 2.88.9).
+      for legacy spreadsheet image/signature features that Aegis NEVER invokes (all WMF/image rendering uses SkiaSharp 2.88.9).
       Suppress transitive NuGet audit warnings in offline/air-gapped builds to maintain a clean 0-warning build pipeline.
     -->
     <NuGetAudit>false</NuGetAudit>

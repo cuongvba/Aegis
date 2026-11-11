@@ -1,4 +1,4 @@
-# 🌌 BÁO CÁO ĐÁNH GIÁ CHUYÊN SÂU CHUẨN THẾ GIỚI: HỆ SINH THÁI AI CỦA AEGISQUIZ VÀ CẢNH GIỚI ĐỘT PHÁ VƯỢT TRỘI THỜI ĐẠI
+# 🌌 BÁO CÁO ĐÁNH GIÁ CHUYÊN SÂU CHUẨN THẾ GIỚI: HỆ SINH THÁI AI CỦA AEGIS VÀ CẢNH GIỚI ĐỘT PHÁ VƯỢT TRỘI THỜI ĐẠI
 
 **Tác giả & Kiến trúc sư trưởng:** No.1 — Lead System Analyst, IT Architect, Master Living Documentarian, AI & Psychometric Specialist  
 **Phiên bản:** 2026 Supreme Whitepaper · **Trạng thái:** Official Architectural Document ✅  
@@ -33,7 +33,7 @@ Thị trường Công nghệ Giáo dục (EdTech) và Đào tạo Doanh nghiệp
 - **Nhóm Quản lý Học tập Phổ thông (Canvas, Moodle, Blackboard)**: Dễ triển khai nhưng chỉ kiểm tra bằng các bài thi tĩnh (Linear Testing) tuyến tính 100 câu mệt mỏi, thiếu hụt hoàn toàn chiều sâu thích ứng AI.
 - **Nhóm Game Hóa (Gamification - Kahoot, Quizizz)**: Giao diện vui vẻ, hào hứng nhưng nghèo nàn về mặt học thuật, **luật chơi bị đóng cứng 100% không thể tùy biến**, không có giá trị phân hóa trình độ năng lực và chỉ đo lường phản xạ bấm nhanh đơn điệu.
 
-**AegisQuiz ra đời như một cú nhảy vọt mang tính lịch sử:**
+**Aegis ra đời như một cú nhảy vọt mang tính lịch sử:**
 Hệ thống đã hợp nhất thành công **3 thái cực vốn chưa từng hội tụ trên bất kỳ nền tảng nào trên thế giới**:
 1. *Đo lường tâm lý học hàn lâm đỉnh cao (Psychometric Rigor - CAT/IRT 3-PL)*.
 2. *Động cơ Đấu trường Gameshow Siêu Động trao quyền năng sáng tạo vô hạn cho người dùng (Dynamic Meta-Gameshow & Creator-Led Plugin Engine)*.
@@ -80,9 +80,9 @@ Theo các tiêu chuẩn học thuật toàn cầu, một hệ sinh thái AI đ�
 
 ## 3. MA TRẬN ĐỐI SÁNH TRỰC DIỆN VỚI CÁC TƯỢNG ĐÀI THẾ GIỚI
 
-Bảng đối sánh dưới đây làm rõ vị thế của **AegisQuiz** trước các giải pháp hàng đầu trên thị trường quốc tế:
+Bảng đối sánh dưới đây làm rõ vị thế của **Aegis** trước các giải pháp hàng đầu trên thị trường quốc tế:
 
-| Tiêu Chí Đánh Giá | **ETS (GRE / TOEFL / SAT)** | **Duolingo English Test (DET)** | **Canvas LMS / Moodle** | **Kahoot / Quizizz** | 🛡️ **AegisQuiz Supreme (Hệ thống của chúng ta)** |
+| Tiêu Chí Đánh Giá | **ETS (GRE / TOEFL / SAT)** | **Duolingo English Test (DET)** | **Canvas LMS / Moodle** | **Kahoot / Quizizz** | 🛡️ **Aegis Supreme (Hệ thống của chúng ta)** |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Mô hình Khảo thí Động** | CAT 2-PL / 3-PL (Đóng kín, cổ điển, cồng kềnh) | CAT 1-PL / Rasch Model (Chỉ dành riêng cho tiếng Anh) | ❌ Không có (Chỉ làm đề tĩnh 100 câu cố định) | ❌ Không có (Chỉ tính điểm theo thời gian bấm) | 👑 **CAT / IRT 3-PL Tức thời** (Fisher Information tối đa hóa, co ngắn đề từ 100 câu còn 10-15 câu đạt $SE \le 0.35$). |
 | **Bóc tách Đề thi & Tọa độ** | ❌ Nhập qua form kiểm soát nội bộ độc quyền | ❌ Ngân hàng đề kín, không hỗ trợ nhập ngoài | ❌ Chỉ nhận CSV thô, lỗi vỡ công thức toán học | ❌ Nhập đơn giản, không hiểu ngữ cảnh tài liệu | 👑 **Cognitive Sniffer & 5D Taxonomy**: Quét banner file, tự trích xuất 5 trục tọa độ tri thức, giải mã DOCX/LaTeX/Excel. |
@@ -100,7 +100,7 @@ Bảng đối sánh dưới đây làm rõ vị thế của **AegisQuiz** trư�
 #### Cơ sở toán học hàn lâm:
 Hầu hết các phần mềm thi trực tuyến hiện nay chỉ dùng lý thuyết trắc nghiệm cổ điển (Classical Test Theory - CTT), nơi điểm số đơn thuần là tổng số câu trả lời đúng ($Score = \sum X_i$). Điều này dẫn đến sự bất công: 1 câu dễ cũng bằng điểm 1 câu cực khó, và thí sinh có thể đạt điểm cao nhờ may mắn đánh bừa.
 
-AegisQuiz trang bị vi-dịch vụ Python AI Microservice chạy trên nền tảng FastAPI/PyTorch, giải quyết bài toán bằng **Mô hình Logistic 3 Tham Số (3-Parameter Logistic Model - 3-PL IRT)**:
+Aegis trang bị vi-dịch vụ Python AI Microservice chạy trên nền tảng FastAPI/PyTorch, giải quyết bài toán bằng **Mô hình Logistic 3 Tham Số (3-Parameter Logistic Model - 3-PL IRT)**:
 
 $$P_i(\theta) = c_i + \frac{1 - c_i}{1 + e^{-a_i(\theta - b_i)}}$$
 
@@ -125,7 +125,7 @@ Trong đó:
 #### Vấn đề nan giải toàn cầu:
 Khi các ngân hàng, cơ quan nhà nước hay trường học tải lên các tập tin đề thi (ví dụ: `1. Tín dụng KHDN.xlsx`), tiêu đề và ngữ cảnh kỳ thi nằm ở **các hàng biểu ngữ đầu file (Banner Rows)** chứ không nằm trong bảng câu hỏi. Toàn bộ các hệ thống LMS trên thế giới hiện nay đều bỏ qua hàng này.
 
-#### Giải pháp đột phá của AegisQuiz:
+#### Giải pháp đột phá của Aegis:
 Động cơ `UniversalCoordinateTaxonomyEngine` sử dụng bộ phân tích ngôn ngữ tự nhiên tiếng Việt chuyên sâu để tự động bóc tách **Hệ 5 Trục Tọa Độ Tri Thức**:
 - **Trục 1 (`DomainCode`)**: Nhận diện lĩnh vực chuyên môn (Tài chính - Ngân hàng, Y khoa, Sát hạch Giao thông, Công nghệ Thông tin).
 - **Trục 2 (`TargetLevel`)**: Cấp độ chức danh (Tín dụng KHDN, Giao dịch viên, Thẩm định tài sản...).
@@ -140,7 +140,7 @@ Hệ thống tự động sinh mảng thẻ `#smart-tags` và lưu trữ dưới
 ### 4.3. Kỳ Quan 3: Động Cơ Nạp Câu Hỏi Vạn Năng Từ Link Đám Mây (Cloud URI Ingestion)
 
 #### Bước nhảy vọt về trải nghiệm người dùng:
-Thay vì bắt buộc người dùng phải tải file về ổ cứng máy tính cá nhân rồi kéo thả lên giao diện web, AegisQuiz cho phép nạp trực tiếp qua đường dẫn URI:
+Thay vì bắt buộc người dùng phải tải file về ổ cứng máy tính cá nhân rồi kéo thả lên giao diện web, Aegis cho phép nạp trực tiếp qua đường dẫn URI:
 - **Tự động chuyển đổi OpenXML**: 
   - `docs.google.com/document/d/{id}` $\rightarrow$ Tự động chuyển đổi trực tiếp sang luồng OpenXML `.docx` (`/export?format=docx`).
   - `docs.google.com/spreadsheets/d/{id}` $\rightarrow$ Tự động chuyển đổi sang bảng tính Excel `.xlsx` (`/export?format=xlsx`) bảo toàn tham số `gid`.
@@ -157,7 +157,7 @@ Thay vì bắt buộc người dùng phải tải file về ổ cứng máy tín
 ### 4.4. Kỳ Quan 4: Động Cơ Đấu Trường Gameshow Siêu Động & Hệ Sinh Thái Sáng Tạo Vô Cực (Dynamic Meta-Gameshow & Creator-Led Plugin Engine)
 
 #### 4.4.1. Bước Đột Phá Triết Lý: "Meta-Gameshow Paradigm" (Mô Hình Roblox / Unreal Engine Trong Giáo Dục)
-Trong khi các tượng đài thị trường như **Kahoot** hay **Quizizz** chỉ cung cấp một trải nghiệm gameplay **đóng cứng 100%** (người dùng chỉ được đổi nội dung câu hỏi, hoàn toàn bất lực trong việc thay đổi luật chơi hay cơ chế tương tác), **AegisQuiz thiết lập một chuẩn mực hoàn toàn mới: Nền Tảng Siêu Động (Meta-Gameshow Engine)**:
+Trong khi các tượng đài thị trường như **Kahoot** hay **Quizizz** chỉ cung cấp một trải nghiệm gameplay **đóng cứng 100%** (người dùng chỉ được đổi nội dung câu hỏi, hoàn toàn bất lực trong việc thay đổi luật chơi hay cơ chế tương tác), **Aegis thiết lập một chuẩn mực hoàn toàn mới: Nền Tảng Siêu Động (Meta-Gameshow Engine)**:
 - Hệ thống không giới hạn ở 6 Gameshow kinh điển có sẵn mà **trao toàn quyền năng tối thượng cho người dùng (Giáo viên, Giảng viên doanh nghiệp, Ban tổ chức sự kiện)** tự sáng tạo ra hàng ngàn thể thức Gameshow mới mang đậm bản sắc riêng mà không cần viết mã lệnh.
 - Chuyển hóa người dùng từ vị thế *"người tiêu thụ nội dung thụ động"* thành **"Kiến trúc sư & Đạo diễn Gameshow thực thụ" (Gameshow Creators)**.
 
@@ -218,7 +218,7 @@ Người dùng chỉ cần 1 cú nhấp chuột để biến đổi hoàn toàn 
 - **`SELECTIVE_PICK`**: Người dẫn chương trình hoặc người thắng câu trước có quyền chỉ định đối thủ thi đấu trực tiếp.
 
 #### 4.4.5. Bộ Tứ Gameshow Mẫu Tự Sinh Động Sẵn Có (Built-in Dynamic Showcase)
-Minh chứng cho sức mạnh của động cơ `DynamicArenaGamePlugin`, AegisQuiz đã tích hợp sẵn 4 mẫu template động đỉnh cao:
+Minh chứng cho sức mạnh của động cơ `DynamicArenaGamePlugin`, Aegis đã tích hợp sẵn 4 mẫu template động đỉnh cao:
 1. **Ai Là Triệu Phú (`MILLIONAIRE`)**: Thang tiền thưởng 15 câu, mốc an toàn 5 & 10, tích hợp quyền trợ giúp **Gia Sư AI Gemini (`ASK_AI`)** phân tích xác suất thời gian thực.
 2. **The Chase — Kẻ Đi Săn (`THE_CHASE`)**: Cuộc rượt đuổi nghẹt thở giữa người chơi và Kẻ Đi Săn AI (The Chaser bot) trên thang dốc dồn dập.
 3. **Visual Charades — Đuổi Hình Bắt Chữ (`VISUAL_CHARADES`)**: Lật mở từng mảnh ghép che bức ảnh chủ đề.
@@ -227,7 +227,7 @@ Minh chứng cho sức mạnh của động cơ `DynamicArenaGamePlugin`, AegisQ
 #### 4.4.6. Cơ Chế Phân Xử Chuông Vi-Giây & Bù Trễ RTT (Microsecond Arbitration)
 Để loại trừ triệt để tình trạng người ở gần máy chủ có lợi thế đường truyền so với người ở xa, `ArenaRoomManager` áp dụng công thức bù trễ hai chiều Round-Trip Time (RTT):
 $$t_{\text{offset}} = \frac{(t_1 - t_0) + (t_2 - t_3)}{2}$$
-Mọi lượt bấm chuông được gắn dấu thời gian gốc của máy trạm và chuẩn hóa về đồng hồ máy chủ qua SignalR, biến AegisQuiz thành nền tảng thi đấu cướp chuông công bằng và minh bạch tuyệt đối trên quy mô toàn cầu.
+Mọi lượt bấm chuông được gắn dấu thời gian gốc của máy trạm và chuẩn hóa về đồng hồ máy chủ qua SignalR, biến Aegis thành nền tảng thi đấu cướp chuông công bằng và minh bạch tuyệt đối trên quy mô toàn cầu.
 
 ---
 
@@ -309,9 +309,9 @@ Dưới lăng kính phân tích hệ thống độc lập và khắt khe nhất:
 3. **Bóc Tách Tọa Độ Tri Thức Đa Ngành Tự Động (5D Cognitive Sniffer)**:
    Vượt xa khả năng của các công cụ parser thông thường nhờ khả năng suy luận ngữ cảnh hành chính, tổ chức và chuyên ngành ngân hàng/y tế.
 4. **Hệ Sinh Thái Sáng Tạo Đấu Trường Vô Hạn (Dynamic Meta-Gameshow & Creator Economy)**:
-   Chấm dứt hoàn toàn kỷ nguyên "luật chơi đóng khung đơn điệu" của Kahoot hay Quizizz. AegisQuiz trao quyền năng cho mọi giảng viên và nhà tổ chức tự sáng tạo không giới hạn các thể thức Gameshow mới thông qua `GameshowManifest`, tự chọn từ 6 vỏ bọc không gian (Layout Shells), 4 chế độ cướp quyền (Contention Modes), 3 cơ chế sinh tồn và quyền trợ giúp AI Gemini — một đột phá chưa từng xuất hiện trên bất kỳ nền tảng EdTech nào trên thế giới.
+   Chấm dứt hoàn toàn kỷ nguyên "luật chơi đóng khung đơn điệu" của Kahoot hay Quizizz. Aegis trao quyền năng cho mọi giảng viên và nhà tổ chức tự sáng tạo không giới hạn các thể thức Gameshow mới thông qua `GameshowManifest`, tự chọn từ 6 vỏ bọc không gian (Layout Shells), 4 chế độ cướp quyền (Contention Modes), 3 cơ chế sinh tồn và quyền trợ giúp AI Gemini — một đột phá chưa từng xuất hiện trên bất kỳ nền tảng EdTech nào trên thế giới.
 5. 🆕 **ACM-OS — Hệ Điều Hành AI Đa Tác Tử Vạn Năng (Universal Cognitive Multi-Agent OS)** *(Triển khai 2026-09-15)*:
-   Phân hệ AI của AegisQuiz lần đầu tiên có **vai trò chuyên biệt, ký ức ngữ nghĩa, ủy ban đa tác tử đối nghịch, walkthrough sư phạm 5 bước, FinOps tự động** và khả năng mở rộng ra 5+ provider đa dạng — đạt chất lượng tương đương với các hệ thống AI giáo dục tiên tiến nhất thế giới (Khanmigo by Khan Academy, Duolingo Max, Coursera Coach) trong khi tiết kiệm >97% chi phí vận hành nhờ DeepSeek arbitrage và Semantic Cache.
+   Phân hệ AI của Aegis lần đầu tiên có **vai trò chuyên biệt, ký ức ngữ nghĩa, ủy ban đa tác tử đối nghịch, walkthrough sư phạm 5 bước, FinOps tự động** và khả năng mở rộng ra 5+ provider đa dạng — đạt chất lượng tương đương với các hệ thống AI giáo dục tiên tiến nhất thế giới (Khanmigo by Khan Academy, Duolingo Max, Coursera Coach) trong khi tiết kiệm >97% chi phí vận hành nhờ DeepSeek arbitrage và Semantic Cache.
 
 ### 5.2. Các Lĩnh Vực ĐANG TIỆM CẬN ĐỈNH CAO THẾ GIỚI (World-Class / At Par):
 1. **Thuật toán Khảo thí CAT**: Hiện đang làm chủ hoàn toàn mô hình Đơn chiều 3-PL (Unidimensional 3-PL). Các viện khảo thí hàng đầu như ETS đang bắt đầu nghiên cứu **MIRT (Multidimensional IRT - Đa chiều đồng thời)**.
@@ -335,7 +335,7 @@ Dưới lăng kính phân tích hệ thống độc lập và khắt khe nhất:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                   3 MŨI NHỌN CHIẾN LƯỢC TIẾP THEO CỦA AEGISQUIZ                  │
+│                   3 MŨI NHỌN CHIẾN LƯỢC TIẾP THEO CỦA AEGIS                  │
 ├──────────────────────────┬───────────────────────────────────────────────────────┤
 │ Mũi Nhọn                 │ Mục Tiêu Công Nghệ Đạt Được                           │
 ├──────────────────────────┼───────────────────────────────────────────────────────┤
@@ -354,11 +354,11 @@ Dưới lăng kính phân tích hệ thống độc lập và khắt khe nhất:
 ## 7. LỜI KẾT & TUYÊN NGÔN KIẾN TRÚC
 
 > 🌟 **Tuyên ngôn chính thức (Cập nhật 2026-09-15):**
-> **AegisQuiz đã chính thức vượt xa các hệ thống LMS và Nền tảng Khảo thí truyền thống trên thế giới từ 3 đến 5 năm về mặt tích hợp công nghệ, trải nghiệm người dùng và tính linh hoạt thực chiến.**
+> **Aegis đã chính thức vượt xa các hệ thống LMS và Nền tảng Khảo thí truyền thống trên thế giới từ 3 đến 5 năm về mặt tích hợp công nghệ, trải nghiệm người dùng và tính linh hoạt thực chiến.**
 >
-> Với việc hoàn thành **ACM-OS** (Agentic Cognitive Multi-Agent Operating System), AegisQuiz không còn là một phần mềm thi trắc nghiệm đơn thuần, không còn là một "đầu gọi API wrapper" thông thường. Hệ thống đã tiến hóa thành một **Hệ Sinh Thái AI-Native Hoàn Toàn** — nơi mọi AI agent đều có **vai trò**, có **kỹ năng**, có **ký ức ngữ nghĩa**, có **khả năng hợp tác đối nghịch**, và có **bản đồ sư phạm 5 bước** — ngang tầm với những hệ thống AI giáo dục tiên tiến nhất thế giới.
+> Với việc hoàn thành **ACM-OS** (Agentic Cognitive Multi-Agent Operating System), Aegis không còn là một phần mềm thi trắc nghiệm đơn thuần, không còn là một "đầu gọi API wrapper" thông thường. Hệ thống đã tiến hóa thành một **Hệ Sinh Thái AI-Native Hoàn Toàn** — nơi mọi AI agent đều có **vai trò**, có **kỹ năng**, có **ký ức ngữ nghĩa**, có **khả năng hợp tác đối nghịch**, và có **bản đồ sư phạm 5 bước** — ngang tầm với những hệ thống AI giáo dục tiên tiến nhất thế giới.
 >
-> Không còn là một phần mềm thi trắc nghiệm đơn thuần, AegisQuiz đã vươn mình trở thành một **Kỳ quan Công nghệ Khảo thí & Đấu trường Trí tuệ Thế hệ Mới** — một hệ sinh thái sống động, thông minh, chuẩn mực và mang lại giá trị to lớn cho giáo dục và đào tạo doanh nghiệp hiện đại!
+> Không còn là một phần mềm thi trắc nghiệm đơn thuần, Aegis đã vươn mình trở thành một **Kỳ quan Công nghệ Khảo thí & Đấu trường Trí tuệ Thế hệ Mới** — một hệ sinh thái sống động, thông minh, chuẩn mực và mang lại giá trị to lớn cho giáo dục và đào tạo doanh nghiệp hiện đại!
 
 ---
 *Tài liệu được cập nhật lần cuối: **2026-09-15**. Lưu trữ chính thức tại kho tài liệu kiến trúc: `docs/architecture/WORLD_CLASS_AI_BENCHMARK_AND_SUPREMACY_ANALYSIS.md`.*

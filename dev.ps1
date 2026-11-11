@@ -1,6 +1,6 @@
 <#
 ============================================================================
- AegisQuiz — Dev Launcher (menu chọn Backend / Frontend / All)
+ Aegis — Dev Launcher (menu chọn Backend / Frontend / All)
 ============================================================================
  Thay vì phải gõ tay lệnh docker compose dài với nhiều cờ -f, script này hiện
  menu lựa chọn và tự chạy đúng lệnh tương ứng ở chế độ DEV (Hot-Reload qua
@@ -88,7 +88,7 @@ function Stop-DevStack {
 function Show-Menu {
     Write-Host ''
     Write-Host '=========================================================' -ForegroundColor DarkCyan
-    Write-Host '   AegisQuiz — Dev Container Launcher (Docker Desktop)   ' -ForegroundColor DarkCyan
+    Write-Host '   Aegis — Dev Container Launcher (Docker Desktop)       ' -ForegroundColor DarkCyan
     Write-Host '=========================================================' -ForegroundColor DarkCyan
     Write-Host '  [1] Backend   — chỉ build/chạy lại container Backend (.NET, dotnet watch)'
     Write-Host '  [2] Frontend  — chỉ build/chạy lại container Frontend (Vite, HMR)'

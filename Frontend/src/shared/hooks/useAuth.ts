@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — useAuth Hook
+ * Aegis — useAuth Hook
  * ========================
  * Standard hook accessing AuthContext.
  * FSD Layer: shared/hooks/

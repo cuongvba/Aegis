@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
- * ║  AEGISQUIZ — TIER 3: TENANT OVERRIDE TOKENS                    ║
+ * ║  AEGIS — TIER 3: TENANT OVERRIDE TOKENS                    ║
  * ║  Runtime-injected CSS Custom Properties per Tenant.            ║
  * ║  Được TenantProvider.tsx inject vào document.documentElement.  ║
  * ║                                                                  ║
@@ -16,7 +16,7 @@
  */
 
 /* ──────────────────────────────────────────────────────────────────
- * DEFAULT TENANT — AegisQuiz / LearnerQuest Brand
+ * DEFAULT TENANT — Aegis / LearnerQuest Brand
  * Đây là fallback khi chưa có tenant config từ API
  * ────────────────────────────────────────────────────────────────── */
 :root {

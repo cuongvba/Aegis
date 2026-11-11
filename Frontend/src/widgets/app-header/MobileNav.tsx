@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — MobileNav Widget
+ * Aegis — MobileNav Widget
  * ==============================
  * Bottom navigation bar cho mobile — tách từ MainLayout.tsx.
  * FSD Layer: widgets/app-header/

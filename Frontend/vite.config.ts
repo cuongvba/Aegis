@@ -22,7 +22,7 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Proxy tất cả /api requests về AegisQuiz backend
+      // Proxy tất cả /api requests về Aegis backend
       '/api': {
         target:      process.env.VITE_API_URL || 'http://localhost:8080',
         changeOrigin: true,

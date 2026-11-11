@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Tenant Entity Model + Zod Schemas
+ * Aegis — Tenant Entity Model + Zod Schemas
  * ===============================================
  * SSOT cho Tenant domain model với runtime validation.
  * FSD Layer: entities/tenant/model/

@@ -62,20 +62,20 @@ flowchart TD
 Hệ thống được nối kết sống 100% giữa Frontend, Backend và Cơ sở dữ liệu:
 
 ### 3.1 Backend Multi-Tenancy Hub
-* Controller API Thương hiệu: [`TenantsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TenantsController.cs)
+* Controller API Thương hiệu: [`TenantsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TenantsController.cs)
   - `GET /api/admin/tenants/branding`: Lấy cấu hình thương hiệu của Tenant (cho phép ẩn danh để nạp theme cho trang Đăng nhập).
   - `PUT /api/admin/tenants/branding`: Lưu cấu hình thương hiệu vào trường `ConfigJson`, `LogoUrl`, `PrimaryColor`, `CustomDomain` của bảng `Tenants`.
-* Entity Domain: [`Tenant.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/Tenant.cs)
+* Entity Domain: [`Tenant.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/Tenant.cs)
 
 ### 3.2 Frontend Zero-Monolith Suite ($\le 250$ LOC/file)
-* Trang Điều Phối Chính: [`TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx) *(117 LOC)*
-* Hook Quản trị Trạng thái & Tiêm CSS: [`useWhiteLabelTheme.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/hooks/useWhiteLabelTheme.ts) *(118 LOC)*
-* Component Căn Cước Thị Giác & Logo: [`BrandIdentityHub.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/BrandIdentityHub.tsx) *(176 LOC)*
-* Component Không Gian Hình Nền & Watermark: [`SurfaceBackgroundConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/SurfaceBackgroundConfig.tsx) *(144 LOC)*
-* Component Khung Xem Trước Đa Chiều: [`MultiSurfaceLivePreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/MultiSurfaceLivePreview.tsx) *(250 LOC)*
-* Component Pháp Lý Chân Trang: [`FooterAndLegalConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/FooterAndLegalConfig.tsx) *(80 LOC)*
-* Component Bộ Bảng Màu Doanh Nghiệp: [`ThemeColorPalettePicker.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx) *(162 LOC)*
-* Component Phông Chữ & Bo Góc: [`ThemeFontSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx) *(138 LOC)*
+* Trang Điều Phối Chính: [`TenantThemeCustomizerPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/TenantThemeCustomizerPage.tsx) *(117 LOC)*
+* Hook Quản trị Trạng thái & Tiêm CSS: [`useWhiteLabelTheme.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/hooks/useWhiteLabelTheme.ts) *(118 LOC)*
+* Component Căn Cước Thị Giác & Logo: [`BrandIdentityHub.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/BrandIdentityHub.tsx) *(176 LOC)*
+* Component Không Gian Hình Nền & Watermark: [`SurfaceBackgroundConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/SurfaceBackgroundConfig.tsx) *(144 LOC)*
+* Component Khung Xem Trước Đa Chiều: [`MultiSurfaceLivePreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/MultiSurfaceLivePreview.tsx) *(250 LOC)*
+* Component Pháp Lý Chân Trang: [`FooterAndLegalConfig.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/FooterAndLegalConfig.tsx) *(80 LOC)*
+* Component Bộ Bảng Màu Doanh Nghiệp: [`ThemeColorPalettePicker.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/ThemeColorPalettePicker.tsx) *(162 LOC)*
+* Component Phông Chữ & Bo Góc: [`ThemeFontSelector.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/white-label/components/ThemeFontSelector.tsx) *(138 LOC)*
 
 ---
 

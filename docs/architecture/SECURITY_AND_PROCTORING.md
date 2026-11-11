@@ -1,6 +1,6 @@
 # 🛡️ An Ninh Hệ Thống & Cơ Chế Giám Sát Chống Gian Lận (Security & Proctoring)
 
-Tài liệu này mô tả các biện pháp bảo vệ tính toàn vẹn của kỳ thi (Exam Integrity), kiến trúc phòng thi bảo mật **`SecureExamRoom`** và cơ chế xác thực kép trong hệ sinh thái **AegisQuiz**.
+Tài liệu này mô tả các biện pháp bảo vệ tính toàn vẹn của kỳ thi (Exam Integrity), kiến trúc phòng thi bảo mật **`SecureExamRoom`** và cơ chế xác thực kép trong hệ sinh thái **Aegis**.
 
 ---
 

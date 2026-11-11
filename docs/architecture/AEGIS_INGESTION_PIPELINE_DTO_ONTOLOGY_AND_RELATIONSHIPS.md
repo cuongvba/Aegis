@@ -2,7 +2,7 @@
 ## Bản Đặc Tả Phân Tầng Hợp Đồng Dữ Liệu (DTO Ontology, Semantic Contracts & OCP Architectural Evolution)
 
 > **Hệ sinh thái:** AEGIS GLOBAL COGNITIVE INFRASTRUCTURE (AGCI)  
-> **Tiêu chuẩn áp dụng:** [AEGIS Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
+> **Tiêu chuẩn áp dụng:** [AEGIS Living Visual Documentation Standard (ALDS v1.0)](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md)  
 > **Chủ nhiệm biên soạn:** No.1 — World-Class Polymath Chief Architect & Master Living Documentarian  
 > **Phiên bản:** `v5.0` (Tháng 10/2026) — Phân tích bản thể học DTO đồng bộ 100% mã nguồn thực thi  
 
@@ -10,7 +10,7 @@
 
 ## TRỤ CỘT 1: BẢN THIẾT KẾ BẢN THỂ HỌC DTO (ARCHITECTURAL BLUEPRINT & ONTOLOGY)
 
-Trong kiến trúc [CLEAR Architecture](file:///d:/Cuong/DuAn/mybank/AegisQuiz/AGENTS.md) của Aegis Global, các DTO không đơn thuần là các lớp chứa dữ liệu thụ động (Anemic Data Bags), mà là **Hợp đồng Ngữ nghĩa (Semantic Contracts)** phân định ranh giới giữa 3 tầng: **Ngữ pháp vĩ mô (Macro-Grammar)**, **Quy tắc vi mô (Micro-Rules)**, và **Dữ liệu đầu ra biểu diễn (Presentation/Preview Payload)**:
+Trong kiến trúc [CLEAR Architecture](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md) của Aegis Global, các DTO không đơn thuần là các lớp chứa dữ liệu thụ động (Anemic Data Bags), mà là **Hợp đồng Ngữ nghĩa (Semantic Contracts)** phân định ranh giới giữa 3 tầng: **Ngữ pháp vĩ mô (Macro-Grammar)**, **Quy tắc vi mô (Micro-Rules)**, và **Dữ liệu đầu ra biểu diễn (Presentation/Preview Payload)**:
 
 ```mermaid
 graph TD
@@ -54,16 +54,16 @@ $$D_{\text{Preview}} = \Psi \Big( P, \; \mathcal{M}_{\text{Macro}}(\text{DSD}), 
 Trong đó:
 - $\text{DSD} = \text{DocumentStructureDictionaryDto}$: Không gian tham số ngữ pháp vĩ mô xác định trạng thái pha tài liệu $\mathcal{S}_{\text{Phase}} \in \{\text{EXAM}, \text{KEY\_TABLE}, \text{EXPLANATIONS}\}$.
 - $\text{QPR} = \text{QuestionParsingRuleDto}$: Không gian 4 chiều trực giao bóc tách vi mô $\langle \text{Anchor}, \text{Stimulus}, \text{Interaction}, \text{Evaluation} \rangle$.
-- $\Psi$: Toán tử phân tích cú pháp kết hợp của [`DocxStateMachineClassifier`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) và [`DynamicQuestionIngestionEngine`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.cs).
+- $\Psi$: Toán tử phân tích cú pháp kết hợp của [`DocxStateMachineClassifier`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs) và [`DynamicQuestionIngestionEngine`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.cs).
 - $D_{\text{Preview}} = \text{DocxImportPreviewDto}$: Hợp đồng dữ liệu hoàn chỉnh sẵn sàng cho duyệt thị giác và lưu trữ PostgreSQL.
 
 ---
 
 ## TRỤ CỘT 2: XÁC MINH MÃ NGUỒN VÀ BẢN CHẤT CÁC DTO (LIVE CODE VERIFIABILITY)
 
-### 2.1. [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs): Bộ Khung Xương Ngữ Pháp Vĩ Mô (Document Macro-Grammar)
-* **Vị trí file:** [`Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs)
-* **Nguồn nạp:** Nạp từ trường `documentStructureDictionary` trong [`parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json) hoặc bảng `QuestionParsingRules` trong DB.
+### 2.1. [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs): Bộ Khung Xương Ngữ Pháp Vĩ Mô (Document Macro-Grammar)
+* **Vị trí file:** [`Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs)
+* **Nguồn nạp:** Nạp từ trường `documentStructureDictionary` trong [`parsing_rules_registry.json`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json) hoặc bảng `QuestionParsingRules` trong DB.
 * **Các trường cốt lõi:**
   - `SectionMarkers`: Từ điển ánh xạ phân đoạn lớn sang loại câu hỏi:
     ```csharp
@@ -75,12 +75,12 @@ Trong đó:
   - `SolutionPhaseMarkers`: Tập hợp Regex phát hiện thời điểm tài liệu chuyển sang pha Lời giải/Hướng dẫn chấm (`HƯỚNG DẪN GIẢI`, `LỜI GIẢI CHI TIẾT`, `MARKING SCHEME`).
   - `AnswerPhaseMarkers`: Phát hiện thời điểm xuất hiện Bảng đáp án (`BẢNG ĐÁP ÁN`, `ANSWER KEY`).
   - `ExamBoundaryMarkers`: Bóc tách biên giới giữa các đề thi khi nạp tệp chứa nhiều đề (`ĐỀ SỐ 1`, `ĐỀ SỐ 2`).
-  - `QuestionTypeProfiles`: Bản đồ năng lực câu hỏi mở rộng theo nguyên lý OCP ([`QuestionTypeProfileDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionTypeProfileDto.cs)).
+  - `QuestionTypeProfiles`: Bản đồ năng lực câu hỏi mở rộng theo nguyên lý OCP ([`QuestionTypeProfileDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionTypeProfileDto.cs)).
 
 ---
 
-### 2.2. [`QuestionParsingRuleDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionParsingRuleModels.cs): Bản Đặc Tả Quy Tắc Bóc Tách Vi Mô (CIG 4-Specs Dynamic Rule)
-* **Vị trí file:** [`Backend/src/AegisQuiz.Application/DTOs/QuestionParsingRuleModels.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionParsingRuleModels.cs)
+### 2.2. [`QuestionParsingRuleDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionParsingRuleModels.cs): Bản Đặc Tả Quy Tắc Bóc Tách Vi Mô (CIG 4-Specs Dynamic Rule)
+* **Vị trí file:** [`Backend/src/Aegis.Application/DTOs/QuestionParsingRuleModels.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionParsingRuleModels.cs)
 * **Nguồn nạp:** Bảng `QuestionParsingRules` trong PostgreSQL (cột `SemanticsSpecJson`) kết hợp tệp `parsing_rules_registry.json` với cơ chế **0ms Hot-Reload**.
 * **Mô hình CIG 4 Chiều Trực Giao:**
   ```csharp
@@ -107,8 +107,8 @@ Trong đó:
 
 ---
 
-### 2.3. [`DocxImportPreviewDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IServices.cs#L256): Hợp Đồng Dữ Liệu Đầu Ra Xem Trước & Thẩm Định
-* **Vị trí file:** [`Backend/src/AegisQuiz.Application/Interfaces/IServices.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IServices.cs#L256), kế thừa `UniversalQuestionPreviewDto`.
+### 2.3. [`DocxImportPreviewDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IServices.cs#L256): Hợp Đồng Dữ Liệu Đầu Ra Xem Trước & Thẩm Định
+* **Vị trí file:** [`Backend/src/Aegis.Application/Interfaces/IServices.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IServices.cs#L256), kế thừa `UniversalQuestionPreviewDto`.
 * **Nhiệm vụ:**
   - Chuyển giao toàn bộ dữ liệu bóc tách về giao diện React/Creator Zen Studio để người dùng duyệt trước (Visual Preview) trước khi ghi vào CSDL.
   - Chứa 27 thuộc tính nghiệp vụ hoàn chỉnh:
@@ -134,12 +134,12 @@ Việc trong mã nguồn không tồn tại DTO mang tên `QuestionStructureDto`
 ### 3.1. Sự Tiến Hóa Từ "Cấu Trúc Tĩnh (Static Schema)" Sang "Mô Hình CIG 4 Chiều Động"
 - **Thiết kế LMS thế hệ cũ (Legacy):** Thường tạo một lớp cứng nhắc `QuestionStructureDto` chứa: `string Stem`, `List<string> Options`, `string Answer`, `string Explanation`.
 - **Hạn chế chí mạng:** Mô hình tĩnh này vi phạm nghiêm trọng **Nguyên lý Mở/Đóng (Open-Closed Principle - OCP)**. Khi đối mặt với 9 dạng câu hỏi hiện đại (Đúng/Sai nhiều ý 4 mệnh đề độc lập theo GDPT 2025, Trả lời ngắn điền số, Kéo thả quy trình `ORDERING`, Ghép nối 2 cột `MATCHING`, hay Sa hình giao thông sát hạch điểm liệt), cấu trúc `QuestionStructureDto` bị vỡ vụn, buộc kỹ sư phải liên tục sửa code và làm hỏng tính toàn vẹn hệ thống.
-- **Giải pháp tiến hóa:** Cấu trúc câu hỏi được giải phẫu thành **4 Chiều Không Gian Động** bên trong [`QuestionParsingRuleDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionParsingRuleModels.cs): `AnchorSpec` (Neo), `StimulusSpec` (Thân), `InteractionSpec` (Tương tác), `EvaluationSpec` (Đánh giá). Nhờ đó, hệ thống tiếp nhận bất kỳ dạng câu hỏi mới nào chỉ bằng cách khai báo thêm Profile trong JSON/DB mà không phải sửa một dòng mã nguồn C#.
+- **Giải pháp tiến hóa:** Cấu trúc câu hỏi được giải phẫu thành **4 Chiều Không Gian Động** bên trong [`QuestionParsingRuleDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionParsingRuleModels.cs): `AnchorSpec` (Neo), `StimulusSpec` (Thân), `InteractionSpec` (Tương tác), `EvaluationSpec` (Đánh giá). Nhờ đó, hệ thống tiếp nhận bất kỳ dạng câu hỏi mới nào chỉ bằng cách khai báo thêm Profile trong JSON/DB mà không phải sửa một dòng mã nguồn C#.
 
 ---
 
 ### 3.2. Dấu Vết Lịch Sử Của Khái Niệm `Structure` (Historic Alias Trace)
-Minh chứng xác thực sống động nằm ngay tại dòng 34 của [`QuestionParsingRuleModels.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuestionParsingRuleModels.cs#L34-L39):
+Minh chứng xác thực sống động nằm ngay tại dòng 34 của [`QuestionParsingRuleModels.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuestionParsingRuleModels.cs#L34-L39):
 ```csharp
 // Thuộc tính Alias tương thích ngược / LLM JSON mapping
 [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -227,16 +227,16 @@ ightarrow N$, không có Phần I, II và không có Chỉ thị làm bài):
 
 ---
 
-## 4.6. Tách Biệt Tuyệt Đối Tầng Hạt Giống (Seed Decoupling): [`DocumentStructureSeedFactory`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Services/DocumentStructureSeedFactory.cs)
+## 4.6. Tách Biệt Tuyệt Đối Tầng Hạt Giống (Seed Decoupling): [`DocumentStructureSeedFactory`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Services/DocumentStructureSeedFactory.cs)
 
 ### 1. Bối Cảnh & Động Lực Kiến Trúc
-Trước đây, [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs) đóng vai trò vừa là Data Contract / POCO vừa chứa hơn 350 dòng mã nguồn static seed factory (`GetDefaultSectionMarkers()`, `GetDefaultSolutionPhaseMarkers()`, `GetDefaultScopeDirectiveMarkers()`, `GetDefaultSovereignRules()`...). Mặc dù các phương thức này cần thiết làm sàn an toàn (Fail-Safe Floor) chống NullReferenceException khi khởi động nguội (Cold-Start) hoặc khi tệp `parsing_rules_registry.json` chưa kịp nạp, việc nhồi nhét chuỗi Regex tĩnh khổng lồ vào tệp DTO vi phạm nguyên lý **Separation of Concerns (SoC)** và làm phình to Data Contract.
+Trước đây, [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs) đóng vai trò vừa là Data Contract / POCO vừa chứa hơn 350 dòng mã nguồn static seed factory (`GetDefaultSectionMarkers()`, `GetDefaultSolutionPhaseMarkers()`, `GetDefaultScopeDirectiveMarkers()`, `GetDefaultSovereignRules()`...). Mặc dù các phương thức này cần thiết làm sàn an toàn (Fail-Safe Floor) chống NullReferenceException khi khởi động nguội (Cold-Start) hoặc khi tệp `parsing_rules_registry.json` chưa kịp nạp, việc nhồi nhét chuỗi Regex tĩnh khổng lồ vào tệp DTO vi phạm nguyên lý **Separation of Concerns (SoC)** và làm phình to Data Contract.
 
 ### 2. Kiến Trúc Nhà Máy Hạt Giống `DocumentStructureSeedFactory`
 Hệ thống chính thức tách biệt toàn bộ các hàm khởi tạo mặc định sang:
-* **Vị trí file:** [`Backend/src/AegisQuiz.Application/Services/DocumentStructureSeedFactory.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Services/DocumentStructureSeedFactory.cs)
+* **Vị trí file:** [`Backend/src/Aegis.Application/Services/DocumentStructureSeedFactory.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Services/DocumentStructureSeedFactory.cs)
 * **Trách nhiệm duy nhất:** Encapsulate toàn bộ các Regex fallback mẫu, danh mục mặc định (SGK KNTT/CD/CTST/Cambridge, Kỳ thi HK1/HK2/THPT, Sovereign Rules zh/ja/ko/ar/vi, Universal Core keywords) và cung cấp phương thức `CreateDefaultDictionary(): DocumentStructureDictionaryDto`.
-* **Bảo toàn 100% Tương Thích Ngược (Zero Breaking Changes):** Tại [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/DocumentStructureDictionaryDtos.cs), các phương thức `public static ... GetDefault...()` được giữ lại dưới dạng **One-Line Forwarders** ủy nhiệm trực tiếp sang `DocumentStructureSeedFactory`. Mọi mã nguồn gọi cũ và các bài kiểm thử unit tests hiện hữu đều hoạt động hoàn hảo mà không cần sửa đổi bất kỳ dòng mã nào.
+* **Bảo toàn 100% Tương Thích Ngược (Zero Breaking Changes):** Tại [`DocumentStructureDictionaryDto`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/DocumentStructureDictionaryDtos.cs), các phương thức `public static ... GetDefault...()` được giữ lại dưới dạng **One-Line Forwarders** ủy nhiệm trực tiếp sang `DocumentStructureSeedFactory`. Mọi mã nguồn gọi cũ và các bài kiểm thử unit tests hiện hữu đều hoạt động hoàn hảo mà không cần sửa đổi bất kỳ dòng mã nào.
 
 ```csharp
 // DocumentStructureDictionaryDto.cs (Clean POCO Data Contract)

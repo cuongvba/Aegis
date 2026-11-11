@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — AuthProvider
+ * Aegis — AuthProvider
  * ========================
  * React Context cung cấp reactive auth state cho toàn bộ app.
  *
@@ -314,7 +314,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuthContext(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('[AegisQuiz] useAuthContext phải được dùng bên trong <AuthProvider>');
+    throw new Error('[Aegis] useAuthContext phải được dùng bên trong <AuthProvider>');
   }
   return ctx;
 }

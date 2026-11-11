@@ -1,4 +1,4 @@
-# AEGISQUIZ ENTERPRISE IAM, PROFILE & SCOPED RBAC SPECIFICATION
+# AEGIS ENTERPRISE IAM, PROFILE & SCOPED RBAC SPECIFICATION
 ## Đặc Tả Kỹ Thuật Hệ Thống Quản Trị Định Danh, Hồ Sơ Cá Nhân & Phân Quyền Đa Tầng Theo Chuẩn Quốc Tế
 
 > **Phiên bản:** 3.5 Enterprise Core  
@@ -9,7 +9,7 @@
 
 ## 1. TỔNG QUAN VÀ MỤC TIÊU KIẾN TRÚC
 
-Trong hệ sinh thái khảo thí & đánh giá năng lực **AegisQuiz / Dehoc.vn**, việc quản lý định danh người dùng không dừng lại ở mô hình RBAC phẳng (Flat RBAC) thông thường, mà là mô hình **3 Chiều Đa Tầng (3-Dimensional Scoped Governance)**:
+Trong hệ sinh thái khảo thí & đánh giá năng lực **Aegis / Dehoc.vn**, việc quản lý định danh người dùng không dừng lại ở mô hình RBAC phẳng (Flat RBAC) thông thường, mà là mô hình **3 Chiều Đa Tầng (3-Dimensional Scoped Governance)**:
 
 1. **Chiều 1 - Ranh giới Khách thuê (Tenant Isolation Boundary)**: Cô lập 100% dữ liệu giữa các tổ chức (ngân hàng, trường đại học, tập đoàn).
 2. **Chiều 2 - Cây Phân cấp Đơn vị (5-Tier Organizational Hierarchy)**: Áp dụng cấu trúc cây tổ chức linh hoạt với thuật toán Materialized Path (`HierarchyPath`), cho phép ủy quyền quản lý theo nhánh.
@@ -164,7 +164,7 @@ sequenceDiagram
     autonumber
     actor User as Thí sinh / Cán bộ
     actor Admin as Quản trị viên
-    participant Frontend as AegisQuiz Frontend (Vite/React)
+    participant Frontend as Aegis Frontend (Vite/React)
     participant AuthAPI as AuthController (.NET 10)
     participant AdminAPI as AdminUsersController (.NET 10)
     participant DB as PostgreSQL Database
@@ -202,7 +202,7 @@ sequenceDiagram
 │ PHÂN HỆ         │ TẬP TIN MÃ NGUỒN                                       │ VAI TRÒ & ĐẶC TẢ TRIỂN KHAI              │
 ├─────────────────┼────────────────────────────────────────────────────────┼──────────────────────────────────────────┤
 │ Domain Layer    │ Backend/.../Entities/UserAccount.cs                    │ PasswordResetToken, ExpiresAt, Lockout   │
-│ Persistence     │ Backend/.../Persistence/AegisQuizDbContext.cs          │ Entity configuration & Multi-Tenant filter│
+│ Persistence     │ Backend/.../Persistence/AegisDbContext.cs          │ Entity configuration & Multi-Tenant filter│
 │ API Controller  │ Backend/.../Controllers/AuthController.cs              │ DDL Self-healing, forgot-pw, reset-pw    │
 │ Admin API       │ Backend/.../Controllers/AdminUsersController.cs        │ send-activation-link (OTT 24h), RBAC     │
 │ Security Helper │ Backend/.../Common/Security/PasswordSecurityHelper.cs  │ PBKDF2/SHA-256 100,000 rounds hash       │
@@ -230,7 +230,7 @@ Hệ thống đã trải qua kiểm thử tự động toàn diện trước khi
 
 ### 10.1. Kiến Trúc Cốt Lõi (Core Engine RFC 6238 & RFC 4648)
 
-Hệ thống AegisQuiz triển khai bộ máy TOTP thuần túy (**Zero-dependency**), không phụ thuộc thư viện ngoài, tối ưu hiệu năng và an toàn mã nguồn:
+Hệ thống Aegis triển khai bộ máy TOTP thuần túy (**Zero-dependency**), không phụ thuộc thư viện ngoài, tối ưu hiệu năng và an toàn mã nguồn:
 
 ```
                   ┌──────────────────────────────────────────────┐
@@ -243,7 +243,7 @@ Hệ thống AegisQuiz triển khai bộ máy TOTP thuần túy (**Zero-dependen
                     ▼                                         ▼
    ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
    │    Chuỗi URI otpauth://         │       │  8 Mã Khôi Phục (Recovery Codes) │
-   │  otpauth://totp/AegisQuiz:...   │       │  Dạng: XXXX-XXXX                │
+   │  otpauth://totp/Aegis:...   │       │  Dạng: XXXX-XXXX                │
    │  -> Hiển thị QRCodeSVG          │       │  -> Hash SHA-256 lưu DB         │
    └─────────────────────────────────┘       └─────────────────────────────────┘
 ```
@@ -260,7 +260,7 @@ Hệ thống AegisQuiz triển khai bộ máy TOTP thuần túy (**Zero-dependen
 sequenceDiagram
     autonumber
     actor User as Người Dùng
-    participant UI as AegisQuiz Frontend (React 19)
+    participant UI as Aegis Frontend (React 19)
     participant Auth as AuthController (.NET 10)
     participant TOTP as TotpSecurityHelper
     participant DB as PostgreSQL 17
@@ -296,7 +296,7 @@ sequenceDiagram
 │ Core Security Engine│ Backend/.../Security/TotpSecurityHelper.cs             │ TOTP RFC 6238, Base32 RFC 4648, Backup   │
 │ Entity & Model      │ Backend/.../Domain/Entities/UserAccount.cs             │ IsTwoFactorEnabled, TwoFactorSecret, ... │
 │ API Endpoints       │ Backend/.../API/Controllers/AuthController.cs          │ /setup, /enable, /verify, /disable, ...  │
-│ Unit Tests          │ Backend/.../AegisQuiz.UnitTests/TotpSecurityTests.cs   │ 6 Test cases kiểm thử TOTP & Tolerance   │
+│ Unit Tests          │ Backend/.../Aegis.UnitTests/TotpSecurityTests.cs   │ 6 Test cases kiểm thử TOTP & Tolerance   │
 │ Frontend Challenge  │ Frontend/src/pages/auth/TwoFactorChallengeModal.tsx    │ 6 ô số tự động nhảy con trỏ & Paste clip  │
 │ Frontend Profile    │ Frontend/src/pages/profile/TwoFactorProfileSection.tsx │ Quét QR SVG, copy manual key, backup file│
 │ Page Integration    │ Frontend/src/pages/auth/LoginPage.tsx                  │ Intercept requires2FA -> mở modal 2FA    │
@@ -309,7 +309,7 @@ sequenceDiagram
 ## 11. ĐẶC TẢ ĐĂNG NHẬP 1-GIÂY BẰNG QUÉT MÃ QR (QR CODE INSTANT LOGIN / SCAN-TO-AUTH)
 
 ### 11.1. Triết Lý Thiết Kế & Trải Nghiệm Người Dùng (UX Philosophy)
-Lấy cảm hứng từ mô hình xác thực siêu tiện lợi của **Zalo Web, Telegram Web và các ứng dụng Ngân hàng số hàng đầu**, AegisQuiz cho phép người dùng đăng nhập ngay vào hệ thống trên màn hình máy tính mà **không cần gõ email, không cần nhớ mật khẩu**, chỉ bằng một thao tác quét mã QR từ camera điện thoại thông minh.
+Lấy cảm hứng từ mô hình xác thực siêu tiện lợi của **Zalo Web, Telegram Web và các ứng dụng Ngân hàng số hàng đầu**, Aegis cho phép người dùng đăng nhập ngay vào hệ thống trên màn hình máy tính mà **không cần gõ email, không cần nhớ mật khẩu**, chỉ bằng một thao tác quét mã QR từ camera điện thoại thông minh.
 
 ### 11.2. Sơ Đồ Tuần Tự Toàn Phần (Full Lifecycle Sequence Diagram)
 
@@ -317,7 +317,7 @@ Lấy cảm hứng từ mô hình xác thực siêu tiện lợi của **Zalo We
 sequenceDiagram
     autonumber
     actor User as Người Dùng
-    participant Web as AegisQuiz Web Client (LoginPage)
+    participant Web as Aegis Web Client (LoginPage)
     participant API as AuthController (.NET 10 API)
     participant Memory as RAM ConcurrentDictionary (In-Memory Tickets)
     actor Mobile as Thiết bị Di Động (Camera/Browser)
@@ -387,7 +387,7 @@ sequenceDiagram
 ## 12. ĐẶC TẢ TÍCH HỢP GOOGLE OAUTH 2.0 IDENTITY SERVICES (GIS)
 
 ### 12.1. Kiến Trúc Tích Hợp Google GIS Hiện Đại
-AegisQuiz sử dụng thư viện chuẩn **Google Identity Services (GIS)** mới nhất từ Google (`https://accounts.google.com/gsi/client`), loại bỏ hoàn toàn giao thức OAuth 2.0 redirect cồng kềnh truyền thống:
+Aegis sử dụng thư viện chuẩn **Google Identity Services (GIS)** mới nhất từ Google (`https://accounts.google.com/gsi/client`), loại bỏ hoàn toàn giao thức OAuth 2.0 redirect cồng kềnh truyền thống:
 
 1. **Khởi tạo SDK tự động**: Khi trang `LoginPage.tsx` được tải, mã JavaScript tự động chèn thư viện GIS và gọi `google.accounts.id.initialize` với Client ID đã đăng ký trên Google Cloud Console:
    - Client ID: `193004715260-v3bkisubivcfs8mj7efegf408dphc82i.apps.googleusercontent.com`
@@ -408,9 +408,9 @@ AegisQuiz sử dụng thư viện chuẩn **Google Identity Services (GIS)** m�
 ┌──────────────────────────────────────┬───────────────────────────────────────────────────────────────────┬──────────────────────────────────────────┐
 │ PHÂN HỆ                              │ TẬP TIN MÃ NGUỒN                                                  │ ĐẶC TẢ TRÁCH NHIỆM KỸ THUẬT              │
 ├──────────────────────────────────────┼───────────────────────────────────────────────────────────────────┼──────────────────────────────────────────┤
-│ Backend QR & Auth Controller         │ Backend/src/AegisQuiz.API/Controllers/AuthController.cs           │ 5 Endpoints QR, Google Auth, 2FA, DDL    │
-│ Domain Entity UserAccount            │ Backend/src/AegisQuiz.Domain/Entities/UserAccount.cs              │ Quản trị Entity, 2FA Secret, Tenant/Org  │
-│ PKI Hardware Controller              │ Backend/src/AegisQuiz.API/Controllers/PkiAuthController.cs        │ Xác thực chữ ký số USB Token Agribank    │
+│ Backend QR & Auth Controller         │ Backend/src/Aegis.API/Controllers/AuthController.cs           │ 5 Endpoints QR, Google Auth, 2FA, DDL    │
+│ Domain Entity UserAccount            │ Backend/src/Aegis.Domain/Entities/UserAccount.cs              │ Quản trị Entity, 2FA Secret, Tenant/Org  │
+│ PKI Hardware Controller              │ Backend/src/Aegis.API/Controllers/PkiAuthController.cs        │ Xác thực chữ ký số USB Token Agribank    │
 │ Frontend Login & Tab Switcher        │ Frontend/src/pages/auth/LoginPage.tsx                             │ Tab Quét QR vs Mật khẩu & Google GIS    │
 │ Frontend QR Card Component           │ Frontend/src/pages/auth/QrLoginCard.tsx                           │ QR SVG 200px, Countdown, Polling, Demo   │
 │ Frontend Mobile Confirm Page         │ Frontend/src/pages/auth/QrConfirmPage.tsx                         │ Trang tiếp nhận quét mã từ camera        │

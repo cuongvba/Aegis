@@ -31,10 +31,10 @@ export const DEFAULT_WHITE_LABEL_CONFIG: WhiteLabelConfig = {
   ...DEFAULT_THEME_TOKENS,
   organizationName: 'Aegis Global (AGCI)',
   customDomain: 'quiz.mybank.vn',
-  logoUrl: 'https://cdn.aegisquiz.com/agribank-logo.svg',
+  logoUrl: 'https://cdn.aegis.com/agribank-logo.svg',
   logoHeightPx: 38,
-  faviconUrl: 'https://cdn.aegisquiz.com/agribank-icon.png',
-  squareLogoUrl: 'https://cdn.aegisquiz.com/agribank-square.png',
+  faviconUrl: 'https://cdn.aegis.com/agribank-icon.png',
+  squareLogoUrl: 'https://cdn.aegis.com/agribank-square.png',
   slogan: 'Đo lường năng lực thực chất — Bùng nổ cảm hứng học tập đỉnh cao',
   brandDescription: 'Hệ sinh thái Hạ tầng Nhận thức, Khảo thí Thích ứng IRT 3-PL & Trí tuệ Nhân tạo Biện chứng Toàn cầu',
   loginBackgroundUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1920&auto=format&fit=crop',
@@ -69,12 +69,13 @@ export const DEFAULT_WHITE_LABEL_CONFIG: WhiteLabelConfig = {
     '- **SHA-256 Merkle Audit Trail**: Chống can thiệp sửa điểm trái phép trong cơ sở dữ liệu.'
 };
 
-const STORAGE_KEY = 'aegisquiz_tenant_theme_tokens';
+const STORAGE_KEY = 'aegis_tenant_theme_tokens';
+const LEGACY_STORAGE_KEY = 'aegisquiz_tenant_theme_tokens';
 
 export function useWhiteLabelTheme() {
   const [config, setConfig] = useState<WhiteLabelConfig>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
       if (saved) {
         return { ...DEFAULT_WHITE_LABEL_CONFIG, ...JSON.parse(saved) };
       }

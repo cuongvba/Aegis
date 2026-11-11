@@ -66,37 +66,37 @@ flowchart TD
 
 ### 2.1. Nạp và Bóc tách Đề thi Đa định dạng (Word/Docx, PDF Không gian 2D & Excel UCIS)
 - **Hỗ trợ 3 định dạng học thuật chuẩn quốc tế**: 
-  - **File Word ([`.docx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))**: Tự động nhận diện công thức toán nhị phân MathType WMF ([`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/MathTypeWmfEngine.cs)), chuẩn hóa ký hiệu dấu phẩy thập phân Việt Nam ([`MathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Docx/MathLocaleNormalizer.cs)).
-  - **File PDF Không gian 2D ([`PdfParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/PdfParserService.cs) & [`PdfSpatialMathReconstructor.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Pdf/PdfSpatialMathReconstructor.cs))**: Hợp lưu hoàn toàn vào luồng `DocxStateMachineClassifier` + `DynamicQuestionIngestionEngine`. Tái tạo công thức phân số $\frac{A}{B}$, dấu vector $\overrightarrow{AB}$, hệ phương trình ngoặc nhọn $\begin{cases}$, chỉ số dưới $u_n$, bảng số liệu ghép nhóm Markdown và tự động kích hoạt [`PdfHybridVisionFallbackService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/Pdf/PdfHybridVisionFallbackService.cs) (kèm SHA-256 Semantic Cache $0\text{ token}$) cho các trang PDF scan ảnh.
-  - **File Excel ([`.xlsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExcelQuestionParser.cs))**: Kế thừa đầy đủ bộ bóc tách 27+ vai trò ngữ nghĩa của phân hệ Quản trị (Admin Ingestion), tự động map cột Câu hỏi, Phương án A-D, Đáp án đúng, Lời giải chi tiết, Mức độ Bloom, Điểm số.
+  - **File Word ([`.docx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/DocxStateMachineClassifier.cs))**: Tự động nhận diện công thức toán nhị phân MathType WMF ([`MathTypeWmfEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/MathTypeWmfEngine.cs)), chuẩn hóa ký hiệu dấu phẩy thập phân Việt Nam ([`MathLocaleNormalizer.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Docx/MathLocaleNormalizer.cs)).
+  - **File PDF Không gian 2D ([`PdfParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/PdfParserService.cs) & [`PdfSpatialMathReconstructor.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Pdf/PdfSpatialMathReconstructor.cs))**: Hợp lưu hoàn toàn vào luồng `DocxStateMachineClassifier` + `DynamicQuestionIngestionEngine`. Tái tạo công thức phân số $\frac{A}{B}$, dấu vector $\overrightarrow{AB}$, hệ phương trình ngoặc nhọn $\begin{cases}$, chỉ số dưới $u_n$, bảng số liệu ghép nhóm Markdown và tự động kích hoạt [`PdfHybridVisionFallbackService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/Pdf/PdfHybridVisionFallbackService.cs) (kèm SHA-256 Semantic Cache $0\text{ token}$) cho các trang PDF scan ảnh.
+  - **File Excel ([`.xlsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExcelQuestionParser.cs))**: Kế thừa đầy đủ bộ bóc tách 27+ vai trò ngữ nghĩa của phân hệ Quản trị (Admin Ingestion), tự động map cột Câu hỏi, Phương án A-D, Đáp án đúng, Lời giải chi tiết, Mức độ Bloom, Điểm số.
 - **Studio Công thức Toán học & Bảng biểu trực quan**:
-  - Tích hợp [`MathFormulaStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/components/common/math-studio/MathFormulaStudioModal.tsx) toàn màn hình với 8 chuyên đề toán-lý-hóa và [`mathHtmlCompiler.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/mathHtmlCompiler.ts) giải mã đệ quy công thức KaTeX nằm bên trong ô bảng Markdown (`<th>`/`<td>`).
-- **Thao tác**: Kéo thả file trực tiếp vào vùng [`ZenDropZone.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenDropZone.tsx). Hệ thống bóc tách hoàn tất trong $< 1.5$ giây.
+  - Tích hợp [`MathFormulaStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/math-studio/MathFormulaStudioModal.tsx) toàn màn hình với 8 chuyên đề toán-lý-hóa và [`mathHtmlCompiler.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/mathHtmlCompiler.ts) giải mã đệ quy công thức KaTeX nằm bên trong ô bảng Markdown (`<th>`/`<td>`).
+- **Thao tác**: Kéo thả file trực tiếp vào vùng [`ZenDropZone.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenDropZone.tsx). Hệ thống bóc tách hoàn tất trong $< 1.5$ giây.
 
 ---
 
 ### 2.2. Quản lý Chủ đề Phân cấp Cây Đa tầng (Tree Hierarchy, Roll-up Count & `MaterializedPath` $O(1)$)
-- **Kiến trúc SSoT dựng cây phân cấp ([`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/topicTreeHelper.ts))**:
+- **Kiến trúc SSoT dựng cây phân cấp ([`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/topicTreeHelper.ts))**:
   - `Cấp 1 - Gốc Hệ Thống`: `/STUDIO/` hoặc `/COMMUNITY/`
   - `Cấp 2 - Ngày Khởi Tạo / Nhánh Cộng Đồng`: `/STUDIO/YYYYMMDD/` hoặc `/COMMUNITY/COM_.../`
   - `Cấp 3 - Không Gian Giáo Viên`: Rút gọn định danh dạng `CRT<MãHex>` (Ví dụ: `CRTEC4DD2`).
   - `Cấp 4+ - Chuyên Đề / Bộ Đề / Nhánh Con Tùy Chỉnh`: Hỗ trợ tạo nhánh con không giới hạn cấp độ qua `ParentId`.
 - **Năng lực vượt trội trên toàn bộ `/creator/studio`, `/creator/topics` và `/creator/questions`**:
   - **Cộng dồn số lượng câu hỏi (`totalQuestionCount`)**: Tự động cộng dồn câu hỏi từ tất cả các nhánh con cháu lên nhánh cha, đồng thời đối chiếu qua `categoryCode`, `topicCode`, `#tag`, `linkedTopicCodes` và ánh xạ `COM_{SourceCode}`.
-  - **Giao diện Cây Tương Tác Trong Studio ([`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx) & [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx))**: Hỗ trợ thu gọn/mở rộng nhánh (`▶`/`▼`), tạo nhanh chủ đề gốc hoặc chủ đề nhánh con ngay trên cây, đổi nhánh cha, và chọn nhánh cha đích tại [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx) trước khi bấm Lưu Ngân Hàng.
-  - **Đồng bộ Bảng Cây & Bộ Lọc Câu Hỏi**: Hiển thị dạng cây tại [`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx), chọn chủ đề cha trong [`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicModal.tsx), và lọc câu hỏi bao gồm toàn bộ nhánh con tại [`useQuestionFilters.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/hooks/useQuestionFilters.ts).
+  - **Giao diện Cây Tương Tác Trong Studio ([`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx) & [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx))**: Hỗ trợ thu gọn/mở rộng nhánh (`▶`/`▼`), tạo nhanh chủ đề gốc hoặc chủ đề nhánh con ngay trên cây, đổi nhánh cha, và chọn nhánh cha đích tại [`ZenExamPreview.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenExamPreview.tsx) trước khi bấm Lưu Ngân Hàng.
+  - **Đồng bộ Bảng Cây & Bộ Lọc Câu Hỏi**: Hiển thị dạng cây tại [`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx), chọn chủ đề cha trong [`TopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/TopicModal.tsx), và lọc câu hỏi bao gồm toàn bộ nhánh con tại [`useQuestionFilters.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/hooks/useQuestionFilters.ts).
 
 ---
 
 ### 2.3. Bộ Ba Nút Hành Động Chiến Lược
 
-Tại chân màn hình Thẩm định đề thi [`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx), hệ thống cung cấp 3 nút lệnh tác vụ thông minh:
+Tại chân màn hình Thẩm định đề thi [`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx), hệ thống cung cấp 3 nút lệnh tác vụ thông minh:
 
 | Nút Lệnh | Modal Điều Khiển | Tính Năng & Tác Vụ Cốt Lõi |
 | :--- | :--- | :--- |
-| **💾 Lưu Ngân Hàng** | [`ZenBankSaveModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenBankSaveModal.tsx) | - **Lưu thuần vào kho**: Lưu trữ các câu hỏi vào cây chủ đề cá nhân để tái sử dụng nhiều lần.<br>- **Đóng gói đề thi chính thức**: Sinh mã đề độc bản, gán mã đề vào danh mục đề thi chuẩn. |
-| **📋 Giao Bài Tập** | [`ZenHomeworkConfigModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenHomeworkConfigModal.tsx) | - **Thiết lập hạn nộp**: Giới hạn ngày giờ kết thúc làm bài.<br>- **Cơ chế chống gian lận**: Giới hạn số lần thi, xáo trộn câu hỏi động, bật/tắt xem lời giải sau khi nộp.<br>- **Chia sẻ 1-Chạm**: Sinh mã QR và đường link bài tập gửi Zalo/Google Classroom. |
-| **⚡ Kích Hoạt Phòng Thi** | [`ZenArenaGameSelectorModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenArenaGameSelectorModal.tsx) | - **Kho Gameshow Đa Dạng**: Cho phép Giáo viên tự do chọn 1 trong 6 thể thức thi đấu thay vì ép buộc một thể thức cố định.<br>- **Prewarm Room**: Nạp toàn bộ 100% câu hỏi thật từ Studio vào RAM Redis để tạo phòng tức thì trong $< 20\text{ms}$. |
+| **💾 Lưu Ngân Hàng** | [`ZenBankSaveModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenBankSaveModal.tsx) | - **Lưu thuần vào kho**: Lưu trữ các câu hỏi vào cây chủ đề cá nhân để tái sử dụng nhiều lần.<br>- **Đóng gói đề thi chính thức**: Sinh mã đề độc bản, gán mã đề vào danh mục đề thi chuẩn. |
+| **📋 Giao Bài Tập** | [`ZenHomeworkConfigModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenHomeworkConfigModal.tsx) | - **Thiết lập hạn nộp**: Giới hạn ngày giờ kết thúc làm bài.<br>- **Cơ chế chống gian lận**: Giới hạn số lần thi, xáo trộn câu hỏi động, bật/tắt xem lời giải sau khi nộp.<br>- **Chia sẻ 1-Chạm**: Sinh mã QR và đường link bài tập gửi Zalo/Google Classroom. |
+| **⚡ Kích Hoạt Phòng Thi** | [`ZenArenaGameSelectorModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenArenaGameSelectorModal.tsx) | - **Kho Gameshow Đa Dạng**: Cho phép Giáo viên tự do chọn 1 trong 6 thể thức thi đấu thay vì ép buộc một thể thức cố định.<br>- **Prewarm Room**: Nạp toàn bộ 100% câu hỏi thật từ Studio vào RAM Redis để tạo phòng tức thì trong $< 20\text{ms}$. |
 
 ---
 
@@ -139,15 +139,15 @@ flowchart TD
 #### Chi tiết 2 Luồng Trải Nghiệm:
 1. **Luồng Học Sinh Tự Do (Guest Learner via Teacher Link)**:
    - **Zero-Friction**: Học sinh không cần mật khẩu, không cần email, mở link là làm bài ngay lập tức.
-   - **Thu thập dữ liệu**: Khi nộp bài tại [`PracticePage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/practice/PracticePage.tsx), học sinh chỉ cần nhập Họ tên và Tên lớp (VD: *Nguyễn Văn An - Lớp 10A1*).
-   - **Lưu trữ độc lập**: Dữ liệu nộp bài gửi 100% về cho Giáo viên quản lý thông qua bảng [`homework_submissions`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Config/DbPatches/05_Create_Homework_Submissions_Table.sql). Dữ liệu này tuyệt đối **không làm rác hay làm lệch** thuật toán cá nhân hóa của hệ thống.
+   - **Thu thập dữ liệu**: Khi nộp bài tại [`PracticePage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/practice/PracticePage.tsx), học sinh chỉ cần nhập Họ tên và Tên lớp (VD: *Nguyễn Văn An - Lớp 10A1*).
+   - **Lưu trữ độc lập**: Dữ liệu nộp bài gửi 100% về cho Giáo viên quản lý thông qua bảng [`homework_submissions`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Config/DbPatches/05_Create_Homework_Submissions_Table.sql). Dữ liệu này tuyệt đối **không làm rác hay làm lệch** thuật toán cá nhân hóa của hệ thống.
    - **Cơ chế chuyển đổi PLG**: Màn hình nộp bài hiển thị bảng thành tích rực rỡ kèm lời kêu gọi tạo tài khoản miễn phí để lưu vết học tập.
 
 2. **Luồng Học Viên Đã Đăng Ký (Authenticated Learner)**:
    - Toàn bộ kết quả vừa gửi về cho Giáo viên kiểm tra, vừa ghi nhận trực tiếp vào tài khoản cá nhân.
    - Hệ thống tự động phân tích điểm nghẽn, cập nhật mạng nơ-ron **DKT (Deep Knowledge Tracing)**, độ khó câu hỏi **IRT 3-PL** ($a, b, c$) và lưu tự động các câu làm sai vào **Tủ Đồ Lỗi Sai (Mistake Vault)** để thuật toán **FSRS v5** tự động nhắc nhở ôn luyện ngắt quãng.
 
-3. **Bảng Giám Sát Nhận Thức Lớp Học Của Giáo Viên ([`TeacherCohortDashboardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/TeacherCohortDashboardModal.tsx))**:
+3. **Bảng Giám Sát Nhận Thức Lớp Học Của Giáo Viên ([`TeacherCohortDashboardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/TeacherCohortDashboardModal.tsx))**:
    - **Chỉ số Vĩ mô**: Hiển thị tổng số bài nộp, điểm trung bình toàn lớp, và câu hỏi có tỷ lệ làm sai cao nhất.
    - **Ma trận Nhiệt (Cognitive Bottleneck Heatmap)**: Trực quan hóa tỷ lệ làm sai theo từng câu hỏi (Màu đỏ: $>50\%$ học sinh làm sai $\rightarrow$ Điểm nghẽn kiến thức cần giảng lại; Màu xanh: làm đúng xuất sắc).
    - **Phân nhóm Sư phạm 3 tầng Tự động**:
@@ -159,11 +159,11 @@ flowchart TD
 ---
 
 ### 2.5. Trung Tâm Quản Trị Lớp Học & Đội Nhóm (`/team`) — Dữ Liệu Thật 100% PostgreSQL
-Tại phân hệ [`TeamDashboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx) (`/team` & `/creator/team`), Giáo viên và Trưởng nhóm làm chủ toàn diện lớp học của mình trên dữ liệu thật 100% từ PostgreSQL thông qua [`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TeamLeaderController.cs):
-1. **Khởi tạo & Tùy biến Lớp học / Đội nhóm ([`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx))**:
+Tại phân hệ [`TeamDashboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/TeamDashboard.tsx) (`/team` & `/creator/team`), Giáo viên và Trưởng nhóm làm chủ toàn diện lớp học của mình trên dữ liệu thật 100% từ PostgreSQL thông qua [`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TeamLeaderController.cs):
+1. **Khởi tạo & Tùy biến Lớp học / Đội nhóm ([`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx))**:
    - Tự động phân giải hoặc khởi tạo đơn vị Lớp học (`OrganizationUnit` với `UnitType = Classroom`) cho Giáo viên/Creator/TeamLeader và tự động kết nạp các học viên (`Learner`) cùng Tenant.
    - Hỗ trợ đổi tên lớp, mã lớp, mô tả (`PUT /api/team-leader/my-team`) hoặc tạo thêm lớp học mới (`POST /api/team-leader/teams`).
-2. **Quản trị Thành viên Toàn diện ([`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx) & [`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx))**:
+2. **Quản trị Thành viên Toàn diện ([`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx) & [`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx))**:
    - **Thêm học viên mới hoặc Kết nạp học viên có sẵn** (`POST /api/team-leader/my-team/members` & `GET /api/team-leader/available-users`): Tạo trực tiếp tài khoản học sinh mới (Họ tên, Email, SĐT, Mật khẩu) vào PostgreSQL hoặc chọn từ danh sách người dùng hiện có.
    - **Cập nhật & Gỡ thành viên** (`PUT /api/team-leader/my-team/members/{memberId}` & `DELETE /api/team-leader/my-team/members/{memberId}`): Chỉnh sửa hồ sơ thành viên hoặc xóa thành viên khỏi nhóm chỉ với 1 chạm.
 3. **Giám sát Tiến độ Thực tế (`GET /api/team-leader/my-team/progress`)**:
@@ -226,7 +226,7 @@ stateDiagram-v2
 ### 3.3. Chi tiết Luật Thi Đấu Chuẩn Hóa Của 6 Thể Thức Gameshow
 
 #### 🔔 Đấu Trường Rung Chuông Vàng (`GOLDEN_BELL`)
-- **Tập tin thực thi**: [`GoldenBellArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellArenaView.tsx) kết hợp [`GoldenBellSeatsGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellSeatsGrid.tsx) và [`GoldenBellHeaderBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellHeaderBar.tsx).
+- **Tập tin thực thi**: [`GoldenBellArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellArenaView.tsx) kết hợp [`GoldenBellSeatsGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellSeatsGrid.tsx) và [`GoldenBellHeaderBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellHeaderBar.tsx).
 - **Quy mô**: 100 thí sinh trên sàn đấu số hóa. Vị trí của thí sinh mặc định được gán tại Ghế số 45 phát sáng sao vàng.
 - **Thời gian suy nghĩ**: 15 giây / câu.
 - **Luật Sinh tử (Sudden Death)**:
@@ -237,7 +237,7 @@ stateDiagram-v2
 ---
 
 #### ⚡ Cỗ Máy Nhanh Như Chớp (`LIGHTNING`)
-- **Tập tin thực thi**: [`LightningArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/LightningArenaView.tsx) kết hợp [`LightningInclineLadder.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/LightningInclineLadder.tsx).
+- **Tập tin thực thi**: [`LightningArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/LightningArenaView.tsx) kết hợp [`LightningInclineLadder.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/LightningInclineLadder.tsx).
 - **Mô phỏng**: Cỗ máy trượt dốc nghiêng 10 bậc đứng dốc ngược.
 - **Thời gian phản xạ**: 12 giây / câu hỏi đố mẹo hoặc trắc nghiệm nhanh.
 - **Luật Cỗ Máy Leo Dốc**:
@@ -248,7 +248,7 @@ stateDiagram-v2
 ---
 
 #### 🏛️ Đường Lên Đỉnh Olympia (`OLYMPIA`)
-- **Tập tin thực thi**: [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaArenaView.tsx) kết hợp [`OlympiaStageBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaStageBar.tsx).
+- **Tập tin thực thi**: [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaArenaView.tsx) kết hợp [`OlympiaStageBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaStageBar.tsx).
 - **Format 4 vòng thi huyền thoại**:
   1. **Vòng 1 - Khởi Động**: 60 giây trả lời nhanh, mỗi câu đúng được **+10 điểm**.
   2. **Vòng 2 - Vượt Chướng Ngại Vật**: Bấm chuông giải ô chữ bí ẩn trung tâm (+40đ đến +80đ; bấm sai mất quyền chơi vòng 2).
@@ -259,7 +259,7 @@ stateDiagram-v2
 ---
 
 #### 🎓 Đại Học Đỉnh Cao (`UNIVERSITY_CHALLENGE`)
-- **Tập tin thực thi**: [`UniversityChallengeView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/UniversityChallengeView.tsx) kết hợp [`UniversityChallengeScoreboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/UniversityChallengeScoreboard.tsx).
+- **Tập tin thực thi**: [`UniversityChallengeView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/UniversityChallengeView.tsx) kết hợp [`UniversityChallengeScoreboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/UniversityChallengeScoreboard.tsx).
 - **Format**: Đối đầu giữa 2 trường Đại học (Đội A: ĐH Bách Khoa vs Đội B: ĐH Ngoại Thương).
 - **Chuẩn luật BBC Quốc Tế**:
   - **Câu hỏi Starter (10 điểm)**: Không được hội ý nhóm. Thí sinh bấm chuông **Starter Buzzer** nhanh nhất để cướp quyền.
@@ -297,23 +297,23 @@ stateDiagram-v2
 ## 5. DANH MỤC LIÊN KẾT MÃ NGUỒN SỐNG & BẰNG CHỨNG KIỂM THỬ
 
 ### 5.1. Liên Kết Mã Nguồn Sống (Live Code Anchors)
-- **Bộ điều phối Đấu trường**: [`ArenaRoomPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/ArenaRoomPage.tsx)
+- **Bộ điều phối Đấu trường**: [`ArenaRoomPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/ArenaRoomPage.tsx)
 - **Đấu trường Rung Chuông Vàng**:
-  - Giao diện chính: [`GoldenBellArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellArenaView.tsx)
-  - Sơ đồ 100 ghế: [`GoldenBellSeatsGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellSeatsGrid.tsx)
-  - Thanh trạng thái: [`GoldenBellHeaderBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/GoldenBellHeaderBar.tsx)
+  - Giao diện chính: [`GoldenBellArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellArenaView.tsx)
+  - Sơ đồ 100 ghế: [`GoldenBellSeatsGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellSeatsGrid.tsx)
+  - Thanh trạng thái: [`GoldenBellHeaderBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/GoldenBellHeaderBar.tsx)
 - **Cỗ máy Nhanh Như Chớp**:
-  - Giao diện chính: [`LightningArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/LightningArenaView.tsx)
-  - Thước đo 10 bậc đứng: [`LightningInclineLadder.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/LightningInclineLadder.tsx)
+  - Giao diện chính: [`LightningArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/LightningArenaView.tsx)
+  - Thước đo 10 bậc đứng: [`LightningInclineLadder.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/LightningInclineLadder.tsx)
 - **Đường lên đỉnh Olympia**:
-  - Giao diện chính: [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaArenaView.tsx)
-  - Thanh vòng thi & Podiums: [`OlympiaStageBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/OlympiaStageBar.tsx)
+  - Giao diện chính: [`OlympiaArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaArenaView.tsx)
+  - Thanh vòng thi & Podiums: [`OlympiaStageBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/OlympiaStageBar.tsx)
 - **Đại học Đỉnh cao**:
-  - Giao diện chính: [`UniversityChallengeView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/UniversityChallengeView.tsx)
-  - Bảng điểm 2 đội: [`UniversityChallengeScoreboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/UniversityChallengeScoreboard.tsx)
-- **Creator Zen Studio Controller**: [`CreatorStudioController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/CreatorStudioController.cs)
-- **Quản lý Cây Chủ đề Phân cấp**: [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs), [`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/shared/lib/quiz/topicTreeHelper.ts), [`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx), [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx) & [`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx)
-- **Quản trị Đội nhóm & Học viên (`/team`)**: [`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TeamLeaderController.cs), [`TeamDashboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/TeamDashboard.tsx), [`useTeamManagement.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/hooks/useTeamManagement.ts), [`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx), [`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx) & [`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx)
+  - Giao diện chính: [`UniversityChallengeView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/UniversityChallengeView.tsx)
+  - Bảng điểm 2 đội: [`UniversityChallengeScoreboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/arena/components/UniversityChallengeScoreboard.tsx)
+- **Creator Zen Studio Controller**: [`CreatorStudioController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/CreatorStudioController.cs)
+- **Quản lý Cây Chủ đề Phân cấp**: [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs), [`topicTreeHelper.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/topicTreeHelper.ts), [`ZenTopicTreePanel.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenTopicTreePanel.tsx), [`ZenQuickTopicModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ZenQuickTopicModal.tsx) & [`TopicTreeTable.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/TopicTreeTable.tsx)
+- **Quản trị Đội nhóm & Học viên (`/team`)**: [`TeamLeaderController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TeamLeaderController.cs), [`TeamDashboard.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/TeamDashboard.tsx), [`useTeamManagement.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/hooks/useTeamManagement.ts), [`TeamMembersTableSection.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMembersTableSection.tsx), [`TeamMemberManagerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamMemberManagerModal.tsx) & [`TeamSettingsModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/TeamSettingsModal.tsx)
 
 ### 5.2. Bằng Chứng Định Lượng (Quantitative Metrics)
 - **Độ tinh gọn Frontend**: 100% component mới đều tuân thủ nguyên tắc Zero-Monolith ($\le 250$ LOC/file):
@@ -322,6 +322,6 @@ stateDiagram-v2
   - `GoldenBellArenaView.tsx`: 238 dòng; `LightningArenaView.tsx`: 249 dòng; `OlympiaArenaView.tsx`: 249 dòng; `UniversityChallengeView.tsx`: 239 dòng.
 - **Tốc độ biên dịch Frontend**: Vite build production hoàn tất trong **2.58 giây (0 lỗi)**.
 - **Kiểm thử tự động khoanh vùng (Scoped Unit Tests)**:
-  - Bộ test Backend: [`CreatorZenStudioAndTaxonomyTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/tests/AegisQuiz.UnitTests/CreatorZenStudioAndTaxonomyTests.cs) (**5/5 Passed**; tổng Backend: **337 Tests Passed**).
-  - Bộ test Frontend (Vitest): [`topicTreeHelper.test.ts`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/tests/quiz/topicTreeHelper.test.ts) (**4/4 Passed**; tổng Frontend: **8 files / 70 Tests Passed 100%**).
+  - Bộ test Backend: [`CreatorZenStudioAndTaxonomyTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/CreatorZenStudioAndTaxonomyTests.cs) (**5/5 Passed**; tổng Backend: **337 Tests Passed**).
+  - Bộ test Frontend (Vitest): [`topicTreeHelper.test.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/tests/quiz/topicTreeHelper.test.ts) (**4/4 Passed**; tổng Frontend: **8 files / 70 Tests Passed 100%**).
 

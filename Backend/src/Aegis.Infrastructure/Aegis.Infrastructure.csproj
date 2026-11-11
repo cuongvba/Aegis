@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aegis.Domain\Aegis.Domain.csproj" />
+    <ProjectReference Include="..\Aegis.Application\Aegis.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Config\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EmbeddedResource Include="Data\SyncLiveDatabaseStruct.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Database -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <!-- Excel Parser (NPOI thay EPPlus — học từ quiz-service) -->
+    <PackageReference Include="NPOI" Version="2.7.6" />
+    <!-- Redis Cache -->
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
+    <!-- MathType WMF -> SVG/PNG rasterizer (MathTypeWmfEngine) — cross-platform native assets for Docker Linux -->
+    <PackageReference Include="SkiaSharp" Version="2.88.9" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9" />
+    <!-- Structured Logging -->
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="System.Drawing.Common" Version="10.0.11" />
+    <!-- Security fix: Override transitive vulnerable package from NPOI -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" />
+  </ItemGroup>
+</Project>

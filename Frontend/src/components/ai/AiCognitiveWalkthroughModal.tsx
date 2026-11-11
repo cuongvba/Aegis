@@ -47,7 +47,7 @@ export const AiCognitiveWalkthroughModal: React.FC<AiCognitiveWalkthroughModalPr
 
   const handleCopy = () => {
     if (!walkthrough) return;
-    const text = `=== BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (AEGISQUIZ COGNITIVE SCAFFOLD) ===
+    const text = `=== BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (AEGIS COGNITIVE SCAFFOLD) ===
 CÂU HỎI: ${walkthrough.questionContent}
 ĐÁP ÁN ĐÚNG: ${walkthrough.correctAnswer} (Lĩnh vực: ${walkthrough.domainCode})
 

@@ -1,6 +1,6 @@
 # 🚀 Hướng Dẫn Triển Khai & Vận Hành Hệ Thống (Deployment & DevOps Guide)
 
-Tài liệu này hướng dẫn kỹ sư hệ thống và DevOps triển khai toàn bộ nền tảng **AegisQuiz** từ môi trường cục bộ (Local Development) đến môi trường sản xuất (Production / Kubernetes).
+Tài liệu này hướng dẫn kỹ sư hệ thống và DevOps triển khai toàn bộ nền tảng **Aegis** từ môi trường cục bộ (Local Development) đến môi trường sản xuất (Production / Kubernetes).
 
 ---
 
@@ -27,7 +27,7 @@ Các biến môi trường trọng yếu:
 # Database (PostgreSQL)
 POSTGRES_USER=aegis_admin
 POSTGRES_PASSWORD=YourStrongSecretPassword123!
-POSTGRES_DB=aegisquiz
+POSTGRES_DB=aegis
 
 # Cache (Redis)
 REDIS_HOST=redis
@@ -118,7 +118,7 @@ server {
 
 ### 5.1. Sao lưu PostgreSQL định kỳ:
 ```bash
-docker compose exec postgres pg_dump -U aegis_admin aegisquiz > backup_$(date +%Y%m%d_%H%M%S).sql
+docker compose exec postgres pg_dump -U aegis_admin aegis > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ### 5.2. Khởi động lại khi nâng cấp phiên bản mới:

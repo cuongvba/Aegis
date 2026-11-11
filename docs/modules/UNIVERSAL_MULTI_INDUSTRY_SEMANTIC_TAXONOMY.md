@@ -28,7 +28,7 @@ Trong các hệ thống quản lý học tập và ngân hàng câu hỏi truy�
   2. *Bế tắc khi tìm kiếm và tổng hợp đề*: Khi một tổ chức hoặc học sinh cần: *"Lấy toàn bộ đề thi Tốt nghiệp THPT môn Toán của Sở GD Hà Nội trong 3 năm gần đây"* hoặc *"Tổng hợp các câu hỏi thẩm định rủi ro tín dụng doanh nghiệp của Ngân hàng Nhà nước ban hành năm 2024 theo chuẩn Basel II"*, các hệ thống cũ hoàn toàn bất lực và bắt buộc người dùng phải lọc thủ công bằng mắt.
   3. *Không thể mở rộng cho đa ngành nghề*: Doanh nghiệp, bệnh viện, nhà máy cơ khí, cơ quan công an khi dùng phần mềm thi đều bị ép vào khuôn khổ "trường học" một cách khiên cưỡng.
 
-**AegisQuiz phá vỡ giới hạn này bằng Động Cơ Tri Thức Đa Ngành Toàn Năng:**
+**Aegis phá vỡ giới hạn này bằng Động Cơ Tri Thức Đa Ngành Toàn Năng:**
 Mỗi câu hỏi trong hệ thống là một **Thực Thể Nhận Thức 5 Chiều** kết hợp cùng **Hệ Thống Thẻ Tự Do (Dynamic Hashtag Matrix)**, cho phép định danh chính xác vị trí của tri thức trong không gian tri thức toàn cầu.
 
 ---
@@ -107,7 +107,7 @@ Trong các kỳ thi ngôn ngữ (Đọc hiểu IELTS, TOEFL), thi khoa học (Ph
   - Hoặc bắt người dùng tạo một thực thể `ReadingPassage` phức tạp, thiết lập quan hệ cha-con lằng nhằng.
 
 ### 4.2. Giải Pháp Siêu Đơn Giản Cho Mọi Người Dùng
-AegisQuiz triển khai cơ chế **"Gán Trước Thông Minh Theo Dải Câu"**:
+Aegis triển khai cơ chế **"Gán Trước Thông Minh Theo Dải Câu"**:
 1. **Giao diện 3 bước trong 5 giây**:
    - Nhập dải câu: `Từ câu [ 15 ]` `Đến câu [ 20 ]`.
    - Nhập tiêu đề ngữ cảnh: `Bài đọc hiểu Khoa học Môi trường`.
@@ -206,7 +206,7 @@ Hệ thống đã được kiểm chứng thực tế với hàng loạt tình h
    - Tự động nhận diện ngành `GOV_DRIVING`, cơ quan `Cục Đường bộ VN`, chuẩn `QCVN 41:2019`.
    - Nhận diện 60 câu điểm liệt tử thần và gán thẻ `#GPLX`, `#DiemLiet` chính xác 100%.
 
-> **Kết luận:** Động Cơ Tri Thức Đa Ngành Toàn Năng & Hệ Thống Thẻ Thông Minh đã biến AegisQuiz từ một hệ thống khảo thí thông thường thành **Hạ Tầng Tri Thức Sát Hạch Đa Chiều Hàng Đầu**, sẵn sàng phục vụ từ hàng triệu học sinh, sinh viên cho đến các tập đoàn ngân hàng, y tế và cơ quan quản lý nhà nước trên toàn cầu.
+> **Kết luận:** Động Cơ Tri Thức Đa Ngành Toàn Năng & Hệ Thống Thẻ Thông Minh đã biến Aegis từ một hệ thống khảo thí thông thường thành **Hạ Tầng Tri Thức Sát Hạch Đa Chiều Hàng Đầu**, sẵn sàng phục vụ từ hàng triệu học sinh, sinh viên cho đến các tập đoàn ngân hàng, y tế và cơ quan quản lý nhà nước trên toàn cầu.
 
 ---
 
@@ -226,8 +226,8 @@ Trong các tài liệu đề thi và bộ câu hỏi thực tế của các doan
 
 - **Hạn chế cũ:** Các phần mềm khảo thí thông thường chỉ cắt từ hàng tiêu đề cột trở đi, bỏ qua hoàn toàn thông tin ở các hàng 0 và 1, buộc người dùng sau khi tải file phải mở modal gán thẻ và gõ tay lại toàn bộ các trường: Cấp bậc, Mục đích, Năm, Đơn vị.
 
-### 8.2. Giải Pháp Đột Phá Của AegisQuiz (Universal Coordinate Taxonomy Engine)
-AegisQuiz triển khai **Động Cơ Nhận Thức Siêu Vi (Universal Cognitive Sniffer)** quét toàn diện các hàng biểu ngữ, tên file, tên sheet và mẫu nội dung câu hỏi trước khi bóc tách:
+### 8.2. Giải Pháp Đột Phá Của Aegis (Universal Coordinate Taxonomy Engine)
+Aegis triển khai **Động Cơ Nhận Thức Siêu Vi (Universal Cognitive Sniffer)** quét toàn diện các hàng biểu ngữ, tên file, tên sheet và mẫu nội dung câu hỏi trước khi bóc tách:
 
 ```mermaid
 graph TD
@@ -277,7 +277,7 @@ Trước phiên bản v6.2, modal `BulkTaxonomyModal.tsx` duy trì logic nhận 
    - Ngay lập tức, các lần bóc tách file hoặc bấm nút *"⚡ Nhận diện lại bằng AI"* kế tiếp sẽ ưu tiên nhận diện từ các Presets vừa lưu (OCP Thích ứng Vô hạn).
 3. **Phân rã Modular Zero-Monolith UI ($\le 250$ dòng code / component)**:
    - Thay thế file monolithic 671 dòng bằng cụm Sub-components chuyên biệt:
-     - [BulkTaxonomyModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/questions/components/BulkTaxonomyModal.tsx) (~210 dòng): Điều phối tổng thể và Action buttons.
+     - [BulkTaxonomyModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/questions/components/BulkTaxonomyModal.tsx) (~210 dòng): Điều phối tổng thể và Action buttons.
      - `useBulkTaxonomyState.ts` (~160 dòng): Quản lý vòng đời state, API Dynamic Sniff và đồng bộ Presets.
      - `TaxonomyDomainSelector.tsx` (~60 dòng): Render Grid lựa chọn ngành động và modal OCP.
      - `TaxonomyCoordinateForm.tsx` (~80 dòng): Render 4 trường tọa độ tri thức chuẩn hóa.

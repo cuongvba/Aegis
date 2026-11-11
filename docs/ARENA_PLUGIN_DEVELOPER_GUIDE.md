@@ -1,12 +1,12 @@
 # 🛠️ Tài Liệu Kỹ Thuật Viên: Kiến Trúc Khung Arena Plugin & Hướng Dẫn Phát Triển
 
-Tài liệu này dành cho **Kỹ sư phần mềm (Software Engineers), Lập trình viên Backend (.NET) và Frontend (React/TypeScript)** tham gia bảo trì, phát triển mở rộng hoặc tích hợp các thể thức Gameshow mới vào nền tảng **AegisQuiz Arena**.
+Tài liệu này dành cho **Kỹ sư phần mềm (Software Engineers), Lập trình viên Backend (.NET) và Frontend (React/TypeScript)** tham gia bảo trì, phát triển mở rộng hoặc tích hợp các thể thức Gameshow mới vào nền tảng **Aegis Arena**.
 
 ---
 
 ## 1. Triết Lý Thiết Kế & Tổng Quan Kiến Trúc
 
-Hệ thống Đấu trường AegisQuiz không sử dụng kiến trúc đóng (hard-coded rules). Thay vào đó, toàn bộ quy tắc trò chơi, cách tính điểm, phân chia vòng thi và cơ chế phân xử tương tác được trừu tượng hóa thông qua **Mô hình Kiến trúc Cắm Rút (Plugin Architecture)** kết hợp các mẫu thiết kế **Strategy Pattern** và **Factory Pattern**.
+Hệ thống Đấu trường Aegis không sử dụng kiến trúc đóng (hard-coded rules). Thay vào đó, toàn bộ quy tắc trò chơi, cách tính điểm, phân chia vòng thi và cơ chế phân xử tương tác được trừu tượng hóa thông qua **Mô hình Kiến trúc Cắm Rút (Plugin Architecture)** kết hợp các mẫu thiết kế **Strategy Pattern** và **Factory Pattern**.
 
 ```
                            ┌──────────────────────────────┐
@@ -34,10 +34,10 @@ Hệ thống Đấu trường AegisQuiz không sử dụng kiến trúc đóng (
 
 ## 2. Đặc Tả Giao Diện Lõi Backend (`IArenaGamePlugin`)
 
-Mọi Gameshow muốn hoạt động trong hệ thống bắt buộc phải cài đặt interface `IArenaGamePlugin` nằm tại `AegisQuiz.Application/Interfaces/IArenaGamePlugin.cs`:
+Mọi Gameshow muốn hoạt động trong hệ thống bắt buộc phải cài đặt interface `IArenaGamePlugin` nằm tại `Aegis.Application/Interfaces/IArenaGamePlugin.cs`:
 
 ```csharp
-namespace AegisQuiz.Application.Interfaces;
+namespace Aegis.Application.Interfaces;
 
 public interface IArenaGamePlugin
 {
@@ -150,7 +150,7 @@ SignalR Hub tọa lạc tại `/hubs/arena` đảm nhận vai trò cầu nối d
 
 ## 5. Web Audio Synthesizer (Bộ Tạo Âm Thanh 0ms Latency)
 
-Nhằm đảm bảo trải nghiệm Studio Gameshow sống động mà không gặp phải độ trễ tải file MP3 trên mạng, AegisQuiz tích hợp bộ tổng hợp âm thanh `Web Audio API` tích hợp sẵn trong trình duyệt (`Frontend/src/services/arena.service.ts`):
+Nhằm đảm bảo trải nghiệm Studio Gameshow sống động mà không gặp phải độ trễ tải file MP3 trên mạng, Aegis tích hợp bộ tổng hợp âm thanh `Web Audio API` tích hợp sẵn trong trình duyệt (`Frontend/src/services/arena.service.ts`):
 
 - **`playArenaSfx('buzzer')`**: Sóng vuông (Sawtooth Wave) 440Hz ➔ 220Hz mô phỏng tiếng còi báo động Gameshow truyền hình.
 - **`playArenaSfx('wheel_tick')`**: Tiếng click nan nón cơ học siêu ngắn (Noise buffer 30ms).
@@ -164,10 +164,10 @@ Nhằm đảm bảo trải nghiệm Studio Gameshow sống động mà không g�
 Dưới đây là quy trình 5 bước chuẩn hóa để tích hợp Gameshow mới: **"Ai Là Triệu Phú" (Who Wants to Be a Millionaire)**.
 
 ### Bước 1: Cài Đặt Backend Plugin
-Tạo file `AegisQuiz.Infrastructure/Arena/MillionairePlugin.cs`:
+Tạo file `Aegis.Infrastructure/Arena/MillionairePlugin.cs`:
 
 ```csharp
-using AegisQuiz.Application.Interfaces;
+using Aegis.Application.Interfaces;
 
 public class MillionairePlugin : IArenaGamePlugin
 {
@@ -232,7 +232,7 @@ public class MillionairePlugin : IArenaGamePlugin
 ```
 
 ### Bước 2: Đăng Ký Dependency Injection
-Trong `AegisQuiz.API/Program.cs`:
+Trong `Aegis.API/Program.cs`:
 ```csharp
 builder.Services.AddSingleton<IArenaGamePlugin, MillionairePlugin>();
 ```
@@ -273,6 +273,6 @@ Trong `Frontend/src/pages/arena/ArenaRoomPage.tsx`:
 
 ## 7. Khuyến Nghị Về Kiểm Thử & CI/CD
 
-- **Unit Test**: Luôn bổ sung kiểm thử trong `AegisQuiz.UnitTests` để bảo đảm thuật toán cộng trừ điểm, phân xử cướp chuông và chuyển vòng thi thỏa mãn 100% assertions.
+- **Unit Test**: Luôn bổ sung kiểm thử trong `Aegis.UnitTests` để bảo đảm thuật toán cộng trừ điểm, phân xử cướp chuông và chuyển vòng thi thỏa mãn 100% assertions.
 - **Frontend Build**: Chạy `npm run build` kiểm tra tính tương thích TypeScript nghiêm ngặt trước khi tạo Pull Request.
 - **Độ ổn định kết nối**: Khuyến nghị cấu hình WebSockets transport ưu tiên cao nhất, tự động fallback sang Long Polling nếu Client ở mạng hạn chế proxy/firewall.

@@ -84,7 +84,7 @@ export const ModelSelectorDropdown: React.FC<ModelSelectorDropdownProps> = ({
       );
     }
     return (
-      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400 border border-slate-700" title="Nguồn mặc định hệ thống AegisQuiz">
+      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400 border border-slate-700" title="Nguồn mặc định hệ thống Aegis">
         <Globe className="w-2.5 h-2.5" />
         <span>System</span>
       </span>

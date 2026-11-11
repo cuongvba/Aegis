@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — Shared API Types
+ * Aegis — Shared API Types
  * ================================
  * Typed contracts cho HTTP communication.
  * FSD Layer: shared/api/
@@ -59,7 +59,7 @@ export interface PaginationParams {
 
 // ── Common Response Wrappers ──────────────────────────────────────────────────
 
-/** Standard success envelope từ AegisQuiz backend */
+/** Standard success envelope từ Aegis backend */
 export interface ApiResponse<T = void> {
   success: boolean;
   data?: T;

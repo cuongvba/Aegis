@@ -60,7 +60,7 @@ export function CallbackPage() {
         let userProfile: UserProfile = {
           id:        'sso_user_id_123',
           name:      'SSO User',
-          email:     'sso.user@aegisquiz.com',
+          email:     'sso.user@aegis.com',
           role:      normalizeRole('GuestViewer'),
           isPremium: false
         };
@@ -80,7 +80,7 @@ export function CallbackPage() {
               userProfile = {
                 id:        payload.sub || payload.id || 'sso_user_id_123',
                 name:      payload.name || payload.preferred_username || 'SSO User',
-                email:     payload.email || 'sso.user@aegisquiz.com',
+                email:     payload.email || 'sso.user@aegis.com',
                 // [RBAC FIX] normalizeRole map Keycloak roles → AppRole constants
                 // Keycloak realm roles: ['TenantAdmin', 'TeamLeader', ...] hoặc legacy ['admin']
                 role: normalizeRole(

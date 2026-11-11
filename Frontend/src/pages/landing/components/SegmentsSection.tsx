@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — SegmentsSection (Landing Page)
+ * Aegis — SegmentsSection (Landing Page)
  * =============================================
  * 4 tab phân khúc khách hàng — mỗi tab: Nỗi đau (painPoint) + Giải pháp (solution).
  * FSD Layer: pages/landing/components/

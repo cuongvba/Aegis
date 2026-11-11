@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: aegis-ingress
-  namespace: aegisquiz-prod
+  namespace: aegis-prod
   annotations:
     kubernetes.io/ingress.class: "nginx"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
@@ -15,10 +15,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - exam.aegisquiz.internal
-    secretName: aegisquiz-tls-secret
+    - exam.aegis.internal
+    secretName: aegis-tls-secret
   rules:
-  - host: exam.aegisquiz.internal
+  - host: exam.aegis.internal
     http:
       paths:
       - path: /
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: aegis-backend-service
-  namespace: aegisquiz-prod
+  namespace: aegis-prod
 spec:
   type: ClusterIP
   selector:

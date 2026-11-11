@@ -42,7 +42,7 @@ export const GratitudeSuccessView: React.FC<GratitudeSuccessViewProps> = ({
         </h2>
         <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
           Đóng góp <strong className="text-emerald-400 font-mono">{amount.toLocaleString('vi-VN')} VND</strong> từ{' '}
-          <strong className="text-white">{donorName || 'Bạn'}</strong> đã được hệ thống ghi nhận vào Quỹ Phát Triển Giáo Dục AegisQuiz.
+          <strong className="text-white">{donorName || 'Bạn'}</strong> đã được hệ thống ghi nhận vào Quỹ Phát Triển Giáo Dục Aegis.
         </p>
       </div>
 

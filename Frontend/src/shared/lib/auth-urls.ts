@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — URL helpers for Login / Logout and Redirection
+ * Aegis — URL helpers for Login / Logout and Redirection
  * Đảm bảo hệ sinh thái dehoc.vn chuyển hướng chính xác về https://daotao.dehoc.vn
  */
 

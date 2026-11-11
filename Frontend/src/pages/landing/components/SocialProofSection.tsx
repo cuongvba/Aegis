@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — SocialProofSection (Landing Page)
+ * Aegis — SocialProofSection (Landing Page)
  * ================================================
  * Dải số liệu ấn tượng + logo/nhãn phân khúc khách hàng mục tiêu.
  * FSD Layer: pages/landing/components/

@@ -1,6 +1,6 @@
-# 📚 AegisQuiz Documentation Hub — Cổng Tài Liệu Kỹ Thuật & Vận Hành Toàn Hệ Thống
+# 📚 Aegis Documentation Hub — Cổng Tài Liệu Kỹ Thuật & Vận Hành Toàn Hệ Thống
 
-Chào mừng bạn đến với trung tâm tài liệu toàn diện của dự án **AegisQuiz** (Hệ sinh thái Khảo thí Thông minh Enterprise AI & Đấu trường Gameshow Trí tuệ Thế hệ mới).
+Chào mừng bạn đến với trung tâm tài liệu toàn diện của dự án **Aegis** (Hệ sinh thái Khảo thí Thông minh Enterprise AI & Đấu trường Gameshow Trí tuệ Thế hệ mới).
 
 Tất cả tài liệu kỹ thuật, kiến trúc, đặc tả API, hướng dẫn phát triển và cẩm nang người dùng đều được lưu trữ tập trung tại thư mục `/docs` để phục vụ công tác nghiên cứu, đào tạo nhân sự và mở rộng hệ thống.
 
@@ -8,28 +8,29 @@ Tất cả tài liệu kỹ thuật, kiến trúc, đặc tả API, hướng d�
 
 Tài liệu chuẩn tắc duy nhất, toàn diện và sống động nhất của toàn bộ hệ sinh thái:
 - 🌐 **[AEGIS_GLOBAL_MASTER_OVERVIEW.md](AEGIS_GLOBAL_MASTER_OVERVIEW.md)**: **[FLAGSHIP 2026.10] ĐẠI CƯƠNG TỔNG QUAN HỆ SINH THÁI AEGIS GLOBAL (AGCI)** — Biên soạn theo chuẩn ALDS v1.0 bởi Tổng Công Trình Sư No.1. Nêu bật 7 bài toán thế kỷ, 4 mục tiêu chiến lược, 8 phân hệ chủ quyền, thành tựu định lượng thực nghiệm, đối chuẩn quốc tế và tầm nhìn hạ tầng nhận thức toàn cầu.
-- 🌌 **[AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md](AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md)**: **ĐẠI ĐẶC TẢ HỆ THỐNG THỐNG NHẤT TOÀN DIỆN (UNIFIED MASTER SPECIFICATION v4.0 Superlative)** — Biên soạn bởi Kiến trúc sư trưởng & Nhà biên soạn kỹ thuật No.1 thế giới. Hợp nhất trọn vẹn toàn bộ triết lý, kiến trúc 4 tầng, 7 kỳ quan công nghệ (kèm ví dụ minh họa vui vẻ, ấn tượng), đại sảnh 6 Gameshow kinh điển, lược đồ dữ liệu và sổ tay vận hành cho mọi tầng lớp tiếp cận!
+- 🌌 **[AEGIS_UNIFIED_MASTER_SPECIFICATION.md](AEGIS_UNIFIED_MASTER_SPECIFICATION.md)**: **ĐẠI ĐẶC TẢ HỆ THỐNG THỐNG NHẤT TOÀN DIỆN (UNIFIED MASTER SPECIFICATION v4.0 Superlative)** — Biên soạn bởi Kiến trúc sư trưởng & Nhà biên soạn kỹ thuật No.1 thế giới. Hợp nhất trọn vẹn toàn bộ triết lý, kiến trúc 4 tầng, 7 kỳ quan công nghệ (kèm ví dụ minh họa vui vẻ, ấn tượng), đại sảnh 6 Gameshow kinh điển, lược đồ dữ liệu và sổ tay vận hành cho mọi tầng lớp tiếp cận!
 
 ### Các Bản Thiết Kế Chuyên Sâu Bổ Trợ (Master Blueprints):
-- 👑 **[AEGISQUIZ_SYSTEM_DOCUMENT_V2.0.md](AEGISQUIZ_SYSTEM_DOCUMENT_V2.0.md)**: **Tài liệu Kỹ thuật Hệ thống Chuẩn Quốc Tế v2.0 (Software Architecture Document - SAD)** dài 1,044 dòng (78KB) với 9 đột phá công nghệ, phân tích bài toán, mô hình dữ liệu đa tầng, bảo mật và hiệu năng.
-- 🌐 **[AEGISQUIZ_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md](AEGISQUIZ_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md)**: **Bản Thiết Kế Tối Thượng Chuẩn Quốc Tế v3.0** với 4 Trụ Cột: Military-Grade Architecture (WASM, CRDT Delta-Sync), AI & Cognitive Neuroscience (Dynamic CAT/IRT 3-PL), Obsessive Gamified Learning (3D Spatial UI), Platform Power & Economics.
-- 💎 **[AEGISQUIZ_WORLD_CLASS_BLUEPRINT.md](AEGISQUIZ_WORLD_CLASS_BLUEPRINT.md)**: Bản phân tích kiến trúc thế giới toàn diện (62KB).
+- 👑 **[AEGIS_SYSTEM_DOCUMENT_V2.0.md](AEGIS_SYSTEM_DOCUMENT_V2.0.md)**: **Tài liệu Kỹ thuật Hệ thống Chuẩn Quốc Tế v2.0 (Software Architecture Document - SAD)** dài 1,044 dòng (78KB) với 9 đột phá công nghệ, phân tích bài toán, mô hình dữ liệu đa tầng, bảo mật và hiệu năng.
+- 🌐 **[AEGIS_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md](AEGIS_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md)**: **Bản Thiết Kế Tối Thượng Chuẩn Quốc Tế v3.0** với 4 Trụ Cột: Military-Grade Architecture (WASM, CRDT Delta-Sync), AI & Cognitive Neuroscience (Dynamic CAT/IRT 3-PL), Obsessive Gamified Learning (3D Spatial UI), Platform Power & Economics.
+- 💎 **[AEGIS_WORLD_CLASS_BLUEPRINT.md](AEGIS_WORLD_CLASS_BLUEPRINT.md)**: Bản phân tích kiến trúc thế giới toàn diện (62KB).
 
 ---
 
 ## 🗺️ Sơ Đồ Cây Thư Mục Tài Liệu (Documentation Sitemap)
 
 ```
-d:/Cuong/DuAn/mybank/AegisQuiz/docs/
+d:/Cuong/DuAn/mybank/AegisGlobal/docs/
 ├── README.md                                         <-- [Bạn đang ở đây] Mục lục điều hướng tổng thể
-├── AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md         <-- [SUPREME MASTER] Đại Đặc Tả Hệ Thống Thống Nhất Toàn Diện
-├── AEGISQUIZ_SYSTEM_DOCUMENT_V2.0.md                 <-- [MASTER] Tài liệu Kỹ thuật Hệ thống chuẩn quốc tế (78KB)
-├── AEGISQUIZ_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md       <-- [MASTER] Bản thiết kế tối thượng chuẩn quốc tế v3.0
-├── AEGISQUIZ_WORLD_CLASS_BLUEPRINT.md                 <-- [MASTER] Bản thiết kế đẳng cấp thế giới (62KB)
+├── AEGIS_UNIFIED_MASTER_SPECIFICATION.md         <-- [SUPREME MASTER] Đại Đặc Tả Hệ Thống Thống Nhất Toàn Diện
+├── AEGIS_SYSTEM_DOCUMENT_V2.0.md                 <-- [MASTER] Tài liệu Kỹ thuật Hệ thống chuẩn quốc tế (78KB)
+├── AEGIS_GLOBAL_SUPREMACY_BLUEPRINT_V3.0.md       <-- [MASTER] Bản thiết kế tối thượng chuẩn quốc tế v3.0
+├── AEGIS_WORLD_CLASS_BLUEPRINT.md                 <-- [MASTER] Bản thiết kế đẳng cấp thế giới (62KB)
 ├── ARENA_PLUGIN_DEVELOPER_GUIDE.md                   <-- Hướng dẫn lập trình viên phát triển Plugin Gameshow
 ├── ARENA_GAMESHOW_USER_MANUAL.md                     <-- Cẩm nang người dùng & luật chơi 6 Gameshow
 │
 ├── 🏛️ architecture/ (Kiến Trúc Phân Tầng)
+│   ├── AEGIS_AI_SYSTEM_WORLD_CLASS_AUDIT_REPORT_2026.md <-- [SUPREME AI 2026] Báo Cáo Kiểm Toán & Đánh Giá Đẳng Cấp Thế Giới Hệ Thống AI Aegis Global (Epistemic Triad, Pareto FinOps, IRT 3-PL)
 │   ├── AEGIS_GLOBAL_STRATEGIC_HEGEMONY_AND_WORLD_CLASS_BENCHMARK.md <-- [FLAGSHIP 2026] Báo Cáo Phân Tích Khoa Học, Đối Sách Toàn Cầu & Kiểm Toán Điểm Nghẽn Nâng Cấp Hoàn Thiện
 │   ├── AEGIS_DUAL_MODE_ASSESSMENT_AND_INGESTION_SOVEREIGNTY.md <-- [NEW 2026] Kiến Trúc Khảo Thí Đa Phương Thức (Zen Studio -> Live Arena RAM Prewarm & Knowledge Bank COW)
 │   ├── DOCX_STATE_MACHINE_CLASSIFIER_DEEP_DIVE.md   <-- [DEEP DIVE 2026] Báo Cáo Chuyên Sâu Máy Trạng Thái FSM Phân Loại Đề Thi Word, CIG Grammar, Sentinel Boundaries & Kiểm Thử 53 Đề Thực Chiến
@@ -37,7 +38,7 @@ d:/Cuong/DuAn/mybank/AegisQuiz/docs/
 │   ├── AEGIS_UNIVERSAL_INGESTION_ENGINE_AND_GLOBAL_EXPANSION_STRATEGY.md <-- [SUPREME 2026] Bản Thiết Kế Kiến Trúc Phân Hệ Nhập Đề Thông Minh & Kế Hoạch Vươn Tầm Quốc Tế (CIG, MTEF Reverse, Multiline Accumulator)
 │   ├── AEGIS_UNIVERSAL_EPISTEMIC_SYMPOSIUM_MASTER_PLAN.md <-- [SUPREME 2026] Kế Hoạch Bậc Thầy Đại Hội Thảo Bách Khoa Vạn Vật Tri Thức & 9 Viện Hàn Lâm
 │   ├── AEGIS_SYMPOSIUM_PROMPT_COMPOSER_SPECIFICATION.md   <-- [SUPERLATIVE 2026] Đặc Tả Kiến Trúc Bộ Ghép System Prompt Phân Tầng 6 Lớp & Tự Khởi Tạo
-│   ├── AEGISQUIZ_GLOBAL_SUPREME_AUDIT_REPORT_2026.md <-- [GLOBAL SUPREME 2026] Báo Cáo Kiểm Toán & Đánh Giá Toàn Diện Hệ Thống Chuẩn Cao Nhất Thế Giới (ISO 25010, OWASP, IRT, CLEAR)
+│   ├── AEGIS_GLOBAL_SUPREME_AUDIT_REPORT_2026.md <-- [GLOBAL SUPREME 2026] Báo Cáo Kiểm Toán & Đánh Giá Toàn Diện Hệ Thống Chuẩn Cao Nhất Thế Giới (ISO 25010, OWASP, IRT, CLEAR)
 │   ├── BACKEND_WORLD_CLASS_SUPREME_AUDIT_REPORT.md   <-- [SUPREME 2026] Báo Cáo Kiểm Toán Toàn Diện Backend Đạt Cảnh Giới Tốt Nhất
 │   ├── SYSTEM_ARCHITECTURE.md                        <-- Kiến trúc phân tầng, luồng dữ liệu, Clean Architecture, CQRS
 │   ├── DATA_MODELS.md                                <-- Sơ đồ ERD, Database Schema PostgreSQL, In-Memory State
@@ -95,7 +96,7 @@ d:/Cuong/DuAn/mybank/AegisQuiz/docs/
 ### 3. Dành Cho Thầy Cô, Ban Tổ Chức & Người Dùng Cuối (Hosts & Learners)
 - Tổ chức ngày hội đấu trường, các cuộc thi Olympia, Rung Chuông Vàng, Chiếc Nón Kỳ Diệu: xem **[Cẩm Nang Gameshow Đấu Trường](manuals/ARENA_GAMESHOW_MANUAL.md)**.
 - Học sinh, sinh viên tìm hiểu cách làm bài, theo dõi năng lực và giải bài cùng AI: xem **[Cẩm Nang Người Học](manuals/LEARNER_USER_MANUAL.md)**.
-- Học viên ôn thi sát hạch bằng lái xe máy & ô tô (A1, B1, B2, C, 60 câu điểm liệt & Sa hình): xem **[Cẩm Nang Người Học](manuals/LEARNER_USER_MANUAL.md)**, **[Chương Sát Hạch Lái Xe](AEGISQUIZ_UNIFIED_MASTER_SPECIFICATION.md#6-phân-hệ-khảo-thí--sát-hạch-lái-xe-quốc-gia-gplx-600-câu-60-điểm-liệt-tử-thần--sa-hình-ai)** & **[Đặc Tả Kỹ Thuật GPLX Module](modules/NATIONAL_DRIVING_LICENSE_MODULE.md)**.
+- Học viên ôn thi sát hạch bằng lái xe máy & ô tô (A1, B1, B2, C, 60 câu điểm liệt & Sa hình): xem **[Cẩm Nang Người Học](manuals/LEARNER_USER_MANUAL.md)**, **[Chương Sát Hạch Lái Xe](AEGIS_UNIFIED_MASTER_SPECIFICATION.md#6-phân-hệ-khảo-thí--sát-hạch-lái-xe-quốc-gia-gplx-600-câu-60-điểm-liệt-tử-thần--sa-hình-ai)** & **[Đặc Tả Kỹ Thuật GPLX Module](modules/NATIONAL_DRIVING_LICENSE_MODULE.md)**.
 - Cán bộ khảo thí, quản trị viên duyệt đề thi và ngân hàng câu hỏi: xem **[Cẩm Nang Quản Trị](manuals/ADMIN_AND_EXAM_MANAGEMENT_GUIDE.md)**.
 
 ---

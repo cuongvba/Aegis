@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — FinalCtaSection (Landing Page)
+ * Aegis — FinalCtaSection (Landing Page)
  * =============================================
  * Lời kêu gọi hành động cuối trang — lặp lại CTA lần cuối trước khi rời trang.
  * FSD Layer: pages/landing/components/

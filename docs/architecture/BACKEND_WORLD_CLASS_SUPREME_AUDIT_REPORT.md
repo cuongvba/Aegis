@@ -19,7 +19,7 @@
 
 ## 1. TUYÊN NGÔN & BẢN KẾT LUẬN THẨM ĐỊNH TỐI CAO
 
-Toàn bộ phân hệ Backend của nền tảng **AegisQuiz** (bao gồm .NET 10 Web API, Python IRT 3-PL CAT Microservice, PostgreSQL 17 Alpine và Redis 7 Alpine) **ĐÃ ĐẠT ĐẾN CẢNH GIỚI TỐT NHẤT TOÀN DIỆN (WORLD-CLASS ENTERPRISE TIER)**:
+Toàn bộ phân hệ Backend của nền tảng **Aegis** (bao gồm .NET 10 Web API, Python IRT 3-PL CAT Microservice, PostgreSQL 17 Alpine và Redis 7 Alpine) **ĐÃ ĐẠT ĐẾN CẢNH GIỚI TỐT NHẤT TOÀN DIỆN (WORLD-CLASS ENTERPRISE TIER)**:
 * **Tính toàn vẹn mã nguồn:** 0 Lỗi biên dịch (0 Compiler Errors), 0 Cảnh báo bảo mật thư viện (0 CVE/GHSA Vulnerabilities), 0 Cảnh báo ORM Entity Framework Core.
 * **Độ bao phủ kiểm thử:** **127 / 127 Unit & Integration Tests đạt tỷ lệ thành công 100% (Pass Rate 100%)** trong thời gian 21–23 giây.
 * **Thời gian thực & Khả năng chịu tải:** Xung nhịp máy chủ phát tín hiệu giám sát phòng thi sub-second; Đấu trường Gameshow cướp chuông độ trễ vi mô (microsecond clock); Động cơ IRT tính toán hàm thông tin Fisher và tái ước lượng năng lực $\theta$ trong thời gian **10–12ms / lượt**.
@@ -45,19 +45,19 @@ graph TB
         HostedServices[ExamTimerService, Background Workers]
     end
 
-    subgraph AppLayer [AegisQuiz.Application Layer]
+    subgraph AppLayer [Aegis.Application Layer]
         Interfaces[IIrtClientService, IArenaGamePlugin, IExcelParserService]
         DTOs[CatDtos, BankTopicUpsertDto, QuizDtos, CognitiveTaxonomy]
         CQRS[Commands, Queries, Domain Validators]
     end
 
-    subgraph DomainLayer [AegisQuiz.Domain Layer]
+    subgraph DomainLayer [Aegis.Domain Layer]
         Entities[QuestionBase TPH, BankTopic Hierarchy, ExamSession, QuestionAttempt]
         PolymorphicEval[EvaluateAnswer: Single, Multi, Ordering, Matching, Essay]
         ValueObjects[MaterializedPath O-1, CognitiveTaxonomyCoordinates]
     end
 
-    subgraph InfraLayer [AegisQuiz.Infrastructure Layer]
+    subgraph InfraLayer [Aegis.Infrastructure Layer]
         EFCore[EF Core 10 Npgsql DbContext]
         DocParsers[DocxParser WMF 1.2ms, NPOI Excel, PdfPig]
         IrtClient[IrtClientService HTTP Factory]
@@ -130,43 +130,43 @@ Mọi thành phần kiến trúc đều được ánh xạ trực tiếp đến 
 
 ### 3.1. Các Tệp Mã Nguồn Cốt Lõi (Live Code Clickable Links)
 * **Lõi Domain & Đa Hình 8 Dạng Câu Hỏi:**
-  - [`QuestionBase.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/QuestionBase.cs): Cấu trúc gốc TPH, lưu trữ `Payload` JSONB, chỉ mục nhận thức 5 trục tọa độ và định nghĩa thuật toán `EvaluateAnswer(string answer)`.
-  - [`BankTopic.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/BankTopic.cs): Quản trị phả hệ phân cấp $O(1)$ qua `MaterializedPath`, `DomainCode`, `Scope` và `QuestionCountCached`.
-  - [`ExamSession.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Domain/Entities/ExamSession.cs): Phiên thi sát hạch chính thức, quản lý danh sách câu hỏi snapshot và đáp án cuối kỳ qua ValueComparer.
+  - [`QuestionBase.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/QuestionBase.cs): Cấu trúc gốc TPH, lưu trữ `Payload` JSONB, chỉ mục nhận thức 5 trục tọa độ và định nghĩa thuật toán `EvaluateAnswer(string answer)`.
+  - [`BankTopic.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/BankTopic.cs): Quản trị phả hệ phân cấp $O(1)$ qua `MaterializedPath`, `DomainCode`, `Scope` và `QuestionCountCached`.
+  - [`ExamSession.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Domain/Entities/ExamSession.cs): Phiên thi sát hạch chính thức, quản lý danh sách câu hỏi snapshot và đáp án cuối kỳ qua ValueComparer.
 * **Lõi Application DTOs & Contracts:**
-  - [`CatDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/CatDtos.cs): Hợp đồng DTO trao đổi giữa .NET 10 và Python IRT service (`QuestionIrtDto`, `CatConfigDto`, `CatStartResponse`, `CatStepResponse`).
-  - [`QuizDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/DTOs/QuizDtos.cs): Cấu trúc `BankTopicUpsertDto`, `CognitiveDomainGroupDto`, `CognitiveTopicNodeDto`.
-  - [`IIrtClientService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Application/Interfaces/IIrtClientService.cs): Giao diện cầu nối toán học thích ứng CAT/IRT 3-PL.
+  - [`CatDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/CatDtos.cs): Hợp đồng DTO trao đổi giữa .NET 10 và Python IRT service (`QuestionIrtDto`, `CatConfigDto`, `CatStartResponse`, `CatStepResponse`).
+  - [`QuizDtos.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/DTOs/QuizDtos.cs): Cấu trúc `BankTopicUpsertDto`, `CognitiveDomainGroupDto`, `CognitiveTopicNodeDto`.
+  - [`IIrtClientService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IIrtClientService.cs): Giao diện cầu nối toán học thích ứng CAT/IRT 3-PL.
 * **Lõi Infrastructure Services:**
-  - [`IrtClientService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/IrtClientService.cs): Hiện thực hóa HttpClientFactory gọi microservice Python với cơ chế xử lý ngoại lệ và logging chi tiết.
-  - [`AegisQuizDbContext.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Data/AegisQuizDbContext.cs): Cấu hình EF Core 10, chính sách RLS, GIN Index trên JSONB và Value Comparer bảo vệ ChangeTracker.
-  - [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DocxParserService.cs): Chuyển đổi MathType vector WMF sang PNG Base64 trong RAM 1.2ms/công thức.
-  - [`ExcelParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Excel/ExcelParserService.cs): NPOI Parser bóc tách ma trận sổ tính 19 file nghiệp vụ ngân hàng 3.891 câu hỏi.
+  - [`IrtClientService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/IrtClientService.cs): Hiện thực hóa HttpClientFactory gọi microservice Python với cơ chế xử lý ngoại lệ và logging chi tiết.
+  - [`AegisDbContext.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Data/AegisDbContext.cs): Cấu hình EF Core 10, chính sách RLS, GIN Index trên JSONB và Value Comparer bảo vệ ChangeTracker.
+  - [`DocxParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DocxParserService.cs): Chuyển đổi MathType vector WMF sang PNG Base64 trong RAM 1.2ms/công thức.
+  - [`ExcelParserService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Excel/ExcelParserService.cs): NPOI Parser bóc tách ma trận sổ tính 19 file nghiệp vụ ngân hàng 3.891 câu hỏi.
 * **Lõi API Controllers & Realtime Hubs:**
-  - [`AdaptiveController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/AdaptiveController.cs): Endpoint `/api/quiz/cat/start`, `/api/quiz/cat/{sessionId}/respond`, `/api/quiz/cat/{sessionId}/result`.
-  - [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Controllers/TopicsController.cs): Cung cấp cây tri thức nhận thức `/api/quiz/topics/tree` và cơ chế tự phục hồi `AutoHealHierarchicalTopicsAsync`.
-  - [`ExamProctoringHub.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Hubs/ExamProctoringHub.cs): SignalR WebSocket giám sát gian lận thi cử đa kênh.
-  - [`Program.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.API/Program.cs): Khởi tạo DI, Serilog, JWT Bearer Dual-Issuer, Rate Limiter 3 tầng và Fail-fast Migration.
+  - [`AdaptiveController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/AdaptiveController.cs): Endpoint `/api/quiz/cat/start`, `/api/quiz/cat/{sessionId}/respond`, `/api/quiz/cat/{sessionId}/result`.
+  - [`TopicsController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/TopicsController.cs): Cung cấp cây tri thức nhận thức `/api/quiz/topics/tree` và cơ chế tự phục hồi `AutoHealHierarchicalTopicsAsync`.
+  - [`ExamProctoringHub.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Hubs/ExamProctoringHub.cs): SignalR WebSocket giám sát gian lận thi cử đa kênh.
+  - [`Program.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Program.cs): Khởi tạo DI, Serilog, JWT Bearer Dual-Issuer, Rate Limiter 3 tầng và Fail-fast Migration.
 * **Lõi Python IRT Microservice:**
-  - [`main.py`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/irt-service/main.py): FastAPI, NumPy, SciPy hiện thực hóa mô hình xác suất Logistic 3-PL và thuật toán tối ưu Fisher Information.
+  - [`main.py`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/irt-service/main.py): FastAPI, NumPy, SciPy hiện thực hóa mô hình xác suất Logistic 3-PL và thuật toán tối ưu Fisher Information.
 
 ---
 
 ## 4. TRỤ CỘT 3: CHỈ SỐ THỰC NGHIỆM ĐỊNH LƯỢNG (127/127 TESTS & BENCHMARKS)
 
 ### 4.1. Báo Cáo Kiểm Thử Tự Động Toàn Diện (Unit & Integration Tests)
-Chạy trực tiếp từ lệnh máy chủ: `dotnet test Backend/tests/AegisQuiz.UnitTests/AegisQuiz.UnitTests.csproj`
+Chạy trực tiếp từ lệnh máy chủ: `dotnet test Backend/tests/Aegis.UnitTests/Aegis.UnitTests.csproj`
 
 ```
-Test run for AegisQuiz.UnitTests.dll (.NETCoreApp,Version=v10.0)
+Test run for Aegis.UnitTests.dll (.NETCoreApp,Version=v10.0)
 VSTest version 18.0.1 (x64)
 Starting test execution, please wait...
 A total of 1 test files matched the specified pattern.
 
-Passed!  - Failed: 0, Passed: 127, Skipped: 0, Total: 127, Duration: 23 s - AegisQuiz.UnitTests.dll (net10.0)
+Passed!  - Failed: 0, Passed: 127, Skipped: 0, Total: 127, Duration: 23 s - Aegis.UnitTests.dll (net10.0)
 ```
 
-### 4.2. Bảng Chỉ Số Benchmark Định Lượng Độc Quyền Của AegisQuiz
+### 4.2. Bảng Chỉ Số Benchmark Định Lượng Độc Quyền Của Aegis
 
 | Tiêu Chí Kỹ Thuật | Chỉ Số Đạt Được | Tiêu Chuẩn Quốc Tế So Sánh | Nhận Định Chuyên Gia No.1 |
 |---|:---:|:---:|:---:|
@@ -203,13 +203,13 @@ Kiểm tra phản hồi chi tiết từ endpoint `/health/detail`:
   "status": "Healthy",
   "checks": [
     {
-      "name": "aegisquiz-db",
+      "name": "aegis-db",
       "status": "Healthy",
       "description": null,
       "exception": null
     },
     {
-      "name": "aegisquiz-redis",
+      "name": "aegis-redis",
       "status": "Healthy",
       "description": null,
       "exception": null
@@ -219,12 +219,12 @@ Kiểm tra phản hồi chi tiết từ endpoint `/health/detail`:
 ```
 
 Trạng thái 6 container điều phối qua Docker Compose:
-- `aegisquiz-backend-1`: .NET 10 Web API — **Up & Healthy** (Port 8080)
-- `aegisquiz-frontend-1`: React 19 Nginx — **Up & Healthy** (Port 3000)
-- `aegisquiz-irt-service-1`: Python 3.12 FastAPI — **Up & Healthy** (Port 8001)
-- `aegisquiz-postgres-1`: PostgreSQL 17 Alpine — **Up & Healthy** (Port 5432)
-- `aegisquiz-redis-1`: Redis 7 Alpine — **Up & Healthy** (Port 6379)
-- `aegisquiz-keycloak-1`: Keycloak 25.0 OIDC — **Up & Running** (Port 8180)
+- `aegis-backend-1`: .NET 10 Web API — **Up & Healthy** (Port 8080)
+- `aegis-frontend-1`: React 19 Nginx — **Up & Healthy** (Port 3000)
+- `aegis-irt-service-1`: Python 3.12 FastAPI — **Up & Healthy** (Port 8001)
+- `aegis-postgres-1`: PostgreSQL 17 Alpine — **Up & Healthy** (Port 5432)
+- `aegis-redis-1`: Redis 7 Alpine — **Up & Healthy** (Port 6379)
+- `aegis-keycloak-1`: Keycloak 25.0 OIDC — **Up & Running** (Port 8180)
 
 ---
 

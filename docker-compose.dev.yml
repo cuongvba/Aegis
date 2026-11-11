@@ -1,5 +1,5 @@
 # ============================================================================
-# AegisQuiz — Docker Compose OVERRIDE cho môi trường DEV (Hot-Reload)
+# Aegis — Docker Compose OVERRIDE cho môi trường DEV (Hot-Reload)
 # ============================================================================
 # File này KHÔNG thay thế `docker-compose.yml` — chỉ override cách build/chạy
 # 2 service `backend` và `frontend` sang chế độ phát triển (Dockerfile.dev):
@@ -39,14 +39,14 @@ services:
       # [Quan trọng] Anonymous volumes: giữ bin/obj sinh ra BÊN TRONG container
       # (biên dịch cho Linux), tránh bị ghi đè bởi bin/obj build sẵn trên máy
       # host Windows/Mac (khác kiến trúc/OS → lỗi runtime khó hiểu).
-      - /src/src/AegisQuiz.Domain/bin
-      - /src/src/AegisQuiz.Domain/obj
-      - /src/src/AegisQuiz.Application/bin
-      - /src/src/AegisQuiz.Application/obj
-      - /src/src/AegisQuiz.Infrastructure/bin
-      - /src/src/AegisQuiz.Infrastructure/obj
-      - /src/src/AegisQuiz.API/bin
-      - /src/src/AegisQuiz.API/obj
+      - /src/src/Aegis.Domain/bin
+      - /src/src/Aegis.Domain/obj
+      - /src/src/Aegis.Application/bin
+      - /src/src/Aegis.Application/obj
+      - /src/src/Aegis.Infrastructure/bin
+      - /src/src/Aegis.Infrastructure/obj
+      - /src/src/Aegis.API/bin
+      - /src/src/Aegis.API/obj
 
   # ===== FRONTEND — DEV (Vite Dev Server + HMR) ==============================
   frontend:

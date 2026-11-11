@@ -2,10 +2,10 @@
 ## Master Implementation Blueprint — Compliance with CLEAR, OCP, MultiLang & Zero-Monolith
 
 > **Chủ nhiệm Đồ án:** No.1 — Lead System Analyst, Master Living Documentarian, IT Architect, AI, Design, Education & Economic Specialist  
-> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái AegisQuiz)*  
+> *(Tổng Công Trình Sư & Chủ Nhiệm Kiến Trúc Hệ Sinh Thái Aegis)*  
 > **Phiên bản:** v1.0 — Architecture Enforcement Edition  
 > **Ngày phê duyệt:** 2026-10-12  
-> **Tiêu chuẩn kiểm soát:** Tuân thủ 100% [AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/AGENTS.md), [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md) và [Entitlement Rules](file:///d:/Cuong/DuAn/mybank/AegisQuiz/.agents/rules/aegis_modular_saas_entitlements_rule.md)
+> **Tiêu chuẩn kiểm soát:** Tuân thủ 100% [AGENTS.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md), [ALDS v1.0](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/standards/AEGIS_LIVING_DOCUMENTATION_STANDARD.md) và [Entitlement Rules](file:///d:/Cuong/DuAn/mybank/AegisGlobal/.agents/rules/aegis_modular_saas_entitlements_rule.md)
 
 ---
 
@@ -66,7 +66,7 @@ gantt
 
 ### GIAI ĐOẠN 1: TẦNG DOMAIN & APPLICATION CORE (CLEAR & OCP)
 
-#### 1. Tầng Domain (`AegisQuiz.Domain`)
+#### 1. Tầng Domain (`Aegis.Domain`)
 * **Thực thể `EducatorPartnership`**:
   * `Guid Id`, `Guid UserId`, `string ReferralCode`, `DateTime TrialExpiresAt`, `bool IsActive`
   * `decimal RevenueShareRate` (mặc định `0.80m`), `int KarmaPoints`, `string? PayoutBankAccount`
@@ -74,7 +74,7 @@ gantt
   * `Guid QuestionId`, `string CanonicalHash` (SHA-256), `int ReferenceCount`, `DateTime LastReferencedAt`
   * *Tuân thủ quy tắc:* 0 Dependency ngoài.
 
-#### 2. Tầng Application (`AegisQuiz.Application`)
+#### 2. Tầng Application (`Aegis.Application`)
 * **MediatR Vertical Slices (Không dùng Controller béo)**:
   * `IngestZenExamCommand`: Nhận stream file Word $\rightarrow$ gọi `IDynamicDocxPipeline` $\rightarrow$ gọi `IExamDeduplicationEngine` $\rightarrow$ trả về kết quả bóc tách.
   * `LaunchZenClassroomRoomCommand`: Tạo phòng thi realtime với mã PIN 6 số ngẫu nhiên không trùng lặp và liên kết SignalR `ArenaHub`.
@@ -99,7 +99,7 @@ gantt
 ### GIAI ĐOẠN 2: TẦNG INFRASTRUCTURE — ĐỘNG CƠ KHỬ TRÙNG LẶP (CAS & COPY-ON-WRITE)
 
 #### 1. Kích hoạt Chu trình Băm Chuẩn Hóa (Canonical Fingerprinting)
-* Tận dụng [ExamDeduplicationEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/ExamDeduplicationEngine.cs):
+* Tận dụng [ExamDeduplicationEngine.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs):
   1. Loại bỏ toàn bộ khoảng trắng thừa, thẻ HTML format vô nghĩa, chuyển chữ về lowercase.
   2. Chuẩn hóa công thức toán LaTeX (ví dụ: `\frac{a}{b}` đồng nhất với `{a \over b}`).
   3. Băm chuỗi kết hợp `Content + NormalizedOptions` bằng SHA-256 tạo thành `CanonicalHash`.
@@ -198,7 +198,7 @@ Frontend/src/pages/creator/studio/
 | Hạng Mục Kiểm Tra | Tiêu Chuẩn Cam Kết | Phương Pháp Xác Minh |
 |---|---|---|
 | **Kích thước file Component** | Tối đa 250 LOC / file UI | Đếm dòng lệnh tự động bằng PowerShell |
-| **Độ tinh khiết CLEAR** | Domain có 0 dependency ngoài | Kiểm tra file `AegisQuiz.Domain.csproj` |
+| **Độ tinh khiết CLEAR** | Domain có 0 dependency ngoài | Kiểm tra file `Aegis.Domain.csproj` |
 | **Khử trùng lặp CAS** | Tiết kiệm $\ge 80\%$ dung lượng DB khi tải đề trùng | xUnit Test đối chiếu số bản ghi sinh ra |
 | **Chuẩn đa ngôn ngữ i18n** | 5 ngôn ngữ (`vi, en, ja, ko, ar`) | Kiểm tra tệp JSON & Test chuyển đổi `dir="rtl"` |
 | **Thời gian tạo phòng thi** | $\le 10$ giây từ khi thả file Word | Kiểm thử thao tác người dùng thực tế |

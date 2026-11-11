@@ -1,7 +1,7 @@
 # 🔌 Đặc Tả Giao Diện Lập Trình REST API (REST API Reference)
 
 > **Giao thức**: HTTPS RESTful JSON  
-> **Base URL**: `http://localhost:5000/api` (Local) hoặc `https://api.aegisquiz.internal/api` (Production)  
+> **Base URL**: `http://localhost:5000/api` (Local) hoặc `https://api.aegis.internal/api` (Production)  
 > **Xác thực**: Bearer Token trong Header `Authorization: Bearer <JWT>`
 
 ---

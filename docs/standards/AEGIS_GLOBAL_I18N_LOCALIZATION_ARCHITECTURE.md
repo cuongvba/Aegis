@@ -65,8 +65,8 @@ Qua khảo sát sâu mã nguồn tại các tầng `AppProviders`, `i18n.ts`, `A
 ## IV. NÂNG TẦM KIẾN TRÚC TOÀN CẦU (ARCHITECTURAL UPGRADES)
 
 ### 1. Phân tách Trách nhiệm (Single Responsibility Principle)
-- Tách định nghĩa menu quản trị ra tệp độc lập [adminNavConfig.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/adminNavConfig.tsx) chứa các metadata (`href`, `i18nKey`, `defaultLabel`, `icon`, `feature`, `adminOnly`).
-- Giữ file [AdminLayout.tsx](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/admin/AdminLayout.tsx) ở mức **176 dòng code** (tuân thủ tuyệt đối giới hạn $\le 250$ dòng của luật Zero-Monolith).
+- Tách định nghĩa menu quản trị ra tệp độc lập [adminNavConfig.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/adminNavConfig.tsx) chứa các metadata (`href`, `i18nKey`, `defaultLabel`, `icon`, `feature`, `adminOnly`).
+- Giữ file [AdminLayout.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/admin/AdminLayout.tsx) ở mức **176 dòng code** (tuân thủ tuyệt đối giới hạn $\le 250$ dòng của luật Zero-Monolith).
 
 ### 2. Bố cục Song hướng Bi-directional RTL Sovereignty (Ả Rập)
 - Khi chuyển sang ngôn ngữ `ar`, hệ thống tự động:
@@ -77,7 +77,7 @@ Qua khảo sát sâu mã nguồn tại các tầng `AppProviders`, `i18n.ts`, `A
   5. Các huy hiệu và nút bấm căn lề theo chuẩn văn hóa Ả Rập.
 
 ### 3. Cơ chế Phản ứng Tức thì (Reactive Auto-Re-render)
-- Bổ sung cấu hình vào [i18n.ts](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/i18n.ts):
+- Bổ sung cấu hình vào [i18n.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/i18n.ts):
 ```ts
 react: {
   useSuspense: false,

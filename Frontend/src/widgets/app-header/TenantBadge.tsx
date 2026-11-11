@@ -1,5 +1,5 @@
 /**
- * AegisQuiz — TenantBadge Widget
+ * Aegis — TenantBadge Widget
  * ================================
  * Hiển thị trạng thái VIP / Admin portal / Upgrade button.
  * Tách từ MainLayout.tsx — dùng useAuthContext thay vì localStorage.

@@ -1,6 +1,6 @@
-# 🛡️ AEGISQUIZ — LUẬT BẮT BUỘC VỀ ĐÓNG GÓI B2B SAAS & PHÂN QUYỀN 4 TẦNG (ENTITLEMENTS RULE)
+# 🛡️ AEGIS — LUẬT BẮT BUỘC VỀ ĐÓNG GÓI B2B SAAS & PHÂN QUYỀN 4 TẦNG (ENTITLEMENTS RULE)
 
-> **Phạm vi áp dụng**: Mọi kỹ sư phần mềm, AI Agent và tổng công trình sư khi thiết kế, triển khai tính năng mới hoặc chỉnh sửa giao diện Frontend/API Backend của AegisQuiz.  
+> **Phạm vi áp dụng**: Mọi kỹ sư phần mềm, AI Agent và tổng công trình sư khi thiết kế, triển khai tính năng mới hoặc chỉnh sửa giao diện Frontend/API Backend của Aegis.  
 > **Tài liệu nền tảng**: [`docs/architecture/AEGIS_MODULAR_B2B_SAAS_ENTITLEMENT_ARCHITECTURE.md`](file:///docs/architecture/AEGIS_MODULAR_B2B_SAAS_ENTITLEMENT_ARCHITECTURE.md).
 
 ---
@@ -28,8 +28,8 @@
 
 Bất kỳ PR hoặc commit nào thêm tính năng mới mà bỏ qua 1 trong 5 bước sau sẽ bị **TỪ CHỐI DUYỆT (Hard Reject)**:
 
-- [ ] **Bước 1 (Backend Domain)**: Khai báo hằng số trong `AegisQuiz.Domain.Entities.FeatureKeys`.
-- [ ] **Bước 2 (Backend Catalog)**: Khai báo gói mặc định được hưởng tính năng trong `AegisQuiz.Domain.Entities.PlanFeatureCatalog`.
+- [ ] **Bước 1 (Backend Domain)**: Khai báo hằng số trong `Aegis.Domain.Entities.FeatureKeys`.
+- [ ] **Bước 2 (Backend Catalog)**: Khai báo gói mặc định được hưởng tính năng trong `Aegis.Domain.Entities.PlanFeatureCatalog`.
 - [ ] **Bước 3 (Frontend Types)**: Đồng bộ mã tính năng vào `Frontend/src/types/entitlement.ts` và bổ sung bản ghi vào `FEATURE_METADATA_CATALOG` (Tên, mô tả, gói yêu cầu, badge).
 - [ ] **Bước 4 (Frontend UI)**: Bọc component hoặc nút bấm bằng `<FeatureGate feature={...}>`. Nếu là menu Sidebar, khai báo thuộc tính `feature: FeatureKey...`.
 - [ ] **Bước 5 (Unit Testing)**: Bổ sung ít nhất 1 test case trong `EnterpriseEntitlementMatrixTests.cs` để xác nhận tính năng đã được phân quyền chính xác theo gói.

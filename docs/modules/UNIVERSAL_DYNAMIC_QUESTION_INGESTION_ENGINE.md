@@ -31,7 +31,7 @@ Trong suốt một thế kỷ qua, nền khảo thí toàn cầu vận hành d�
 - Mỗi khi xuất hiện một hình thức kiểm tra mới (từ trắc nghiệm 4 phương án sang câu hỏi Đúng/Sai đa mệnh đề, điền khuyết Cloze-test, ghép nối 2 cột, sắp xếp quy trình, sa hình giao thông, hay đề thi quốc tế SAT/IELTS)...
 - Các hệ thống phần mềm giáo dục (Moodle, Blackboard, Canvas, Quizizz...) đều rơi vào tình trạng tê liệt: **Phải đập đi xây lại cấu trúc bảng cơ sở dữ liệu, sửa đổi mã nguồn bóc tách (Parser code), viết lại giao diện hiển thị, biên dịch lại toàn bộ hệ thống và triển khai lại từ đầu.**
 
-**AegisQuiz tuyên bố chấm dứt kỷ nguyên phụ thuộc mã nguồn đó.**  
+**Aegis tuyên bố chấm dứt kỷ nguyên phụ thuộc mã nguồn đó.**  
 Hệ thống thiết lập một chuẩn mực mới: **Mọi tri thức và quy tắc bóc tách đề thi đều là dữ liệu sống (Living Configuration Data)**. Bất kỳ một tổ chức giáo dục, trường đại học hay quốc gia nào đưa ra định dạng đề thi mới, Quản trị viên chỉ mất **30 giây cấu hình từ giao diện Web hoặc nạp qua API** là toàn bộ hệ thống trên toàn thế giới lập tức nhận diện, bóc tách và phân luồng chính xác 100% mà không cần chạm vào 1 dòng code C#!
 
 ---
@@ -50,7 +50,7 @@ Hệ thống thiết lập một chuẩn mực mới: **Mọi tri thức và quy
 
 ## 3. BẢN THỂ LUẬN: NGUYÊN TỬ NHẬN THỨC ĐA HÌNH (POLYMORPHIC COGNITIVE ATOM)
 
-Trong AegisQuiz, câu hỏi không phải là một chuỗi văn bản đơn giản. Một câu hỏi được định nghĩa là một **Nguyên Tử Nhận Thức Đa Hình** gồm 4 thành phần nội tại:
+Trong Aegis, câu hỏi không phải là một chuỗi văn bản đơn giản. Một câu hỏi được định nghĩa là một **Nguyên Tử Nhận Thức Đa Hình** gồm 4 thành phần nội tại:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -310,7 +310,7 @@ Trên trang quản trị `/admin/questions/rules`, Quản trị viên được t
 
 ### 📅 Giai Đoạn 1 (Tháng 09/2026): Tái Cấu Trúc Core Parser & Nạp File Config [HOÀN THÀNH 100%]
 - [x] Thiết kế Schema chuẩn `QuestionParsingRuleModels.cs` định nghĩa 4 chiều CIG.
-- [x] Tạo file cấu hình `Backend/src/AegisQuiz.Infrastructure/Config/parsing_rules_registry.json` với 5 preset chuẩn quốc gia và quốc tế.
+- [x] Tạo file cấu hình `Backend/src/Aegis.Infrastructure/Config/parsing_rules_registry.json` với 5 preset chuẩn quốc gia và quốc tế.
 - [x] Xây dựng động cơ thông dịch `DynamicQuestionIngestionEngine.cs` với JIT Compiled Regex Cache trên `ConcurrentDictionary`.
 - [x] Tích hợp vào `DocxParserService.cs`, bảo đảm 100% test suites tiếp tục Passed (`12/12 Passed`).
 
@@ -372,7 +372,7 @@ Trên trang quản trị `/admin/questions/rules`, Quản trị viên được t
 
 ### 📅 Giai Đoạn 5: Toàn Cầu Hóa & Đa Ngữ Học Thuật Quốc Tế (Global Academic Benchmarks & Cross-Language Multi-System Ingestion) [✅ HOÀN THÀNH 100% VƯỢT TIẾN ĐỘ]
 
-> **Đột phá đỉnh cao:** Toàn bộ 12 tiêu chuẩn khảo thí danh giá nhất hành tinh đã được tích hợp hoàn hảo vào hệ thống bóc tách. AegisQuiz có thể đọc hiểu, trích xuất cấu trúc và phân tích chuẩn xác đề thi của mọi nền giáo dục tiên tiến bằng 7 ngôn ngữ quốc tế mà **không cần chỉnh sửa mã nguồn backend**.
+> **Đột phá đỉnh cao:** Toàn bộ 12 tiêu chuẩn khảo thí danh giá nhất hành tinh đã được tích hợp hoàn hảo vào hệ thống bóc tách. Aegis có thể đọc hiểu, trích xuất cấu trúc và phân tích chuẩn xác đề thi của mọi nền giáo dục tiên tiến bằng 7 ngôn ngữ quốc tế mà **không cần chỉnh sửa mã nguồn backend**.
 
 #### 1. Ma Trận Thư Viện 12 Tiêu Chuẩn Khảo Thí Tinh Hoa Toàn Cầu:
 
@@ -413,7 +413,7 @@ Trong lịch sử các hệ thống EdTech và ngân hàng câu hỏi (LMS), t�
 - Hoặc đáp án được đánh dấu bằng dấu sao `*` hay chữ cái `(Đúng)` trực tiếp trong ô phương án thay vì một cột riêng biệt...
 - Là toàn bộ các bộ parser truyền thống lập tức **báo lỗi, nhập thiếu câu hỏi, sai đáp án hoặc vỡ toàn bộ cấu trúc dữ liệu.**
 
-**AegisQuiz nâng cấp toàn diện `ExcelParserService` lên cảnh giới tối thượng của hệ thống (Universal CIG Standard)**:
+**Aegis nâng cấp toàn diện `ExcelParserService` lên cảnh giới tối thượng của hệ thống (Universal CIG Standard)**:
 Bảng tính Excel giờ đây sở hữu đầy đủ trí tuệ nhân thức như Word và PDF: nhận diện động mọi kiểu cột, tự động rã và bóc tách câu hỏi gộp trong ô đơn lẻ, hỗ trợ trọn vẹn 8 siêu hình thái tương tác, cảm biến điểm liệt tử thần, tự động phân cấp chuyên đề từ tên Sheet và Section headers, cùng cơ chế chữa lành văn bản Maprepl.
 
 ```
@@ -541,7 +541,7 @@ Bộ kiểm thử tự động `DynamicExcelIngestionTests.cs` đã được xâ
 
 ### 10.4. Nguyên Lý Bảo Toàn Văn Bản Gốc & Cơ Chế VNCorrect Theo Yêu Cầu (On-Demand Preview Studio)
 
-Nhằm tối ưu hóa trải nghiệm người dùng và trao quyền kiểm soát tri thức tuyệt đối vào tay quản trị viên khảo thí, AegisQuiz thiết lập chuẩn mực bóc tách và xem trước Excel thông minh:
+Nhằm tối ưu hóa trải nghiệm người dùng và trao quyền kiểm soát tri thức tuyệt đối vào tay quản trị viên khảo thí, Aegis thiết lập chuẩn mực bóc tách và xem trước Excel thông minh:
 
 1. **Nguyên Lý Bảo Toàn Văn Bản Gốc (Authentic Raw Text First)**:
    - Khi tệp Excel được nạp lần đầu vào hệ thống, `ExcelParserService` **không tự ý áp dụng `VietnameseTextCorrectionService`** để biến đổi văn bản.
@@ -586,7 +586,7 @@ Nhằm tối ưu hóa trải nghiệm người dùng và trao quyền kiểm so�
 
 ### 3. Kiểm Chứng Đột Phá Sa Hình & Biển Báo Phức Tạp: `GPLXf2023.pdf` Kết Hợp `600caugplx.pdf`
 - **Bài toán hóc búa**: Tài liệu sát hạch GPLX chứa cấu trúc đa cột, sa hình kích thước lớn nằm xen kẽ giữa các câu hỏi, kèm theo **lỗi in ấn lịch sử** trong bản 186 trang cũ (in nhầm sa hình câu 597 sang câu 598; câu 599 bị trôi sa hình; câu 600 bị mất hình).
-- **Đột phá công nghệ của AegisQuiz**:
+- **Đột phá công nghệ của Aegis**:
   - 🌐 **Spatial Geometric Y-Interval Matching**: Xác định biên giới không gian trục tung $[Y_{next}, Y_{curr}]$ của từng câu hỏi thông qua `page.GetWords()`. Bất kỳ hình ảnh nào có trọng tâm rơi vào khoảng không gian này đều được liên kết chính xác tuyệt đối, loại trừ hoàn toàn hiện tượng lệch hàng loạt (Off-by-one Drift).
   - ✂️ **Bộ Cắt Phân Giải Cao Tự Động (`PatchGplx2023SaHinh`)**: Tự động bóc tách trang 110 của ấn phẩm chuẩn Bộ GTVT 2023 (`GPLXf2023.pdf`), trích xuất chuẩn xác từng bounding box sa hình cho Câu 598 (xe xanh vượt xe tải), Câu 599 (xe vàng vượt xe đỏ) và Câu 600 (xe container rẽ phải).
   - 🛡️ **Base64 Substring Collision Immunity**: Sử dụng Regex neo biên giới đầu dòng `^Câu\s*{n}[\.\:]` triệt tiêu lỗi nhận diện nhầm do chuỗi nhị phân ảnh Base64 chứa ngẫu nhiên số hiệu câu hỏi.
@@ -594,9 +594,9 @@ Nhằm tối ưu hóa trải nghiệm người dùng và trao quyền kiểm so�
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│             BẢNG ĐỐI ĐẦU HIỆU NĂNG THỰC CHIẾN: AEGISQUIZ VS THẾ GIỚI CŨ                │
+│             BẢNG ĐỐI ĐẦU HIỆU NĂNG THỰC CHIẾN: AEGIS VS THẾ GIỚI CŨ                │
 ├──────────────────────────────┬──────────────────────────┬──────────────────────────────┤
-│ Tiêu Chí Kiểm Thử            │ LMS Truyền Thống         │ AegisQuiz CIG Engine v6.0    │
+│ Tiêu Chí Kiểm Thử            │ LMS Truyền Thống         │ Aegis CIG Engine v6.0    │
 ├──────────────────────────────┼──────────────────────────┼──────────────────────────────┤
 │ Tệp DeToanGiaiChiTiet.docx   │ Treo CPU / Lỗi MathType  │ 215 câu xử lý trong 6.0s     │
 │ Tệp 600caugplx.pdf (186 tr.) │ Báo lỗi định dạng PDF    │ 603 câu xử lý trong 2.6s     │
@@ -640,7 +640,7 @@ ightarrow$ `SINGLE`
 8. `SINGLE` (Trắc nghiệm đơn Single Choice)
 
 ### 12.3. Mở Rộng Bộ Lọc Standalone Directives Không Giới Hạn Cứng
-Tại [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L644-L648), các chỉ thị mở (không chứa dải số `from 1 to 10`) được nhận diện tự động qua biểu thức mở rộng:
+Tại [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/DynamicQuestionIngestionEngine.Structure.cs#L644-L648), các chỉ thị mở (không chứa dải số `from 1 to 10`) được nhận diện tự động qua biểu thức mở rộng:
 - Bắt trọn các mệnh lệnh: `Choose\s+(?:all|the|one|each|a)`, `Select\s+(?:all|the|one)`, `Odd\s+one\s+out`, `Circle\s+(?:the\s+)?odd`, `Find\s+(?:the\s+)?(?:mistake|error|word)`.
 - Kích hoạt cửa sổ phạm vi `DirectiveScopeWindow` với độ tin cậy $\ge 0.90$ và thiết lập `HierarchyIndex` 4 cấp đàn hồi.
 
@@ -655,7 +655,7 @@ Tại [DynamicQuestionIngestionEngine.Structure.cs](file:///d:/Cuong/DuAn/mybank
 ## 13. TÀI LIỆU QUY TRÌNH BÓC TÁCH ĐA TẦNG TOÀN DIỆN (END-TO-END PIPELINE SPECIFICATION)
 
 Để kiểm chứng chi tiết toàn bộ chu trình sống của một đề thi từ khi người dùng kéo thả file .docx trên trình duyệt qua 7 giai đoạn bóc tách cho tới khi ghi vào CSDL PostgreSQL dạng JSONB đa hình 27 trường, tham khảo tài liệu chuẩn ALDS v1.0:
-👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
+👉 **[AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/architecture/AEGIS_DOCX_INGESTION_PIPELINE_END_TO_END_SPECIFICATION.md)**
 - **Giai đoạn 1**: Tiếp nhận & Kiểm thực MIME tại Client Web.
 - **Giai đoạn 2**: Tenant Scoping & Khởi tạo Dynamic Domain Context.
 - **Giai đoạn 3**: Giải nén ZipArchive, Trích xuất Media & Giải mã MathType WMF/OMML sang KaTeX/SVG.
@@ -686,6 +686,6 @@ Nhằm đáp ứng yêu cầu vận hành toàn cầu trên mọi hệ thống k
 ## 15. TỔNG KẾT THÀNH TỰU ĐẠT ĐƯỢC (MILESTONE SUMMARY)
 
 > **Lời kết của Tổng Công Trình Sư No.1:**  
-> *"Một hệ thống vĩ đại không phải là hệ thống viết ra thật nhiều dòng code để xử lý mọi trường hợp, mà là hệ thống trao toàn bộ quyền năng định nghĩa tri thức vào tay người dùng thông qua các quy luật tối giản và thanh lịch nhất. Với Động Cơ Nhập Câu Hỏi Vạn Năng đạt chuẩn CIG trên cả Word, PDF và Excel, AegisQuiz chính thức bước lên đỉnh cao công nghệ khảo thí toàn cầu — nơi tri thức nhân loại được bóc tách và giải phóng không giới hạn!"*
+> *"Một hệ thống vĩ đại không phải là hệ thống viết ra thật nhiều dòng code để xử lý mọi trường hợp, mà là hệ thống trao toàn bộ quyền năng định nghĩa tri thức vào tay người dùng thông qua các quy luật tối giản và thanh lịch nhất. Với Động Cơ Nhập Câu Hỏi Vạn Năng đạt chuẩn CIG trên cả Word, PDF và Excel, Aegis chính thức bước lên đỉnh cao công nghệ khảo thí toàn cầu — nơi tri thức nhân loại được bóc tách và giải phóng không giới hạn!"*
 
 

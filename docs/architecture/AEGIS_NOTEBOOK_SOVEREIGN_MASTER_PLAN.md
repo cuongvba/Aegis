@@ -64,10 +64,10 @@ graph TD
 
 ## II. ĐẶC TẢ HỢP ĐỒNG MÃ NGUỒN & ENTITIES V2.0 (PILLAR 2)
 
-### 2.1. Cấu trúc Thực thể Domain Đa Nguồn ([Notebook.cs](file:///Backend/src/AegisQuiz.Domain/Entities/Notebook.cs))
+### 2.1. Cấu trúc Thực thể Domain Đa Nguồn ([Notebook.cs](file:///Backend/src/Aegis.Domain/Entities/Notebook.cs))
 
 ```csharp
-namespace AegisQuiz.Domain.Entities
+namespace Aegis.Domain.Entities
 {
     // [AegisNotebook Sovereign V2.0] Hồ sơ Nhận thức Sống Đa Nguồn
     public class Notebook : ITenantEntity
@@ -178,7 +178,7 @@ namespace AegisQuiz.Domain.Entities
 }
 ```
 
-### 2.2. Tiến hóa Thực thể Chương Mục Nhận Thức ([NotebookChapter](file:///Backend/src/AegisQuiz.Domain/Entities/Notebook.cs))
+### 2.2. Tiến hóa Thực thể Chương Mục Nhận Thức ([NotebookChapter](file:///Backend/src/Aegis.Domain/Entities/Notebook.cs))
 Một Chương không còn bị trói buộc vào 1 file PDF đơn lẻ. Một Chương là một **Chủ đề Hợp nhất (Cognitive Topic)** liên kết trích dẫn chéo tới nhiều tài liệu nguồn:
 
 ```csharp
@@ -211,7 +211,7 @@ Một Chương không còn bị trói buộc vào 1 file PDF đơn lẻ. Một C
 
 ---
 
-### 2.3. Hợp đồng RESTful API V2.0 ([NotebooksController.cs](file:///Backend/src/AegisQuiz.API/Controllers/NotebooksController.cs))
+### 2.3. Hợp đồng RESTful API V2.0 ([NotebooksController.cs](file:///Backend/src/Aegis.API/Controllers/NotebooksController.cs))
 
 | Phương thức | Endpoint | Chức năng Đa Nguồn & Nhập Vai |
 | :--- | :--- | :--- |
