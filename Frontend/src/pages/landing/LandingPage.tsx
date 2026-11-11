@@ -22,6 +22,7 @@ import { TrustSection }      from './components/TrustSection';
 import { LandingAiDocsQaSection } from './components/LandingAiDocsQaSection';
 import { FinalCtaSection }   from './components/FinalCtaSection';
 import { LandingFooter }     from './components/LandingFooter';
+import { LandingAiConcierge } from './components/concierge/LandingAiConcierge';
 
 export function LandingPage() {
   return (
@@ -39,6 +40,7 @@ export function LandingPage() {
         <LandingAiDocsQaSection />
         <FinalCtaSection />
       </main>
+      <LandingAiConcierge />
       <LandingFooter />
     </div>
   );
