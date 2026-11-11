@@ -62,7 +62,7 @@ flowchart TB
     subgraph L5_ZenUX["5. ZERO-MONOLITH FRONTEND & <2ms LIVE ARENA"]
         STUDIO["Creator Zen Studio (3 Chạm / 10 Giây)<br/>+ Full MathFormulaStudioModal (8 Tabs)"]
         MATH["MathRenderer + Recursive Token Engine<br/>(UPMP v2.0 + GFM Table KaTeX Resolution)"]
-        ARENA["Aegis Arena (<2ms RAM Prewarm Buzzer)<br/>+ 6 Gameshow Plugins"]
+        ARENA["Aegis Arena (<2ms RAM Prewarm Buzzer)<br/>+ Hot-Plug GameshowPlugins Engine"]
         STUDIO --> MATH --> ARENA
     end
 
@@ -141,7 +141,7 @@ Toàn bộ năng lực cốt lõi được đối chiếu trực tiếp với c�
 | **4. Tâm trắc học Khảo thí (Psychometrics)** | ✅ IRT 2-PL/3-PL (Thường xử lý Batch Offline) | ❌ Chấm điểm cổ điển CTT (Tổng điểm thô) | ❌ Điểm theo tốc độ bấm nhanh (Speed-biased) | ⚠️ Half-Life Regression / FSRS (Chỉ cho Flashcard) | ❌ Không có động cơ tâm trắc học | ❌ Chấm điểm cộng dồn cổ điển CTT | **✅ Real-time IRT 3-PL ($a,b,c$) + CAT ($10\text{ms}$/lượt) + Deep Knowledge Tracing (`DktEngine`) + FSRS v5** |
 | **5. Kiến trúc AI & Kiểm soát Ảo giác (Epistemic AI)** | ⚠️ Chấm luận bằng ML đóng kín | ⚠️ Plugin gọi đơn lẻ OpenAI API | ⚠️ Single-turn LLM wrapper (Dễ sinh câu hỏi sai đáp án) | ✅ GPT-4o tinh chỉnh cho hội thoại ngôn ngữ | ✅ NotebookLM RAG đa nguồn tốt nhưng chỉ dùng 1 model | ⚠️ Gọi API LLM đơn lẻ, không có cơ chế kiểm chứng chéo | **✅ Hệ Ba Ngôi: `UniversalAiRouter` $\rightarrow$ `WolfPackSwarmEngine` ($\text{SCI}\ge 0.85$) $\rightarrow$ `Symposium` 6 Pha (Loại trừ 99.8% ảo giác)** |
 | **6. Sư phạm Sửa sai (Pedagogical Remediation)** | ❌ Chỉ trả kết quả Đạt / Không đạt | ⚠️ Hiện đáp án đúng tĩnh | ⚠️ Hiện thẻ đáp án đúng | ⚠️ Giải thích ngắn gọn 1 chiều | ⚠️ Trả lời câu hỏi theo văn bản | ⚠️ Hiện lời giải tĩnh (nếu giáo viên nhập) | **✅ Error Vault + ACSE 4 Lát Cắt (`Clue->Concept->Step->Hook`) theo Sweller CLT + Gia sư Socrates AI** |
-| **7. Đấu trường Trực tuyến Thời gian thực (Live Arena)** | ❌ Không có | ❌ Không có | ⚠️ Độ trễ WebSocket $200\text{–}800\text{ms}$; chỉ 1 kiểu chơi | ❌ Bảng xếp hạng bất đồng bộ | ❌ Không có | ❌ Không có đấu trường Gameshow thời gian thực | **✅ SignalR + Redis Backplane + RAM Prewarm ($<2\text{ms}$ Buzzer) + 6 Gameshow Plugins (Olympia, Rung Chuông Vàng...)** |
+| **7. Đấu trường Trực tuyến Thời gian thực (Live Arena)** | ❌ Không có | ❌ Không có | ⚠️ Độ trễ WebSocket $200\text{–}800\text{ms}$; chỉ 1 kiểu chơi | ❌ Bảng xếp hạng bất đồng bộ | ❌ Không có | ❌ Không có đấu trường Gameshow thời gian thực | **✅ SignalR + Redis Backplane + RAM Prewarm ($<2\text{ms}$ Buzzer) + Hot-Plug `IArenaGamePlugin` (Olympia, Rung Chuông Vàng, Triệu Phú, The Chase, The Mob 100...) & Arena Studio tùy biến vô hạn** |
 | **8. Chủ quyền Dữ liệu & Kiến trúc Không gian Kép** | ✅ Bảo mật cao nhưng đóng kín (No PLG) | ⚠️ Multi-tenant nặng nề, thiếu không gian cá nhân PLG | ✅ PLG mạnh nhưng thiếu cô lập RLS cấp Ngân hàng/Chính phủ | ✅ B2C mạnh, yếu B2B On-Premise | ❌ 100% Cloud tập trung | ⚠️ SaaS đại trà, không có PostgreSQL RLS hay BYOK AES-GCM | **✅ CDSA Dual-Space (PLG Cá nhân $\leftrightarrow$ Pháo đài Doanh nghiệp) + 3-Layer RLS + CAS/COW Deduplication** |
 
 ---

@@ -1,6 +1,8 @@
-# 📖 Cẩm Nang Sử Dụng: Đấu Trường Gameshow Trí Tuệ AegisQuiz
+# 📖 Cẩm Nang Sử Dụng: Đấu Trường Gameshow Trí Tuệ Aegis Arena (Hệ Động Cơ GameshowPlugins Cắm Rút Mở)
 
-> **Tài liệu hướng dẫn toàn diện dành cho Giáo viên, Giảng viên, Ban Tổ Chức (Host), Trọng Tài và Học sinh - Sinh viên (Thí sinh)** khi tham gia tổ chức hoặc thi đấu trên nền tảng AegisQuiz Arena.
+> **Tài liệu hướng dẫn toàn diện dành cho Giáo viên Mầm non, Phổ thông, Giảng viên, Ban Tổ Chức (Host), Trọng Tài và Học sinh - Sinh viên** khi tham gia tổ chức, thi đấu hoặc **tự tay tạo mới Gameshow riêng** trên nền tảng Aegis Arena.
+>
+> 💡 *Lưu ý quan trọng: Aegis Arena không bị giới hạn ở 6 trò chơi có sẵn. 6 gameshow truyền hình chỉ là các mẫu tham chiếu ban đầu. Thầy Cô có thể tự tạo vô số gameshow mới thông qua Arena Studio.*
 
 ---
 
@@ -161,28 +163,46 @@ Gameshow thử thách tốc độ phản xạ và sự tỉnh táo trước các
 
 ## 🎨 5. Hướng Dẫn Sử Dụng Arena Studio: Bộ Công Cụ Sáng Tạo Gameshow No-Code (Figma / Canva của Đấu Trường Trí Tuệ)
 
-Nếu bạn là Giáo viên, Bí thư Đoàn trường, Trưởng phòng Đào tạo hoặc Host sự kiện muốn tạo ra một Gameshow độc nhất vô nhị mang bản sắc riêng mà **không cần viết bất kỳ dòng code nào**:
+> 📘 **Xem tài liệu chi tiết từng bước cho giáo viên mầm non & phổ thông**:  
+> 👉 [Cẩm nang Giáo viên Tự Tạo Gameshow Riêng (TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md)](./TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md)
 
-### 5.1. Truy Cập Arena Studio
+Nếu bạn là Giáo viên Mầm non, Tiểu học, THPT, Bí thư Đoàn trường, Trưởng phòng Đào tạo hoặc Host sự kiện muốn tạo ra một Gameshow độc nhất vô nhị mang bản sắc riêng mà **không cần viết bất kỳ dòng code nào**:
+
+### 5.1. Kiến Trúc Cắm Rút Hot-Plug Vô Hạn
+Hệ thống vận hành theo nguyên lý cắm rút mở **Hot-Plug GameshowPlugins**:
+- 6 Gameshow kinh điển (*Olympia, Rung Chuông Vàng, Chiếc Nón Kỳ Diệu, University Challenge, Jeopardy, Nhanh Như Chớp*) là các Plugins chuẩn ban đầu.
+- Khi Thầy Cô tạo ra một thể thức mới trên Studio, hệ thống tự động sinh một `GameshowManifest` động và nạp vào bộ điều phối phòng `ArenaRoomManager` ngay lập tức mà không cần khởi động lại máy chủ!
+
+### 5.2. Truy Cập Arena Studio
 1. Tại Sảnh Đấu Trường (`/arena`), bấm vào nút **"🎨 TỰ TẠO GAMESHOW (ARENA STUDIO)"** hoặc truy cập trực tiếp đường dẫn `/arena/studio`.
 2. Giao diện thiết kế phong cách Figma / Canva sẽ mở ra với 2 khu vực:
    - **Cột Trái (Toolbox)**: Toàn bộ bảng điều khiển cấu hình luật chơi, giao diện, phao cứu trợ.
    - **Cột Phải (Live Simulator Canvas)**: Mô phỏng sàn đấu thời gian thực. Bất kỳ thay đổi nào bên trái đều lập tức cập nhật lên sàn đấu bên phải.
 
-### 5.2. Nạp Nhanh Các Mẫu Bản Quyền (1-Click Presets)
+### 5.3. Nạp Nhanh Các Mẫu Bản Quyền (1-Click Presets)
 Trên thanh công cụ phía trên, bạn có thể nạp ngay các mẫu kinh điển:
 - 🏆 **Ai Là Triệu Phú (Millionaire)**: Thang leo dốc 15 câu hỏi, 3 mốc an toàn, 4 phao cứu sinh (50:50, AI Socrates, Khán giả, Đổi câu).
 - 🔥 **Kẻ Săn Mồi (The Chase)**: Đấu trí rượt đuổi nghẹt thở với Kẻ Săn Mồi AI trên thang dốc thời gian.
 - 🧩 **Đuổi Hình Bắt Chữ (Visual Charades)**: Lật mở từng mảnh ghép để đoán từ ngữ ẩn sau bức tranh.
 - 👥 **Đấu Trí 1 vs 100 (The Mob)**: 1 thí sinh trung tâm đối đầu sàn đấu 100 người loại trực tiếp.
+- 🐻 **Bé Khỏe Bé Ngoan (Mầm non / Tiểu học)**: Vui nhộn, trực quan, điểm hoa điểm thưởng.
 
-### 5.3. Tùy Biến 5 Khối Nguyên Tử Trò Chơi
-1. **Bố Cục Sân Khấu (Layout Shell)**: Chọn giữa *Thang Leo Dốc*, *Bục Thí Sinh 3D*, *Ma Trận Ghế Số*, *Bánh Xe Quay*, *Lật Mảnh Ghép*, hoặc *Ma Trận Chủ Đề*.
-2. **Cơ Chế Tranh Lượt (Contention Mode)**: *Bấm Chuông Microsecond* (ai nhanh được nói), *Đồng Loạt Cùng Làm*, hoặc *Lần Lượt Theo Lượt*.
-3. **Luật Điểm & Sinh Tử**: Bật tùy chọn *Tụt Dốc Về 0 Khi Sai*, *Đột Tử (Sai 1 câu rời sàn)*, hoặc *Cộng Thưởng Tốc Độ*.
+### 5.4. Tùy Biến 5 Khối Nguyên Tử Trò Chơi (Lego Building Blocks)
+1. **Bố Cục Sân Khấu (Layout Shell)**:
+   - `PODIUM`: 4 bục thi đấu 3D cho các đội.
+   - `STEP_LADDER`: Thang leo dốc (hái táo, leo núi, Ai là triệu phú).
+   - `MEGA_GRID`: Sàn đấu 100 - 10,000 ghế ma trận (Rung chuông vàng, The Mob).
+   - `RADIAL_WHEEL`: Bánh xe quay vật lý Canvas 60fps may mắn.
+   - `HIDDEN_TILES`: Lật mở từng mảnh ghép tranh ẩn.
+   - `TOPIC_MATRIX`: Ma trận 30 ô điểm số đa chủ đề kiểu Mỹ.
+2. **Cơ Chế Tranh Lượt (Contention Mode)**:
+   - `BUZZER_FASTEST`: Bấm chuông cướp lượt siêu tốc $<2\text{ms}$ RAM.
+   - `SIMULTANEOUS_ALL`: Cả lớp / hội trường cùng chọn đáp án đồng loạt.
+   - `TURN_ROUND_ROBIN`: Lần lượt từng đội / từng bạn.
+3. **Luật Điểm & Sinh Tử**: Bật tùy chọn *Tụt Dốc Về 0 Khi Sai*, *Đột Tử (Sai 1 câu rời sàn)*, hoặc *Cộng Thưởng Tốc Độ / Chuỗi Đúng*.
 4. **Phao Cứu Sinh (Lifelines)**: Tích chọn bật/tắt các quyền trợ giúp như 50:50, Gia sư AI Socrates, Thăm dò khán giả, Thầy cô ném bóng cứu trợ.
 
-### 5.4. Xuất Bản & Khởi Chạy
+### 5.5. Xuất Bản & Khởi Chạy
 1. Bấm nút **"XUẤT BẢN GAMESHOW ➔"** ở góc phải màn hình.
 2. Hệ thống sẽ lưu trữ và hiển thị Gameshow mới ngay lập tức trên Sảnh Đấu Trường (`/arena`) trong danh mục **"Đấu Trường Tự Thiết Kế"**.
 3. Bạn có thể bấm **"VÀO ĐẤU TRƯỜNG ➔"** để tạo phòng thi và mời thí sinh tham gia tranh tài ngay lập tức!

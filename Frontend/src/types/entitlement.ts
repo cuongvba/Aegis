@@ -118,8 +118,8 @@ export const FEATURE_METADATA_CATALOG: Record<FeatureKeyType, FeatureMetadata> =
   },
   [FeatureKey.ArenaGameshow]: {
     key: FeatureKey.ArenaGameshow,
-    name: 'Đấu Trường Live Gameshow (6 Games)',
-    description: 'Tổ chức thi tương tác trực tiếp: Rung chuông vàng, Đấu trường 100, Kahoot live.',
+    name: 'Đấu Trường Live Gameshow (Hot-Plug Plugins)',
+    description: 'Tổ chức thi đấu tương tác trực tiếp với hệ GameshowPlugins cắm rút không giới hạn (Olympia, Rung Chuông Vàng, Chiếc Nón Kỳ Diệu, Triệu Phú, The Chase, The Mob 100...) và Gameshow Studio tùy biến.',
     requiredPlan: 'Professional',
     badge: 'PRO',
   },

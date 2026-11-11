@@ -13,21 +13,33 @@ Phân hệ Đấu trường được thiết kế nhằm mô phỏng và số h�
 
 ---
 
-## 2. Danh Sách 6 Gameshow Đã Tích Hợp Sẵn
+## 2. Kiến Trúc Cắm Rút Mở (Hot-Plug Architecture) & Các Mẫu Tích Hợp Sẵn
 
-```
-[Sảnh Đấu Trường: ArenaHubPage]
-  ├── 🏛️ Olympia Supreme (4 Vòng, 4 Bục 3D, VCNV 80đ, Ngôi Sao Hy Vọng x2)
-  ├── 🔔 Rung Chuông Vàng (Mega-Grid 100 Ghế Ma Trận, Bảng Mica, Thầy Cô Cứu Trợ)
-  ├── 🎡 Chiếc Nón Kỳ Diệu (Vòng Quay Canvas 60fps Quán Tính, Lật Ô Chữ 3D)
-  ├── 🎓 University Challenge (Đối Kháng 4v4 Liên Trường, Starter 10đ, Bonus 15đ)
-  ├── 🇺🇸 Jeopardy! American Matrix (30 Ô Ma Trận Điểm, Quy Tắc Câu Hỏi Ngược)
-  └── ⚡ Nhanh Như Chớp (Thang Leo Dốc 10 Bậc, Đúng Lên 1, Sai Tụt Về 0)
-```
+Aegis Arena vận hành theo nguyên lý **Open-Closed Principle (OCP)**: Lõi hệ thống đóng với việc sửa đổi nhưng mở vô hạn cho việc mở rộng.
+- **6 Gameshow Tham Chiếu Kinh Điển (Built-in Reference Plugins)**:
+  ```
+  [Sảnh Đấu Trường: ArenaHubPage]
+    ├── 🏛️ Olympia Supreme (4 Vòng, 4 Bục 3D, VCNV 80đ, Ngôi Sao Hy Vọng x2)
+    ├── 🔔 Rung Chuông Vàng (Mega-Grid 100 Ghế Ma Trận, Bảng Mica, Thầy Cô Cứu Trợ)
+    ├── 🎡 Chiếc Nón Kỳ Diệu (Vòng Quay Canvas 60fps Quán Tính, Lật Ô Chữ 3D)
+    ├── 🎓 University Challenge (Đối Kháng 4v4 Liên Trường, Starter 10đ, Bonus 15đ)
+    ├── 🇺🇸 Jeopardy! American Matrix (30 Ô Ma Trận Điểm, Quy Tắc Câu Hỏi Ngược)
+    └── ⚡ Nhanh Như Chớp (Thang Leo Dốc 10 Bậc, Đúng Lên 1, Sai Tụt Về 0)
+  ```
+- **Hệ Động Cơ Cắm Nóng `DynamicArenaGamePlugin` (No-Code Hot-Plug Engine)**:
+  - Cho phép giáo viên mọi cấp học (kể cả mầm non) tự tạo ra các thể thức gameshow hoàn toàn mới thông qua **Arena Studio** (`/arena/studio`).
+  - Khi một template gameshow được xuất bản, `ArenaRoomManager` tự động bọc thành một instance của `DynamicArenaGamePlugin` và cắm nóng vào bộ điều phối phòng mà **không cần khởi động lại ứng dụng hay biên dịch lại mã nguồn**.
+  - Các thể thức mẫu động đã được cấu hình sẵn trong `_dynamicTemplates`:
+    - 🏆 *Ai Là Triệu Phú (`TRIEU_PHU_AI`)*
+    - 🔥 *Kẻ Săn Mồi (`THE_CHASE`)*
+    - 🧩 *Đuổi Hình Bắt Chữ (`DUOI_HINH_BAT_CHU`)*
+    - 👥 *Đấu Trí 1 vs 100 (`DAU_TRI_100`)*
+    - 🐻 *Các Gameshow lớp học tự tạo của Giáo viên*
 
 Chi tiết mã nguồn của các plugin được đặt tại:
-- Backend: [`ArenaGamePlugins.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Arena/ArenaGamePlugins.cs)
-- Frontend: [`Frontend/src/pages/arena/components/`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/)
+- Backend: [`ArenaGamePlugins.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Arena/ArenaGamePlugins.cs) & [`DynamicArenaGamePlugin.cs`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Backend/src/AegisQuiz.Infrastructure/Arena/DynamicArenaGamePlugin.cs)
+- Frontend: [`DynamicUniversalArenaView.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/components/DynamicUniversalArenaView.tsx) & [`ArenaStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/Frontend/src/pages/arena/ArenaStudioPage.tsx)
+- Cẩm nang hướng dẫn giáo viên: [`TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md`](file:///d:/Cuong/DuAn/mybank/AegisQuiz/docs/manuals/TEACHER_ARENA_GAMESHOW_STUDIO_GUIDE.md)
 
 ---
 
