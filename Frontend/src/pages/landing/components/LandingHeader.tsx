@@ -26,6 +26,7 @@ export function LandingHeader() {
 
   const navLinks = [
     { label: t('nav.features'),     href: '#features' },
+    { label: t('nav.cognitiveTriad', 'Hội Đồng AI'), href: '#cognitive-triad' },
     { label: t('nav.battleMatrix'), href: '#battle-matrix' },
     { label: t('nav.gameshows'),    href: '#gameshows' },
     { label: t('nav.pricing'),      href: '#pricing' },

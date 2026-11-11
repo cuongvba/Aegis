@@ -208,7 +208,7 @@ namespace Aegis.API.Controllers
             return fallback;
         }
 
-        private record DocChunk(string Id, string SourceTitle, string[] Keywords, string Content);
+        private record DocChunk(string Id, string SourceTitle, string[] Keywords, string DirectAnswer, string Content);
 
         private static List<DocChunk> RetrieveRelevantDocChunks(string question, TenantBrandingDto branding, bool isEn)
         {
@@ -216,104 +216,182 @@ namespace Aegis.API.Controllers
             var catalog = new List<DocChunk>
             {
                 new(
+                    "student-access-no-account",
+                    isEn ? "Student Participation & Zero-Account Access" : "Quy trình Học sinh & Không cần Tài khoản",
+                    new[] { "học sinh", "học viên", "thi", "làm bài", "tài khoản", "đăng nhập", "quét qr", "mã pin", "zalo", "không cần", "điện thoại", "student", "join", "pin", "login", "register" },
+                    isEn
+                        ? "Students do **NOT** need to create an account or remember a password! They can join any exam instantly via a 6-digit PIN or a direct QR/Zalo link on their phones or computers."
+                        : "Học sinh hoàn toàn **KHÔNG CẦN đăng ký tài khoản hay nhớ mật khẩu**! Chỉ cần quét **Mã QR / bấm Link Zalo** hoặc nhập **Mã PIN 6 số** trên điện thoại/máy tính là làm bài được ngay lập tức.",
+                    "**Quy trình Trải nghiệm cho Học sinh & Phụ huynh**:\n" +
+                    "1. **Không rào cản (Zero-Friction)**: Giáo viên gửi link qua nhóm Zalo lớp hoặc chiếu mã QR trên màn hình. Học sinh chỉ cần mở camera quét hoặc bấm vào link.\n" +
+                    "2. **Chỉ cần nhập Tên**: Học sinh chỉ cần điền Họ và tên (hoặc Số báo danh) là bắt đầu làm bài thi/luyện tập ngay.\n" +
+                    "3. **Tự động lưu bài & Chống mất mạng**: Mọi câu trả lời được lưu cục bộ trên trình duyệt (`IndexedDB / RAM Cache`). Nếu bị rớt mạng hoặc tắt nhầm ứng dụng, khi mở lại học sinh tiếp tục làm bài bình thường không bị mất dữ liệu.\n" +
+                    "4. **Báo cáo kết quả tức thì**: Ngay khi nộp bài, học sinh thấy ngay điểm số, phân tích lỗi sai và lời giải thích chi tiết theo từng bước."
+                ),
+                new(
+                    "export-import-formats",
+                    isEn ? "Exam Import/Export & Transpiler Standard (QTI, Moodle, Word, PDF)" : "Xuất nhập Đề thi & Chuẩn Chuyển đổi (Word, PDF, QTI, Moodle)",
+                    new[] { "xuất", "nhập", "word", "pdf", "docx", "qti", "moodle", "gift", "in", "tải về", "chuyển đổi", "export", "import", "download", "print" },
+                    isEn
+                        ? "Aegis supports seamless bi-directional import and export across Microsoft Word (.docx), PDF, QTI 3.0, Moodle XML, and GIFT standards."
+                        : "Aegis hỗ trợ toàn diện việc **Nhập và Xuất đề thi 2 chiều** theo các chuẩn quốc tế và phổ biến: **Microsoft Word (.docx)**, **PDF chất lượng in ấn**, **QTI 3.0**, **Moodle XML** và **GIFT**.",
+                    "**Năng lực Xuất/Nhập & Tương thích Đa nền tảng (`UniversalExamTranspilerService`)**:\n" +
+                    "1. **Nhập đề Word siêu tốc**: Kéo thả file `.docx` chứa công thức MathType phức tạp, hệ thống tự động bóc tách và tạo ngân hàng câu hỏi trong `<1.2s`.\n" +
+                    "2. **Xuất đề Word & PDF chuẩn Bộ GD&ĐT**: Xuất đề thi kèm ma trận, bảng đáp án, phiếu trả lời trắc nghiệm và lời giải chi tiết định dạng chuẩn để in ấn trực tiếp.\n" +
+                    "3. **Tương thích Hệ thống LMS (Moodle, Canvas, Blackboard)**: Xuất tệp gói chuẩn `QTI 3.0` hoặc `Moodle XML` để nhập sang bất kỳ hệ thống quản lý học tập nào mà không bị lỗi font hay mất công thức."
+                ),
+                new(
+                    "pricing-plans-fees",
+                    isEn ? "Pricing, Subscriptions & VietQR Payment" : "Bảng giá, Gói cước & Thanh toán VietQR",
+                    new[] { "giá", "bảng giá", "chi phí", "bao nhiêu", "tiền", "gói", "thanh toán", "vietqr", "mua", "miễn phí", "cước", "price", "pricing", "cost", "fee", "free", "pay" },
+                    isEn
+                        ? "Aegis offers a 100% Free Lifetime Tier for individual learners, an ultra-affordable Zen Creator Tier for teachers at ~25,000 VND/month, and tailored Enterprise plans."
+                        : "Aegis cung cấp chính sách giá vô cùng ưu việt: **Miễn phí trọn đời (100% Free)** cho Người học cá nhân, **Gói Giáo viên Zen Creator chỉ 25.000đ/tháng**, và các gói Enterprise linh hoạt cho Trường học / Ngân hàng.",
+                    "**Chi tiết Chính sách Gói cước & Cổng thanh toán Aegis Global Treasury**:\n" +
+                    "1. **Gói Miễn Phí (Free Learner)**: Luyện thi không giới hạn, tham gia đấu trường Gameshow, xem lời giải chi tiết, không bao giờ thu phí học sinh.\n" +
+                    "2. **Gói Giáo viên Sáng tạo (Zen Creator — 25.000đ/tháng)**: Không giới hạn ngân hàng câu hỏi, bóc tách MathType OLE không giới hạn, phát đề QR Zalo, ghi âm giọng cô giáo.\n" +
+                    "3. **Thanh toán VietQR Napas 24/7 tức thì**: Quét mã QR chuyển khoản tự động kích hoạt gói trong **`<2 giây`** mà không cần liên kết thẻ tín dụng.\n" +
+                    "4. **Gói Doanh nghiệp & Ngân hàng (Enterprise)**: Độc lập máy chủ On-Premise/Private Cloud, bảo mật RLS, xác thực SSO/Keycloak, tích hợp cổng thanh toán quốc tế (Stripe, Web3 Polygon)."
+                ),
+                new(
                     "zen-studio",
-                    "Cẩm nang Giáo viên Zen Studio (TEACHER_CREATOR_ZEN_STUDIO_GUIDE.md)",
-                    new[] { "zen", "giáo viên", "mầm non", "tiểu học", "tạo đề", "3 chạm", "thu âm", "giọng", "zalo", "qr", "học sinh", "không cần tài khoản", "teacher", "voice", "preschool", "studio" },
-                    "**Quy trình 3 Chạm / 10 Giây tại Zen Studio (`/creator/studio`, `/creator/questions`)**:\n" +
-                    "1. **Tạo Chủ đề & Câu hỏi Đa phương tiện**: Giáo viên (kể cả giáo viên mầm non, tiểu học) có thể bấm nút `🎙️ Thu âm giọng cô` ngay trên trình duyệt để đọc câu hỏi cho bé chưa biết chữ, dán trực tiếp hình ảnh minh họa (`Ctrl+V`), hoặc nhúng Video/YouTube.\n" +
-                    "2. **Phát hành Phòng thi Không Tài Khoản (Zero-Account QR/Zalo)**: Chỉ cần bấm `🚀 Phát đề ngay`, hệ thống sinh mã PIN 6 số và **Mã QR / Link Zalo**. Học sinh hoặc phụ huynh chỉ cần quét QR trên điện thoại, nhập tên là làm bài ngay lập tức mà **không cần đăng ký tài khoản hay nhớ mật khẩu**.\n" +
-                    "3. **Chủ quyền Học liệu Cá nhân**: Mỗi giáo viên quản lý cây Chủ đề (`ZenTopics`) và Ngân hàng Câu hỏi (`ZenQuestions`) độc lập của riêng mình kèm bảng theo dõi tiến độ đội nhóm (`/creator/team`)."
+                    isEn ? "Teacher Zen Studio Guide (3-Touch / 10-Second Workflow)" : "Cẩm nang Giáo viên Zen Studio (Quy trình 3 Chạm / 10 Giây)",
+                    new[] { "zen", "giáo viên", "mầm non", "tiểu học", "tạo đề", "3 chạm", "thu âm", "giọng", "cô", "teacher", "voice", "preschool", "studio" },
+                    isEn
+                        ? "Teacher Zen Studio empowers educators—including preschool and elementary teachers—to create and publish rich multimedia exams in just 3 touches and 10 seconds."
+                        : "Không gian Sáng tạo **Zen Studio** cho phép mọi Giáo viên (kể cả giáo viên mầm non, tiểu học không rành công nghệ) tạo và phát đề thi đa phương tiện chỉ với **3 chạm trong vòng 10 giây**.",
+                    "**Quy trình 3 Chạm / 10 Giây tại Zen Studio (`/creator/studio`)**:\n" +
+                    "1. **Chạm 1 — Tạo câu hỏi đa phương tiện**: Giáo viên bấm `🎙️ Thu âm giọng cô` ngay trên trình duyệt để đọc câu hỏi cho bé chưa biết chữ, dán trực tiếp ảnh minh họa (`Ctrl+V`), hoặc chèn video sinh động.\n" +
+                    "2. **Chạm 2 — Chọn đáp án & Lời giải**: Chọn đáp án đúng chỉ bằng 1 cú nhấp chuột hoặc dán cả bảng đáp án từ Word.\n" +
+                    "3. **Chạm 3 — Bấm `🚀 Phát đề ngay`**: Hệ thống tức thì tạo mã PIN 6 số và **Mã QR / Link Zalo**. Giáo viên chỉ cần gửi link vào nhóm lớp là học sinh vào thi ngay."
                 ),
                 new(
                     "mathtype-clipboard",
-                    "Chuẩn Giải Mã Nhị Phân MathType OLE & Bảng Word (DOCX/MTEF v5 Standard)",
-                    new[] { "mathtype", "word", "excel", "công thức", "toán", "latex", "bảng", "ctrl+v", "dán", "ảnh", "png", "ole", "mtef", "formula", "table", "paste", "markdown" },
-                    "**Công nghệ Giải mã 3 Tầng MathType OLE & Bảng Biểu Thông Minh (`Ctrl+V`)**:\n" +
-                    "1. **Chống biến công thức thành ảnh PNG nặng nề**: Khi copy đối tượng `MathType 6.0/7.0 (Equation.DSMT4)` từ Microsoft Word, Aegis tự động bóc tách luồng nhị phân `RTF \\objdata (MTEF v5 AST)` và `WMZ/WMF` để dịch thẳng sang **Vector LaTeX chuẩn xác trong `<2ms`**, giảm **99.2% dung lượng Database** (từ 45KB ảnh PNG xuống ~60 bytes LaTeX sắc nét tuyệt đối).\n" +
-                    "2. **Bảng Word/Excel sang Markdown Table**: Copy bảng biểu từ Word hoặc Excel và nhấn `Ctrl+V`, hệ thống tự động chuyển thành bảng Markdown (`| Cột A | Cột B |`) hỗ trợ cả công thức Toán học bên trong từng ô.\n" +
-                    "3. **Nút `✨ Đổi Ảnh -> LaTeX`**: Ngay cả với ảnh chụp công thức toán học phẳng, thanh công cụ `SmartRichMediaToolbar` sẽ tự nhận diện và cho phép chuyển thành mã LaTeX chỉ bằng 1 cú nhấp chuột."
+                    isEn ? "MathType OLE & Word Formula Binary Transpiler (<2ms)" : "Giải Mã Nhị Phân MathType OLE & Công Thức Word (<2ms)",
+                    new[] { "mathtype", "công thức", "toán", "latex", "bảng", "ctrl+v", "dán", "ảnh", "ole", "mtef", "formula", "table", "paste", "wmf" },
+                    isEn
+                        ? "Aegis features proprietary binary stream decoding (MTEF v5 / WMF) that converts Word MathType equations directly to crisp LaTeX in <2ms, slashing database footprint by 99.2%."
+                        : "Aegis sở hữu công nghệ độc quyền giải mã luồng nhị phân `MathType OLE (MTEF v5)` từ Word sang **Vector LaTeX sắc nét trong `<2ms`**, giảm **99.2% dung lượng lưu trữ** so với việc chụp ảnh PNG.",
+                    "**Công nghệ Xử lý Công thức & Bảng biểu Đỉnh cao**:\n" +
+                    "1. **Chống vỡ hạt & Giảm 99.2% dung lượng**: Copy công thức MathType từ Word nhấn `Ctrl+V`, hệ thống dịch thẳng sang LaTeX (~60 bytes thay vì file ảnh 45KB), hiển thị mượt mà 60fps trên mọi thiết bị.\n" +
+                    "2. **Dán Bảng Word/Excel sang Markdown**: Tự động chuyển đổi bảng tính nhiều cột thành bảng Markdown chuẩn hỗ trợ công thức Toán học bên trong từng ô.\n" +
+                    "3. **Công cụ Chuyển Ảnh sang LaTeX (OCR AI)**: Với các ảnh công thức chụp sẵn, thanh công cụ cho phép nhận diện và chuyển hóa thành mã LaTeX chỉ với 1 click."
                 ),
                 new(
                     "ai-swarm-symposium",
-                    "Kiến trúc Hệ Ba Ngôi Nhận Thức AI (Epistemic Triad: UAR -> WPSE -> Symposium)",
-                    new[] { "ai", "bầy sói", "wolf", "symposium", "hội thảo", "ảo giác", "hallucination", "notebook", "sci", "soạn câu hỏi", "copilot", "swarm" },
-                    "**Hệ Ba Ngôi Nhận Thức AI (Aegis Epistemic Triad) — Chống Ảo Giác Tuyệt Đối**:\n" +
-                    "1. **Universal AI Router (UAR)**: Định tuyến thông minh đa mô hình (Gemini 2.5, Claude 3.5, GPT-4o, DeepSeek-R1, Groq) kèm cơ chế thác lũ khóa API (`BYOK cá nhân -> Khóa Tổ chức -> Quỹ Cộng đồng`).\n" +
-                    "2. **Wolf Pack Swarm Engine (WPSE)**: Bầy sói đa tác tử độc lập cùng giải và phản biện chéo câu hỏi, tính toán **Chỉ số Đồng thuận Bầy sói (`SCI = 98.4%`)** trước khi duyệt.\n" +
-                    "3. **Đại Hội Thảo 6 Pha (`Universal Symposium`) & `AegisNotebook Sovereign`**: Đối chiếu đa nguồn tài liệu PDF/Word, tự động phát hiện xung đột pháp lý/quy trình và sinh câu hỏi tình huống vận dụng cao (Bloom Bậc 5-6)."
+                    isEn ? "Epistemic Triad AI Swarm & Hallucination Prevention" : "Kiến trúc Hệ Ba Ngôi AI Swarm & Chống Ảo Giác",
+                    new[] { "ai", "bầy sói", "wolf", "symposium", "hội thảo", "ảo giác", "hallucination", "notebook", "sci", "copilot", "swarm", "tác tử" },
+                    isEn
+                        ? "Aegis prevents AI hallucinations through the Epistemic Triad: Universal AI Router (UAR) -> Wolf Pack Swarm Engine (WPSE with 98.4% Consensus) -> 6-Phase Symposium."
+                        : "Aegis triệt tiêu hoàn toàn hiện tượng AI ảo giác (Hallucination) nhờ **Hệ Ba Ngôi Nhận Thức (Epistemic Triad)**: Universal AI Router $\\rightarrow$ Wolf Pack Swarm $\\rightarrow$ Đại Hội Thảo 6 Pha.",
+                    "**Cơ chế Phản biện Đa tác tử & Thẩm định Độc lập**:\n" +
+                    "1. **Universal AI Router (UAR)**: Tự động điều phối yêu cầu đến mô hình tối ưu nhất theo nguyên lý Pareto FinOps.\n" +
+                    "2. **Wolf Pack Swarm Engine (WPSE)**: Nhiều tác tử AI độc lập cùng giải và phản biện chéo lời giải, tính toán **Chỉ số Đồng thuận Bầy sói (`SCI = 98.4%`)** trước khi duyệt câu hỏi vào ngân hàng.\n" +
+                    "3. **AegisNotebook Sovereign & Đại Hội Thảo**: Đối chiếu đa nguồn tài liệu, tự động phát hiện xung đột và tạo câu hỏi tình huống tư duy bậc cao (Bloom 5-6)."
                 ),
                 new(
                     "irt-psychometrics",
-                    "Tâm Trắc Học Quốc Tế IRT 3-PL, DKT, FSRS v5 & 9 Dạng Câu Hỏi GDPT 2025",
-                    new[] { "irt", "chấm điểm", "đúng sai", "lũy tiến", "9 dạng", "gdpt", "2025", "thích ứng", "cat", "fsrs", "dkt", "psychometrics", "scoring", "true false" },
-                    "**Đo Lường Tâm Trắc Học IRT 3-PL & 9 Dạng Câu Hỏi Hiện Đại**:\n" +
-                    "1. **9 Dạng Câu hỏi Chuẩn Quốc tế & GDPT 2025**: Trắc nghiệm 1 lựa chọn, Nhiều lựa chọn, **Đúng/Sai 4 Mệnh đề (chấm điểm lũy tiến tự động: đúng 1 ý = `0.1đ`, 2 ý = `0.25đ`, 3 ý = `0.5đ`, 4 ý = `1.0đ`)**, Trả lời ngắn, Điền khuyết, Ghép đôi (Matching), Sắp xếp thứ tự, Tình huống lâm sàng và Tự luận AI chấm.\n" +
-                    "2. **Mô hình IRT 3-PL ($a, b, c$) & CAT**: Ước lượng năng lực thực chất $\\theta$ dựa trên độ phân biệt ($a$), độ khó ($b$) và xác suất đoán mò ($c$).\n" +
-                    "3. **Deep Knowledge Tracing (DKT) & FSRS v5**: Theo dõi lỗ hổng kiến thức theo thời gian thực và lập lịch ôn tập ngắt quãng tối ưu trí nhớ dài hạn."
+                    isEn ? "IRT 3-PL Psychometrics & 9 Ministry-Standard Question Types" : "Tâm Trắc Học IRT 3-PL & 9 Dạng Đề GDPT 2025",
+                    new[] { "irt", "chấm điểm", "đúng sai", "lũy tiến", "9 dạng", "gdpt", "2025", "thích ứng", "cat", "fsrs", "dkt", "psychometrics", "scoring" },
+                    isEn
+                        ? "Aegis implements the IRT 3-PL model (a, b, c parameters) and fully automates progressive scoring for 9 modern question types compliant with the 2025 National Education Standards."
+                        : "Aegis là nền tảng tiên phong chuẩn hóa **Mô hình Tâm trắc học IRT 3-PL** ($a, b, c$) và tự động hóa toàn bộ việc chấm điểm lũy tiến cho **9 dạng câu hỏi hiện đại chuẩn GDPT 2025**.",
+                    "**Chuẩn Đánh giá Năng lực Thực chất & Chấm điểm Tự động**:\n" +
+                    "1. **Dạng Đúng/Sai 4 Mệnh đề**: Chấm điểm lũy tiến chính xác tuyệt đối: đúng 1 ý = `0.1đ`, đúng 2 ý = `0.25đ`, đúng 3 ý = `0.5đ`, đúng cả 4 ý = `1.0đ`.\n" +
+                    "2. **Mô hình Khảo thí Thích ứng CAT (IRT 3-PL)**: Độ khó câu hỏi tự động co giãn theo năng lực thực chất của từng thí sinh, ngăn chặn đoán mò ($c$).\n" +
+                    "3. **Thuật toán FSRS v5 & Deep Knowledge Tracing**: Dự báo chính xác điểm quên và lập lộ trình ôn tập cá nhân hóa."
                 ),
                 new(
                     "gameshow-arena",
-                    "Đấu Trường 6 Gameshow Truyền Hình Thời Gian Thực (<2ms RAM Buzzer)",
-                    new[] { "gameshow", "arena", "olympia", "rung chuông vàng", "chiếc nón", "jeopardy", "nhanh như chớp", "chuông", "buzzer", "thi đấu" },
-                    "**Đấu Trường Aegis Arena (`/arena`) — 6 Gameshow Truyền Hình Kinh Điển**:\n" +
-                    "1. **6 Chế độ Thi đấu**: *Đường Lên Đỉnh Olympia (4 vòng chuẩn truyền hình)*, *Chiếc Nón Kỳ Diệu (Vòng quay vật lý 60fps)*, *Rung Chuông Vàng*, *Jeopardy! Ma Trận 30 Ô*, *University Challenge (4 đấu 4)* và *Nhanh Như Chớp (10 nấc thang)*.\n" +
-                    "2. **Trọng tài Buzzer RAM `<2ms`**: Xử lý tranh chuông bằng khóa nguyên tử trên bộ nhớ RAM với độ trễ dưới 2 mili-giây, công bằng tuyệt đối cho hàng trăm thí sinh cùng lúc."
+                    isEn ? "Aegis Arena: 6 TV Gameshows with <2ms In-Memory Buzzer" : "Đấu Trường Aegis Arena: 6 Gameshow Truyền Hình & Buzzer <2ms",
+                    new[] { "gameshow", "arena", "olympia", "rung chuông vàng", "chiếc nón", "jeopardy", "nhanh như chớp", "chuông", "buzzer", "đấu trường", "game" },
+                    isEn
+                        ? "Aegis Arena provides 6 built-in TV gameshow modes with sub-2ms in-memory buzzer arbitration, plus an infinite plugin architecture for custom formats."
+                        : "Đấu trường **Aegis Arena (`/arena`)** tích hợp sẵn **6 Gameshow truyền hình kinh điển** với công nghệ tranh chuông RAM cực nhanh dưới 2 mili-giây, cùng kiến trúc Plug-in cho phép mở rộng không giới hạn.",
+                    "**Các Chế độ Gameshow & Công nghệ Trọng tài Buzzer**:\n" +
+                    "1. **6 Gameshow Tích hợp Sẵn**: *Đường Lên Đỉnh Olympia (4 vòng chuẩn)*, *Chiếc Nón Kỳ Diệu (Vòng quay 60fps)*, *Rung Chuông Vàng*, *Jeopardy! Ma trận 30 ô*, *University Challenge*, và *Nhanh Như Chớp (10 nấc thang)*.\n" +
+                    "2. **Khóa Nguyên tử Tranh chuông `<2ms`**: Trọng tài điện tử phân xử ai bấm chuông trước bằng bộ nhớ RAM với độ trễ `<2ms`, đảm bảo công bằng tuyệt đối cho hàng nghìn người cùng xem.\n" +
+                    "3. **Mở rộng Không giới hạn**: Hỗ trợ cộng đồng tự tạo và tích hợp gameshow riêng thông qua hệ thống Plugin Engine."
+                ),
+                new(
+                    "security-banking-compliance",
+                    isEn ? "Bank-Grade Security, Multi-Tenancy & Cryptographic Audit" : "Bảo Mật Cấp Ngân Hàng, Phân Quyền & Kiểm Toán Mật Mã",
+                    new[] { "bảo mật", "ngân hàng", "an ninh", "rls", "pki", "merkle", "totp", "iso", "pháp lý", "security", "privacy", "bank", "compliance" },
+                    isEn
+                        ? "Engineered for Banking and Enterprise compliance, Aegis enforces 3-tier data isolation (PostgreSQL RLS), PKI USB Token signatures, and tamper-proof SHA-256 Merkle audit chains."
+                        : "Được thiết kế đáp ứng tiêu chuẩn khắt khe của **Ngân hàng & Tập đoàn Đa quốc gia**, Aegis bảo vệ dữ liệu bằng **cách ly 3 tầng (PostgreSQL RLS)**, chữ ký số **PKI USB Token**, và nhật ký **SHA-256 Merkle Chain** chống can thiệp.",
+                    "**Hạ Tầng Bảo Mật & Pháp Lý Chuẩn Quốc Tế**:\n" +
+                    "1. **Cô lập Đa Khách thuê 3 Tầng**: Phân tách dữ liệu triệt để từ tầng Middleware, EF Global QueryFilter đến tận hàng dữ liệu PostgreSQL Row-Level Security (RLS).\n" +
+                    "2. **Kiểm toán Bất biến SHA-256 Merkle Chain**: Mọi lượt nộp bài, chỉnh sửa điểm số đều được băm theo chuỗi Merkle Tree, không một ai (kể cả Quản trị viên hệ thống) có thể sửa lén dữ liệu.\n" +
+                    "3. **Bảo mật Đăng nhập 2 Lớp (TOTP 2FA / SSO Keycloak)**: Tích hợp xác thực hai yếu tố và hệ thống quản trị định danh doanh nghiệp chuẩn OIDC/SAML2."
+                ),
+                new(
+                    "mobile-devices-support",
+                    isEn ? "Mobile & Multi-Device Compatibility" : "Tương Thích Thiết Bị & Điện Thoại Di Động",
+                    new[] { "điện thoại", "mobile", "app", "thiết bị", "máy tính bảng", "ipad", "android", "ios", "chạy trên", "cài đặt", "device", "phone", "tablet" },
+                    isEn
+                        ? "Aegis is a high-performance Progressive Web Application (PWA) that runs flawlessly across all smartphones (iOS, Android), tablets, laptops, and smart TVs without mandatory app installation."
+                        : "Aegis được xây dựng theo chuẩn **Progressive Web App (PWA) hiệu năng cao**, hoạt động mượt mà trên **100% các loại điện thoại thông minh (iPhone, Android)**, máy tính bảng iPad, laptop và cả màn hình tivi tương tác mà **không cần cài đặt ứng dụng phức tạp**.",
+                    "**Khả năng Tương thích Thiết bị Tuyệt đối**:\n" +
+                    "1. **Chạy trực tiếp trên Trình duyệt**: Học sinh chỉ cần mở Safari, Chrome, Zalo Browser hay Cốc Cốc là làm bài thi và bấm chuông gameshow mượt mà với tốc độ 60fps.\n" +
+                    "2. **Không tốn dung lượng bộ nhớ máy**: Giao diện siêu nhẹ, tải trang đầu tiên dưới 150KB gzip, tối ưu hóa cho cả mạng 3G/4G yếu.\n" +
+                    "3. **Hỗ trợ Chạm vuốt & Cảm ứng**: Các thao tác kéo thả ghép đôi, vẽ hình hình học, bấm chuông tranh quyền trả lời được thiết kế tối ưu riêng cho ngón tay người dùng."
                 ),
                 new(
                     "organization-contact-legal",
-                    "Hồ Sơ Tổ Chức, Liên Hệ, Bảo Mật & Pháp Lý Chính Thức (Quản trị bởi Admin)",
-                    new[] { "tổ chức", "liên hệ", "pháp lý", "bảo mật", "điều khoản", "hotline", "email", "địa chỉ", "admin", "ngân hàng", "bảng giá", "chi phí", "vietqr", "contact", "legal", "privacy", "terms", "about", "price", "pricing" },
-                    $"**Thông Tin Tổ Chức, Liên Hệ & Pháp Lý Chính Thức (Cập nhật trực tiếp từ Admin `/admin/white-label`)**:\n" +
-                    $"- **Đơn vị vận hành**: {branding.OrganizationName}\n" +
-                    $"- **Trụ sở / Địa chỉ**: {branding.HeadquartersAddress}\n" +
-                    $"- **Hotline Hỗ trợ 24/7**: `{branding.SupportHotline}`\n" +
-                    $"- **Email Liên hệ & Hợp tác Enterprise**: `{branding.SupportEmail}`\n" +
-                    $"- **Chứng nhận An ninh & Pháp lý**: `{branding.TaxOrRegistrationCode}` ({branding.WorkingHours})\n" +
-                    $"- **Bảo mật Cấp Ngân hàng**: Cô lập dữ liệu 3 tầng (`Middleware -> EF Global Filter -> PostgreSQL RLS`), chữ ký số `PKI USB Token`, nhật ký bất biến `SHA-256 Merkle Chain`, xác thực `TOTP 2FA`.\n" +
-                    $"- **Chính sách Gói cước Linh hoạt**: Miễn phí trọn đời cho Người học cá nhân; Gói Giáo viên Zen Creator (`25.000đ/tháng` qua VietQR Napas 24/7); Gói Enterprise tùy chỉnh riêng cho Ngân hàng, Tập đoàn & Trường Đại học."
+                    isEn ? "Organization Identity & Live Contact" : "Thông Tin Tổ Chức & Kênh Hỗ Trợ Trực Tiếp",
+                    new[] { "liên hệ", "tổ chức", "hotline", "email", "địa chỉ", "trụ sở", "công ty", "đơn vị", "hỗ trợ", "gặp ai", "ở đâu", "contact", "support", "address", "phone", "email" },
+                    isEn
+                        ? $"Aegis Global operates 24/7 technical and architectural support. Contact our enterprise headquarters at {branding.SupportHotline} or {branding.SupportEmail}."
+                        : $"Hệ sinh thái Aegis Global duy trì trung tâm hỗ trợ kỹ thuật và kiến trúc 24/7/365. Quý khách có thể liên hệ trực tiếp qua Hotline `{branding.SupportHotline}` hoặc Email `{branding.SupportEmail}`.",
+                    $"**Thông Tin Đơn Vị Quản Trị & Kênh Liên Hệ Trực Tiếp**:\n" +
+                    $"- **Đơn vị chủ quản**: {branding.OrganizationName}\n" +
+                    $"- **Trụ sở chính**: {branding.HeadquartersAddress}\n" +
+                    $"- **Hotline Kỹ thuật & AI 24/7**: `{branding.SupportHotline}`\n" +
+                    $"- **Email Tiếp nhận Yêu cầu**: `{branding.SupportEmail}`\n" +
+                    $"- **Tiêu chuẩn Tuân thủ**: `{branding.TaxOrRegistrationCode}` ({branding.WorkingHours})"
                 )
             };
 
-            // Đọc bổ sung từ file tài liệu thực tế trên đĩa nếu có
-            try
-            {
-                var guidePath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "docs", "manuals", "TEACHER_CREATOR_ZEN_STUDIO_GUIDE.md");
-                if (System.IO.File.Exists(guidePath))
-                {
-                    var text = System.IO.File.ReadAllText(guidePath);
-                    if (text.Length > 1500) text = text.Substring(0, 1500);
-                    catalog.Add(new DocChunk(
-                        "live-zen-manual-file",
-                        "Tệp Cẩm Nang Giáo Viên Zen Studio (docs/manuals/TEACHER_CREATOR_ZEN_STUDIO_GUIDE.md)",
-                        new[] { "cẩm nang", "hướng dẫn", "mẫu giáo", "cô lan", "thầy minh", "cô hương" },
-                        text));
-                }
-            }
-            catch { /* Ignore file IO error in container */ }
-
+            // Chấm điểm mức độ liên quan theo từ khóa và cụm từ
             var scored = catalog
-                .Select(c => new
+                .Select(c =>
                 {
-                    Chunk = c,
-                    Score = c.Keywords.Count(k => qLower.Contains(k))
+                    int score = 0;
+                    foreach (var kw in c.Keywords)
+                    {
+                        if (qLower.Contains(kw))
+                        {
+                            score += kw.Length >= 4 ? 3 : 1;
+                        }
+                    }
+                    return new { Chunk = c, Score = score };
                 })
+                .Where(x => x.Score > 0)
                 .OrderByDescending(x => x.Score)
                 .ToList();
 
-            var top = scored.Where(x => x.Score > 0).Take(3).Select(x => x.Chunk).ToList();
-            if (top.Count == 0)
+            if (scored.Count > 0)
             {
-                // Nếu câu hỏi tổng quát, cung cấp tổng quan Tổ chức + Zen Studio + AI
-                top.Add(catalog[0]);
-                top.Add(catalog[5]);
-                top.Add(catalog[1]);
-            }
-            else if (!top.Any(c => c.Id == "organization-contact-legal"))
-            {
-                top.Add(catalog[5]);
+                return scored.Take(2).Select(x => x.Chunk).ToList();
             }
 
-            return top;
+            // Nếu câu hỏi mở hoặc chào hỏi chung, đưa ra câu trả lời tổng quan thay vì gán cứng Zen Studio
+            return new List<DocChunk>
+            {
+                new(
+                    "general-overview",
+                    isEn ? "Aegis Global Comprehensive Overview" : "Tổng Quan Hệ Sinh Thái Aegis Global",
+                    new[] { "tổng quan", "hệ thống" },
+                    isEn
+                        ? "Aegis Global is the world-class Cognitive Intelligence & Verification Standard, unifying Teacher Zen Studio, <2ms MathType transpilation, IRT 3-PL psychometrics, 6 live TV gameshows, and bank-grade data security."
+                        : "Aegis Global là hệ sinh thái Khảo thí & Trí tuệ Nhận thức chuẩn quốc tế, hợp nhất trọn vẹn: Không gian Giáo viên 3 chạm (Zen Studio), Giải mã MathType Word sang LaTeX <2ms, Tâm trắc học IRT 3-PL, Đấu trường 6 Gameshow thời gian thực, và Bảo mật cấp Ngân hàng.",
+                    "**Các Trụ Cột Nổi Bật của Hệ Thống**:\n" +
+                    "1. **Dành cho Giáo viên & Trường học**: Soạn đề trong 10 giây, thu âm giọng cô, chia sẻ qua mã QR Zalo, học sinh vào thi ngay không cần tài khoản.\n" +
+                    "2. **Dành cho Học sinh & Người học**: Trải nghiệm miễn phí trọn đời, tham gia các Gameshow đấu trí trực tiếp (Olympia, Nhanh Như Chớp), phân tích lỗ hổng kiến thức chuẩn xác.\n" +
+                    "3. **Dành cho Doanh nghiệp & Ngân hàng**: Độc quyền kiểm toán bất biến SHA-256 Merkle Chain, phân quyền cách ly đa khách thuê cấp ngân hàng và chuẩn hóa khảo thí năng lực nhân sự."
+                )
+            };
         }
 
         private static string SynthesizeGroundedDocAnswer(
@@ -322,27 +400,32 @@ namespace Aegis.API.Controllers
             TenantBrandingDto branding,
             bool isEn)
         {
+            var primary = matchedChunks.FirstOrDefault();
+            if (primary == null) return isEn ? "Thank you for asking! How can we assist you with Aegis Global today?" : "Cảm ơn Quý khách! Quý khách cần hỗ trợ thêm thông tin gì về hệ thống Aegis Global?";
+
             var sb = new StringBuilder();
-            if (isEn)
+
+            // 1. Câu trả lời trực diện vào trọng tâm câu hỏi (Direct & Focused Answer)
+            sb.AppendLine(primary.DirectAnswer);
+            sb.AppendLine();
+
+            // 2. Chi tiết hướng dẫn & Bằng chứng kỹ thuật thực thi
+            sb.AppendLine(primary.Content);
+            sb.AppendLine();
+
+            // 3. Nếu có khối liên quan thứ hai, bổ sung ngắn gọn
+            if (matchedChunks.Count > 1)
             {
-                sb.AppendLine($"Here is the official answer based on **{branding.OrganizationName}** System Documentation & Admin Governance:");
-                sb.AppendLine();
-            }
-            else
-            {
-                sb.AppendLine($"Dưới đây là giải đáp chính thức dựa trên **Hệ thống Tài liệu & Cấu hình Quản trị của {branding.OrganizationName}**:");
+                var secondary = matchedChunks[1];
+                sb.AppendLine(isEn ? $"**Related Information ({secondary.SourceTitle})**:" : $"**Thông Tin Bổ Trợ ({secondary.SourceTitle})**:");
+                sb.AppendLine(secondary.DirectAnswer);
                 sb.AppendLine();
             }
 
-            foreach (var chunk in matchedChunks.Take(2))
-            {
-                sb.AppendLine(chunk.Content);
-                sb.AppendLine();
-            }
-
+            // 4. Hotline hỗ trợ chính thức
             sb.AppendLine(isEn
-                ? $"> 📞 **Direct Support**: Hotline `{branding.SupportHotline}` • Email `{branding.SupportEmail}`"
-                : $"> 📞 **Hỗ trợ Trực tiếp từ Tổ chức**: Hotline `{branding.SupportHotline}` • Email `{branding.SupportEmail}`");
+                ? $"> 💡 *Need personalized guidance? Call our 24/7 hotline `{branding.SupportHotline}` or email `{branding.SupportEmail}`.*"
+                : $"> 💡 *Cần hỗ trợ trực tiếp từ đội ngũ chuyên gia? Quý khách vui lòng gọi Hotline `{branding.SupportHotline}` hoặc gửi email đến `{branding.SupportEmail}`.*");
 
             return sb.ToString().Trim();
         }
