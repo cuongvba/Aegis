@@ -14,24 +14,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=aegisquiz;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=aegisquiz;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-AegisQuizSecured2026!}
       - ConnectionStrings__Redis=redis:6379
-      - Gemini__ApiKey=${GEMINI_API_KEY}
-      - DeepSeek__ApiKey=${DEEPSEEK_API_KEY}
-      - OpenAI__ApiKey=${OPENAI_API_KEY}
-      - Anthropic__ApiKey=${ANTHROPIC_API_KEY}
-      - Groq__ApiKey=${GROQ_API_KEY}
-      - SambaNova__ApiKey=${SAMBANOVA_API_KEY}
-      - Cerebras__ApiKey=${CEREBRAS_API_KEY}
-      - Mistral__ApiKey=${MISTRAL_API_KEY}
-      - GitHub__Token=${GITHUB_TOKEN}
-      - Replicate__ApiKey=${REPLICATE_API_TOKEN}
-      - Pexels__ApiKey=${PEXELS_API_KEY}
-      - Telegram__Token=${TELEGRAM_TOKEN}
-      - Telegram__AllowedUserId=${ALLOWED_USER_ID}
-      - Webhook__SecretKey=${WEBHOOK_SECRET}
-      - Jwt__Secret=${JWT_SECRET}
-      - System__MaintenanceConfirmToken=${MAINTENANCE_CONFIRM_TOKEN}
+      - Gemini__ApiKey=${GEMINI_API_KEY:-}
+      - DeepSeek__ApiKey=${DEEPSEEK_API_KEY:-}
+      - OpenAI__ApiKey=${OPENAI_API_KEY:-}
+      - Anthropic__ApiKey=${ANTHROPIC_API_KEY:-}
+      - Groq__ApiKey=${GROQ_API_KEY:-}
+      - SambaNova__ApiKey=${SAMBANOVA_API_KEY:-}
+      - Cerebras__ApiKey=${CEREBRAS_API_KEY:-}
+      - Mistral__ApiKey=${MISTRAL_API_KEY:-}
+      - GitHub__Token=${GITHUB_TOKEN:-}
+      - Replicate__ApiKey=${REPLICATE_API_TOKEN:-}
+      - Pexels__ApiKey=${PEXELS_API_KEY:-}
+      - Telegram__Token=${TELEGRAM_TOKEN:-}
+      - Telegram__AllowedUserId=${ALLOWED_USER_ID:-}
+      - Webhook__SecretKey=${WEBHOOK_SECRET:-aegis_super_secret_webhook_key_2026}
+      - Jwt__Secret=${JWT_SECRET:-AegisQuizSuperSecretJwtSigningKey2026LocalDev32Bytes!}
+      - System__MaintenanceConfirmToken=${MAINTENANCE_CONFIRM_TOKEN:-}
       - Oidc__Authority=http://keycloak:8080/realms/dehoc
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       # [Phase C] IRT/CAT Engine URL
@@ -87,7 +87,7 @@ services:
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-aegisquiz}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-AegisQuizSecured2026!}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -121,9 +121,9 @@ services:
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-aegisquiz}
       - KC_DB_USERNAME=${POSTGRES_USER:-postgres}
-      - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KC_DB_PASSWORD=${POSTGRES_PASSWORD:-AegisQuizSecured2026!}
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KC_ADMIN_USER:-admin}
-      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KC_ADMIN_PASSWORD:-AdminDehoc2026!Keycloak}
       - KC_HOSTNAME=localhost
       - KC_HTTP_PORT=8080
     depends_on:
@@ -135,8 +135,4 @@ services:
 
 volumes:
   pgdata:
-    name: aegisquiz_pgdata
-    external: true
   keycloak_data:
-    name: aegisquiz_keycloak_data
-    external: true
