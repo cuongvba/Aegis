@@ -36,6 +36,11 @@
     "achievements": "Achievements",
     "learningPaths": "Learning Paths",
     "admin": "Admin",
+    "workspaces": "Workspaces",
+    "zenStudio": "Zen Creator Studio",
+    "symposium": "AI Symposium 6-Phase",
+    "buyCoffee": "Support Server & Buy Coffee",
+    "buyCoffeeDesc": "Partner & support cloud infrastructure",
     "profile": "Profile",
     "logout": "Logout"
   },

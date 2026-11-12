@@ -9,14 +9,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings, LogOut, Shield, Users, BookOpen, Sparkles, FolderTree, FileQuestion } from 'lucide-react';
+import { Settings, LogOut, Shield, Users, BookOpen, Sparkles, FolderTree, FileQuestion, Coffee } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
+import { BuyMeCoffeeModal } from '@/features/coffee/BuyMeCoffeeModal';
 
 export function UserProfileDropdown() {
   const { user, logout } = useAuthContext();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [isCoffeeOpen, setIsCoffeeOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -204,6 +206,18 @@ export function UserProfileDropdown() {
               <Settings className="w-4 h-4 text-slate-400" aria-hidden="true" />
               {t('userMenu.profileAndSecurity')}
             </button>
+
+            {/* Mời Cafe & Quỹ Máy Chủ */}
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); setIsCoffeeOpen(true); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-sm font-medium text-amber-300
+                         hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <Coffee className="w-4 h-4 text-amber-400" aria-hidden="true" />
+              <span>{t('nav.buyCoffee', 'Mời Cafe & Quỹ Máy Chủ')}</span>
+            </button>
           </div>
 
           <div className="my-1.5 border-t border-slate-800/80" role="separator" />
@@ -221,6 +235,9 @@ export function UserProfileDropdown() {
           </button>
         </div>
       )}
+
+      {/* Modal Mời Cafe */}
+      <BuyMeCoffeeModal isOpen={isCoffeeOpen} onClose={() => setIsCoffeeOpen(false)} />
     </div>
   );
 }

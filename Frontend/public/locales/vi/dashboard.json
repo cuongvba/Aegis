@@ -19,6 +19,16 @@
       "estTime": "Ước tính: ~6 phút",
       "progressLabel": "Tiến độ mục tiêu ngày:",
       "progressValue": "3/5 bài (60%)"
+    },
+    "readiness": {
+      "title": "Sức Bền & Thói Quen",
+      "streakBadge": "Đang cháy 🔥",
+      "streakDays": "5 ngày liên tiếp",
+      "todayGoal": "Mục tiêu ngày",
+      "todayProgress": "3/5 bài (60%)",
+      "energyTitle": "Độ sắc bén nhận thức",
+      "energyStatus": "Tối ưu (82.4% IRT)",
+      "tip": "Chỉ còn 2 bài nữa để giữ vững thứ hạng Kim Cương!"
     }
   },
   "radarPanel": {

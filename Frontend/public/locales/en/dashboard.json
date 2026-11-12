@@ -19,6 +19,16 @@
       "estTime": "Est: ~6 mins",
       "progressLabel": "Daily Goal Progress:",
       "progressValue": "3/5 modules (60%)"
+    },
+    "readiness": {
+      "title": "Habit & Readiness",
+      "streakBadge": "On Fire 🔥",
+      "streakDays": "5-day streak",
+      "todayGoal": "Daily Goal",
+      "todayProgress": "3/5 completed (60%)",
+      "energyTitle": "Cognitive Sharpness",
+      "energyStatus": "Optimal (82.4% IRT)",
+      "tip": "Just 2 more sessions to maintain your elite streak!"
     }
   },
   "radarPanel": {

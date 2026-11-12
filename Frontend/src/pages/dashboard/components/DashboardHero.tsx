@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, ShieldCheck, Award, Flame, Clock, Play, Zap, Target, Users, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, Award, Flame, Clock, Play, Target, ArrowRight } from 'lucide-react';
 import type { UserProfile } from '@/types/auth';
 
 interface DashboardHeroProps {
@@ -99,61 +99,41 @@ export function DashboardHero({ user, isAdmin, isTeamLeader }: DashboardHeroProp
           </div>
         </div>
 
-        {/* ── 30% Khối Lối tắt Vệ tinh (Quick Satellite Links) ── */}
-        <div className="lg:w-72 flex flex-col justify-between gap-2.5">
-          <button
-            onClick={() => navigate('/arena')}
-            className="group flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-900/80 border border-amber-500/30 hover:border-amber-400 transition-all cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Zap size={16} />
-              </div>
-              <div>
-                <div className="text-xs font-black text-white group-hover:text-amber-300 transition-colors">
-                  {t('actions.arena.title')}
-                </div>
-                <div className="text-[10px] text-slate-400">{t('actions.arena.desc')}</div>
-              </div>
-            </div>
-            <ArrowRight size={14} className="text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
-          </button>
+        {/* ── 30% Khối Thói Quen & Sức Bền Nhận Thức (Cognitive Habit & Readiness Ring) ── */}
+        <div className="lg:w-80 flex flex-col justify-between p-4 rounded-2xl bg-slate-950/70 border border-slate-800/90 backdrop-blur-md relative overflow-hidden shadow-lg">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+              <Flame size={14} className="text-amber-400" />
+              <span>{t('readiness.title', 'Sức Bền & Thói Quen')}</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/15 border border-amber-500/30 text-amber-300 animate-pulse">
+              {t('readiness.streakBadge', 'Đang cháy 🔥')}
+            </span>
+          </div>
 
-          <button
-            onClick={() => navigate('/quiz/adaptive')}
-            className="group flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-900/80 border border-rose-500/30 hover:border-rose-400 transition-all cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Target size={16} />
+          <div className="py-3 space-y-2.5">
+            {/* Mục tiêu ngày */}
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-slate-400 font-medium">{t('readiness.todayGoal', 'Mục tiêu ngày')}</span>
+                <span className="text-cyan-300 font-mono font-bold">{t('readiness.todayProgress', '3/5 bài (60%)')}</span>
               </div>
-              <div>
-                <div className="text-xs font-black text-white group-hover:text-rose-300 transition-colors">
-                  {t('actions.adaptive.title')}
-                </div>
-                <div className="text-[10px] text-slate-400">{t('actions.adaptive.desc')}</div>
+              <div className="w-full h-2 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full transition-all duration-500" style={{ width: '60%' }} />
               </div>
             </div>
-            <ArrowRight size={14} className="text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
-          </button>
 
-          <button
-            onClick={() => navigate('/team')}
-            className="group flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 hover:bg-slate-900/80 border border-emerald-500/30 hover:border-emerald-400 transition-all cursor-pointer text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Users size={16} />
-              </div>
-              <div>
-                <div className="text-xs font-black text-white group-hover:text-emerald-300 transition-colors">
-                  {t('actions.team.title')}
-                </div>
-                <div className="text-[10px] text-slate-400">{t('actions.team.desc')}</div>
-              </div>
+            {/* Độ sắc bén nhận thức */}
+            <div className="flex items-center justify-between text-xs pt-1">
+              <span className="text-slate-400 font-medium">{t('readiness.energyTitle', 'Độ sắc bén IRT')}</span>
+              <span className="text-emerald-400 font-mono font-bold">{t('readiness.energyStatus', 'Tối ưu (82.4%)')}</span>
             </div>
-            <ArrowRight size={14} className="text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-          </button>
+          </div>
+
+          <div className="pt-2.5 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-1.5">
+            <Sparkles size={12} className="text-cyan-400 shrink-0" />
+            <span className="truncate">{t('readiness.tip', 'Luyện thêm 2 bài để giữ chuỗi xuất sắc!')}</span>
+          </div>
         </div>
 
       </div>
