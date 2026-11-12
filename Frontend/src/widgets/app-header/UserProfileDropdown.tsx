@@ -1,15 +1,18 @@
 /**
  * Aegis — UserProfileDropdown Widget
  * ========================================
- * Avatar + dropdown menu — tách từ MainLayout.tsx.
- * Dùng useAuthContext thay vì localStorage trực tiếp.
+ * Menu Cá Nhân & Cá Nhân Hóa (Profile, Identity & Personalization Hub)
+ * Thiết kế chuẩn mực: Tôn trọng ranh giới giữa Danh tính cá nhân và Không gian tác nghiệp.
  * FSD Layer: widgets/app-header/
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings, LogOut, Shield, Users, BookOpen, Sparkles, FolderTree, FileQuestion, Coffee } from 'lucide-react';
+import { 
+  User, ShieldCheck, Key, Sparkles, Volume2, VolumeX, 
+  Target, Coffee, LogOut, Lock, Award
+} from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { BuyMeCoffeeModal } from '@/features/coffee/BuyMeCoffeeModal';
 
@@ -20,6 +23,18 @@ export function UserProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCoffeeOpen, setIsCoffeeOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Trạng thái âm thanh cá nhân hóa (Buzzer & Sound effects)
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    return localStorage.getItem('aegis-sound-enabled') !== 'false';
+  });
+
+  const toggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem('aegis-sound-enabled', String(next));
+  };
 
   // Close on outside click
   useEffect(() => {
@@ -68,6 +83,11 @@ export function UserProfileDropdown() {
 
   const initials = user.name?.[0]?.toUpperCase() ?? '?';
 
+  const handleNavigate = (path: string) => {
+    setIsOpen(false);
+    navigate(path);
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Avatar button */}
@@ -75,7 +95,7 @@ export function UserProfileDropdown() {
         onClick={() => setIsOpen((v) => !v)}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        aria-label={t('userMenu.accountOf', { name: user.name ?? t('userMenu.defaultName') })}
+        aria-label={t('userMenu.accountLabel', { name: user.name ?? 'User' })}
         className="flex items-center gap-2
                    bg-slate-900/80 hover:bg-slate-800 text-slate-200 hover:text-white
                    p-1 pe-3 rounded-full border border-slate-700/80 hover:border-slate-600
@@ -90,21 +110,21 @@ export function UserProfileDropdown() {
           {initials}
         </div>
         <span className="hidden sm:inline-block text-slate-200 truncate max-w-[110px]">
-          {user.name ?? t('userMenu.defaultName')}
+          {user.name ?? 'User'}
         </span>
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {isOpen && (
         <div
           role="menu"
-          aria-label={t('userMenu.menuLabel')}
-          className="absolute end-0 mt-2.5 w-64
+          aria-label={t('userMenu.accountLabel', 'Hồ sơ & Cá nhân hóa')}
+          className="absolute end-0 mt-2.5 w-72
                      bg-slate-900/95 backdrop-blur-xl rounded-2xl
                      shadow-2xl border border-slate-700/80 p-2 z-[var(--z-dropdown,50)]
                      animate-scale-in-tl origin-top-right ring-1 ring-white/10"
         >
-          {/* User info */}
+          {/* Header Thông tin Người Dùng */}
           <div className="px-3 py-2.5 border-b border-slate-800/80 mb-1.5">
             <p className="font-bold text-sm truncate text-white">{user.name}</p>
             <p className="text-xs text-slate-400 truncate">{user.email}</p>
@@ -121,118 +141,165 @@ export function UserProfileDropdown() {
                 <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   PRO VIP
                 </span>
-              ) : null}
+              ) : (
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  FREE
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Role-based quick portals */}
-          <div className="space-y-1">
+          {/* NHÓM 1: Hồ Sơ & Bảo Mật Cá Nhân */}
+          <div className="space-y-0.5">
+            <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+              {t('userMenu.accountLabel', 'Hồ sơ & Bảo mật')}
+            </div>
+
+            {/* Hồ sơ cá nhân */}
             <button
               role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/dashboard'); }}
+              onClick={() => handleNavigate('/profile')}
               className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-cyan-400
-                         hover:bg-cyan-500/10 rounded-xl transition-colors cursor-pointer"
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer group"
             >
-              <BookOpen className="w-4 h-4 text-cyan-400" aria-hidden="true" />
-              {t('userMenu.learningDashboard', 'Khu vực Học tập')}
+              <User className="w-4 h-4 text-cyan-400 group-hover:scale-105 transition-transform" />
+              <div>
+                <div className="text-white font-bold">{t('userMenu.profileInfo', 'Hồ sơ cá nhân & Danh tính')}</div>
+                <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.profileInfoDesc', 'Họ tên, email, avatar & thông tin')}</div>
+              </div>
             </button>
 
-            {(user.role === 'SystemAdmin' || user.role === 'TenantAdmin') && (
-              <button
-                role="menuitem"
-                onClick={() => { setIsOpen(false); navigate('/admin'); }}
-                className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                           text-sm font-medium text-purple-400
-                           hover:bg-purple-500/10 rounded-xl transition-colors cursor-pointer"
-              >
-                <Shield className="w-4 h-4 text-purple-400" aria-hidden="true" />
-                {t('userMenu.systemAdminPortal', 'Quản trị Hệ thống (Admin)')}
-              </button>
-            )}
-
+            {/* Mật khẩu & 2FA */}
             <button
               role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/creator/studio'); }}
+              onClick={() => handleNavigate('/profile')}
               className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-indigo-400
-                         hover:bg-indigo-500/10 rounded-xl transition-colors cursor-pointer"
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer group"
             >
-              <Sparkles className="w-4 h-4 text-indigo-400" aria-hidden="true" />
-              {t('userMenu.creatorStudio', 'Zen Studio (Soạn Đề)')}
+              <Lock className="w-4 h-4 text-emerald-400 group-hover:scale-105 transition-transform" />
+              <div>
+                <div className="text-white font-bold">{t('userMenu.security2fa', 'Mật khẩu & Bảo mật 2FA')}</div>
+                <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.security2faDesc', 'Đổi mật khẩu & xác thực hai bước')}</div>
+              </div>
             </button>
 
+            {/* Khóa AI Cá Nhân (BYOK) */}
             <button
               role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/creator/topics'); }}
+              onClick={() => handleNavigate('/profile')}
               className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-amber-400
-                         hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer group"
             >
-              <FolderTree className="w-4 h-4 text-amber-400" aria-hidden="true" />
-              {t('userMenu.zenTopics', 'ZenTopics (Chủ đề của tôi)')}
+              <Key className="w-4 h-4 text-indigo-400 group-hover:scale-105 transition-transform" />
+              <div>
+                <div className="text-white font-bold">{t('userMenu.aiKeys', 'Khóa AI Riêng (BYOK Keys)')}</div>
+                <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.aiKeysDesc', 'Tự cấp khóa Gemini, OpenAI, Groq')}</div>
+              </div>
             </button>
 
+            {/* Gói cước & Quyền lợi */}
             <button
               role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/creator/questions'); }}
+              onClick={() => handleNavigate('/paywall')}
               className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-emerald-400
-                         hover:bg-emerald-500/10 rounded-xl transition-colors cursor-pointer"
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer group"
             >
-              <FileQuestion className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-              {t('userMenu.zenQuestions', 'ZenQuestions (Câu hỏi của tôi)')}
-            </button>
-
-            <button
-              role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/team'); }}
-              className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-teal-400
-                         hover:bg-teal-500/10 rounded-xl transition-colors cursor-pointer"
-            >
-              <Users className="w-4 h-4 text-teal-400" aria-hidden="true" />
-              {t('userMenu.teamLeaderArea', 'Đội Nhóm & Học Viên')}
-            </button>
-
-            {/* Profile */}
-            <button
-              role="menuitem"
-              onClick={() => { setIsOpen(false); navigate('/profile'); }}
-              className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-slate-300
-                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer"
-            >
-              <Settings className="w-4 h-4 text-slate-400" aria-hidden="true" />
-              {t('userMenu.profileAndSecurity')}
-            </button>
-
-            {/* Mời Cafe & Quỹ Máy Chủ */}
-            <button
-              role="menuitem"
-              onClick={() => { setIsOpen(false); setIsCoffeeOpen(true); }}
-              className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                         text-sm font-medium text-amber-300
-                         hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
-            >
-              <Coffee className="w-4 h-4 text-amber-400" aria-hidden="true" />
-              <span>{t('nav.buyCoffee', 'Mời Cafe & Quỹ Máy Chủ')}</span>
+              <Award className="w-4 h-4 text-purple-400 group-hover:scale-105 transition-transform" />
+              <div>
+                <div className="text-white font-bold">{t('userMenu.subscription', 'Gói cước & Quyền lợi')}</div>
+                <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.subscriptionDesc', 'Trạng thái hạn mức & gói thành viên')}</div>
+              </div>
             </button>
           </div>
 
           <div className="my-1.5 border-t border-slate-800/80" role="separator" />
 
-          {/* Logout */}
-          <button
-            role="menuitem"
-            onClick={() => { setIsOpen(false); logout(); }}
-            className="w-full text-start px-3 py-2 flex items-center gap-2.5
-                       text-sm font-bold text-rose-400
-                       hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer"
-          >
-            <LogOut className="w-4 h-4 text-rose-400" aria-hidden="true" />
-            {t('auth.logout', 'Đăng xuất')}
-          </button>
+          {/* NHÓM 2: Cá Nhân Hóa & Trải Nghiệm */}
+          <div className="space-y-1">
+            <div className="px-3 py-1 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+              {t('userMenu.personalization', 'Cá nhân hóa & Trải nghiệm')}
+            </div>
+
+            {/* Toggle Âm thanh nhanh */}
+            <div
+              onClick={toggleSound}
+              className="px-3 py-2 flex items-center justify-between
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-2.5">
+                {soundEnabled ? (
+                  <Volume2 className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <VolumeX className="w-4 h-4 text-slate-500" />
+                )}
+                <div>
+                  <div className="text-white font-bold">{t('userMenu.soundEffects', 'Âm thanh & Buzzer')}</div>
+                  <div className="text-[10px] text-slate-400 font-normal">
+                    {soundEnabled ? t('userMenu.soundEnabled', 'Đang bật') : t('userMenu.soundDisabled', 'Đang tắt')}
+                  </div>
+                </div>
+              </div>
+              <div className={`w-8 h-4.5 rounded-full p-0.5 transition-colors ${soundEnabled ? 'bg-cyan-500' : 'bg-slate-700'}`}>
+                <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform ${soundEnabled ? 'translate-x-3.5' : 'translate-x-0'}`} />
+              </div>
+            </div>
+
+            {/* Mục tiêu rèn luyện */}
+            <div
+              onClick={() => handleNavigate('/dashboard')}
+              className="px-3 py-2 flex items-center justify-between
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800/80 rounded-xl transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Target className="w-4 h-4 text-rose-400" />
+                <div>
+                  <div className="text-white font-bold">{t('userMenu.dailyGoal', 'Mục tiêu rèn luyện')}</div>
+                  <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.dailyGoalValue', '5 bài/ngày')}</div>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold text-cyan-300 px-2 py-0.5 rounded-md bg-cyan-950/60 border border-cyan-500/30">
+                60%
+              </span>
+            </div>
+          </div>
+
+          <div className="my-1.5 border-t border-slate-800/80" role="separator" />
+
+          {/* NHÓM 3: Cộng Đồng & Thao Tác Hệ Thống */}
+          <div className="space-y-0.5">
+            {/* Mời Cafe */}
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); setIsCoffeeOpen(true); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-xs font-semibold text-amber-300
+                         hover:bg-amber-500/10 rounded-xl transition-colors cursor-pointer"
+            >
+              <Coffee className="w-4 h-4 text-amber-400" />
+              <div>
+                <div className="text-amber-300 font-bold">{t('userMenu.buyCoffee', 'Mời Cafe & Quỹ Máy Chủ')}</div>
+                <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.buyCoffeeDesc', 'Đồng hành & hỗ trợ tài nguyên')}</div>
+              </div>
+            </button>
+
+            {/* Đăng xuất */}
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); logout(); }}
+              className="w-full text-start px-3 py-2 flex items-center gap-2.5
+                         text-xs font-bold text-rose-400
+                         hover:bg-rose-500/10 rounded-xl transition-colors cursor-pointer mt-1"
+            >
+              <LogOut className="w-4 h-4 text-rose-400" />
+              <span>{t('userMenu.logout', 'Đăng xuất')}</span>
+            </button>
+          </div>
         </div>
       )}
 

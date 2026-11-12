@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   Layers, ChevronDown, LayoutDashboard, 
-  Shield, Users, Sparkles, BookOpen, ExternalLink 
+  Shield, Users, Sparkles, Atom 
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function WorkspaceDropdown() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, canAccessAdmin, isTeamLeader, isInstructor } = useAuth();
+  const { user, canAccessAdmin } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +36,7 @@ export function WorkspaceDropdown() {
   };
 
   return (
-    <div ref={containerRef} className="relative" role="navigation" aria-label="Không gian làm việc">
+    <div ref={containerRef} className="relative" role="navigation" aria-label={t('workspacesMenu.title', 'Không gian làm việc')}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -59,14 +59,14 @@ export function WorkspaceDropdown() {
 
       {isOpen && (
         <div
-          className="absolute end-0 top-full mt-2 w-64 bg-slate-900/95 backdrop-blur-xl
+          className="absolute end-0 top-full mt-2 w-72 bg-slate-900/95 backdrop-blur-xl
                      rounded-2xl shadow-2xl border border-slate-700/80 p-2
                      z-50 animate-in fade-in zoom-in-95 duration-150 origin-top-right
                      ring-1 ring-white/10 space-y-1"
         >
           <div className="px-3 py-1.5 text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5 border-b border-slate-800/80 mb-1">
             <Layers size={11} className="text-indigo-400" />
-            <span>Phân hệ Không gian làm việc</span>
+            <span>{t('workspacesMenu.title', 'Phân hệ Không gian làm việc')}</span>
           </div>
 
           {/* 1. Khu vực Học tập & Khảo thí */}
@@ -80,12 +80,28 @@ export function WorkspaceDropdown() {
               <LayoutDashboard size={14} />
             </div>
             <div>
-              <div className="text-white font-bold">{t('nav.enterLearning', 'Khu vực Học tập')}</div>
-              <div className="text-[10px] text-slate-400 font-normal">Bảng điều khiển & tiến độ khảo thí</div>
+              <div className="text-white font-bold">{t('workspacesMenu.learning', 'Không Gian Học Tập & Khảo Thí')}</div>
+              <div className="text-[10px] text-slate-400 font-normal">{t('workspacesMenu.learningDesc', 'Bảng điều khiển & tiến độ khảo thí cá nhân')}</div>
             </div>
           </button>
 
-          {/* 2. Không Gian Đội Nhóm */}
+          {/* 2. Creator Zen Studio */}
+          <button
+            type="button"
+            onClick={() => handleNavigate('/creator/studio')}
+            className="w-full text-start px-3 py-2 text-xs rounded-xl font-bold transition-all
+                       flex items-center gap-2.5 text-slate-200 hover:bg-slate-800 hover:text-white group"
+          >
+            <div className="w-7 h-7 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-105 transition-transform">
+              <Sparkles size={14} />
+            </div>
+            <div>
+              <div className="text-white font-bold">{t('workspacesMenu.creator', 'Xưởng Sáng Tạo Zen Studio')}</div>
+              <div className="text-[10px] text-slate-400 font-normal">{t('workspacesMenu.creatorDesc', 'Soạn đề 3-chạm, chủ đề & ngân hàng câu hỏi')}</div>
+            </div>
+          </button>
+
+          {/* 3. Không Gian Đội Nhóm */}
           <button
             type="button"
             onClick={() => handleNavigate('/team')}
@@ -96,59 +112,41 @@ export function WorkspaceDropdown() {
               <Users size={14} />
             </div>
             <div>
-              <div className="text-white font-bold">{t('nav.teamWorkspace', 'Không Gian Đội Nhóm')}</div>
-              <div className="text-[10px] text-slate-400 font-normal">Tiến độ, thảo luận & đề thi giao theo nhóm</div>
+              <div className="text-white font-bold">{t('workspacesMenu.team', 'Phân Hệ Đội Nhóm')}</div>
+              <div className="text-[10px] text-slate-400 font-normal">{t('workspacesMenu.teamDesc', 'Tiến độ học viên, thảo luận & giao bài thi')}</div>
             </div>
           </button>
 
-          {/* 3. Đấu trường & Luyện thi */}
+          {/* 4. Viện Hàn Lâm & Đại Hội Thảo AI */}
           <button
             type="button"
-            onClick={() => handleNavigate('/practice')}
+            onClick={() => handleNavigate('/symposium')}
             className="w-full text-start px-3 py-2 text-xs rounded-xl font-bold transition-all
                        flex items-center gap-2.5 text-slate-200 hover:bg-slate-800 hover:text-white group"
           >
-            <div className="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform">
-              <BookOpen size={14} />
+            <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-105 transition-transform">
+              <Atom size={14} />
             </div>
             <div>
-              <div className="text-white font-bold">Đấu Trường Luyện Thi AI</div>
-              <div className="text-[10px] text-slate-400 font-normal">Khảo thí thích ứng IRT 3-PL</div>
+              <div className="text-white font-bold">{t('workspacesMenu.symposium', 'Viện Hàn Lâm & Hội Thảo AI')}</div>
+              <div className="text-[10px] text-slate-400 font-normal">{t('workspacesMenu.symposiumDesc', 'Đại hội thảo 6 pha, đối chiếu tài liệu & AegisNotebook')}</div>
             </div>
           </button>
 
-          {/* 4. Khu Quản trị Hệ thống */}
+          {/* 5. Khu Quản trị Hệ thống */}
           {canAccessAdmin && (
             <button
               type="button"
               onClick={() => handleNavigate('/admin')}
               className="w-full text-start px-3 py-2 text-xs rounded-xl font-bold transition-all
-                         flex items-center gap-2.5 text-slate-200 hover:bg-purple-950/40 hover:text-purple-200 group border border-purple-500/20 bg-purple-950/20"
+                         flex items-center gap-2.5 text-slate-200 hover:bg-purple-950/40 hover:text-purple-200 group border border-purple-500/20 bg-purple-950/20 mt-1"
             >
               <div className="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 group-hover:scale-105 transition-transform">
                 <Shield size={14} />
               </div>
               <div>
-                <div className="text-purple-300 font-bold">{t('nav.adminPortal', 'Khu Quản trị Hệ thống')}</div>
-                <div className="text-[10px] text-purple-400/80 font-normal">Quản lý tổ chức, ngân hàng câu hỏi & nhân sự</div>
-              </div>
-            </button>
-          )}
-
-          {/* 5. Creator Zen Studio */}
-          {(isInstructor || canAccessAdmin) && (
-            <button
-              type="button"
-              onClick={() => handleNavigate('/creator/studio')}
-              className="w-full text-start px-3 py-2 text-xs rounded-xl font-bold transition-all
-                         flex items-center gap-2.5 text-slate-200 hover:bg-slate-800 hover:text-white group"
-            >
-              <div className="w-7 h-7 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 group-hover:scale-105 transition-transform">
-                <Sparkles size={14} />
-              </div>
-              <div>
-                <div className="text-white font-bold">Creator Zen Studio</div>
-                <div className="text-[10px] text-slate-400 font-normal">Soạn đề thi & bóc tách AI 0ms</div>
+                <div className="text-purple-300 font-bold">{t('workspacesMenu.admin', 'Trung Tâm Quản Trị Hệ Thống')}</div>
+                <div className="text-[10px] text-purple-400/80 font-normal">{t('workspacesMenu.adminDesc', 'Quản lý tổ chức, ngân hàng câu hỏi & nhân sự')}</div>
               </div>
             </button>
           )}
