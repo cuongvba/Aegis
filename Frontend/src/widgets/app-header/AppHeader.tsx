@@ -5,18 +5,23 @@
  * FSD Layer: widgets/app-header/
  */
 
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Bot, Smartphone } from 'lucide-react';
 import { NavMenu }              from './NavMenu';
 import { LanguageSwitcher }     from './LanguageSwitcher';
 import { WorkspaceDropdown }    from './WorkspaceDropdown';
 import { TenantBadge }          from './TenantBadge';
 import { UserProfileDropdown }  from './UserProfileDropdown';
 import { useTenant }            from '@/app/providers/TenantProvider';
+import { MobileAppInstallModal } from '@/components/common/MobileAppInstallModal';
 
 export function AppHeader() {
   const navigate    = useNavigate();
+  const { t }       = useTranslation();
   const { tenantName } = useTenant();
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   return (
     <header
@@ -62,6 +67,19 @@ export function AppHeader() {
 
         {/* ── Right Controls ── */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsMobileModalOpen(true)}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-cyan-300
+                       border border-slate-700/80 hover:border-cyan-500/50
+                       text-xs font-bold transition-all shadow-sm cursor-pointer select-none group"
+            title={t('nav.mobileAppTitle', 'Cài đặt Ứng dụng Di động & Quét mã QR')}
+          >
+            <Smartphone size={14} className="text-cyan-400 group-hover:scale-110 transition-transform" />
+            <span className="hidden xl:inline">{t('nav.mobileApp', 'App Di Động')}</span>
+          </button>
+
           <LanguageSwitcher />
           <TenantBadge />
           <WorkspaceDropdown />
@@ -69,6 +87,9 @@ export function AppHeader() {
         </div>
 
       </div>
+
+      {/* Modal Cài Đặt App Di Động & QR Bridge */}
+      <MobileAppInstallModal isOpen={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)} />
     </header>
   );
 }

@@ -94,14 +94,11 @@
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (var reg of registrations) { reg.unregister(); }
-        });
-        if ('caches' in window) {
-          caches.keys().then(function(names) {
-            for (var name of names) { caches.delete(name); }
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function() {
+            // Fallback gracefully if SW not supported or blocked
           });
-        }
+        });
       }
     </script>
   </body>

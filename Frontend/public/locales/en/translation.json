@@ -36,6 +36,8 @@
     "achievements": "Achievements",
     "learningPaths": "Learning Paths",
     "admin": "Admin",
+    "mobileApp": "Mobile App",
+    "mobileAppTitle": "Mobile App & QR Code Scanner",
     "workspaces": "Workspaces",
     "zenStudio": "Zen Creator Studio",
     "symposium": "AI Symposium 6-Phase",
@@ -73,9 +75,20 @@
     "soundDisabled": "Off",
     "dailyGoal": "Daily Training Target",
     "dailyGoalValue": "5 sessions/day",
+    "mobileApp": "Mobile Application",
+    "mobileAppDesc": "Install PWA & QR scanner for phone",
     "buyCoffee": "Support Server & Buy Coffee",
     "buyCoffeeDesc": "Partner & support cloud infrastructure",
     "logout": "Logout"
+  },
+  "mobileModal": {
+    "title": "Aegis Mobile Application",
+    "subtitle": "Fluid experience, 60fps native touch & 100% offline practice",
+    "selectDomain": "Select specialized domain:",
+    "scanToOpen": "Scan with phone to open",
+    "copyLink": "Copy Link",
+    "installNow": "Install Now (WebAPK)",
+    "openMobileView": "Open Mobile View"
   },
   "quiz": {
     "startExam": "Start Exam",
@@ -101,15 +114,6 @@
     "loginWithPKI": "Login with USB Token (PKI)",
     "welcome": "Welcome back, {{name}}",
     "sessionExpired": "Your session has expired. Please log in again."
-  },
-  "userMenu": {
-    "defaultName": "User",
-    "accountOf": "Account of {{name}}",
-    "menuLabel": "Account menu",
-    "systemAdminPortal": "System Administration",
-    "teamLeaderArea": "Team Leader Area",
-    "learningDashboard": "Learning Dashboard",
-    "profileAndSecurity": "Profile & Security"
   },
   "admin": {
     "questions": "Question Management",

@@ -36,6 +36,8 @@
     "achievements": "Thành tích",
     "learningPaths": "Lộ trình học",
     "admin": "Quản trị",
+    "mobileApp": "App Di Động",
+    "mobileAppTitle": "Ứng dụng Di động & Quét mã QR",
     "workspaces": "Không gian làm việc",
     "zenStudio": "Zen Studio Sáng Tạo Đề",
     "symposium": "Đại Hội Thảo AI 6 Pha",
@@ -73,9 +75,20 @@
     "soundDisabled": "Tắt",
     "dailyGoal": "Mục tiêu rèn luyện",
     "dailyGoalValue": "5 bài/ngày",
+    "mobileApp": "Ứng dụng Di động",
+    "mobileAppDesc": "Cài đặt PWA & quét QR điện thoại",
     "buyCoffee": "Mời Cafe & Quỹ Máy Chủ",
     "buyCoffeeDesc": "Đồng hành & hỗ trợ tài nguyên hệ thống",
     "logout": "Đăng xuất"
+  },
+  "mobileModal": {
+    "title": "Ứng Dụng Di Động Aegis",
+    "subtitle": "Trải nghiệm mượt mà, cảm ứng gốc & luyện thi ngoại tuyến 100%",
+    "selectDomain": "Chọn chuyên đề di động:",
+    "scanToOpen": "Quét để mở trên điện thoại",
+    "copyLink": "Sao chép Link",
+    "installNow": "Cài Đặt Ngay (WebAPK)",
+    "openMobileView": "Mở Giao Diện Mobile"
   },
   "quiz": {
     "startExam": "Bắt đầu thi",
@@ -101,15 +114,6 @@
     "loginWithPKI": "Đăng nhập USB Token (PKI)",
     "welcome": "Chào mừng trở lại, {{name}}",
     "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
-  },
-  "userMenu": {
-    "defaultName": "Người dùng",
-    "accountOf": "Tài khoản của {{name}}",
-    "menuLabel": "Menu tài khoản",
-    "systemAdminPortal": "Quản trị Hệ thống",
-    "teamLeaderArea": "Khu vực Trưởng nhóm",
-    "learningDashboard": "Khu vực Học tập",
-    "profileAndSecurity": "Hồ sơ cá nhân & Bảo mật"
   },
   "admin": {
     "questions": "Quản lý câu hỏi",

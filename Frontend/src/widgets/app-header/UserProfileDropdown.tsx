@@ -11,10 +11,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   User, ShieldCheck, Key, Sparkles, Volume2, VolumeX, 
-  Target, Coffee, LogOut, Lock, Award
+  Target, Coffee, LogOut, Lock, Award, Smartphone
 } from 'lucide-react';
 import { useAuthContext } from '@/app/providers/AuthProvider';
 import { BuyMeCoffeeModal } from '@/features/coffee/BuyMeCoffeeModal';
+import { MobileAppInstallModal } from '@/components/common/MobileAppInstallModal';
 
 export function UserProfileDropdown() {
   const { user, logout } = useAuthContext();
@@ -22,6 +23,7 @@ export function UserProfileDropdown() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isCoffeeOpen, setIsCoffeeOpen] = useState(false);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Trạng thái âm thanh cá nhân hóa (Buzzer & Sound effects)
@@ -267,6 +269,26 @@ export function UserProfileDropdown() {
                 60%
               </span>
             </div>
+
+            {/* Ứng dụng Di Động (PWA & QR Bridge) */}
+            <button
+              role="menuitem"
+              onClick={() => { setIsOpen(false); setIsMobileModalOpen(true); }}
+              className="w-full text-start px-3 py-2 flex items-center justify-between
+                         text-xs font-semibold text-slate-200
+                         hover:bg-slate-800 hover:text-white rounded-xl transition-colors cursor-pointer group"
+            >
+              <div className="flex items-center gap-2.5">
+                <Smartphone className="w-4 h-4 text-cyan-400 group-hover:scale-105 transition-transform" />
+                <div>
+                  <div className="text-white font-bold">{t('userMenu.mobileApp', 'Ứng dụng Di động')}</div>
+                  <div className="text-[10px] text-slate-400 font-normal">{t('userMenu.mobileAppDesc', 'Cài đặt PWA & quét QR điện thoại')}</div>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-cyan-300 px-1.5 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30">
+                PWA
+              </span>
+            </button>
           </div>
 
           <div className="my-1.5 border-t border-slate-800/80" role="separator" />
@@ -305,6 +327,9 @@ export function UserProfileDropdown() {
 
       {/* Modal Mời Cafe */}
       <BuyMeCoffeeModal isOpen={isCoffeeOpen} onClose={() => setIsCoffeeOpen(false)} />
+
+      {/* Modal Cài Đặt App Di Động & QR Bridge */}
+      <MobileAppInstallModal isOpen={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)} />
     </div>
   );
 }
