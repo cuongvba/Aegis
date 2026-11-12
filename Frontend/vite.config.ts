@@ -22,14 +22,14 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Proxy tất cả /api requests về Aegis backend
+      // Proxy tất cả /api requests về Aegis backend (cổng 5080 tránh xung đột với Coolify/Traefik)
       '/api': {
-        target:      process.env.VITE_API_URL || 'http://localhost:8080',
+        target:      process.env.VITE_API_URL || 'http://localhost:5080',
         changeOrigin: true,
       },
       // SignalR proctoring hub (WebSocket)
       '/hubs': {
-        target:      process.env.VITE_API_URL || 'http://localhost:8080',
+        target:      process.env.VITE_API_URL || 'http://localhost:5080',
         changeOrigin: true,
         ws:           true,
       },
