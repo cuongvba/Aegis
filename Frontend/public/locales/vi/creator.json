@@ -162,8 +162,10 @@
     "daysProSuffix": "Ngày Pro"
   },
   "modeSwitcher": {
-    "upload": "Soạn Đề Mới (Word/Excel)",
-    "savedBank": "Chủ Đề & Câu Hỏi Đã Lưu"
+    "upload": "File Word/Excel",
+    "paperStudio": "Trang Giấy A4",
+    "matrixWizard": "Ma Trận GDPT",
+    "savedBank": "Đề Đã Lưu"
   },
   "savedBank": {
     "title": "Kho Chủ Đề & Câu Hỏi Đã Lưu Của Tôi",

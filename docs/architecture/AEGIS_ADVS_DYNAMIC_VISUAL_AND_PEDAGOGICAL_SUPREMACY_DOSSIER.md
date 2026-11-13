@@ -138,3 +138,4 @@ Bằng chứng kiểm thử tự động và đo lường hiệu năng kỹ thu�
 | `d20867b` | 2026-11-13 | No.1 | `feat(pedagogy): absorb killer AutoExam features with 0-friction PIN entry, GDPT 2025 matrix wizard & live telemetry proctoring` |
 
 Hồ sơ nghiệm thu kiến trúc này là tài liệu sống bất biến của hệ sinh thái **Aegis Global (AGCI)**. Mọi phiên bản kế tiếp bắt buộc phải tham chiếu và bảo toàn trọn vẹn các chuẩn mực đã thiết lập tại đây.
+

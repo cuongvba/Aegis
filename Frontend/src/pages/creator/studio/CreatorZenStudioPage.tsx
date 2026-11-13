@@ -16,6 +16,7 @@ import { TeacherCoffeeModal } from './components/TeacherCoffeeModal';
 import { ZenStudioTopBar } from './components/ZenStudioTopBar';
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
 import { ExamMatrixWizardModal } from './components/ExamMatrixWizardModal';
+import { ZenPaperExamStudioModal } from './components/paper-editor/ZenPaperExamStudioModal';
 import { antiScrapingGuardService, IngestionQuotaStatus } from '@/services/antiScrapingGuard.service';
 
 export const CreatorZenStudioPage: React.FC = () => {
@@ -23,43 +24,19 @@ export const CreatorZenStudioPage: React.FC = () => {
   const [showCoffeeModal, setShowCoffeeModal] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
+  const [isPaperStudioOpen, setIsPaperStudioOpen] = useState(false);
   const [studioMode, setStudioMode] = useState<'upload' | 'saved'>('upload');
   const [quotaStatus, setQuotaStatus] = useState<IngestionQuotaStatus>(
     antiScrapingGuardService.getQuotaStatus()
   );
 
   const {
-    partnership,
-    isUploading,
-    uploadResult,
-    isLaunching,
-    launchResult,
-    errorMessage,
-    handleUploadFile: originalUpload,
-    handleLaunchRoom,
-    handleReset,
-    handleCloseModal,
-    updateQuestion,
-    isSavingToBank,
-    bankSaveResult,
-    isPureSavingToBank,
-    pureSaveResult,
-    handlePureSaveToBank,
-    handleClosePureSaveModal,
-    isArenaSelectorOpen,
-    handleOpenArenaSelector,
-    handleOpenArenaSelectorWithPayload,
-    stagedLaunchPayload,
-    handleCloseArenaSelector,
-    homeworkConfig,
-    isHomeworkModalOpen,
-    handleOpenHomeworkModal,
-    handleCloseHomeworkModal,
-    handleSaveToBank,
-    handleCloseBankModal,
-    handleLaunchArenaFromSaved,
-    handleAssignHomeworkFromSaved,
-    handleLoadIntoStudio,
+    partnership, isUploading, uploadResult, isLaunching, launchResult, errorMessage,
+    handleUploadFile: originalUpload, handleLaunchRoom, handleReset, handleCloseModal, updateQuestion,
+    isSavingToBank, bankSaveResult, isPureSavingToBank, pureSaveResult, handlePureSaveToBank, handleClosePureSaveModal,
+    isArenaSelectorOpen, handleOpenArenaSelector, handleOpenArenaSelectorWithPayload, stagedLaunchPayload, handleCloseArenaSelector,
+    homeworkConfig, isHomeworkModalOpen, handleOpenHomeworkModal, handleCloseHomeworkModal, handleSaveToBank, handleCloseBankModal,
+    handleLaunchArenaFromSaved, handleAssignHomeworkFromSaved, handleLoadIntoStudio,
   } = useZenStudio();
 
   const refreshQuota = () => {
@@ -103,11 +80,11 @@ export const CreatorZenStudioPage: React.FC = () => {
 
         {/* Workspace Mode Switcher (Khi chưa có preview) */}
         {!uploadResult && (
-          <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-xl mx-auto shadow-md">
+          <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-2xl mx-auto shadow-md">
             <button
               type="button"
               onClick={() => setStudioMode('upload')}
-              className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 min-w-[120px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 studioMode === 'upload'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                   : 'text-slate-400 hover:text-white'
@@ -118,16 +95,24 @@ export const CreatorZenStudioPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setIsMatrixModalOpen(true)}
-              className="flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500 shadow-md shadow-violet-600/30"
+              onClick={() => setIsPaperStudioOpen(true)}
+              className="flex-1 min-w-[130px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 shadow-md shadow-emerald-600/30"
             >
               <Sparkles size={14} />
-              <span>{t('modeSwitcher.matrixWizard', 'Ma Trận GDPT 2025')}</span>
+              <span>{t('modeSwitcher.paperStudio', 'Trang Giấy A4')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMatrixModalOpen(true)}
+              className="flex-1 min-w-[130px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500 shadow-md shadow-violet-600/30"
+            >
+              <Sparkles size={14} />
+              <span>{t('modeSwitcher.matrixWizard', 'Ma Trận GDPT')}</span>
             </button>
             <button
               type="button"
               onClick={() => setStudioMode('saved')}
-              className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 min-w-[110px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 studioMode === 'saved'
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
                   : 'text-slate-400 hover:text-white'
@@ -226,6 +211,16 @@ export const CreatorZenStudioPage: React.FC = () => {
           onMatrixGenerated={(res) => {
             setIsMatrixModalOpen(false);
             handleLoadIntoStudio(res.questions as any, { name: res.examTitle, code: 'GDPT_2025' } as any);
+          }}
+        />
+
+        {/* 8. Modal Trình Soạn Đề Trang Giấy A4 WYSIWYG Chuẩn GDPT 2025 */}
+        <ZenPaperExamStudioModal
+          isOpen={isPaperStudioOpen}
+          onClose={() => setIsPaperStudioOpen(false)}
+          onPaperExamLoaded={(res) => {
+            setIsPaperStudioOpen(false);
+            handleLoadIntoStudio(res.questions as any, { name: res.examTitle, code: 'PAPER_A4' } as any);
           }}
         />
       </div>

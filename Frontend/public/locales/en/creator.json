@@ -162,8 +162,10 @@
     "daysProSuffix": "Days Pro"
   },
   "modeSwitcher": {
-    "upload": "Parse New Exam (Word/Excel)",
-    "savedBank": "Saved Topics & Questions"
+    "upload": "Word/Excel File",
+    "paperStudio": "A4 Paper Editor",
+    "matrixWizard": "GDPT Matrix",
+    "savedBank": "Saved Bank"
   },
   "savedBank": {
     "title": "My Saved Topics & Question Bank",

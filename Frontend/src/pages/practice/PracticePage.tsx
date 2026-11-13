@@ -223,6 +223,18 @@ export function PracticePage() {
   const [studentName, setStudentName] = useState(() => localStorage.getItem('student_display_name') || '');
   const [studentClass, setStudentClass] = useState(() => localStorage.getItem('student_class_name') || '');
   const [submissionFeedback, setSubmissionFeedback] = useState<string | null>(null);
+  const [tabSwitchCount, setTabSwitchCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (!hasStarted || submitted) return;
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount((c) => c + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [hasStarted, submitted]);
 
   const kidCorrectMsgs = lang === 'vi'
     ? ['🎉 Xuất sắc! Đúng rồi bạn ơi!', '⭐ Tuyệt vời! Bạn thật thông minh!', '🏆 Chính xác! Bạn quá giỏi!', '🌟 Hay lắm! Tiếp tục phát huy!', '👏 Bravo! Bạn đang làm rất tốt!', '💯 Hoàn hảo! Thông minh ghê!', '🦁 Ngầu lắm! Đúng hoàn toàn!', '🚀 Giỏi ghê! Bay lên nào!']
@@ -521,7 +533,7 @@ export function PracticePage() {
           correctCount,
           totalQuestions: sessionQuestions.length,
           timeSpentSeconds: timeSpent,
-          tabSwitchCount: 0,
+          tabSwitchCount,
           wrongQuestionIndexes: wrongIndexes,
           details,
         };
@@ -794,6 +806,17 @@ export function PracticePage() {
             </div>
           </div>
         </header>
+
+        {/* Anti-cheat tab switch warning banner */}
+        {hasStarted && !submitted && tabSwitchCount > 0 && (
+          <div className="mx-auto max-w-4xl p-2.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-800 text-xs font-bold flex items-center justify-between gap-2 shadow-sm animate-pulse">
+            <div className="flex items-center gap-2">
+              <span className="text-base">⚠️</span>
+              <span>Cảnh báo: Phát hiện bạn vừa rời khỏi màn hình làm bài ({tabSwitchCount} lần). Dữ liệu này được giám thị theo dõi thời gian thực!</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-lg bg-rose-200 text-rose-900 font-mono text-[10px] uppercase">Proctor Alert</span>
+          </div>
+        )}
 
         {!hasStarted ? (
           isGenerating ? (
