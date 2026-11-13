@@ -74,6 +74,22 @@ flowchart LR
    - Nút **⚡ Kích Hoạt Đấu Trường**: Mở ngay trò chơi **Rung Chuông Vàng** hoặc **Nhanh Như Chớp** chiếu lên Tivi/Máy chiếu cho cả lớp cùng chơi!
    - Nút **❌ Hủy Bỏ (Cancel)**: Hủy bỏ ngay lượt đọc đề hiện tại để quay về màn hình chọn file khác mà không lưu bất kỳ dữ liệu rác nào vào hệ thống.
 
+### 2.4. Soạn Đề Tự Động Theo Khung Ma Trận GDPT 2025 (Chuẩn Bộ GD&ĐT)
+- Thầy/Cô không có sẵn file Word? Chỉ cần bấm nút màu tím **`Ma Trận GDPT 2025`** ([`ExamMatrixWizardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ExamMatrixWizardModal.tsx)) ở giữa màn hình Studio:
+  1. Chọn **Môn học** (Toán, Lý, Hóa, Sinh, Tiếng Anh) và **Khối lớp** (Lớp 10, 11, 12, ĐGNL).
+  2. Kéo thanh trượt điều chỉnh tỷ lệ 4 mức độ nhận thức Bloom theo đúng thông tư của Bộ:
+     - **Nhận biết (Bloom 1-2)**: Mặc định $40\%$
+     - **Thông hiểu (Bloom 3)**: Mặc định $30\%$
+     - **Vận dụng (Bloom 4)**: Mặc định $20\%$
+     - **Vận dụng cao (Bloom 5-6)**: Mặc định $10\%$
+  3. Bấm **`Sinh Đề Thi Chuẩn Ma Trận`** $\rightarrow$ Hệ thống tự động tạo bộ đề hoàn chỉnh với đủ 3 phần thi mới (Trắc nghiệm 4 lựa chọn, Trắc nghiệm Đúng/Sai, Trả lời ngắn điền số) kèm lời giải chi tiết và công thức Toán đẹp mắt!
+
+### 2.5. Chèn Hình Học Không Gian 3D & Đồ Thị Động 60FPS (ADVS Engine)
+- Khi chỉnh sửa câu hỏi, Thầy/Cô bấm nút **`📐 Hình/Đồ Thị Động`** trên thanh công cụ ([`InteractiveVisualStudioModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/visual/InteractiveVisualStudioModal.tsx)):
+  - **Đồ thị hàm số tương tác 60FPS**: Chọn hàm bậc ba, hàm phân thức, hàm parabol có tham số $m$. Thí sinh có thể rê chuột xem tọa độ điểm $M(x, y)$ và kéo thanh trượt $m$ để thấy đồ thị tịnh tiến thời gian thực!
+  - **Hình học không gian 3D xoay 360 độ**: Chọn hình chóp $S.ABCD$, lăng trụ đứng... Học sinh có thể dùng chuột hoặc ngón tay xoay hình đa hướng $360^\circ$, hệ thống tự động vẽ nét đứt (khuất) và nét liền (thấy) chính xác tuyệt đối.
+  - **Nhúng GeoGebra**: Dán link bài giảng GeoGebra có sẵn vào đề thi chỉ với 1 cú nhấp!
+
 > [!NOTE]
 > **Hỗ trợ đặc biệt cho Đề thi Tin học & Lập trình**:  
 > Nếu đề thi chứa các đoạn mã code HTML, CSS, XML (ví dụ: `<ol start="10">`, `<li>...</li>`, `<h1>`, `<style>...</style>`), hệ thống tự động nhận diện và giữ nguyên vẹn 100% từng dòng code để hiển thị sắc nét cho học sinh, tuyệt đối không bị mất nội dung hay vỡ giao diện!
@@ -174,6 +190,18 @@ Khi bấm nút màu xanh lá **`+ Thêm Học Viên`**, hộp thoại quản lý
 - Tự động tổng hợp trực tiếp từ bảng lịch sử làm bài `QuestionAttempts` và bài nộp về nhà `HomeworkSubmissions` trong PostgreSQL:
   - Hiển thị **Số bài tập về nhà đã nộp**, **Tổng số lượt làm câu hỏi**, **Tỷ lệ trả lời chính xác (%)**, **Điểm trung bình thực tế**, và **Thời điểm hoạt động gần nhất**.
   - Có ô **Tìm kiếm nhanh** theo tên, email hoặc số điện thoại của học sinh.
+
+### 5.5. Giám Sát Coi Thi Trực Tiếp (Live Telemetry Proctoring) & Vào Thi Bằng Mã PIN 6 Ký Tự
+- **Nút đỏ rực `🔴 Coi Thi Live`** ([`ClassroomHeader.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/ClassroomHeader.tsx)):
+  - Khi lớp đang trong giờ kiểm tra, Thầy/Cô bấm nút này để mở màn hình **Radar Coi Thi Trực Tiếp** ([`LiveProctoringGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/LiveProctoringGrid.tsx)).
+  - Màn hình chia thành các thẻ học sinh thời gian thực:
+    - 🟢 **Đang làm bài (Focusing)**: Thấy rõ học sinh đang làm tới câu số mấy (`Câu 12/25`), tiến độ bao nhiêu %.
+    - 🟡 **Dừng lâu (Idle > 3 phút)**: Cảnh báo học sinh đang bị "nghẽn" ở một câu khó để Thầy/Cô chú ý.
+    - 🔴 **Cảnh báo gian lận (Tab Switch Warning)**: Hệ thống tự động ghi nhận và đếm số lần học sinh nhảy sang tab khác tra Google hoặc mở tài liệu (`⚠️ Rời Tab: 2`).
+    - **Nút can thiệp tức thì**: Thầy/Cô có thể bấm **`Nhắc nhở`** để gửi tín hiệu riêng đến máy học sinh hoặc bấm **`Thu bài`** với các trường hợp vi phạm quy chế.
+- **Học sinh vào thi 0-Friction bằng Mã PIN 6 Ký Tự**:
+  - Học sinh không cần nhớ mật khẩu hay đăng ký tài khoản rườm rà.
+  - Chỉ cần truy cập trang web, bấm nút màu vàng **`Mã PIN`** trên thanh Header (hoặc Thầy/Cô chiếu mã PIN 6 chữ số lên bảng), gõ tên mình là vào làm bài ngay lập tức!
 
 ---
 

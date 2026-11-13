@@ -30,6 +30,7 @@ d:/Cuong/DuAn/mybank/AegisGlobal/docs/
 ├── ARENA_GAMESHOW_USER_MANUAL.md                     <-- Cẩm nang người dùng & luật chơi 6 Gameshow
 │
 ├── 🏛️ architecture/ (Kiến Trúc Phân Tầng)
+│   ├── AEGIS_ADVS_DYNAMIC_VISUAL_AND_PEDAGOGICAL_SUPREMACY_DOSSIER.md <-- [FLAGSHIP ALDS v1.0 2026] Hồ Sơ Nghiệm Thu Động Cơ Hình Học Động 60FPS (ADVS) & Bộ 3 Vũ Khí Sư Phạm Lĩnh Hội Đẳng Cấp Toàn Cầu
 │   ├── AEGIS_AI_SYSTEM_WORLD_CLASS_AUDIT_REPORT_2026.md <-- [SUPREME AI 2026] Báo Cáo Kiểm Toán & Đánh Giá Đẳng Cấp Thế Giới Hệ Thống AI Aegis Global (Epistemic Triad, Pareto FinOps, IRT 3-PL)
 │   ├── AEGIS_GLOBAL_STRATEGIC_HEGEMONY_AND_WORLD_CLASS_BENCHMARK.md <-- [FLAGSHIP 2026] Báo Cáo Phân Tích Khoa Học, Đối Sách Toàn Cầu & Kiểm Toán Điểm Nghẽn Nâng Cấp Hoàn Thiện
 │   ├── AEGIS_DUAL_MODE_ASSESSMENT_AND_INGESTION_SOVEREIGNTY.md <-- [NEW 2026] Kiến Trúc Khảo Thí Đa Phương Thức (Zen Studio -> Live Arena RAM Prewarm & Knowledge Bank COW)

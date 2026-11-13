@@ -96,9 +96,15 @@ export const ZenBankSaveModal: React.FC<ZenBankSaveModalProps> = ({ result, onCl
         </p>
 
         {/* Mã QR Code & Công cụ Tải / Đổi IP LAN */}
-        <div className="flex flex-col items-center mb-3">
+        <div className="flex flex-col items-center mb-2">
           <div ref={qrRef} className="inline-block p-3 bg-white rounded-2xl shadow-xl shadow-emerald-950/50 mb-2 border border-slate-200">
             <QRCodeSVG value={fullPracticeUrl} size={140} level="M" includeMargin={true} />
+          </div>
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <div className="bg-amber-500/15 border border-amber-500/30 rounded-xl px-3 py-1 flex items-center gap-2">
+              <span className="text-[10px] text-amber-300 font-bold uppercase">Mã PIN:</span>
+              <span className="font-mono text-xs font-black text-amber-400 tracking-widest">{result.topicCode.slice(0, 8)}</span>
+            </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <button

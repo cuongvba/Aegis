@@ -174,9 +174,17 @@ flowchart LR
 
 ---
 
-### 5. Phân Hệ 5: Creator Zen Studio, Khử Trùng CAS/COW & Đấu Trường Aegis Arena
+### 5. Phân Hệ 5: Creator Zen Studio, Khử Trùng CAS/COW, Đồ Họa Động ADVS & Đấu Trường Aegis Arena
 * **Creator Zen Studio — Quy trình "3 Chạm / 10 Giây" ([`CreatorZenStudioPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx))**:
-  - Triệt tiêu 95% nút bấm kỹ thuật phức tạp cho giáo viên: **Bước 1: Kéo thả file Word/Ảnh** $\rightarrow$ **Bước 2: Xem trước thẻ câu hỏi chuẩn SGK** $\rightarrow$ **Bước 3: Phát hành mã PIN 6 số & QR Code** để học sinh quét vào thi ngay mà không cần tạo tài khoản rườm rà.
+  - Triệt tiêu 95% nút bấm kỹ thuật phức tạp cho giáo viên: **Bước 1: Kéo thả file Word/Excel/PDF hoặc chọn Ma Trận GDPT 2025** $\rightarrow$ **Bước 2: Xem trước thẻ câu hỏi chuẩn SGK & Đồ thị 60FPS** $\rightarrow$ **Bước 3: Phát hành mã PIN 6 số & QR Code** để học sinh quét vào thi ngay mà không cần tạo tài khoản rườm rà.
+* **Động cơ Đồ họa & Hình học Động ADVS 60FPS ([`FunctionPlotCanvas.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/visual/FunctionPlotCanvas.tsx) & [`Geometry3dCanvas.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/visual/Geometry3dCanvas.tsx))**:
+  - Khảo sát hàm số 2D tương tác với thanh trượt tham số $m, a, b$ tức thời, lưới tọa độ $Oxy$ và bắt tọa độ chuột $M(x, y)$.
+  - Dựng hình học không gian 3D (hình chóp, lăng trụ, hình hộp) với phép chiếu Euler xoay $360^\circ$ đa chiều mượt mà 60fps, tự động phân biệt nét khuất (đứt) và nét thấy (liền).
+  - Tích hợp GeoGebra Embed Bridge nhúng bài giảng trực tiếp vào đề thi.
+* **Bộ 3 Vũ Khí Sư Phạm Vượt Trội (Lĩnh Hội Siêu Cấp Từ AutoExam)**:
+  - **Quick PIN Entry 0-Friction ([`QuickPinEntryModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/QuickPinEntryModal.tsx))**: Thí sinh toàn cầu vào phòng thi ngay bằng mã PIN 6 ký tự không cần nick.
+  - **Trợ Lý Ma Trận GDPT 2025 ([`ExamMatrixWizardModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/components/ExamMatrixWizardModal.tsx))**: Phân bổ tỷ lệ 4 cấp độ nhận thức Bloom (40% Nhận biết, 30% Thông hiểu, 20% Vận dụng, 10% Vận dụng cao) sinh đề chuẩn cấu trúc thi tốt nghiệp THPT mới.
+  - **Lưới Giám Sát Coi Thi Live Telemetry ([`LiveProctoringGrid.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/team-leader/components/LiveProctoringGrid.tsx))**: Radar phát hiện học sinh rời tab, dừng câu hỏi > 3 phút và phân tích tiến độ trực tiếp.
 * **Khử trùng lặp Lưu trữ CAS & Copy-On-Write ([`ExamDeduplicationEngine.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ExamDeduplicationEngine.cs))**:
   - Băm chuẩn hóa SHA-256 nội dung câu hỏi để lưu **1 bản vật lý duy nhất** khi hàng vạn giáo viên cùng tải lên một đề thi; khi giáo viên chỉnh sửa riêng, hệ thống tự động kích hoạt **Copy-On-Write (COW)** tạo biến thể độc lập, tiết kiệm **85% dung lượng Database**.
 * **Đấu trường Thời gian thực Aegis Arena (`IArenaGamePlugin`)**:
@@ -303,5 +311,6 @@ Với nền tảng kiến trúc mở theo **Nguyên lý Đóng/Mở (OCP)** và 
 | `v2.0` | 2026-09 | No.1 Charter | Ra mắt Động cơ Bóc tách CIG 4-Specs, Giải mã nhị phân MathType WMF $\rightarrow$ SVG/KaTeX, và Khảo thí thích ứng IRT 3-PL / CAT. | **100% Verified** |
 | `v3.0` | 2026-10 (Đầu) | No.1 Charter | Ban hành chuẩn **ALDS v1.0**, UCIS Excel 27+ vai trò, Hệ Ba Ngôi Nhận Thức (**UAR $\rightarrow$ WPSE $\rightarrow$ Symposium**), và Bộ ghép Prompt `L0..Ln`. | **100% Verified** |
 | `v4.0` | 2026-10 (Giữa) | No.1 Charter | Hoàn thiện **CDSA Dual-Space**, **Creator Zen Studio (3-Tap)**, khử trùng **CAS/COW**, **AegisNotebook Sovereign V2.0**, **ACSE Micro-Course**, và **Global Treasury**. | **100% Verified** |
-| **`v2026.10 SUPREME`** | **2026-10-28** | **No.1 — Supreme Polymath Chief Architect** | **Hợp nhất định vị AEGIS GLOBAL (AGCI)**; chuẩn hóa hệ 5 trục tọa độ & 3 lăng kính xoay trục $O(1)$; đồng bộ Hiến chương Tối cao [`AGENTS.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md) và Đại Cương Toàn Cầu. | **100% LIVE & PRODUCTION READY** |
+| `v2026.10 SUPREME` | 2026-10-28 | No.1 — Supreme Polymath Chief Architect | Hợp nhất định vị **AEGIS GLOBAL (AGCI)**; chuẩn hóa hệ 5 trục tọa độ & 3 lăng kính xoay trục $O(1)$; đồng bộ Hiến chương Tối cao [`AGENTS.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/AGENTS.md) và Đại Cương Toàn Cầu. | **100% LIVE & PRODUCTION READY** |
+| **`v2026.11 SUPREME`** | **2026-11-13** | **No.1 — Supreme Polymath Chief Architect** | **Đột phá Động cơ Hình học Động 60FPS (ADVS v1.0)** (Canvas 2D Sliders & 3D Wireframe $360^\circ$); **Lĩnh hội trọn vẹn 3 Vũ khí Sư phạm Siêu việt AutoExam** (0-Friction PIN 6 ký tự, Ma trận nhận thức GDPT 2025, Live Telemetry Proctoring Grid). | **100% LIVE & PRODUCTION READY** |
 

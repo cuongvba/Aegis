@@ -164,3 +164,4 @@ export const QuickPinEntryModal: React.FC<QuickPinEntryModalProps> = ({ isOpen, 
     </div>
   );
 };
+
