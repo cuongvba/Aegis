@@ -8,6 +8,8 @@ import {
   type HierarchicalTopicNode,
 } from '@/shared/lib/quiz/topicTreeHelper';
 
+export type { HierarchicalTopicNode, HierarchicalTopicNode as TeamAssignableTopicNode } from '@/shared/lib/quiz/topicTreeHelper';
+
 export interface TeamOrgUnitInfo {
   id: string;
   name: string;
@@ -159,6 +161,14 @@ export function useTeamManagement(userId?: string) {
     await fetchTeamAndResources(orgUnit?.id);
   };
 
+  const assignExam = async (topicCode: string) => {
+    const res = await api.post('/api/team-leader/assign-exam', {
+      orgUnitId: orgUnit?.id || undefined,
+      topicCode,
+    });
+    return res.data;
+  };
+
   const { roots: topicTreeRoots, nodeByCode } = useMemo(
     () => buildHierarchicalTopicTree(myTopics, myQuestions),
     [myTopics, myQuestions]
@@ -210,6 +220,9 @@ export function useTeamManagement(userId?: string) {
     addMember,
     updateMember,
     removeMember,
+    assignExam,
   };
 }
+
+export type TeamManagementReturn = ReturnType<typeof useTeamManagement>;
 

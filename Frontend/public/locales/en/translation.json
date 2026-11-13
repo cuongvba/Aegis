@@ -138,5 +138,47 @@
     "unauthorized": "You are not authorized to access this resource",
     "serverError": "Server error. Please try again later.",
     "networkError": "Network error. Please check your connection."
+  },
+  "classroom": {
+    "badge": "Pedagogical Command Hub & Adaptive Classroom (PostgreSQL SSoT)",
+    "defaultTitle": "Pedagogical Classroom & Team",
+    "students": "students",
+    "teacherLabel": "Responsible Teacher",
+    "toggleStudentTooltip": "Switch to Student View to test learner experience",
+    "exitStudentView": "Back to Teacher View",
+    "studentPreview": "Student View",
+    "editClass": "Configure Class",
+    "newClass": "+ New Class",
+    "addStudent": "+ Add Student",
+    "assignExamBtn": "Assign Homework",
+    "kpiMembers": "Class enrollment",
+    "activeCount": "completed assignments",
+    "kpiTopics": "Created learning modules",
+    "kpiQuestions": "Sovereign question bank",
+    "kpiAvgScore": "Actual class average score",
+    "topicResourcesTitle": "Assigned Courseware & Exams",
+    "openPractice": "Open practice room",
+    "manageTopics": "Manage Topic Tree",
+    "questionsUnit": "questions",
+    "classReport": "Class Report",
+    "shareLink": "Exam Link",
+    "viewQuestions": "Questions"
+  },
+  "assignmentModal": {
+    "title": "1-Click Classroom Exam Dispatch"
+  },
+  "studentView": {
+    "previewBanner": "Showing Student & Self-Study View (Learner Experience Simulation)",
+    "exitPreview": "Exit Student Mode",
+    "myClass": "My Classroom",
+    "teacher": "Teacher",
+    "pendingAssignments": "Assignments to Complete",
+    "assignmentsUnit": "modules",
+    "deadlineNote": "Complete early to maintain your study streak",
+    "memoryBox": "Spaced Memory Box (FSRS v5)",
+    "readiness": "Ready",
+    "remedialReady": "System has curated past mistakes into personalized practice",
+    "homeworkList": "Assigned Homework & Exams from Teacher",
+    "noAssignments": "No new assignments from teacher at this time."
   }
 }

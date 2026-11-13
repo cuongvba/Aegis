@@ -138,5 +138,47 @@
     "unauthorized": "Bạn không có quyền truy cập tài nguyên này",
     "serverError": "Lỗi máy chủ. Vui lòng thử lại sau.",
     "networkError": "Lỗi mạng. Vui lòng kiểm tra kết nối."
+  },
+  "classroom": {
+    "badge": "Trung Tâm Quản Trị Sư Phạm & Lớp Học Thích Ứng (PostgreSQL SSoT)",
+    "defaultTitle": "Lớp Học & Đội Nhóm Sư Phạm",
+    "students": "học sinh",
+    "teacherLabel": "Giáo viên phụ trách",
+    "toggleStudentTooltip": "Chuyển đổi góc nhìn Học sinh để kiểm thử trải nghiệm giao diện",
+    "exitStudentView": "Về Góc Nhìn Giáo Viên",
+    "studentPreview": "Góc Nhìn Học Sinh",
+    "editClass": "Cấu Hình Lớp",
+    "newClass": "+ Tạo Lớp Mới",
+    "addStudent": "+ Thêm Học Sinh",
+    "assignExamBtn": "Giao Đề Lớp Học",
+    "kpiMembers": "Sĩ số học sinh",
+    "activeCount": "đã hoàn thành bài",
+    "kpiTopics": "Chuyên đề bài học đã tạo",
+    "kpiQuestions": "Ngân hàng câu hỏi chủ quyền",
+    "kpiAvgScore": "Điểm trung bình thực tế cả lớp",
+    "topicResourcesTitle": "Học Liệu & Đề Thi Sư Phạm Đã Giao",
+    "openPractice": "Mở phòng luyện thi",
+    "manageTopics": "Quản lý Cây Chủ Đề",
+    "questionsUnit": "câu hỏi",
+    "classReport": "Báo Cáo Lớp",
+    "shareLink": "Link Bài",
+    "viewQuestions": "Câu hỏi"
+  },
+  "assignmentModal": {
+    "title": "1-Click Giao Đề Lớp Học"
+  },
+  "studentView": {
+    "previewBanner": "Đang hiển thị Góc Nhìn Học Sinh & Tự Học (Mô phỏng trải nghiệm người học)",
+    "exitPreview": "Thoát Chế Độ Học Sinh",
+    "myClass": "Lớp Học Của Tôi",
+    "teacher": "Thầy/Cô",
+    "pendingAssignments": "Bài Tập Cần Hoàn Thành",
+    "assignmentsUnit": "chuyên đề",
+    "deadlineNote": "Nên hoàn thành sớm để giữ chuỗi rèn luyện",
+    "memoryBox": "Hộp Ký Ức Ôn Tập (FSRS v5)",
+    "readiness": "Sẵn Sàng",
+    "remedialReady": "Hệ thống đã gom câu sai vào bài luyện riêng",
+    "homeworkList": "Danh Sách Bài Tập & Đề Thi Thầy/Cô Đã Giao",
+    "noAssignments": "Hiện tại Thầy/Cô chưa giao bài tập mới cho lớp."
   }
 }
