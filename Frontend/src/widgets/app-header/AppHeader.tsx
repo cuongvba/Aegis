@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bot, Smartphone } from 'lucide-react';
+import { Bot, Smartphone, KeyRound } from 'lucide-react';
 import { NavMenu }              from './NavMenu';
 import { LanguageSwitcher }     from './LanguageSwitcher';
 import { WorkspaceDropdown }    from './WorkspaceDropdown';
@@ -16,12 +16,14 @@ import { TenantBadge }          from './TenantBadge';
 import { UserProfileDropdown }  from './UserProfileDropdown';
 import { useTenant }            from '@/app/providers/TenantProvider';
 import { MobileAppInstallModal } from '@/components/common/MobileAppInstallModal';
+import { QuickPinEntryModal }    from '@/components/common/QuickPinEntryModal';
 
 export function AppHeader() {
   const navigate    = useNavigate();
   const { t }       = useTranslation();
   const { tenantName } = useTenant();
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   return (
     <header
@@ -67,6 +69,20 @@ export function AppHeader() {
 
         {/* ── Right Controls ── */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Cổng vào phòng thi bằng mã PIN 0-Friction */}
+          <button
+            type="button"
+            onClick={() => setIsPinModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 hover:text-amber-200
+                       border border-amber-500/40 hover:border-amber-400
+                       text-xs font-black transition-all shadow-sm cursor-pointer select-none group"
+            title={t('nav.quickPinTitle', 'Vào phòng thi nhanh bằng mã PIN 6 số')}
+          >
+            <KeyRound size={13} className="text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>{t('nav.quickPin', 'Mã PIN')}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsMobileModalOpen(true)}
@@ -87,6 +103,9 @@ export function AppHeader() {
         </div>
 
       </div>
+
+      {/* Modal Vào Phòng Thi Bằng Mã PIN 0-Friction */}
+      <QuickPinEntryModal isOpen={isPinModalOpen} onClose={() => setIsPinModalOpen(false)} />
 
       {/* Modal Cài Đặt App Di Động & QR Bridge */}
       <MobileAppInstallModal isOpen={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)} />

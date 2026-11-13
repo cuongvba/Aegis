@@ -151,6 +151,7 @@
     "newClass": "+ New Class",
     "addStudent": "+ Add Student",
     "assignExamBtn": "Assign Homework",
+    "liveProctorBtn": "Live Proctor",
     "kpiMembers": "Class enrollment",
     "activeCount": "completed assignments",
     "kpiTopics": "Created learning modules",
@@ -180,5 +181,20 @@
     "remedialReady": "System has curated past mistakes into personalized practice",
     "homeworkList": "Assigned Homework & Exams from Teacher",
     "noAssignments": "No new assignments from teacher at this time."
+  },
+  "quickPin": {
+    "btnTitle": "PIN Code",
+    "tooltip": "Fast exam entry with 6-char PIN code, no sign-in required",
+    "modalTitle": "Enter Exam Room via PIN",
+    "tagline": "Instant assessment without creating an account",
+    "pinLabel": "Enter Room PIN:",
+    "nameLabel": "Candidate Full Name:",
+    "namePlaceholder": "e.g. John Doe",
+    "enterBtn": "Enter Exam Room Now",
+    "popularPins": "Demo room codes for quick testing:"
+  },
+  "proctor": {
+    "title": "Live Exam Room Telemetry Proctoring",
+    "candidates": "candidates"
   }
 }

@@ -15,12 +15,14 @@ import { ZenPureBankSuccessModal } from './components/ZenPureBankSuccessModal';
 import { TeacherCoffeeModal } from './components/TeacherCoffeeModal';
 import { ZenStudioTopBar } from './components/ZenStudioTopBar';
 import { CreatorWorkspaceNav } from '../components/CreatorWorkspaceNav';
+import { ExamMatrixWizardModal } from './components/ExamMatrixWizardModal';
 import { antiScrapingGuardService, IngestionQuotaStatus } from '@/services/antiScrapingGuard.service';
 
 export const CreatorZenStudioPage: React.FC = () => {
   const { t } = useTranslation('creator');
   const [showCoffeeModal, setShowCoffeeModal] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isMatrixModalOpen, setIsMatrixModalOpen] = useState(false);
   const [studioMode, setStudioMode] = useState<'upload' | 'saved'>('upload');
   const [quotaStatus, setQuotaStatus] = useState<IngestionQuotaStatus>(
     antiScrapingGuardService.getQuotaStatus()
@@ -101,30 +103,38 @@ export const CreatorZenStudioPage: React.FC = () => {
 
         {/* Workspace Mode Switcher (Khi chưa có preview) */}
         {!uploadResult && (
-          <div className="flex items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-md mx-auto shadow-md">
+          <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 max-w-xl mx-auto shadow-md">
             <button
               type="button"
               onClick={() => setStudioMode('upload')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 studioMode === 'upload'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <FileUp size={14} />
-              <span>{t('modeSwitcher.upload', 'Soạn Đề Mới (Word/Excel)')}</span>
+              <span>{t('modeSwitcher.upload', 'File Word/Excel')}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMatrixModalOpen(true)}
+              className="flex-1 min-w-[150px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500 shadow-md shadow-violet-600/30"
+            >
+              <Sparkles size={14} />
+              <span>{t('modeSwitcher.matrixWizard', 'Ma Trận GDPT 2025')}</span>
             </button>
             <button
               type="button"
               onClick={() => setStudioMode('saved')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+              className={`flex-1 min-w-[130px] py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 studioMode === 'saved'
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <Database size={14} />
-              <span>{t('modeSwitcher.savedBank', 'Chủ Đề & Câu Hỏi Đã Lưu')}</span>
+              <span>{t('modeSwitcher.savedBank', 'Đề Đã Lưu')}</span>
             </button>
           </div>
         )}
@@ -208,6 +218,16 @@ export const CreatorZenStudioPage: React.FC = () => {
             }}
           />
         )}
+
+        {/* 7. Modal Trợ Lý Soạn Đề Theo Ma Trận GDPT 2025 */}
+        <ExamMatrixWizardModal
+          isOpen={isMatrixModalOpen}
+          onClose={() => setIsMatrixModalOpen(false)}
+          onMatrixGenerated={(res) => {
+            setIsMatrixModalOpen(false);
+            handleLoadIntoStudio(res.questions as any, { name: res.examTitle, code: 'GDPT_2025' } as any);
+          }}
+        />
       </div>
     </div>
   );

@@ -151,6 +151,7 @@
     "newClass": "+ Tạo Lớp Mới",
     "addStudent": "+ Thêm Học Sinh",
     "assignExamBtn": "Giao Đề Lớp Học",
+    "liveProctorBtn": "Coi Thi Live",
     "kpiMembers": "Sĩ số học sinh",
     "activeCount": "đã hoàn thành bài",
     "kpiTopics": "Chuyên đề bài học đã tạo",
@@ -180,5 +181,20 @@
     "remedialReady": "Hệ thống đã gom câu sai vào bài luyện riêng",
     "homeworkList": "Danh Sách Bài Tập & Đề Thi Thầy/Cô Đã Giao",
     "noAssignments": "Hiện tại Thầy/Cô chưa giao bài tập mới cho lớp."
+  },
+  "quickPin": {
+    "btnTitle": "Mã PIN",
+    "tooltip": "Vào thi nhanh bằng mã PIN 6 ký tự không cần tài khoản",
+    "modalTitle": "Vào Phòng Thi Bằng Mã PIN",
+    "tagline": "Khảo thí tức thì không cần đăng ký tài khoản",
+    "pinLabel": "Nhập mã PIN phòng thi:",
+    "nameLabel": "Họ và tên thí sinh:",
+    "namePlaceholder": "Ví dụ: Nguyễn Văn An",
+    "enterBtn": "Vào Phòng Thi Ngay",
+    "popularPins": "Phòng thi mẫu trải nghiệm nhanh:"
+  },
+  "proctor": {
+    "title": "Giám Sát Phòng Thi Live Telemetry",
+    "candidates": "thí sinh"
   }
 }

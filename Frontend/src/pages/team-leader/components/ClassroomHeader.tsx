@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   ShieldCheck, RefreshCw, Settings, PlusCircle, UserPlus, 
-  Send, Eye, EyeOff, Sparkles 
+  Send, Eye, EyeOff, Sparkles, ShieldAlert 
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TeamManagementReturn, TeamOrgUnitInfo } from '../hooks/useTeamManagement';
@@ -14,6 +14,7 @@ interface ClassroomHeaderProps {
   onOpenTeamSettings: (mode: 'create' | 'edit') => void;
   onOpenAddMember: () => void;
   onOpenAssignModal: () => void;
+  onOpenLiveProctor?: () => void;
 }
 
 export const ClassroomHeader: React.FC<ClassroomHeaderProps> = ({
@@ -24,6 +25,7 @@ export const ClassroomHeader: React.FC<ClassroomHeaderProps> = ({
   onOpenTeamSettings,
   onOpenAddMember,
   onOpenAssignModal,
+  onOpenLiveProctor,
 }) => {
   const { t } = useTranslation();
 
@@ -134,6 +136,18 @@ export const ClassroomHeader: React.FC<ClassroomHeaderProps> = ({
           <Send size={14} />
           <span>{t('classroom.assignExamBtn', 'Giao Đề Lớp Học')}</span>
         </button>
+
+        {/* Giám Sát Coi Thi Live */}
+        {onOpenLiveProctor && (
+          <button
+            type="button"
+            onClick={onOpenLiveProctor}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white text-xs font-black shadow-lg shadow-rose-600/30 active:scale-95 transition-all cursor-pointer"
+          >
+            <ShieldAlert size={14} className="animate-pulse" />
+            <span>{t('classroom.liveProctorBtn', 'Coi Thi Live')}</span>
+          </button>
+        )}
       </div>
     </div>
   );

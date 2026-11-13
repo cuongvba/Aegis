@@ -14,6 +14,7 @@ import { StudentClassroomView } from './components/StudentClassroomView';
 import { TeamMembersTableSection } from './components/TeamMembersTableSection';
 import { TeamMemberManagerModal } from './components/TeamMemberManagerModal';
 import { TeamSettingsModal } from './components/TeamSettingsModal';
+import { LiveProctoringGrid } from './components/LiveProctoringGrid';
 
 export const TeamDashboard: React.FC = () => {
   const { user } = useAuthContext();
@@ -21,6 +22,7 @@ export const TeamDashboard: React.FC = () => {
 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isStudentPreview, setIsStudentPreview] = useState<boolean>(false);
+  const [isLiveProctorOpen, setIsLiveProctorOpen] = useState(false);
   const [diagnosticTopic, setDiagnosticTopic] = useState<{
     code: string;
     name: string;
@@ -87,6 +89,7 @@ export const TeamDashboard: React.FC = () => {
             setMemberModalOpen(true);
           }}
           onOpenAssignModal={() => setAssignModalOpen(true)}
+          onOpenLiveProctor={() => setIsLiveProctorOpen(true)}
         />
 
         {/* 2. Nội dung theo góc nhìn */}
@@ -169,6 +172,14 @@ export const TeamDashboard: React.FC = () => {
           onClose={() => setDiagnosticTopic(null)}
         />
       )}
+
+      {/* Modal Giám Sát Coi Thi Live Telemetry Grid */}
+      <LiveProctoringGrid
+        isOpen={isLiveProctorOpen}
+        onClose={() => setIsLiveProctorOpen(false)}
+        classNameTitle={team.orgUnit?.name || 'Lớp Học'}
+        members={team.members}
+      />
     </div>
   );
 };
