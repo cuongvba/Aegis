@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { Image as ImageIcon, Mic, Square, Volume2, Video, Table, Sigma, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Mic, Square, Volume2, Video, Table, Sigma, Sparkles, Compass } from 'lucide-react';
 import { compressImageToDataUri, readBlobAsDataUri } from '@/shared/lib/quiz/smartClipboardMedia';
 import { transpileClipboardMathTypeViaApi } from '@/shared/lib/quiz/mathtypeClipboardClient';
 import { MathFormulaStudioModal } from './math-studio/MathFormulaStudioModal';
+import { InteractiveVisualStudioModal } from './visual/InteractiveVisualStudioModal';
 
 interface SmartRichMediaToolbarProps {
   value: string;
@@ -22,6 +23,7 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isMathStudioOpen, setIsMathStudioOpen] = useState(false);
+  const [isVisualModalOpen, setIsVisualModalOpen] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
@@ -102,15 +104,11 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
   };
 
   const handleInsertTable = () => {
-    const sampleTable = `| Tiêu chí | Cột A | Cột B |\n| --- | --- | --- |\n| Dòng 1 | Giá trị 1 | Giá trị 2 |\n| Dòng 2 | Giá trị 3 | Giá trị 4 |`;
-    appendSnippet(sampleTable, false);
-    onNotify?.('Đã chèn mẫu Bảng biểu (Mẹo: Bạn có thể Copy bảng từ Word/Excel rồi Ctrl+V thẳng vào ô)!')
+    appendSnippet(`| Tiêu chí | Cột A | Cột B |\n| --- | --- | --- |\n| Dòng 1 | Giá trị 1 | Giá trị 2 |\n| Dòng 2 | Giá trị 3 | Giá trị 4 |`, false);
+    onNotify?.('Đã chèn mẫu Bảng biểu!');
   };
 
-  const handleInsertMath = () => {
-    setIsMathStudioOpen(true);
-  };
-
+  const handleInsertMath = () => setIsMathStudioOpen(true);
   const [isConvertingMathImg, setIsConvertingMathImg] = useState(false);
   const hasEmbeddedImage = /!\[[^\]]*\]\((data:image\/[^)]+)\)/.test(value || '');
 
@@ -118,14 +116,14 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
     const match = (value || '').match(/!\[[^\]]*\]\((data:image\/[^)]+)\)/);
     if (!match) return;
     setIsConvertingMathImg(true);
-    onNotify?.('⏳ Đang nhận diện và chuyển đổi ảnh công thức sang LaTeX ($...$)...');
+    onNotify?.('⏳ Đang nhận diện và chuyển đổi ảnh công thức sang LaTeX...');
     try {
       const res = await transpileClipboardMathTypeViaApi({ imageDataUri: match[1] });
       if (res.success && res.singleLatex) {
         onChange((value || '').replace(match[0], res.singleLatex));
         onNotify?.('Đã chuyển đổi ảnh công thức sang chuẩn Vector LaTeX ($...$)!');
       } else {
-        onNotify?.('Ảnh này là hình minh họa (không phải công thức toán đơn thuần), hệ thống giữ nguyên ảnh.');
+        onNotify?.('Ảnh minh họa, hệ thống giữ nguyên.');
       }
     } finally {
       setIsConvertingMathImg(false);
@@ -143,36 +141,34 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
           type="button"
           disabled={isConvertingMathImg}
           onClick={handleConvertEmbeddedImageToLatex}
-          title="Chuyển đổi ảnh công thức Toán đang có trong ô này thành mã LaTeX ($...$) siêu nhẹ"
+          title="Chuyển đổi ảnh công thức sang LaTeX ($...$)"
           className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[11px] font-bold transition-all cursor-pointer animate-pulse"
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-          <span>{isConvertingMathImg ? 'Đang dịch LaTeX...' : '✨ Đổi Ảnh -> LaTeX'}</span>
+          <span>{isConvertingMathImg ? 'Đang dịch...' : '✨ Ảnh -> LaTeX'}</span>
         </button>
       )}
 
       <button
         type="button"
         onClick={() => imgInputRef.current?.click()}
-        title="Chèn hình ảnh từ máy tính (hoặc bấm Ctrl+V dán thẳng ảnh chụp màn hình / ảnh từ Word)"
+        title="Chèn ảnh (hoặc Ctrl+V)"
         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-indigo-600/25 text-slate-300 hover:text-indigo-300 border border-slate-700/80 hover:border-indigo-500/40 text-[11px] font-semibold transition-all cursor-pointer"
       >
         <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
-        <span>{compact ? 'Ảnh' : '🖼️ Ảnh (hoặc Ctrl+V)'}</span>
+        <span>{compact ? 'Ảnh' : '🖼️ Ảnh'}</span>
       </button>
 
       <button
         type="button"
         onClick={toggleVoiceRecording}
-        title="Thu âm trực tiếp giọng đọc của Giáo viên cho học sinh nghe"
+        title="Thu âm giọng đọc của Giáo viên"
         className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-[11px] font-semibold transition-all cursor-pointer ${
-          isRecording
-            ? 'bg-rose-600/30 border-rose-500 text-rose-200 animate-pulse'
-            : 'bg-slate-800/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border-slate-700/80 hover:border-rose-500/40'
+          isRecording ? 'bg-rose-600/30 border-rose-500 text-rose-200 animate-pulse' : 'bg-slate-800/90 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border-slate-700/80 hover:border-rose-500/40'
         }`}
       >
         {isRecording ? <Square className="w-3.5 h-3.5 text-rose-400 fill-rose-400" /> : <Mic className="w-3.5 h-3.5 text-rose-400" />}
-        <span>{isRecording ? 'Dừng thu' : compact ? 'Thu âm' : '🎙️ Thu âm giọng cô'}</span>
+        <span>{isRecording ? 'Dừng' : compact ? 'Thu' : '🎙️ Thu âm'}</span>
       </button>
 
       {!compact && (
@@ -181,7 +177,7 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
             type="button"
             onClick={() => audioInputRef.current?.click()}
             title="Tải file âm thanh (.mp3, .wav) từ máy tính"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 border border-slate-700/80 hover:border-sky-500/40 text-[11px] font-semibold transition-all cursor-pointer"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-sky-500/20 text-slate-300 hover:text-sky-300 border border-slate-700/80 text-[11px] font-semibold transition cursor-pointer"
           >
             <Volume2 className="w-3.5 h-3.5 text-sky-400" />
             <span>Audio</span>
@@ -190,18 +186,18 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
           <button
             type="button"
             onClick={handleVideoAction}
-            title="Nhúng Video hoạt hình YouTube hoặc tải file Video .mp4"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700/80 hover:border-amber-500/40 text-[11px] font-semibold transition-all cursor-pointer"
+            title="Nhúng Video YouTube hoặc tải .mp4"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700/80 text-[11px] font-semibold transition cursor-pointer"
           >
             <Video className="w-3.5 h-3.5 text-amber-400" />
-            <span>🎬 Video / YouTube</span>
+            <span>🎬 Video</span>
           </button>
 
           <button
             type="button"
             onClick={handleInsertTable}
-            title="Chèn Bảng số liệu (hoặc Copy bảng từ Word/Excel rồi Ctrl+V thẳng vào ô)"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-purple-500/20 text-slate-300 hover:text-purple-300 border border-slate-700/80 hover:border-purple-500/40 text-[11px] font-semibold transition-all cursor-pointer"
+            title="Chèn Bảng (hoặc dán Ctrl+V từ Excel/Word)"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-purple-500/20 text-slate-300 hover:text-purple-300 border border-slate-700/80 text-[11px] font-semibold transition cursor-pointer"
           >
             <Table className="w-3.5 h-3.5 text-purple-400" />
             <span>Bảng</span>
@@ -212,21 +208,36 @@ export const SmartRichMediaToolbar: React.FC<SmartRichMediaToolbarProps> = ({
       <button
         type="button"
         onClick={handleInsertMath}
-        title="Mở hệ soạn thảo công thức Toán học toàn diện (KaTeX, mhchem, mẫu đề thi)"
-        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700/80 hover:border-cyan-500/40 text-[11px] font-semibold transition-all cursor-pointer"
+        title="Mở hệ soạn thảo công thức Toán học (KaTeX, mhchem)"
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700/80 text-[11px] font-semibold transition cursor-pointer"
       >
         <Sigma className="w-3.5 h-3.5 text-cyan-400" />
         <span>Toán</span>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setIsVisualModalOpen(true)}
+        title="Mở Studio Mô Hình Hình Học Động 3D & Đồ Thị Tương Tác"
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/90 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-300 border border-slate-700/80 text-[11px] font-semibold transition cursor-pointer"
+      >
+        <Compass className="w-3.5 h-3.5 text-emerald-400" />
+        <span>{compact ? 'Hình/Đồ thị' : '📐 Hình/Đồ Thị Động'}</span>
       </button>
 
       {isMathStudioOpen && (
         <MathFormulaStudioModal
           isOpen={isMathStudioOpen}
           onClose={() => setIsMathStudioOpen(false)}
-          onInsert={(formula) => {
-            appendSnippet(formula, true);
-            onNotify?.('Đã chèn công thức Toán học chuẩn!');
-          }}
+          onInsert={(formula) => { appendSnippet(formula, true); onNotify?.('Đã chèn công thức Toán học chuẩn!'); }}
+        />
+      )}
+
+      {isVisualModalOpen && (
+        <InteractiveVisualStudioModal
+          isOpen={isVisualModalOpen}
+          onClose={() => setIsVisualModalOpen(false)}
+          onInsertVisual={(snippet) => { appendSnippet(snippet, false); onNotify?.('Đã chèn mô hình hình học/đồ thị tương tác 60fps!'); }}
         />
       )}
     </div>

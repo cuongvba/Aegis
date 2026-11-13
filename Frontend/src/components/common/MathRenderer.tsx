@@ -5,6 +5,8 @@ import 'katex/dist/contrib/mhchem';
 import { sanitizeWmfInText, convertWmfDataUriToSvg, cleanSvgDataUri } from '@/shared/lib/quiz/wmfDecoder';
 import { useMathConfig } from '@/shared/context/MathConfigContext';
 import { compileMathAndMarkdownHtml, getFormulaMetrics } from '@/shared/lib/quiz/mathHtmlCompiler';
+import { DynamicVisualWidget } from './visual/DynamicVisualWidget';
+import type { DynamicVisualSpec } from './visual/visual-types';
 
 interface MathRendererProps {
   content: string;
@@ -87,6 +89,30 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
         />
       </div>
     );
+  }
+
+  // [ADVS Engine] Nhận diện và render mô hình hình học động / đồ thị tương tác 60fps
+  const visualMatch = sanitizedContent.match(/```visual\s*([\s\S]*?)\s*```/i);
+  if (visualMatch) {
+    let spec: DynamicVisualSpec | null = null;
+    try {
+      spec = JSON.parse(visualMatch[1]);
+    } catch {}
+
+    if (spec) {
+      const beforeText = sanitizedContent.slice(0, visualMatch.index);
+      const afterText = sanitizedContent.slice(visualMatch.index! + visualMatch[0].length);
+      const beforeHtml = beforeText ? compileMathAndMarkdownHtml(beforeText, effectiveBaseUnit) : '';
+      const afterHtml = afterText ? compileMathAndMarkdownHtml(afterText, effectiveBaseUnit) : '';
+
+      return (
+        <div className={`math-rendered leading-relaxed ${className}`}>
+          {beforeHtml && <div dangerouslySetInnerHTML={{ __html: beforeHtml }} />}
+          <DynamicVisualWidget spec={spec} />
+          {afterHtml && <div dangerouslySetInnerHTML={{ __html: afterHtml }} />}
+        </div>
+      );
+    }
   }
 
   if (inline) {
