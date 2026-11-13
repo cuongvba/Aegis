@@ -164,3 +164,4 @@ export const PaperFastTypeModal: React.FC<PaperFastTypeModalProps> = ({
     </div>
   );
 };
+
