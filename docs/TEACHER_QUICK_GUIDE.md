@@ -1,12 +1,13 @@
 # Cẩm Nang Giáo Viên: Sử Dụng Aegis Global Trong 3 Phút
 
+> **Địa chỉ truy cập chính thức**: https://daotao.dehoc.vn  
 > **Dành cho**: Giáo viên Mầm non, Tiểu học, THCS, THPT & Tổ trưởng chuyên môn  
 > **Mục tiêu**: Biết cách **Đưa đề lên $\rightarrow$ Giao bài qua Zalo/QR $\rightarrow$ Quản lý kho đề theo Khối & Năm** chỉ trong vài thao tác đơn giản.
 
 ---
 
 ## 1. Đăng nhập siêu nhanh (10 giây)
-1. Truy cập trang đăng nhập (`/login`).
+1. Truy cập trang đăng nhập: **https://daotao.dehoc.vn/login**
 2. Chọn **1 trong 3 cách**:
    * **Bấm `Tiếp tục với tài khoản Google`** (khuyên dùng — chỉ 1 chạm).
    * Hoặc nhập **Email + Mật khẩu** được nhà trường cấp.
@@ -14,7 +15,7 @@
 
 ---
 
-## 2. Tạo & Giao Bài Tập Về Nhà Trong 3 Chạm (`/creator/studio`)
+## 2. Tạo & Giao Bài Tập Về Nhà Trong 3 Chạm (https://daotao.dehoc.vn/creator/studio)
 
 Đây là màn hình làm việc chính hằng ngày của Thầy/Cô.
 
@@ -44,7 +45,7 @@ Bấm nút Giao bài để mở bảng **Thiết Lập Bài Tập Giao Về Nhà
 
 ---
 
-## 3. Quản Lý Kho Đề Theo Khối (1–12), Năm Học & Trường (`/creator/topics`)
+## 3. Quản Lý Kho Đề Theo Khối (1–12), Năm Học & Trường (https://daotao.dehoc.vn/creator/topics)
 
 Không cần lục tìm hàng chục thư mục lồng nhau — Thầy/Cô dùng **Thanh Xoay Trục 5 Chiều** ở đầu trang:
 
