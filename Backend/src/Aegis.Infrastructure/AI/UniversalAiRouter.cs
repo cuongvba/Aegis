@@ -227,6 +227,15 @@ namespace Aegis.Infrastructure.AI
             // 2. Tự phục hồi (Discovery Fallback) nếu DB chưa chạy migration xong
             if (providers.Count == 0)
             {
+                var ollamaEp = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT");
+                if (string.IsNullOrWhiteSpace(ollamaEp))
+                {
+                    var oHost = Environment.GetEnvironmentVariable("OLLAMA_HOST");
+                    ollamaEp = !string.IsNullOrWhiteSpace(oHost)
+                        ? $"{oHost.TrimEnd('/')}/v1/chat/completions"
+                        : "http://ollama:11434/v1/chat/completions";
+                }
+
                 var discovered = new[]
                 {
                     (WellKnownAiProviders.DeepSeek, "DeepSeek R1/V3", "https://api.deepseek.com/v1", "deepseek-chat", CognitiveArchetype.DeepReasoner, 0.14, 0.28, 1340, 450, 128000),
@@ -240,8 +249,8 @@ namespace Aegis.Infrastructure.AI
                     (WellKnownAiProviders.GitHubModels, "GitHub Models GPT-4o", "https://models.inference.ai.azure.com/chat/completions", "gpt-4o", CognitiveArchetype.LinguisticArbiter, 2.5, 10.0, 1350, 450, 128000),
                     (WellKnownAiProviders.OpenRouter, "OpenRouter Gateway (GPT-4o)", "https://openrouter.ai/api/v1/chat/completions", "openai/gpt-4o", CognitiveArchetype.LinguisticArbiter, 2.5, 10.0, 1330, 380, 128000),
                     (WellKnownAiProviders.Replicate, "Replicate MusicGen Multimodal", "https://api.replicate.com/v1/predictions", "facebook/musicgen-small", CognitiveArchetype.MassiveContext, 0.05, 0.1, 1200, 800, 32000),
-                    (WellKnownAiProviders.LocalOllama, "Local Qwen 2.5 (Siêu Tốc 0đ)", "http://localhost:11434/v1/chat/completions", "qwen2.5:3b", CognitiveArchetype.UltraFastScanner, 0.0, 0.0, 1260, 200, 32768),
-                    ("local-deepseek-r1", "Local DeepSeek-R1 (Lập Luận Sâu 0đ)", "http://localhost:11434/v1/chat/completions", "deepseek-r1:7b", CognitiveArchetype.DeepReasoner, 0.0, 0.0, 1380, 800, 65536)
+                    (WellKnownAiProviders.LocalOllama, "Local Qwen 2.5 (Siêu Tốc 0đ)", ollamaEp, "qwen2.5:3b", CognitiveArchetype.UltraFastScanner, 0.0, 0.0, 1260, 200, 32768),
+                    ("local-deepseek-r1", "Local DeepSeek-R1 (Lập Luận Sâu 0đ)", ollamaEp, "deepseek-r1:7b", CognitiveArchetype.DeepReasoner, 0.0, 0.0, 1380, 800, 65536)
                 };
 
                 int pSeq = 1;

@@ -127,18 +127,23 @@ namespace Aegis.API.Controllers
                     $"CÂU HỎI CỦA NGƯỜI DÙNG: {question}\n\n" +
                     (isEn ? "Please provide a clear, helpful response grounded in the documentation above." : "Hãy giải đáp rõ ràng, cụ thể và hướng dẫn từng bước dựa sát vào tài liệu trên.");
 
-                var aiResp = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                var aiTask = _aiRouter.ExecuteAsync(new AiExecutionRequest
                 {
                     Prompt = userPrompt,
                     SystemPrompt = systemPrompt,
                     Temperature = 0.25
                 });
 
-                if (!string.IsNullOrWhiteSpace(aiResp?.Content) &&
-                    !aiResp.Content.Contains("ResilientFallback", StringComparison.OrdinalIgnoreCase))
+                var completedTask = await Task.WhenAny(aiTask, Task.Delay(3500, ct));
+                if (completedTask == aiTask)
                 {
-                    aiAnswer = aiResp.Content;
-                    modelUsed = string.IsNullOrWhiteSpace(aiResp.ModelUsed) ? "UniversalAiRouter (Docs-RAG)" : aiResp.ModelUsed;
+                    var aiResp = await aiTask;
+                    if (!string.IsNullOrWhiteSpace(aiResp?.Content) &&
+                        !aiResp.Content.Contains("ResilientFallback", StringComparison.OrdinalIgnoreCase))
+                    {
+                        aiAnswer = aiResp.Content;
+                        modelUsed = string.IsNullOrWhiteSpace(aiResp.ModelUsed) ? "UniversalAiRouter (Docs-RAG)" : aiResp.ModelUsed;
+                    }
                 }
             }
             catch

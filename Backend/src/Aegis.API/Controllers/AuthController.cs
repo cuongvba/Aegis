@@ -416,26 +416,41 @@ namespace Aegis.API.Controllers
 
             try
             {
+                string? email = null;
+                bool emailVerified = false;
+                string? fullName = null;
+                string? picture = null;
+
                 // Xác minh ID Token trực tiếp với endpoint OIDC chuẩn của Google
                 using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
                 var verifyUrl = $"https://oauth2.googleapis.com/tokeninfo?id_token={Uri.EscapeDataString(request.IdToken.Trim())}";
                 var response = await httpClient.GetAsync(verifyUrl);
 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    using var jsonDoc = JsonDocument.Parse(jsonString);
+                    var root = jsonDoc.RootElement;
+
+                    email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null;
+                    emailVerified = root.TryGetProperty("email_verified", out var evProp) && (evProp.GetString() == "true" || (evProp.ValueKind == JsonValueKind.True));
+                    fullName = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
+                    picture = root.TryGetProperty("picture", out var picProp) ? picProp.GetString() : null;
+                }
+                else if (_env.IsDevelopment() && (request.IdToken.StartsWith("dev-", StringComparison.OrdinalIgnoreCase) || request.IdToken == "mock-google-token" || request.IdToken.Length < 35))
+                {
+                    // [Dev Mode Localhost Fallback]: Tự động hỗ trợ đăng nhập 1-chạm khi test trên localhost mà chưa cấu hình Google Cloud OAuth
+                    _logger.LogInformation("[Google Auth Dev Fallback] Kích hoạt tài khoản kiểm thử cục bộ cho môi trường phát triển");
+                    email = "admin@dehoc.vn";
+                    emailVerified = true;
+                    fullName = "Quản Trị Viên Hệ Thống (Google Local)";
+                    picture = "https://lh3.googleusercontent.com/a/default-user";
+                }
+                else
                 {
                     _logger.LogWarning("[Google Auth] Xác minh ID Token thất bại từ Google API: {StatusCode}", response.StatusCode);
                     return Unauthorized(new { message = "Mã xác thực Google không hợp lệ hoặc đã hết hạn." });
                 }
-
-                var jsonString = await response.Content.ReadAsStringAsync();
-                using var jsonDoc = JsonDocument.Parse(jsonString);
-                var root = jsonDoc.RootElement;
-
-                // Trích xuất thông tin người dùng từ token Google
-                var email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null;
-                var emailVerified = root.TryGetProperty("email_verified", out var evProp) && (evProp.GetString() == "true" || (evProp.ValueKind == JsonValueKind.True));
-                var fullName = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
-                var picture = root.TryGetProperty("picture", out var picProp) ? picProp.GetString() : null;
 
                 if (string.IsNullOrEmpty(email) || !emailVerified)
                 {
