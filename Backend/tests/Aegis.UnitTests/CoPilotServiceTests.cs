@@ -50,8 +50,8 @@ namespace Aegis.UnitTests
             public void RefreshRegistryFromDatabase() { }
             public Task RefreshRegistryFromDatabaseAsync() => Task.CompletedTask;
             public void RegisterTenantByok(TenantByokConfigDto byokConfig) { }
-            public Task<Dictionary<string, (bool Success, long LatencyMs, string Message)>> TestProvidersAsync()
-                => Task.FromResult(new Dictionary<string, (bool Success, long LatencyMs, string Message)>());
+            public Task<Dictionary<string, ProviderTestResultDto>> TestProvidersAsync()
+                => Task.FromResult(new Dictionary<string, ProviderTestResultDto>());
             public void UpdateSystemConfig(AiSystemConfigDto config) { }
         }
 

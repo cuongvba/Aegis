@@ -7,6 +7,13 @@ using Aegis.Domain.Entities;
 
 namespace Aegis.Application.Interfaces
 {
+    public class ProviderTestResultDto
+    {
+        public bool Success { get; set; }
+        public long LatencyMs { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
+
     public interface IUniversalAiRouter
     {
         /// <summary>
@@ -47,7 +54,7 @@ namespace Aegis.Application.Interfaces
         /// <summary>
         /// Thử nghiệm kết nối và đo độ trễ (latency test) của từng Provider
         /// </summary>
-        Task<Dictionary<string, (bool Success, long LatencyMs, string Message)>> TestProvidersAsync();
+        Task<Dictionary<string, ProviderTestResultDto>> TestProvidersAsync();
 
         /// <summary>
         /// Làm tươi và đồng bộ danh mục Model & Key Vault trực tiếp từ Database PostgreSQL (0ms Hot-Reload)

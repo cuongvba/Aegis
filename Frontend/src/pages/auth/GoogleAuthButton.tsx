@@ -23,7 +23,15 @@ export function GoogleAuthButton({ clientId, onSuccess, onError, disabled = fals
   const googleBtnRef = useRef<HTMLDivElement>(null);
   const [isRendered, setIsRendered] = useState(false);
 
+  const isLocal = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
   useEffect(() => {
+    if (isLocal) {
+      // Trên localhost, không nạp Google GIS script ngoài để tránh lỗi CORS/Origin Mismatch
+      return;
+    }
+
     const currentLang = i18n.language || 'vi';
     const googleLocale = getGoogleLocale(currentLang);
     const scriptId = 'google-jssdk';
@@ -99,40 +107,33 @@ export function GoogleAuthButton({ clientId, onSuccess, onError, disabled = fals
         activeScript.remove();
       }
     };
-  }, [i18n.language, clientId]);
+  }, [i18n.language, clientId, isLocal]);
 
   const handleManualClick = () => {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocal) {
+      onSuccess('dev-google-token-localhost');
+      return;
+    }
 
     if ((window as any).google?.accounts?.id) {
       try {
         (window as any).google.accounts.id.prompt((notification: any) => {
           if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-            if (isLocal) {
-              onSuccess('dev-google-token-localhost');
-            }
+            onError(t('googleFailed', 'Đăng nhập bằng tài khoản Google thất bại.'));
           }
         });
       } catch {
-        if (isLocal) {
-          onSuccess('dev-google-token-localhost');
-        } else {
-          onError(t('googleFailed', 'Đăng nhập bằng tài khoản Google thất bại.'));
-        }
+        onError(t('googleFailed', 'Đăng nhập bằng tài khoản Google thất bại.'));
       }
     } else {
-      if (isLocal) {
-        onSuccess('dev-google-token-localhost');
-      } else {
-        onError(t('googleConnecting', 'Đang kết nối dịch vụ Google Identity... Vui lòng thử lại sau giây lát.'));
-      }
+      onError(t('googleConnecting', 'Đang kết nối dịch vụ Google Identity... Vui lòng thử lại sau giây lát.'));
     }
   };
 
   return (
     <div className="relative w-full min-h-[40px] flex items-center justify-center rounded-xl overflow-hidden">
-      {/* Nút chuẩn thương hiệu Google hiển thị văn bản theo ngôn ngữ hệ thống khi SDK đang nạp */}
-      {!isRendered && (
+      {/* Nút chuẩn thương hiệu Google hiển thị văn bản theo ngôn ngữ hệ thống */}
+      {(!isRendered || isLocal) && (
         <button
           type="button"
           onClick={handleManualClick}
@@ -149,13 +150,15 @@ export function GoogleAuthButton({ clientId, onSuccess, onError, disabled = fals
         </button>
       )}
 
-      {/* Nút Google GIS chính hãng tự nạp và hiển thị theo ngôn ngữ hl */}
-      <div
-        ref={googleBtnRef}
-        className={`w-full flex justify-center transition-opacity duration-200 ${
-          isRendered ? 'opacity-100' : 'opacity-0 pointer-events-none absolute'
-        }`}
-      />
+      {/* Nút Google GIS chính hãng tự nạp và hiển thị theo ngôn ngữ hl trên production */}
+      {!isLocal && (
+        <div
+          ref={googleBtnRef}
+          className={`w-full flex justify-center transition-opacity duration-200 ${
+            isRendered ? 'opacity-100' : 'opacity-0 pointer-events-none absolute'
+          }`}
+        />
+      )}
     </div>
   );
 }

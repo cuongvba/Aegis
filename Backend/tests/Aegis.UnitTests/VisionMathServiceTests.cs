@@ -77,7 +77,7 @@ namespace Aegis.UnitTests
             public AiSystemConfigDto GetSystemConfig() => throw new NotImplementedException();
             public void UpdateSystemConfig(AiSystemConfigDto config) => throw new NotImplementedException();
             public void RegisterTenantByok(TenantByokConfigDto byokConfig) => throw new NotImplementedException();
-            public Task<Dictionary<string, (bool Success, long LatencyMs, string Message)>> TestProvidersAsync() => throw new NotImplementedException();
+            public Task<Dictionary<string, ProviderTestResultDto>> TestProvidersAsync() => throw new NotImplementedException();
             public Task RefreshRegistryFromDatabaseAsync() => Task.CompletedTask;
             public Task<IReadOnlyList<AiModelRegistryDto>> GetActiveNormalizedModelsAsync(string? taskCode = null) => Task.FromResult<IReadOnlyList<AiModelRegistryDto>>(new List<AiModelRegistryDto>());
             public Task<IReadOnlyList<AiModelRegistryDto>> GetActiveNormalizedModelsAsync(CognitiveArchetype? archetype = null, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<AiModelRegistryDto>>(new List<AiModelRegistryDto>());

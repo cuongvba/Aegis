@@ -29,19 +29,36 @@ namespace Aegis.Infrastructure.AI.Adapters
 
         private static string ResolveEndpoint(string? customEndpoint)
         {
-            if (!string.IsNullOrWhiteSpace(customEndpoint)) return customEndpoint;
-
-            var envEndpoint = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT");
-            if (!string.IsNullOrWhiteSpace(envEndpoint)) return envEndpoint;
-
-            var envHost = Environment.GetEnvironmentVariable("OLLAMA_HOST");
-            if (!string.IsNullOrWhiteSpace(envHost))
+            string raw;
+            if (!string.IsNullOrWhiteSpace(customEndpoint))
             {
-                var clean = envHost.TrimEnd('/');
-                return clean.EndsWith("/v1/chat/completions") ? clean : $"{clean}/v1/chat/completions";
+                raw = customEndpoint.Trim();
+            }
+            else
+            {
+                var envEndpoint = Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT");
+                if (!string.IsNullOrWhiteSpace(envEndpoint))
+                {
+                    raw = envEndpoint.Trim();
+                }
+                else
+                {
+                    var envHost = Environment.GetEnvironmentVariable("OLLAMA_HOST");
+                    raw = !string.IsNullOrWhiteSpace(envHost) ? envHost.Trim() : DefaultEndpoint;
+                }
             }
 
-            return DefaultEndpoint;
+            raw = raw.TrimEnd('/');
+            if (raw.Contains("localhost:11434") && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
+            {
+                raw = raw.Replace("localhost:11434", "ollama:11434");
+            }
+
+            if (raw.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase))
+                return raw;
+            if (raw.EndsWith("/v1", StringComparison.OrdinalIgnoreCase))
+                return $"{raw}/chat/completions";
+            return $"{raw}/v1/chat/completions";
         }
 
         private static string NormalizeModelName(string? model)
@@ -51,7 +68,7 @@ namespace Aegis.Infrastructure.AI.Adapters
 
             if (m.Contains("deepseek") || m.Contains("r1"))
             {
-                if (m.Contains("1.5b")) return "deepseek-r1:1.5b";
+                if (m.Contains("1.5b") || m.Contains("local")) return "deepseek-r1:1.5b";
                 if (m.Contains("8b")) return "deepseek-r1:8b";
                 if (m.Contains("14b")) return "deepseek-r1:14b";
                 if (m.Contains("32b")) return "deepseek-r1:32b";

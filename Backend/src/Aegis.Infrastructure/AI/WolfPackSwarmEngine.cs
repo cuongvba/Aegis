@@ -466,6 +466,10 @@ BẮT BUỘC trả lời có định dạng:
                     driver = _drivers[ModelProtocolType.OpenAiCompatible];
                 }
 
+                var isLocal = request.ProviderCompany.Equals("LocalOllama", StringComparison.OrdinalIgnoreCase)
+                    || request.ProviderCompany.Equals("Local", StringComparison.OrdinalIgnoreCase)
+                    || request.ProviderCompany.Equals("Ollama", StringComparison.OrdinalIgnoreCase);
+
                 var endpoint = request.CustomEndpoint;
                 if (string.IsNullOrWhiteSpace(endpoint))
                 {
@@ -480,8 +484,15 @@ BẮT BUỘC trả lời có định dạng:
                         "mistral" => "https://api.mistral.ai/v1",
                         "github" => "https://models.inference.ai.azure.com",
                         "replicate" => "https://api.replicate.com/v1",
-                        _ => "http://localhost:11434/v1"
+                        _ => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("OLLAMA_HOST"))
+                             ? $"{Environment.GetEnvironmentVariable("OLLAMA_HOST")!.TrimEnd('/')}/v1"
+                             : "http://localhost:11434/v1"
                     };
+                }
+
+                if (isLocal && endpoint.Contains("localhost:11434") && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")))
+                {
+                    endpoint = endpoint.Replace("localhost:11434", "ollama:11434");
                 }
 
                 var modelName = request.CustomModelName;
@@ -497,17 +508,17 @@ BẮT BUỘC trả lời có định dạng:
                         "cerebras" => "llama-3.3-70b",
                         "mistral" => "mistral-large-latest",
                         "github" => "gpt-4o",
-                        _ => "qwen2.5:32b"
+                        _ => "qwen2.5:3b"
                     };
                 }
 
                 var effectiveApiKey = request.RawApiKey;
                 if (string.IsNullOrWhiteSpace(effectiveApiKey))
                 {
-                    effectiveApiKey = GetSystemKeyForCompany(request.ProviderCompany);
+                    effectiveApiKey = isLocal ? "local-ollama" : GetSystemKeyForCompany(request.ProviderCompany);
                 }
 
-                if (string.IsNullOrWhiteSpace(effectiveApiKey) && !request.ProviderCompany.Equals("LocalOllama", StringComparison.OrdinalIgnoreCase))
+                if (string.IsNullOrWhiteSpace(effectiveApiKey) && !isLocal)
                 {
                     return new TestAiKeyResult
                     {

@@ -813,9 +813,9 @@ Hãy phân tích và sinh BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (Pedagogical 
             _logger.LogInformation("[UniversalAiRouter] Đăng ký BYOK cho Tenant {TenantId} thành công (Provider: {Provider}).", byokConfig.TenantId, byokConfig.ProviderCode ?? byokConfig.ProviderType.ToString());
         }
 
-        public async Task<Dictionary<string, (bool Success, long LatencyMs, string Message)>> TestProvidersAsync()
+        public async Task<Dictionary<string, ProviderTestResultDto>> TestProvidersAsync()
         {
-            var results = new Dictionary<string, (bool Success, long LatencyMs, string Message)>();
+            var results = new Dictionary<string, ProviderTestResultDto>();
             var providers = _systemConfig.Providers.Where(p => p.IsEnabled).ToList();
 
             foreach (var prov in providers)
@@ -824,9 +824,14 @@ Hãy phân tích và sinh BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (Pedagogical 
                 var adapter = ResolveAdapter(pCode, prov.ProviderType);
                 var key = _keyPoolManager.GetAvailableKey(pCode) ?? _keyPoolManager.GetAvailableKey(prov.ProviderType);
 
-                if (string.IsNullOrWhiteSpace(key) && prov.ProviderType != AiProviderType.LocalOllama && !pCode.Contains("ollama"))
+                if (string.IsNullOrWhiteSpace(key) && prov.ProviderType != AiProviderType.LocalOllama && !pCode.Contains("ollama") && !pCode.Contains("local"))
                 {
-                    results[prov.DisplayName] = (false, 0, "Không có API Key khả dụng trong Vault");
+                    results[prov.DisplayName] = new ProviderTestResultDto
+                    {
+                        Success = false,
+                        LatencyMs = 0,
+                        Message = "Không có API Key khả dụng trong Vault"
+                    };
                     continue;
                 }
 
@@ -839,7 +844,12 @@ Hãy phân tích và sinh BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (Pedagogical 
                     16,
                     prov.BaseUrl);
 
-                results[prov.DisplayName] = (success, durationMs, success ? "Kết nối hoàn hảo" : (error ?? "Lỗi không xác định"));
+                results[prov.DisplayName] = new ProviderTestResultDto
+                {
+                    Success = success,
+                    LatencyMs = durationMs,
+                    Message = success ? "Kết nối hoàn hảo" : (error ?? "Lỗi không xác định")
+                };
             }
 
             return results;
