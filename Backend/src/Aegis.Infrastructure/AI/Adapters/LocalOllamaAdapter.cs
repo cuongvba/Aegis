@@ -117,7 +117,7 @@ namespace Aegis.Infrastructure.AI.Adapters
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return (false, string.Empty, $"[Ollama HTTP {(int)response.StatusCode}] {responseBody}", sw.ElapsedMilliseconds);
+                    throw new HttpRequestException($"[Ollama HTTP {(int)response.StatusCode}] {responseBody}");
                 }
 
                 using var doc = JsonDocument.Parse(responseBody);

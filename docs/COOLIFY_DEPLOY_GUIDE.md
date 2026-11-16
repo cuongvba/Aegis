@@ -117,7 +117,18 @@ Sau khi Coolify báo trạng thái xanh lá cây `Healthy` / `Running`:
    - Kiểm tra giao diện Quản lý ngân hàng câu hỏi của Team (`/admin/questions?scope=TEAM`) và nút Luyện thi cùng Team.
 3. **Kiểm tra Nạp Câu Hỏi Bằng AI (UCIS v3.0)**:
    - Tải thử file Word/Excel vào ngân hàng câu hỏi, kiểm tra hệ thống tự động sinh mã chủ đề SSAE ngắn gọn và lưu trữ thành công.
-4. **Kiểm tra Real-time Hubs & Healthcheck**:
+4. **Kiểm tra Cụm Local Sovereign AI (`aegis-local-ai` - Ollama 11434)**:
+   - Cụm Local AI cho phép vận hành song kiếm hợp bích **Qwen 2.5 3B (Phản xạ tức thời <300ms 0đ)** và **DeepSeek-R1 7B (Suy luận toán sâu CoT 0đ)**.
+   - Để tải 2 model về container trên VPS Coolify, mở terminal VPS và chạy:
+     ```bash
+     docker exec -d aegis-local-ai ollama pull qwen2.5:3b
+     docker exec -d aegis-local-ai ollama pull deepseek-r1:7b
+     ```
+   - Kiểm tra danh sách model đã tải:
+     ```bash
+     docker exec aegis-local-ai ollama list
+     ```
+5. **Kiểm tra Real-time Hubs & Healthcheck**:
    - Truy cập: `https://dehoc.vn/health` -> Trả về `Healthy`.
    - Vào phòng thi `https://dehoc.vn/quiz/secure-exam/practice` hoặc đấu trường `https://dehoc.vn/arena` -> Kiểm tra kết nối SignalR WebSockets thông suốt (không bị gián đoạn hay fallback SPA).
 

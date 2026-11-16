@@ -51,6 +51,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - IrtService__BaseUrl=http://irt-service:8001
       - EnableSwagger=${ENABLE_SWAGGER:-false}
+      # [Dual-Local Sovereign AI] Qwen 2.5 + DeepSeek-R1 (0đ Token)
+      - OLLAMA_ENDPOINT=http://ollama:11434/v1/chat/completions
+      - OLLAMA_HOST=http://ollama:11434
     depends_on:
       postgres:
         condition: service_healthy
@@ -141,7 +144,20 @@ services:
       - keycloak_data:/opt/keycloak/data
     restart: always
 
+  # ===== LOCAL SOVEREIGN AI (Ollama: Qwen 2.5 + DeepSeek-R1) =====
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aegis-local-ai
+    expose:
+      - "11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    restart: always
+
 volumes:
   pgdata:
   redisdata:
   keycloak_data:
+  ollama_models:

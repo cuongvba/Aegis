@@ -1,12 +1,25 @@
 -- [ALDS v1.0] Migration 07: Bảng đo đạc tương tác xã hội (Views, Likes, Ratings, Forks) & Cổng tiếp nhận kỳ vọng/nguyện vọng (User Voice Wishlist)
 
--- 1. Bổ sung các cột tương tác xã hội cho bank_topics
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS view_count BIGINT NOT NULL DEFAULT 0;
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS like_count INT NOT NULL DEFAULT 0;
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS dislike_count INT NOT NULL DEFAULT 0;
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS rating_average NUMERIC(3,2) NOT NULL DEFAULT 0.0;
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS rating_count INT NOT NULL DEFAULT 0;
-ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS fork_count INT NOT NULL DEFAULT 0;
+-- 1. Bổ sung các cột tương tác xã hội cho BankTopics (Tự động thích ứng PascalCase / snake_case)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'BankTopics') THEN
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "ViewCount" BIGINT NOT NULL DEFAULT 0;
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "LikeCount" INT NOT NULL DEFAULT 0;
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "DislikeCount" INT NOT NULL DEFAULT 0;
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "RatingAverage" NUMERIC(3,2) NOT NULL DEFAULT 0.0;
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "RatingCount" INT NOT NULL DEFAULT 0;
+        ALTER TABLE "BankTopics" ADD COLUMN IF NOT EXISTS "ForkCount" INT NOT NULL DEFAULT 0;
+    END IF;
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'bank_topics') THEN
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS view_count BIGINT NOT NULL DEFAULT 0;
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS like_count INT NOT NULL DEFAULT 0;
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS dislike_count INT NOT NULL DEFAULT 0;
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS rating_average NUMERIC(3,2) NOT NULL DEFAULT 0.0;
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS rating_count INT NOT NULL DEFAULT 0;
+        ALTER TABLE bank_topics ADD COLUMN IF NOT EXISTS fork_count INT NOT NULL DEFAULT 0;
+    END IF;
+END $$;
 
 -- 2. Bảng lưu vết nhật ký tương tác người dùng (chống bot spam, đảm bảo idempotency)
 CREATE TABLE IF NOT EXISTS user_interaction_logs (

@@ -36,6 +36,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       # [Phase C] IRT/CAT Engine URL
       - IrtService__BaseUrl=http://irt-service:8001
+      # [Dual-Local AI] Ollama Sovereign Engine (Qwen 2.5 + DeepSeek-R1)
+      - OLLAMA_ENDPOINT=http://ollama:11434/v1/chat/completions
+      - OLLAMA_HOST=http://ollama:11434
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,6 +136,19 @@ services:
     volumes:
       - keycloak_data:/opt/keycloak/data
 
+  # ===== LOCAL SOVEREIGN AI (Ollama: Qwen 2.5 + DeepSeek-R1) =====
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aegis-local-ai
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    restart: unless-stopped
+
 volumes:
   pgdata:
   keycloak_data:
+  ollama_models:

@@ -255,7 +255,7 @@ namespace Aegis.Infrastructure.AI
                         BaseUrl = item.Item3,
                         DefaultModel = item.Item4,
                         ApiKeys = keys,
-                        IsEnabled = keys.Count > 0 || item.Item1 == WellKnownAiProviders.LocalOllama,
+                        IsEnabled = keys.Count > 0 || item.Item1 == WellKnownAiProviders.LocalOllama || item.Item1.Contains("local", StringComparison.OrdinalIgnoreCase),
                         Priority = pSeq++,
                         Archetype = item.Item5,
                         CostPerMillionInputTokens = item.Item6,
@@ -956,6 +956,8 @@ Hãy phân tích và sinh BẢN ĐỒ TƯ DUY SƯ PHẠM 5 BƯỚC (Pedagogical 
             // Fallback hạt nhân an toàn nếu DB đang khởi động
             var fallbacks = new List<AiModelRegistryDto>
             {
+                new() { ModelCode = "qwen2.5-local", DisplayName = "Qwen 2.5 Local (Siêu Tốc 0đ)", ProviderCompany = "Local", CognitiveArchetype = CognitiveArchetype.UltraFastScanner, ProtocolType = ModelProtocolType.OpenAiCompatible, ModelName = "qwen2.5:3b", EndpointUrl = "http://localhost:11434/v1", BenchmarkElo = 1260, AvgLatencyMs = 200, CostInputPerMillion = 0.0, CostOutputPerMillion = 0.0, IsEnabled = true },
+                new() { ModelCode = "deepseek-r1-local", DisplayName = "DeepSeek-R1 Local (Lập Luận Sâu 0đ)", ProviderCompany = "Local", CognitiveArchetype = CognitiveArchetype.DeepReasoner, ProtocolType = ModelProtocolType.OpenAiCompatible, ModelName = "deepseek-r1:7b", EndpointUrl = "http://localhost:11434/v1", BenchmarkElo = 1380, AvgLatencyMs = 600, CostInputPerMillion = 0.0, CostOutputPerMillion = 0.0, IsEnabled = true },
                 new() { ModelCode = "deepseek-r1", DisplayName = "DeepSeek R1 Reasoning", ProviderCompany = "DeepSeek", CognitiveArchetype = CognitiveArchetype.DeepReasoner, ProtocolType = ModelProtocolType.OpenAiCompatible, ModelName = "deepseek-reasoner", EndpointUrl = "https://api.deepseek.com/v1", BenchmarkElo = 1375, AvgLatencyMs = 450, CostInputPerMillion = 0.55, CostOutputPerMillion = 2.19, IsEnabled = true },
                 new() { ModelCode = "gemini-2.0-flash", DisplayName = "Google Gemini 2.0 Flash", ProviderCompany = "Google", CognitiveArchetype = CognitiveArchetype.MassiveContext, ProtocolType = ModelProtocolType.GoogleGenerativeAi, ModelName = "gemini-2.0-flash", EndpointUrl = "https://generativelanguage.googleapis.com", BenchmarkElo = 1310, AvgLatencyMs = 220, CostInputPerMillion = 0.1, CostOutputPerMillion = 0.4, IsEnabled = true },
                 new() { ModelCode = "claude-3-5-sonnet", DisplayName = "Anthropic Claude 3.5 Sonnet", ProviderCompany = "Anthropic", CognitiveArchetype = CognitiveArchetype.LinguisticArbiter, ProtocolType = ModelProtocolType.AnthropicMessages, ModelName = "claude-3-5-sonnet-20241022", EndpointUrl = "https://api.anthropic.com/v1", BenchmarkElo = 1360, AvgLatencyMs = 550, CostInputPerMillion = 3.0, CostOutputPerMillion = 15.0, IsEnabled = true },
