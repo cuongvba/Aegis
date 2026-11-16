@@ -15,6 +15,12 @@ export interface BankTopic {
   materializedPath?: string;
   depthLevel?: number;
   questionCountCached?: number;
+  viewCount?: number;
+  likeCount?: number;
+  dislikeCount?: number;
+  ratingAverage?: number;
+  ratingCount?: number;
+  forkCount?: number;
   createdByUserId?: string;
   creatorId?: string;
 }

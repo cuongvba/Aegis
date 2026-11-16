@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bot, Smartphone, KeyRound } from 'lucide-react';
+import { Bot, Smartphone, KeyRound, Sparkles } from 'lucide-react';
 import { NavMenu }              from './NavMenu';
 import { LanguageSwitcher }     from './LanguageSwitcher';
 import { WorkspaceDropdown }    from './WorkspaceDropdown';
@@ -17,6 +17,7 @@ import { UserProfileDropdown }  from './UserProfileDropdown';
 import { useTenant }            from '@/app/providers/TenantProvider';
 import { MobileAppInstallModal } from '@/components/common/MobileAppInstallModal';
 import { QuickPinEntryModal }    from '@/components/common/QuickPinEntryModal';
+import { UserVoiceFeedbackModal } from '@/components/common/UserVoiceFeedbackModal';
 
 export function AppHeader() {
   const navigate    = useNavigate();
@@ -24,6 +25,7 @@ export function AppHeader() {
   const { tenantName } = useTenant();
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [isUserVoiceModalOpen, setIsUserVoiceModalOpen] = useState(false);
 
   return (
     <header
@@ -83,6 +85,20 @@ export function AppHeader() {
             <span>{t('nav.quickPin', 'Mã PIN')}</span>
           </button>
 
+          {/* Cổng tiếp nhận ý tưởng & nguyện vọng cộng đồng */}
+          <button
+            type="button"
+            onClick={() => setIsUserVoiceModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                       bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200
+                       border border-indigo-500/40 hover:border-indigo-400
+                       text-xs font-black transition-all shadow-sm cursor-pointer select-none group"
+            title={t('nav.userVoiceTitle', 'Đóng góp ý tưởng & xem bảng nguyện vọng cộng đồng')}
+          >
+            <Sparkles size={13} className="text-amber-400 group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">{t('nav.userVoice', 'Ý Tưởng & Góp Ý')}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsMobileModalOpen(true)}
@@ -109,6 +125,9 @@ export function AppHeader() {
 
       {/* Modal Cài Đặt App Di Động & QR Bridge */}
       <MobileAppInstallModal isOpen={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)} />
+
+      {/* Modal Cổng Tiếp Nhận Ý Tưởng & Nguyện Vọng Cộng Đồng */}
+      <UserVoiceFeedbackModal isOpen={isUserVoiceModalOpen} onClose={() => setIsUserVoiceModalOpen(false)} />
     </header>
   );
 }

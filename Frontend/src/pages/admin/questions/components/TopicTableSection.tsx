@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Eye, ToggleLeft, ToggleRight, Trash2, ListTree, TableProperties, Plus, HelpCircle, Send, Play, FileText } from 'lucide-react';
+import { ListTree, TableProperties } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { BankTopic } from '../types';
-import { getTopicFullPath } from '../types';
 import { TopicTreeTable } from './TopicTreeTable';
 import { buildHierarchicalTopicTree } from '@/shared/lib/quiz/topicTreeHelper';
+import { TopicSocialMetricsPill } from '@/pages/creator/topics/components/TopicSocialMetricsPill';
+import { TopicActionButtons } from './TopicActionButtons';
 
 interface TopicTableSectionProps {
   topics: BankTopic[];
@@ -64,13 +65,10 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
   const { t } = useTranslation('admin_questions');
   const [viewMode, setViewMode] = useState<'tree' | 'flat'>('tree');
 
-  // Tính số lượng câu hỏi thực tế (cộng dồn cả nhánh con Roll-up) theo từng mã chủ đề
   const questionCountsByTopic = useMemo(() => {
     const { nodeByCode } = buildHierarchicalTopicTree(topics, questions as any[]);
     const map: Record<string, number> = {};
-    nodeByCode.forEach((node) => {
-      map[node.code] = node.totalQuestionCount;
-    });
+    nodeByCode.forEach((node) => { map[node.code] = node.totalQuestionCount; });
     return map;
   }, [topics, questions]);
 
@@ -93,36 +91,30 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
           />
         </div>
 
-        {/* View Mode Toggle Buttons */}
         <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 self-end md:self-center">
           <button
             type="button"
             onClick={() => setViewMode('tree')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              viewMode === 'tree'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              viewMode === 'tree' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
             <ListTree size={14} />
-            <span>Phân Cấp Cây (Tree View)</span>
+            <span>Phân Cấp Cây</span>
           </button>
           <button
             type="button"
             onClick={() => setViewMode('flat')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-              viewMode === 'flat'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              viewMode === 'flat' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
             <TableProperties size={14} />
-            <span>Bảng Phẳng (Flat Table)</span>
+            <span>Bảng Phẳng</span>
           </button>
         </div>
       </div>
 
-      {/* RENDER CHẾ ĐỘ CÂY */}
       {viewMode === 'tree' ? (
         <TopicTreeTable
           topics={topics}
@@ -140,12 +132,11 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
           onExportDocx={onExportDocx}
         />
       ) : (
-        /* RENDER CHẾ ĐỘ BẢNG PHẲNG TRUYỀN THỐNG */
-        <div className="w-full overflow-x-auto">
+        <div className="overflow-x-auto relative">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="border-b border-slate-850 text-slate-400 text-xs font-black tracking-wider uppercase bg-slate-900/20 select-none">
-                <th className="p-4 w-40 cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('code')}>
+              <tr className="border-b border-slate-800 text-[11px] font-black tracking-wider uppercase text-slate-400 bg-slate-900/80 select-none">
+                <th className="p-4 w-32 cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('code')}>
                   <div className="flex items-center">{t('table.topicCode')} {renderSortIcon('code', tSortField, tSortAsc)}</div>
                 </th>
                 <th className="p-4 cursor-pointer hover:bg-slate-850/50 hover:text-white group transition-colors" onClick={() => handleSort('name')}>
@@ -165,7 +156,12 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
               {pagedTopics.map((topicItem: BankTopic, idx: number) => (
                 <tr key={topicItem.id || idx} className="border-b border-slate-850/60 hover:bg-slate-800/10 transition-colors">
                   <td className="p-4 font-mono text-xs font-black text-cyan-400 select-all">{topicItem.code}</td>
-                  <td className="p-4 font-bold text-slate-200 text-sm">{topicItem.name}</td>
+                  <td className="p-4 font-bold text-slate-200 text-sm">
+                    <div>{topicItem.name}</div>
+                    <div className="mt-1">
+                      <TopicSocialMetricsPill topic={topicItem} compact />
+                    </div>
+                  </td>
                   <td className="p-4 text-xs text-slate-300">
                     <span className="font-mono text-[11px] text-cyan-400 bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800">
                       {topicItem.materializedPath || `/${topicItem.code}/`}
@@ -182,62 +178,18 @@ export const TopicTableSection: React.FC<TopicTableSectionProps> = ({
                     </span>
                   </td>
                   <td className="p-4 text-right sticky right-0 bg-slate-900/95 z-10 border-l border-slate-850/60 shadow-[-4px_0_8px_rgba(0,0,0,0.15)]">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => onOpenQuestions?.(topicItem)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-sky-400 hover:text-white bg-sky-950/60 hover:bg-sky-900/80 border border-sky-500/30 hover:border-sky-500/60 rounded-lg transition cursor-pointer shadow-sm"
-                        title="Xem danh sách câu hỏi của chủ đề này"
-                      >
-                        <HelpCircle size={13} />
-                        <span>Câu hỏi</span>
-                        {(questionCountsByTopic[topicItem.code] || 0) > 0 && (
-                          <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-sky-500/30 text-sky-200 font-mono">
-                            {questionCountsByTopic[topicItem.code]}
-                          </span>
-                        )}
-                      </button>
-                      <button
-                        onClick={() => openEditTopicModal(topicItem)}
-                        className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                        title={t('tooltips.viewDetails')}
-                      >
-                        <Eye size={14} />
-                      </button>
-                      {onAssignHomework && (
-                        <button
-                          type="button"
-                          onClick={() => onAssignHomework(topicItem)}
-                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-emerald-300 hover:text-white bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 rounded-lg transition cursor-pointer shadow-sm"
-                          title="Giao bài tập cho học sinh từ chủ đề này"
-                        >
-                          <Send size={12} />
-                          <span>Giao bài</span>
-                        </button>
-                      )}
-                      {onLaunchArena && (
-                        <button
-                          type="button"
-                          onClick={() => onLaunchArena(topicItem)}
-                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-indigo-300 hover:text-white bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 rounded-lg transition cursor-pointer shadow-sm"
-                          title="Kích hoạt phòng thi Đấu trường trực tiếp"
-                        >
-                          <Play size={12} />
-                          <span>Đấu trường</span>
-                        </button>
-                      )}
-                      {onExportDocx && (
-                        <button
-                          type="button"
-                          onClick={() => onExportDocx(topicItem)}
-                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-blue-300 hover:text-white bg-blue-950/60 hover:bg-blue-900/80 border border-blue-500/40 rounded-lg transition cursor-pointer shadow-sm"
-                          title="Xuất file Word chuẩn Bộ GD&ĐT kèm ma trận đáp án"
-                        >
-                          <FileText size={12} />
-                          <span>Xuất Word</span>
-                        </button>
-                      )}
-                    </div>
+                    <TopicActionButtons
+                      topic={topicItem}
+                      questionCount={questionCountsByTopic[topicItem.code] || 0}
+                      hasWritePermission={hasWritePermission}
+                      onOpenQuestions={onOpenQuestions}
+                      openEditModal={openEditTopicModal}
+                      onAssignHomework={onAssignHomework}
+                      onLaunchArena={onLaunchArena}
+                      onExportDocx={onExportDocx}
+                      handleToggleActive={handleToggleActiveTopic}
+                      handleDelete={handleDeleteTopic}
+                    />
                   </td>
                 </tr>
               ))}

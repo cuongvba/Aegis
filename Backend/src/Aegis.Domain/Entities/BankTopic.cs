@@ -64,6 +64,24 @@ namespace Aegis.Domain.Entities
         /// <summary>Bộ đệm số lượng câu hỏi thuộc chủ đề (tối ưu hóa tốc độ tải hàng vạn chủ đề)</summary>
         public int QuestionCountCached { get; set; } = 0;
 
+        /// <summary>Số lượt xem / truy cập đề</summary>
+        public long ViewCount { get; set; } = 0;
+
+        /// <summary>Số lượt thích (Like)</summary>
+        public int LikeCount { get; set; } = 0;
+
+        /// <summary>Số lượt không thích (Dislike)</summary>
+        public int DislikeCount { get; set; } = 0;
+
+        /// <summary>Điểm đánh giá trung bình (1.0 - 5.0)</summary>
+        public double RatingAverage { get; set; } = 0.0;
+
+        /// <summary>Tổng số lượt đánh giá</summary>
+        public int RatingCount { get; set; } = 0;
+
+        /// <summary>Số lượt nhân bản (Fork / Clone sang Studio)</summary>
+        public int ForkCount { get; set; } = 0;
+
         /// <summary>Định danh tri thức toàn cầu vĩnh cửu (URN)</summary>
         public string? Urn { get; set; }
 

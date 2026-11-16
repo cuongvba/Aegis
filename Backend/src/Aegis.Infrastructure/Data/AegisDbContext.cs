@@ -101,6 +101,10 @@ namespace Aegis.Infrastructure.Data
         public DbSet<SymposiumSession> SymposiumSessions { get; set; } = null!;
         public DbSet<SymposiumPromptTemplate> SymposiumPromptTemplates { get; set; } = null!;
 
+        // ── Social Telemetry & User Voice Engine ──────────────────────────────
+        public DbSet<UserInteractionLog> UserInteractionLogs { get; set; } = null!;
+        public DbSet<PlatformWishlistFeedback> PlatformWishlistFeedbacks { get; set; } = null!;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -642,6 +646,24 @@ namespace Aegis.Infrastructure.Data
                 entity.HasIndex(k => k.TenantId);
                 entity.HasIndex(k => k.Scope);
                 entity.HasIndex(k => k.IsActive);
+            });
+
+            // ── Social Telemetry & User Voice Engine ──────────────────────────────
+            modelBuilder.Entity<UserInteractionLog>(entity =>
+            {
+                entity.ToTable("user_interaction_logs");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.TargetType, e.TargetId, e.InteractionType });
+                entity.HasIndex(e => new { e.TargetType, e.TargetId, e.UserId, e.InteractionType });
+            });
+
+            modelBuilder.Entity<PlatformWishlistFeedback>(entity =>
+            {
+                entity.ToTable("platform_wishlist_feedbacks");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Category);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.UpvotesCount);
             });
         }
 
