@@ -62,7 +62,25 @@ Không cần lục tìm hàng chục thư mục lồng nhau — Thầy/Cô dùng
 
 ---
 
-## 4. Nhờ Trợ Lý AI Co-Pilot Hỗ Trợ (`Ctrl + J`)
+## 4. Tổ Chức Đấu Trường Trực Tiếp Trên Lớp — Aegis Arena (https://daotao.dehoc.vn/arena)
+
+Biến mọi tiết ôn tập hoặc kiểm tra miệng thành **gameshow truyền hình sôi động** chỉ với 1 màn chiếu và điện thoại/máy tính bảng của học sinh:
+
+### 5 Chế độ Đấu trường cho Thầy/Cô chọn 1-chạm
+1. **🔔 Rung Chuông Vàng (`Khuyên dùng cho cả lớp`)**: Cho phép **30 đến 10,000 học sinh** thi cùng lúc. Sai 1 câu là rời sàn, và Thầy/Cô có nút **Cứu Trợ** để hồi sinh cả lớp cực vui.
+2. **⚡ Nhanh Như Chớp (`Kiểm tra 15 phút`)**: Leo dốc 10 bậc — trả lời đúng leo 1 bậc, sai tụt ngay về vạch 0; rèn phản xạ nhanh theo tổ/nhóm.
+3. **🏆 Olympia Supreme (`4 Đội / 4 Thí sinh`)**: Đủ 4 vòng truyền hình (*Khởi Động, Vượt Chướng Ngại Vật, Tăng Tốc, Về Đích & Ngôi Sao Hy Vọng*).
+4. **👑 Ai Là Triệu Phú (`Kiểm tra miệng 1-1`)**: Mời 1 học sinh lên bảng chinh phục 15 câu leo thang với 4 quyền trợ giúp (50:50, Hỏi Gia Sư AI, Hỏi ý kiến cả lớp qua QR, Đổi câu hỏi).
+5. **🎓 Đấu Trường Đại Học (`Đối kháng 2 Tổ/Đội`)**: Hai đội (4 vs 4) bấm chuông giành quyền trả lời và thảo luận câu Bonus.
+
+### Cách mở phòng thi Arena trong 10 giây
+1. Từ **Zen Studio** (`https://daotao.dehoc.vn/creator/studio`) hoặc **Kho Đề** (`https://daotao.dehoc.vn/creator/topics`), bấm nút **Mở Arena** trên bộ đề vừa tạo (hoặc vào thẳng `https://daotao.dehoc.vn/arena`).
+2. Chọn **1 trong 5 chế độ** và thời gian mỗi câu $\rightarrow$ bấm **Khởi tạo phòng**.
+3. Chiếu **Mã QR / Mã Phòng** lên bảng: Học sinh quét mã là vào sàn đấu ngay, bảng xếp hạng cập nhật trực tiếp từng giây.
+
+---
+
+## 5. Nhờ Trợ Lý AI Co-Pilot Hỗ Trợ (`Ctrl + J`)
 
 Bất cứ lúc nào đang làm việc, Thầy/Cô có thể nhấn **`Ctrl + J`** (hoặc bấm biểu tượng Trợ lý AI):
 * Chọn mô hình **`Qwen 2.5 3B (Local — Miễn phí)`** ở thanh dưới cùng để hỏi đáp nhanh mà không tốn chi phí.
@@ -70,6 +88,6 @@ Bất cứ lúc nào đang làm việc, Thầy/Cô có thể nhấn **`Ctrl + J`
 
 ---
 
-## 5. Mẹo Nhỏ Giúp Thầy/Cô Làm Nhanh Gấp 3 Lần
+## 6. Mẹo Nhỏ Giúp Thầy/Cô Làm Nhanh Gấp 3 Lần
 1. **Đặt tên file gọn gàng** trước khi tải lên (ví dụ: `Toan-7-Giua-ky-1-nam-25-26.docx`) hoặc ghi rõ 3 dòng đầu đề (`ĐỀ KIỂM TRA...`, `NĂM HỌC...`, `MÔN:...`) $\rightarrow$ hệ thống sẽ tự xếp đúng ngăn **Khối + Môn + Kỳ + Năm** 100%.
 2. **Nếu quên hoặc gặp lỗi**: Nhấn `Ctrl + F5` để làm mới trang hoặc hỏi ngay **Aegis Co-Pilot** ngay trên màn hình.
