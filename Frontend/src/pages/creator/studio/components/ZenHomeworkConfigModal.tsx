@@ -7,12 +7,13 @@ interface ZenHomeworkConfigModalProps {
   initialConfig: ZenHomeworkConfig;
   isOpen: boolean;
   isLoading: boolean;
+  error?: string | null;
   onClose: () => void;
   onConfirm: (config: ZenHomeworkConfig) => void;
 }
 
 export const ZenHomeworkConfigModal: React.FC<ZenHomeworkConfigModalProps> = ({
-  initialConfig, isOpen, isLoading, onClose, onConfirm,
+  initialConfig, isOpen, isLoading, error, onClose, onConfirm,
 }) => {
   const { t } = useTranslation('creator');
   const [config, setConfig] = useState<ZenHomeworkConfig>(initialConfig);
@@ -157,6 +158,12 @@ export const ZenHomeworkConfigModal: React.FC<ZenHomeworkConfigModalProps> = ({
             </label>
           </div>
         </div>
+
+        {error && (
+          <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-medium">
+            {error}
+          </div>
+        )}
 
         {/* Buttons */}
         <div className="flex items-center justify-end gap-2 pt-2">

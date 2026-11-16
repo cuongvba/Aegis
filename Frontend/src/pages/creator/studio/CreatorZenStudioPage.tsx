@@ -171,6 +171,7 @@ export const CreatorZenStudioPage: React.FC = () => {
           initialConfig={homeworkConfig}
           isOpen={isHomeworkModalOpen}
           isLoading={isSavingToBank}
+          error={errorMessage}
           onClose={handleCloseHomeworkModal}
           onConfirm={(cfg) => handleSaveToBank(cfg)}
         />

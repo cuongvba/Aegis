@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Aegis.Application.Interfaces;
 using Aegis.Infrastructure.Data;
@@ -54,12 +56,14 @@ namespace Aegis.Infrastructure.Services
                 {
                     string patchName = patch.Key;
                     string sqlContent = patch.Value;
+                    string checksum = ComputeSha256(sqlContent);
 
-                    // Bản vá 01_Emergency luôn được chạy để bảo đảm kiểu dữ liệu, các bản vá khác chỉ chạy nếu chưa thành công
+                    // Bản vá 01_Emergency luôn được chạy để bảo đảm kiểu dữ liệu; các bản vá khác chỉ bỏ qua khi cùng Checksum
                     bool isEmergency = patchName.Contains("Emergency", StringComparison.OrdinalIgnoreCase);
-                    if (!isEmergency && appliedPatches.Contains(patchName))
+                    if (!isEmergency && appliedPatches.TryGetValue(patchName, out var existingChecksum) &&
+                        string.Equals(existingChecksum, checksum, StringComparison.OrdinalIgnoreCase))
                     {
-                        _logger.LogDebug("[DatabasePatcher] Patch '{PatchName}' already applied. Skipping.", patchName);
+                        _logger.LogDebug("[DatabasePatcher] Patch '{PatchName}' unchanged (checksum matched). Skipping.", patchName);
                         continue;
                     }
 
@@ -91,7 +95,7 @@ namespace Aegis.Infrastructure.Services
                     bool overallSuccess = patchFailCount == 0 || patchSuccessCount > 0;
                     string logSummary = $"Success: {patchSuccessCount}, Notices: {patchFailCount}. " + string.Join(" | ", errorLogs.Take(3));
 
-                    await RecordPatchExecutionAsync(patchName, overallSuccess, logSummary, cancellationToken);
+                    await RecordPatchExecutionAsync(patchName, checksum, overallSuccess, logSummary, cancellationToken);
                     _logger.LogInformation("[DatabasePatcher] Patch '{PatchName}' completed ({SuccessCount} statements executed).", patchName, patchSuccessCount);
                 }
             }
@@ -108,20 +112,22 @@ namespace Aegis.Infrastructure.Services
             const string createTableSql = @"
                 CREATE TABLE IF NOT EXISTS ""__AegisPatchHistory"" (
                     ""PatchFileName"" text PRIMARY KEY,
+                    ""Checksum"" text,
                     ""AppliedAt"" timestamp with time zone NOT NULL DEFAULT now(),
                     ""Success"" boolean NOT NULL DEFAULT true,
                     ""ExecutionLog"" text
-                );";
+                );
+                ALTER TABLE ""__AegisPatchHistory"" ADD COLUMN IF NOT EXISTS ""Checksum"" text;";
             await _db.Database.ExecuteSqlRawAsync(createTableSql, ct);
         }
 
-        private async Task<HashSet<string>> GetAppliedPatchesAsync(CancellationToken ct)
+        private async Task<Dictionary<string, string>> GetAppliedPatchesAsync(CancellationToken ct)
         {
-            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             try
             {
                 using var cmd = _db.Database.GetDbConnection().CreateCommand();
-                cmd.CommandText = @"SELECT ""PatchFileName"" FROM ""__AegisPatchHistory"" WHERE ""Success"" = true;";
+                cmd.CommandText = @"SELECT ""PatchFileName"", COALESCE(""Checksum"", '') FROM ""__AegisPatchHistory"" WHERE ""Success"" = true;";
                 if (cmd.Connection!.State != System.Data.ConnectionState.Open)
                 {
                     await cmd.Connection.OpenAsync(ct);
@@ -129,32 +135,38 @@ namespace Aegis.Infrastructure.Services
                 using var reader = await cmd.ExecuteReaderAsync(ct);
                 while (await reader.ReadAsync(ct))
                 {
-                    set.Add(reader.GetString(0));
+                    map[reader.GetString(0)] = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning("[DatabasePatcher] Could not read __AegisPatchHistory: {Message}", ex.Message);
             }
-            return set;
+            return map;
         }
 
-        private async Task RecordPatchExecutionAsync(string patchName, bool success, string log, CancellationToken ct)
+        private async Task RecordPatchExecutionAsync(string patchName, string checksum, bool success, string log, CancellationToken ct)
         {
             const string upsertSql = @"
-                INSERT INTO ""__AegisPatchHistory"" (""PatchFileName"", ""AppliedAt"", ""Success"", ""ExecutionLog"")
-                VALUES ({0}, now(), {1}, {2})
+                INSERT INTO ""__AegisPatchHistory"" (""PatchFileName"", ""Checksum"", ""AppliedAt"", ""Success"", ""ExecutionLog"")
+                VALUES ({0}, {1}, now(), {2}, {3})
                 ON CONFLICT (""PatchFileName"") DO UPDATE 
-                SET ""AppliedAt"" = now(), ""Success"" = EXCLUDED.""Success"", ""ExecutionLog"" = EXCLUDED.""ExecutionLog"";";
+                SET ""Checksum"" = EXCLUDED.""Checksum"", ""AppliedAt"" = now(), ""Success"" = EXCLUDED.""Success"", ""ExecutionLog"" = EXCLUDED.""ExecutionLog"";";
 
             try
             {
-                await _db.Database.ExecuteSqlRawAsync(upsertSql, new object[] { patchName, success, log }, ct);
+                await _db.Database.ExecuteSqlRawAsync(upsertSql, new object[] { patchName, checksum, success, log }, ct);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning("[DatabasePatcher] Could not record patch '{PatchName}': {Message}", patchName, ex.Message);
             }
+        }
+
+        private static string ComputeSha256(string content)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(content ?? string.Empty));
+            return Convert.ToHexString(bytes);
         }
 
         private Dictionary<string, string> GetPatchSources()
@@ -223,20 +235,29 @@ namespace Aegis.Infrastructure.Services
             // Loại bỏ comment block /* ... */
             var withoutBlockComments = Regex.Replace(sql, @"/\*[\s\S]*?\*/", "", RegexOptions.Compiled);
 
-            // Tách theo dòng
+            // Tách theo dòng, bảo toàn khối DO $$ ... END $$; của PostgreSQL
             var lines = withoutBlockComments.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            var sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
+            bool inDollarQuote = false;
 
             foreach (var rawLine in lines)
             {
                 var trimmed = rawLine.Trim();
-                // Bỏ qua dòng comment đơn --
-                if (trimmed.StartsWith("--")) continue;
+                // Bỏ qua dòng comment đơn -- (chỉ khi không ở trong khối $$)
+                if (!inDollarQuote && trimmed.StartsWith("--")) continue;
 
                 sb.AppendLine(rawLine);
 
-                // Nếu kết thúc bằng dấu chấm phẩy ;
-                if (trimmed.EndsWith(";"))
+                // Đếm số lần xuất hiện $$ trên dòng để theo dõi trạng thái mở/đóng khối PL/pgSQL
+                int idx = 0;
+                while ((idx = rawLine.IndexOf("$$", idx, StringComparison.Ordinal)) >= 0)
+                {
+                    inDollarQuote = !inDollarQuote;
+                    idx += 2;
+                }
+
+                // Chỉ cắt câu lệnh khi đang ngoài khối $$ và dòng kết thúc bằng dấu chấm phẩy ;
+                if (!inDollarQuote && trimmed.EndsWith(";"))
                 {
                     var stmt = sb.ToString().Trim();
                     if (!string.IsNullOrWhiteSpace(stmt))
