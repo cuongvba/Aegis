@@ -17,6 +17,7 @@ import { ZenHomeworkConfigModal } from '../studio/components/ZenHomeworkConfigMo
 import { ZenRoomLauncherModal } from '../studio/components/ZenRoomLauncherModal';
 import { ZenBankSaveModal } from '../studio/components/ZenBankSaveModal';
 import { ZenExamExportModal } from '../studio/components/ZenExamExportModal';
+import { MultiAxisPivotExplorer } from './components/MultiAxisPivotExplorer';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
@@ -140,6 +141,16 @@ export const ZenTopicsPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* 5-Axis Multi-Dimensional Pivot & Curriculum Coverage Heatmap */}
+        <MultiAxisPivotExplorer
+          summary={state.pivotSummary}
+          filter={state.pivotFilter}
+          selectedTopicCodes={state.selectedTopicCodes}
+          onChangeFilter={state.setPivotFilter}
+          onSelectTopicCodes={state.handleSelectTopicCodes}
+          activeSliceLabel={state.activeSliceLabel}
+        />
 
         {/* Topic Hierarchy & Table */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl relative">

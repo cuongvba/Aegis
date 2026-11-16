@@ -104,6 +104,7 @@ builder.Services.AddScoped<IPdfExtractorService, PdfParserService>();
 builder.Services.AddScoped<IExamDeduplicationEngine, ExamDeduplicationEngine>();
 builder.Services.AddScoped<IIrtClientService, IrtClientService>();
 builder.Services.AddScoped<Aegis.Application.Interfaces.IDatabasePatcher, Aegis.Infrastructure.Services.DatabasePatcher>();
+builder.Services.AddScoped<ITopicPivotService, TopicPivotService>();
 
 // [FIX P1] IMemoryCache — dùng cho GeminiSolverService (TTL eviction thay static dict)
 builder.Services.AddMemoryCache();

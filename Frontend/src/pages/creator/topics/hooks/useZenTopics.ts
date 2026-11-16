@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { learnerQuizService } from '@/services/learner-quiz.service';
+import { topicPivotService, type TopicPivotFilter, type TopicPivotSummary } from '@/services/topic-pivot.service';
 import { canManageResource } from '@/types/auth';
 import type { BankTopic } from '@/pages/admin/questions/types';
 import { useTopicFilters } from '@/pages/admin/questions/hooks/useTopicFilters';
@@ -31,23 +32,64 @@ export function useZenTopics(user: any) {
   const [isDeletingTopicLoading, setIsDeletingTopicLoading] = useState(false);
   const [isContributing, setIsContributing] = useState(false);
 
-  const tFilters = useTopicFilters(topics);
+  // 5-Axis Pivot State
+  const [pivotFilter, setPivotFilter] = useState<TopicPivotFilter>({ pivotMode: 'grade', myOnly: false });
+  const [pivotSummary, setPivotSummary] = useState<TopicPivotSummary | null>(null);
+  const [selectedTopicCodes, setSelectedTopicCodes] = useState<string[] | null>(null);
+  const [activeSliceLabel, setActiveSliceLabel] = useState<string | null>(null);
+
+  const handleSelectTopicCodes = (codes: string[] | null, label?: string) => {
+    setSelectedTopicCodes(codes);
+    setActiveSliceLabel(codes ? (label || null) : null);
+  };
+
+  const pivotFilteredTopics = useMemo(() => {
+    if (selectedTopicCodes && selectedTopicCodes.length > 0) {
+      const codeSet = new Set(selectedTopicCodes.map((c) => c.toUpperCase()));
+      return topics.filter((t) => codeSet.has(t.code.toUpperCase()));
+    }
+    if (!pivotSummary?.topicCoordinates) return topics;
+    const { domainCode, targetLevel, benchmarkYear, issuingOrg, assessmentPurpose } = pivotFilter;
+    if (!domainCode && !targetLevel && !benchmarkYear && !issuingOrg && !assessmentPurpose) {
+      return topics;
+    }
+    return topics.filter((t) => {
+      const coord = pivotSummary.topicCoordinates[t.code];
+      if (!coord) return false;
+      if (domainCode && coord.domainCode.toUpperCase() !== domainCode.toUpperCase()) return false;
+      if (targetLevel && coord.targetLevel.toUpperCase() !== targetLevel.toUpperCase()) return false;
+      if (benchmarkYear && coord.benchmarkYear.toUpperCase() !== benchmarkYear.toUpperCase()) return false;
+      if (issuingOrg && coord.issuingOrg.toUpperCase() !== issuingOrg.toUpperCase()) return false;
+      if (assessmentPurpose && coord.assessmentPurpose.toUpperCase() !== assessmentPurpose.toUpperCase()) return false;
+      return true;
+    });
+  }, [topics, pivotSummary, pivotFilter, selectedTopicCodes]);
+
+  const tFilters = useTopicFilters(pivotFilteredTopics);
 
   const fetchZenTopicsData = async () => {
     setLoading(true);
     try {
-      const [tData, qData] = await Promise.all([
+      const [tData, qData, pData] = await Promise.all([
         learnerQuizService.getTopics(false, true),
         learnerQuizService.getQuestions({ myOnly: true }),
+        topicPivotService.getPivotSummary(pivotFilter),
       ]);
       setTopics(tData);
       setQuestions(qData);
+      if (pData) setPivotSummary(pData);
     } catch (err) {
       console.error('[useZenTopics] Fetch error:', err);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    topicPivotService.getPivotSummary(pivotFilter).then((pData) => {
+      if (pData) setPivotSummary(pData);
+    });
+  }, [pivotFilter]);
 
   useEffect(() => {
     fetchZenTopicsData();
@@ -201,6 +243,12 @@ export function useZenTopics(user: any) {
     confirmDeleteTopic,
     isContributing,
     handleContributeCommunity,
+    pivotFilter,
+    setPivotFilter,
+    pivotSummary,
+    selectedTopicCodes,
+    activeSliceLabel,
+    handleSelectTopicCodes,
   };
 }
 

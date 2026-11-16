@@ -31,17 +31,20 @@ namespace Aegis.API.Controllers
         private readonly IContentOwnershipGuard      _ownershipGuard;
         private readonly ITenantContext              _tenant;
         private readonly IExamDeduplicationEngine    _deduplicationEngine;
+        private readonly ITopicPivotService          _topicPivotService;
 
         public TopicsController(
             AegisDbContext              db, 
             IContentOwnershipGuard          ownershipGuard, 
             ITenantContext                  tenant,
-            IExamDeduplicationEngine?       deduplicationEngine = null)
+            IExamDeduplicationEngine?       deduplicationEngine = null,
+            ITopicPivotService?             topicPivotService = null)
         {
             _db                  = db;
             _ownershipGuard      = ownershipGuard;
             _tenant              = tenant;
             _deduplicationEngine = deduplicationEngine ?? new ExamDeduplicationEngine(db, Microsoft.Extensions.Logging.Abstractions.NullLogger<ExamDeduplicationEngine>.Instance);
+            _topicPivotService   = topicPivotService ?? new TopicPivotService(db);
         }
 
         // ── GET api/quiz/topics ────────────────────────────────────────────────
@@ -356,6 +359,41 @@ namespace Aegis.API.Controllers
             {
                 // Bỏ qua nếu có xung đột để không làm gián đoạn API get
             }
+        }
+
+        // ── GET api/quiz/topics/pivot-summary ─────────────────────────────────
+        /// <summary>
+        /// [5-Axis Cognitive Pivot] Xoay trục đa chiều (Khối 1–12 × Năm học × Trường/Sở × Môn × Mục đích)
+        /// và Ma trận Phủ Học liệu (Coverage Heatmap).
+        /// </summary>
+        [HttpGet("pivot-summary")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetPivotSummary(
+            [FromQuery] string pivotMode = "grade",
+            [FromQuery] string? domainCode = null,
+            [FromQuery] string? targetLevel = null,
+            [FromQuery] string? benchmarkYear = null,
+            [FromQuery] string? issuingOrg = null,
+            [FromQuery] string? assessmentPurpose = null,
+            [FromQuery] bool myOnly = false,
+            CancellationToken ct = default)
+        {
+            Guid? userId = null;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (Guid.TryParse(userIdClaim, out var parsedId)) userId = parsedId;
+
+            var summary = await _topicPivotService.GetPivotSummaryAsync(new TopicPivotQueryDto
+            {
+                PivotMode = pivotMode,
+                DomainCode = domainCode,
+                TargetLevel = targetLevel,
+                BenchmarkYear = benchmarkYear,
+                IssuingOrg = issuingOrg,
+                AssessmentPurpose = assessmentPurpose,
+                MyOnly = myOnly
+            }, userId, ct);
+
+            return Ok(summary);
         }
 
         // ── GET api/quiz/topics/tree ───────────────────────────────────────────
