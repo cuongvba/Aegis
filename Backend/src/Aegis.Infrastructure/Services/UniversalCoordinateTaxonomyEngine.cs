@@ -235,6 +235,13 @@ namespace Aegis.Infrastructure.Services
                         return t.Code;
                     }
                 }
+
+                // Fallback sang từ điển Taxonomy chuẩn nếu DB Tenant chưa có sẵn môn học này
+                var resolvedFromFile = ResolveTopicCode(NormalizeForMatching(fileName), dynamicContext);
+                if (resolvedFromFile != "GENERAL" && resolvedFromFile != "EDUCATION" && resolvedFromFile != "THPT_NATIONAL")
+                {
+                    return resolvedFromFile;
+                }
             }
 
             return "GENERAL";
