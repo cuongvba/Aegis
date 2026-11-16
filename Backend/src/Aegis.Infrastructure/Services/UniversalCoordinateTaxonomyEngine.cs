@@ -247,6 +247,7 @@ namespace Aegis.Infrastructure.Services
         private static int? DetectYear(List<string> banners, string? fileName, string? sheetName, DynamicDomainContext? dynamicContext = null)
         {
             var text = $"{string.Join(" ", banners)} {fileName} {sheetName}";
+            var normalizedText = NormalizeForMatching(text);
             var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
 
             if (reconPatterns.YearLabeledPatterns != null)
@@ -269,6 +270,20 @@ namespace Aegis.Infrastructure.Services
                         }
                     }
                     catch (RegexParseException) { }
+                }
+            }
+
+            // Nhận diện niên khóa rút gọn kiểu "nam-25-26", "2025-2026", "25-26"
+            var academicMatch = Regex.Match(normalizedText, @"\b(?:nam|year|nh|nk)?\s*(?:20)?(\d{2})\s+(?:20)?(\d{2})\b", RegexOptions.IgnoreCase);
+            if (academicMatch.Success &&
+                int.TryParse(academicMatch.Groups[1].Value, out var y1) &&
+                int.TryParse(academicMatch.Groups[2].Value, out var y2) &&
+                y2 == y1 + 1)
+            {
+                int fullYear = 2000 + y1;
+                if (fullYear >= reconPatterns.MinBenchmarkYear && fullYear <= reconPatterns.MaxBenchmarkYear)
+                {
+                    return fullYear;
                 }
             }
 
@@ -296,23 +311,46 @@ namespace Aegis.Infrastructure.Services
         // Trục 2: Vị trí / Cấp bậc / Khối lớp
         // ─────────────────────────────────────────────────────────────────────
 
+        private static readonly Regex SubjectGradeRegex = new(
+            @"\b(?:tieng\s*anh|english|toan|math|vat\s*ly|hoa\s*hoc|sinh\s*hoc|ngu\s*van|lich\s*su|dia\s*ly|tin\s*hoc|cong\s*nghe|gdcd|khtn|lsdl)\s+(\d{1,2})\b(?!\s*(?:phut|cau|ma))",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         private static string? DetectTargetLevel(List<string> banners, string? fileName, string? sheetName, string combinedAll, DynamicDomainContext? dynamicContext, string? domainCode = null)
         {
             var preset = MatchPreset(dynamicContext, "TARGET_LEVEL", combinedAll, domainCode);
             if (preset != null) return preset;
 
             var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
-            foreach (var banner in banners)
+            var candidates = new List<string>(banners);
+            if (!string.IsNullOrWhiteSpace(fileName)) candidates.Add(fileName);
+            if (!string.IsNullOrWhiteSpace(sheetName)) candidates.Add(sheetName);
+
+            foreach (var raw in candidates)
             {
+                var norm = NormalizeForMatching(raw);
                 foreach (var pattern in reconPatterns.TargetLevelPatterns)
                 {
-                    var m = Regex.Match(banner, pattern, RegexOptions.IgnoreCase);
+                    var m = Regex.Match(raw, pattern, RegexOptions.IgnoreCase);
+                    if (!m.Success) m = Regex.Match(norm, pattern, RegexOptions.IgnoreCase);
                     if (!m.Success) continue;
                     var extracted = CleanExtractedText(m.Groups[1].Value);
-                    if (!string.IsNullOrWhiteSpace(extracted) && extracted.Length > 2)
+                    if (!string.IsNullOrWhiteSpace(extracted))
                     {
                         return NormalizeLevelName(extracted, dynamicContext);
                     }
+                }
+
+                // Nhận diện chuẩn "<Môn>-<Khối>" hoặc "lop <Khối>" trong tên file không dấu (vd: Tieng-Anh-7, LOP7)
+                var mGradeWord = Regex.Match(norm, @"\b(?:lop|khoi|grade|class)\s*(\d{1,2})\b", RegexOptions.IgnoreCase);
+                if (mGradeWord.Success && int.TryParse(mGradeWord.Groups[1].Value, out var g1) && g1 >= 1 && g1 <= 12)
+                {
+                    return $"Lớp {g1}";
+                }
+
+                var mSubjGrade = SubjectGradeRegex.Match(norm);
+                if (mSubjGrade.Success && int.TryParse(mSubjGrade.Groups[1].Value, out var g2) && g2 >= 1 && g2 <= 12)
+                {
+                    return $"Lớp {g2}";
                 }
             }
 
@@ -329,9 +367,13 @@ namespace Aegis.Infrastructure.Services
             if (preset != null) return preset;
 
             var reconPatterns = dynamicContext?.StructureDictionary?.TaxonomyReconPatterns ?? new TaxonomyReconnaissancePatternsDto();
-            foreach (var banner in banners)
+            var candidates = new List<string>(banners);
+            if (!string.IsNullOrWhiteSpace(fileName)) candidates.Add(fileName);
+            if (!string.IsNullOrWhiteSpace(sheetName)) candidates.Add(sheetName);
+
+            foreach (var raw in candidates)
             {
-                var stripped = Regex.Replace(banner, @"^(?:bộ\s*câu\s*hỏi(?:\s*,\s*đáp\s*án)?\s*(?:ôn\s*tập\s*)?[-–—:]?\s*)", "", RegexOptions.IgnoreCase).Trim();
+                var stripped = Regex.Replace(raw, @"^(?:bộ\s*câu\s*hỏi(?:\s*,\s*đáp\s*án)?\s*(?:ôn\s*tập\s*)?[-–—:]?\s*)", "", RegexOptions.IgnoreCase).Trim();
                 foreach (var pattern in reconPatterns.AssessmentPurposePatterns)
                 {
                     var m = Regex.Match(stripped, pattern, RegexOptions.IgnoreCase);
@@ -341,6 +383,15 @@ namespace Aegis.Infrastructure.Services
                         return NormalizeTitleCase(purpose, dynamicContext);
                     }
                 }
+
+                var norm = NormalizeForMatching(raw);
+                if (Regex.IsMatch(norm, @"\b(?:giua\s*(?:hoc\s*)?ky\s*(?:1|i)|gk\s*1|gk1)\b")) return "Giữa kỳ I";
+                if (Regex.IsMatch(norm, @"\b(?:giua\s*(?:hoc\s*)?ky\s*(?:2|ii)|gk\s*2|gk2)\b")) return "Giữa kỳ II";
+                if (Regex.IsMatch(norm, @"\b(?:(?:cuoi\s*)?(?:hoc\s*)?ky\s*(?:1|i)|hk\s*1|hk1)\b")) return "Học kỳ I";
+                if (Regex.IsMatch(norm, @"\b(?:(?:cuoi\s*)?(?:hoc\s*)?ky\s*(?:2|ii)|hk\s*2|hk2)\b")) return "Học kỳ II";
+                if (Regex.IsMatch(norm, @"\b(?:thi\s*thu\s*thpt|tot\s*nghiep\s*thpt)\b")) return "Thi thử THPT";
+                if (Regex.IsMatch(norm, @"\b(?:tuyen\s*sinh\s*10|vao\s*10)\b")) return "Tuyển sinh 10";
+                if (Regex.IsMatch(norm, @"\b(?:hoc\s*sinh\s*gioi|hsg)\b")) return "Học sinh giỏi";
             }
 
             return null;
@@ -754,6 +805,21 @@ namespace Aegis.Infrastructure.Services
                 if (i < words.Length - 1) sb.Append(' ');
             }
             return sb.ToString();
+        }
+
+        /// <summary>Chuẩn hóa chuỗi bỏ dấu tiếng Việt, đổi '-' và '_' thành khoảng trắng để nhận diện tên file không dấu.</summary>
+        private static string NormalizeForMatching(string? input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            var replacedD = input.Replace('đ', 'd').Replace('Đ', 'D');
+            var sb = new StringBuilder(replacedD.Length);
+            foreach (var c in replacedD.Normalize(NormalizationForm.FormD))
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) continue;
+                if (c == '-' || c == '_' || c == '/' || c == '\\' || c == '.') sb.Append(' ');
+                else sb.Append(char.ToLowerInvariant(c));
+            }
+            return Regex.Replace(sb.ToString(), @"\s+", " ").Trim();
         }
 
         /// <summary>Chuyển cụm từ thành slug không dấu, chữ thường, phân cách bằng "-" (ví dụ "Tín dụng KHDN" → "tin-dung-khdn").</summary>
@@ -1538,18 +1604,39 @@ namespace Aegis.Infrastructure.Services
                 }
             }
 
-            // 3c. Quét từ text tổng hợp và fileName theo GradeDetectionPatterns
+            var normalizedAll = NormalizeForMatching(text);
+
+            // 3c. Quét từ text tổng hợp và fileName theo GradeDetectionPatterns (+ tên file không dấu dạng Tieng-Anh-7, LOP7)
             if (gradeNum == 0)
             {
                 foreach (var gp in reconPatterns.GradeDetectionPatterns)
                 {
                     var mGrade = Regex.Match(text, gp, RegexOptions.IgnoreCase);
+                    if (!mGrade.Success) mGrade = Regex.Match(normalizedAll, gp, RegexOptions.IgnoreCase);
                     if (mGrade.Success && int.TryParse(mGrade.Groups[1].Value, out var g2) && g2 >= 1 && g2 <= 12)
                     {
                         if (isTnptExam && g2 < 10) continue;
                         gradeNum = g2;
                         break;
                     }
+                }
+            }
+
+            if (gradeNum == 0)
+            {
+                var mSubj = SubjectGradeRegex.Match(normalizedAll);
+                if (mSubj.Success && int.TryParse(mSubj.Groups[1].Value, out var gSubj) && gSubj >= 1 && gSubj <= 12)
+                {
+                    if (!isTnptExam || gSubj >= 10) gradeNum = gSubj;
+                }
+            }
+
+            if (gradeNum == 0)
+            {
+                var mLop = Regex.Match(normalizedAll, @"\b(?:lop|khoi|grade|class)\s*(\d{1,2})\b", RegexOptions.IgnoreCase);
+                if (mLop.Success && int.TryParse(mLop.Groups[1].Value, out var gLop) && gLop >= 1 && gLop <= 12)
+                {
+                    if (!isTnptExam || gLop >= 10) gradeNum = gLop;
                 }
             }
 
@@ -1563,6 +1650,10 @@ namespace Aegis.Infrastructure.Services
             {
                 gradeCode = $"K{gradeNum:D2}";
                 gradeDisplay = $"Lớp {gradeNum}";
+                if (string.IsNullOrWhiteSpace(result.TargetLevel))
+                {
+                    result.TargetLevel = gradeDisplay;
+                }
             }
             else if (!string.IsNullOrWhiteSpace(result.TargetLevel))
             {
@@ -1585,9 +1676,14 @@ namespace Aegis.Infrastructure.Services
                 {
                     if (string.IsNullOrWhiteSpace(kw)) return false;
                     var trimmed = kw.Trim();
+                    var normKw = NormalizeForMatching(trimmed);
                     if (trimmed.Length <= 4)
-                        return Regex.IsMatch(text, $@"(?i)\b{Regex.Escape(trimmed)}\b");
-                    return text.Contains(trimmed, StringComparison.OrdinalIgnoreCase);
+                    {
+                        return Regex.IsMatch(text, $@"(?i)\b{Regex.Escape(trimmed)}\b") ||
+                               (!string.IsNullOrEmpty(normKw) && Regex.IsMatch(normalizedAll, $@"(?i)\b{Regex.Escape(normKw)}\b"));
+                    }
+                    return text.Contains(trimmed, StringComparison.OrdinalIgnoreCase) ||
+                           (!string.IsNullOrEmpty(normKw) && normalizedAll.Contains(normKw, StringComparison.OrdinalIgnoreCase));
                 });
 
                 if (matched)

@@ -86,5 +86,20 @@ namespace Aegis.UnitTests
             Assert.Contains(summary.CoverageMatrix, c => c.TargetLevel == "Khối 10" && c.BenchmarkYear == "2026" && c.Status == "SPARSE");
             Assert.Contains(summary.CoverageMatrix, c => c.TargetLevel == "Khối 12" && c.BenchmarkYear == "2026" && c.Status == "EMPTY");
         }
+
+        [Fact]
+        public void SniffCoordinates_AccentlessHyphenatedFileName_ShouldExtractK07AndGiuaKyIAndYear2025()
+        {
+            var result = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                fileName: "Bo-10-de-on-tap-giua-ky-1-Tieng-Anh-7-nam-25-26-co-dap-an.docx",
+                sheetName: null,
+                headerBannerLines: Array.Empty<string>());
+
+            Assert.Equal("Lớp 7", result.TargetLevel);
+            Assert.Equal("Giữa kỳ I", result.AssessmentPurpose);
+            Assert.Equal(2025, result.BenchmarkYear);
+            Assert.Contains("K07", result.CanonicalTopicCode);
+            Assert.NotEqual("REGULAR", result.SemesterPhase);
+        }
     }
 }
