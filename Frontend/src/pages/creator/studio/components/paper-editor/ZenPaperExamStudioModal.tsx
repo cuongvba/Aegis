@@ -207,7 +207,10 @@ export const ZenPaperExamStudioModal: React.FC<ZenPaperExamStudioModalProps> = (
 
         {/* Paper Canvas Scroll Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950/60 flex justify-center">
-          <div className="w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl p-6 sm:p-10 border border-slate-300 min-h-full">
+          <div
+            className="w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl p-6 sm:p-10 border border-slate-300 min-h-full"
+            style={{ fontFamily: '"Times New Roman", Times, serif' }}
+          >
             <PaperExamHeader metadata={metadata} onChange={(patch) => setMetadata((m) => ({ ...m, ...patch }))} />
             <PaperSectionPart1 questions={part1} onUpdateQuestion={(id, patch) => { setActiveQuestionId(id); handleUpdateQuestion(id, patch); }} onRemoveQuestion={handleRemoveQuestion} onAddQuestion={() => handleAddQuestion('PART_1_SINGLE')} />
             <PaperSectionPart2 questions={part2} onUpdateQuestion={(id, patch) => { setActiveQuestionId(id); handleUpdateQuestion(id, patch); }} onRemoveQuestion={handleRemoveQuestion} onAddQuestion={() => handleAddQuestion('PART_2_TRUE_FALSE')} />
