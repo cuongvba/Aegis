@@ -510,6 +510,44 @@ namespace Aegis.Infrastructure.Services.Docx
                     continue;
                 }
 
+                // Bóc tách bảng Hướng dẫn chấm / Lời giải dạng Markdown ("| Bài 1 | Lời giải... | 0,5 |") trong pha Giải
+                if (isSolutionPhase && cleanLine.TrimStart().StartsWith("|"))
+                {
+                    var cells = cleanLine.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    if (cells.Length >= 2 && !cells.All(c => c.All(ch => ch == '-' || ch == ':')))
+                    {
+                        var mTblQ = Regex.Match(cells[0], @"^(?:Bài|Câu|Question|Problem|Ex)?\s*(\d+)\b", RegexOptions.IgnoreCase);
+                        if (mTblQ.Success && int.TryParse(mTblQ.Groups[1].Value, out int tblQNum))
+                        {
+                            var existingQ = spatialIndex.Resolve(scopeManager.AddressOf(tblQNum)).Question
+                                ?? results.LastOrDefault(r => string.Equals(r.SourceExamName, currentExamCode, StringComparison.OrdinalIgnoreCase)
+                                    && r.SourceQuestionNo == tblQNum.ToString()
+                                    && string.Equals(r.QuestionType, "ESSAY", StringComparison.OrdinalIgnoreCase))
+                                ?? results.LastOrDefault(r => string.Equals(r.SourceExamName, currentExamCode, StringComparison.OrdinalIgnoreCase)
+                                    && r.SourceQuestionNo == tblQNum.ToString());
+                            if (existingQ != null)
+                            {
+                                currentQuestion = existingQ;
+                                currentSubItemExplKey = null;
+                                inExplanation = true;
+                                // Bỏ qua cột đầu (số bài/câu) và cột cuối nếu chỉ là điểm số (vd: "0,5", "1.0đ")
+                                int bodyEnd = cells.Length;
+                                if (cells.Length >= 3 && Regex.IsMatch(cells[^1], @"^\d+(?:[\.,]\d+)?\s*(?:đ|điểm|pts?|points?)?$", RegexOptions.IgnoreCase))
+                                {
+                                    bodyEnd = cells.Length - 1;
+                                }
+                                var solText = string.Join(" — ", cells.Skip(1).Take(Math.Max(1, bodyEnd - 1)).Where(c => !string.IsNullOrWhiteSpace(c)));
+                                if (!string.IsNullOrWhiteSpace(solText))
+                                {
+                                    AppendExplanationLine(currentQuestion, solText, currentMatchedRule, cig);
+                                    TryExtractAnswer(currentQuestion, solText, currentMatchedRule, cig);
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                }
+
                 if (cig.TryMatchQuestionAnchor(cleanLine, out int qNum, out var matchedRule, activeRules) && matchedRule?.TargetExamType != "TABLE_MATRIX")
                 {
                     LastDebugLogs.Add($"[MATCHED Q] '{cleanLine}' -> qNum={qNum}, isSol={isSolutionPhase}, topic={currentTopicCode}, rule={matchedRule?.RuleCode}");
@@ -677,9 +715,12 @@ namespace Aegis.Infrastructure.Services.Docx
                         : (documentSubject ?? InferTopicFromContent(questionBody, dynamicContext));
 
                     string initialAnswer = "";
-                    if (answerKeyMap != null)
+                    if (answerKeyMap != null && !string.Equals(resolvedScopeType, "ESSAY", StringComparison.OrdinalIgnoreCase))
                     {
-                        var examCodes = new[] { currentExamCode, "DEFAULT" };
+                        bool isMultiExamMap = answerKeyMap.Keys.Count(k => !string.Equals(k, "DEFAULT", StringComparison.OrdinalIgnoreCase)) > 1;
+                        var examCodes = (!isMultiExamMap || string.Equals(currentExamCode, "DEFAULT", StringComparison.OrdinalIgnoreCase))
+                            ? new[] { currentExamCode, "DEFAULT" }
+                            : new[] { currentExamCode };
                         // Tuân thủ nghiêm ngặt phân cấp Đề-Phần-Câu-Ý: CHỈ tra cứu trong Section tương đương của câu hỏi này
                         var allowedSections = GetEquivalentSections(resolvedScopeType);
                         if (!string.IsNullOrWhiteSpace(currentSection))
@@ -940,14 +981,19 @@ namespace Aegis.Infrastructure.Services.Docx
                 for (int i = 0; i < results.Count; i++)
                 {
                     var q = results[i];
-                    bool needsAns = string.IsNullOrWhiteSpace(q.SuggestedAnswer) 
+                    bool needsAns = !string.Equals(q.QuestionType, "ESSAY", StringComparison.OrdinalIgnoreCase) &&
+                        (string.IsNullOrWhiteSpace(q.SuggestedAnswer) 
                         || q.SuggestedAnswer.Contains("Điền đáp số")
-                        || (Has(cig, q.QuestionType, QuestionTypeProfileDto.CapMultiStatement) && !q.SuggestedAnswer.Contains(")"));
+                        || (Has(cig, q.QuestionType, QuestionTypeProfileDto.CapMultiStatement) && !q.SuggestedAnswer.Contains(")")));
 
                     if (needsAns)
                     {
                         int qNum1Based = i + 1;
-                        var examCodes = new[] { q.SourceExamName ?? currentExamCode, currentExamCode, "DEFAULT" };
+                        var targetExam = q.SourceExamName ?? currentExamCode;
+                        bool isMultiExamMap = answerKeyMap.Keys.Count(k => !string.Equals(k, "DEFAULT", StringComparison.OrdinalIgnoreCase)) > 1;
+                        var examCodes = (!isMultiExamMap || string.Equals(targetExam, "DEFAULT", StringComparison.OrdinalIgnoreCase))
+                            ? new[] { targetExam, currentExamCode, "DEFAULT" }
+                            : new[] { targetExam };
                         // Tuân thủ nghiêm ngặt phân cấp Đề-Phần-Câu-Ý: CHỈ tra cứu trong Section tương đương cùng dạng
                         var allowedSections = GetEquivalentSections(q.QuestionType);
                         if (!string.IsNullOrWhiteSpace(q.SourceSectionName))

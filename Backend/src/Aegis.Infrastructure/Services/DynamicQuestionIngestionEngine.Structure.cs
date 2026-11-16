@@ -50,6 +50,23 @@ namespace Aegis.Infrastructure.Services
             examCode = string.Empty;
             if (string.IsNullOrWhiteSpace(line)) return false;
 
+            // Hỗ trợ bảng tiêu đề 1 hàng được chuyển sang Markdown table ("| ĐỀ 1 | ĐỀ ÔN TẬP... |")
+            if (line.TrimStart().StartsWith("|"))
+            {
+                var cells = line.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                foreach (var cell in cells)
+                {
+                    if (!string.IsNullOrWhiteSpace(cell) && !cell.All(c => c == '-' || c == ':'))
+                    {
+                        if (TryMatchExamHeading(cell, out examCode))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
             // Loại trừ dòng tiêu đề tài liệu chứa năm thi / tốt nghiệp nếu không có định danh số đề rõ ràng
             if (Regex.IsMatch(line, @"(?i)\b(?:TỐT\s*NGHIỆP|THPT|ĐẠI\s*HỌC|HỌC\s*KỲ|HK\d|NĂM\s*HỌC|NĂM\s*\d{4})\b")
                 && !Regex.IsMatch(line, @"(?i)\b(?:ĐỀ|EXAM|TEST|MÃ\s*ĐỀ)\s*(?:SỐ\s*|NO\.?\s*)?\d{1,3}\b"))
