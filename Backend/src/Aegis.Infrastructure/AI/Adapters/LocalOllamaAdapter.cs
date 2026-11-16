@@ -114,16 +114,21 @@ namespace Aegis.Infrastructure.AI.Adapters
                 }
                 messages.Add(new { role = "user", content = prompt });
 
+                var effectiveMaxTokens = modelToUse.Contains("deepseek", StringComparison.OrdinalIgnoreCase)
+                    ? Math.Clamp(maxTokens > 0 ? maxTokens : 512, 64, 768)
+                    : Math.Clamp(maxTokens > 0 ? maxTokens : 320, 64, 512);
+
                 var payload = new
                 {
                     model = modelToUse,
                     messages = messages,
                     temperature = temperature,
-                    max_tokens = maxTokens > 0 ? maxTokens : 2048,
+                    max_tokens = effectiveMaxTokens,
                     stream = false
                 };
 
                 var client = _httpClientFactory.CreateClient("OllamaClient");
+                client.Timeout = TimeSpan.FromSeconds(120);
                 using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
                 request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 

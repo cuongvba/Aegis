@@ -602,6 +602,12 @@ namespace Aegis.Infrastructure.AI
         {
             var code = WellKnownAiProviders.Normalize(providerCode);
 
+            if ((code == "local" || code == "ollama" || code == "localollama") &&
+                _adapters.TryGetValue("localollama", out var localAdapter))
+            {
+                return localAdapter;
+            }
+
             if (_adapters.TryGetValue(code, out var adapter))
             {
                 return adapter;

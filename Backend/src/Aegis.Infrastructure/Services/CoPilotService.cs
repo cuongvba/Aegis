@@ -147,6 +147,15 @@ namespace Aegis.Infrastructure.Services
                     }
                 }
 
+                if (!string.IsNullOrWhiteSpace(modelCodeToUse) &&
+                    (modelCodeToUse.Contains("local", StringComparison.OrdinalIgnoreCase) || modelCodeToUse.Contains("qwen", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var isDeepReasoner = modelCodeToUse.Contains("deepseek", StringComparison.OrdinalIgnoreCase);
+                    aiRequest.MaxTokens = isDeepReasoner ? 512 : 240;
+                    aiRequest.SystemPrompt = (aiRequest.SystemPrompt ?? string.Empty) +
+                        "\n[CHẾ ĐỘ LOCAL AI]: Hãy trả lời thật súc tích, rõ ràng, đi thẳng vào trọng tâm (khoảng 80-140 từ) để đảm bảo tốc độ phản hồi tối ưu.";
+                }
+
                 AiExecutionResponse aiResponse;
                 if (!string.IsNullOrWhiteSpace(modelCodeToUse) && !modelCodeToUse.StartsWith("UniversalAiRouter", StringComparison.OrdinalIgnoreCase))
                 {

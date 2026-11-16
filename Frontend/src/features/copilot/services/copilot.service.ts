@@ -12,7 +12,9 @@ export const CoPilotService = {
    * Gửi prompt hoặc slash command tới Backend Co-Pilot
    */
   async sendMessage(request: CoPilotRequest): Promise<CoPilotResponse> {
-    const res = await api.post<CoPilotResponse>('/api/v1/copilot/chat', request);
+    const res = await api.post<CoPilotResponse>('/api/v1/copilot/chat', request, {
+      timeout: 120000,
+    });
     return res.data;
   },
 
