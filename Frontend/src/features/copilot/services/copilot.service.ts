@@ -34,9 +34,10 @@ export const CoPilotService = {
       return res.data;
     } catch {
       return [
-        { modelCode: 'claude-3-5-sonnet', displayName: 'Claude 3.5 Sonnet (Khảo Thí)', archetype: 'DeepReasoner' },
+        { modelCode: 'qwen2.5-local', displayName: 'Qwen 2.5 Local (Phản Xạ Nhanh 0đ)', archetype: 'UltraFast' },
+        { modelCode: 'deepseek-r1-local', displayName: 'DeepSeek-R1 Local (Lập Luận Sâu 0đ)', archetype: 'DeepReasoner' },
         { modelCode: 'gemini-2-5-flash', displayName: 'Gemini 2.5 Flash (Siêu Tốc)', archetype: 'UltraFast' },
-        { modelCode: 'deepseek-r1-local', displayName: 'DeepSeek-R1 (Toán & Logic)', archetype: 'DeepReasoner' },
+        { modelCode: 'claude-3-5-sonnet', displayName: 'Claude 3.5 Sonnet (Khảo Thí)', archetype: 'DeepReasoner' },
         { modelCode: 'gpt-4o', displayName: 'GPT-4o (Đa phương thức)', archetype: 'MassiveContext' }
       ];
     }

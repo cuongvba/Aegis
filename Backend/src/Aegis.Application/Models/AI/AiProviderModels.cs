@@ -51,11 +51,9 @@ namespace Aegis.Application.Models.AI
         {
             if (string.IsNullOrWhiteSpace(code)) return null;
             var norm = Normalize(code);
+            if (norm.Contains("ollama") || norm.Contains("local") || norm.Contains("qwen")) return AiProviderType.LocalOllama;
             if (norm.Contains("deepseek")) return AiProviderType.DeepSeek;
             if (norm.Contains("gemini") || norm.Contains("google")) return AiProviderType.GoogleGemini;
-            if (norm.Contains("openai") || norm.Contains("gpt")) return AiProviderType.OpenAI;
-            if (norm.Contains("anthropic") || norm.Contains("claude")) return AiProviderType.AnthropicClaude;
-            if (norm.Contains("ollama") || norm.Contains("local") || norm.Contains("qwen")) return AiProviderType.LocalOllama;
             if (norm.Contains("groq")) return AiProviderType.Groq;
             if (norm.Contains("sambanova")) return AiProviderType.SambaNova;
             if (norm.Contains("cerebras")) return AiProviderType.Cerebras;

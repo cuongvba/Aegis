@@ -1,4 +1,4 @@
-﻿// ── AdminQuestions Shared Types ───────────────────────────────────────────────
+// ── AdminQuestions Shared Types ───────────────────────────────────────────────
 // Tách ra từ AdminQuestionsPage.tsx (107KB → modules) — Task A11
 
 export interface BankTopic {

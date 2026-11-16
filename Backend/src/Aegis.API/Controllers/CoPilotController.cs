@@ -479,10 +479,11 @@ namespace Aegis.API.Controllers
             {
                 var fallbackList = new[]
                 {
+                    new { ModelCode = "qwen2.5-local", DisplayName = "Qwen 2.5 Local (Phản Xạ Nhanh 0đ)", Archetype = "UltraFast" },
+                    new { ModelCode = "deepseek-r1-local", DisplayName = "DeepSeek-R1 Local (Lập Luận Sâu 0đ)", Archetype = "DeepReasoner" },
                     new { ModelCode = "claude-3-5-sonnet", DisplayName = "Claude 3.5 Sonnet (Chuyên gia Khảo thí)", Archetype = "DeepReasoner" },
-                    new { ModelCode = "gemini-2-5-flash", DisplayName = "Gemini 2.5 Flash (Siêu tốc 0ms)", Archetype = "UltraFast" },
-                    new { ModelCode = "gpt-4o", DisplayName = "GPT-4o (Đa phương thức)", Archetype = "MassiveContext" },
-                    new { ModelCode = "deepseek-r1-local", DisplayName = "DeepSeek-R1 (Toán học & Logic)", Archetype = "DeepReasoner" }
+                    new { ModelCode = "gemini-2-5-flash", DisplayName = "Gemini 2.5 Flash (Siêu tốc Đám mây)", Archetype = "UltraFast" },
+                    new { ModelCode = "gpt-4o", DisplayName = "GPT-4o (Đa phương thức)", Archetype = "MassiveContext" }
                 };
                 return Ok(fallbackList);
             }

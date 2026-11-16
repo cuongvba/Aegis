@@ -133,10 +133,24 @@ namespace Aegis.Infrastructure.Services
                     Temperature = 0.4
                 };
 
-                AiExecutionResponse aiResponse;
-                if (!string.IsNullOrWhiteSpace(request.ModelCode) && !request.ModelCode.StartsWith("UniversalAiRouter", StringComparison.OrdinalIgnoreCase))
+                // [Song Kiếm Hợp Bích] Tự động điều phối linh hoạt giữa Fast SLM (Qwen) và Deep Reasoner (DeepSeek-R1)
+                var modelCodeToUse = request.ModelCode;
+                if (string.IsNullOrWhiteSpace(modelCodeToUse) || modelCodeToUse.Equals("local", StringComparison.OrdinalIgnoreCase) || modelCodeToUse.Equals("auto", StringComparison.OrdinalIgnoreCase))
                 {
-                    aiResponse = await _aiRouter.ExecuteModelDirectAsync(request.ModelCode, aiRequest, request.UserId, request.TenantId, ct);
+                    if (IsMathOrComplexLogicQuery(rawMessage))
+                    {
+                        modelCodeToUse = "deepseek-r1-local";
+                    }
+                    else if (modelCodeToUse?.Equals("local", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        modelCodeToUse = "qwen2.5-local";
+                    }
+                }
+
+                AiExecutionResponse aiResponse;
+                if (!string.IsNullOrWhiteSpace(modelCodeToUse) && !modelCodeToUse.StartsWith("UniversalAiRouter", StringComparison.OrdinalIgnoreCase))
+                {
+                    aiResponse = await _aiRouter.ExecuteModelDirectAsync(modelCodeToUse, aiRequest, request.UserId, request.TenantId, ct);
                 }
                 else
                 {
@@ -151,11 +165,28 @@ namespace Aegis.Infrastructure.Services
                 }
 
                 sw.Stop();
+
+                var finalContent = aiResponse.Content;
+                var thoughtTrace = "Phân tích yêu cầu và ngữ cảnh làm việc hiện tại qua UniversalAiRouter (UAR).\n" +
+                                  $"Định tuyến thành công qua mô hình {aiResponse.ModelUsed} với độ trễ {sw.ElapsedMilliseconds}ms.";
+
+                // [CoT Tracing] Bóc tách thẻ <think>...</think> của DeepSeek-R1 để hiển thị trực quan
+                if (finalContent.Contains("<think>") && finalContent.Contains("</think>"))
+                {
+                    var startIdx = finalContent.IndexOf("<think>", StringComparison.OrdinalIgnoreCase);
+                    var endIdx = finalContent.IndexOf("</think>", StringComparison.OrdinalIgnoreCase);
+                    if (startIdx >= 0 && endIdx > startIdx)
+                    {
+                        var rawThink = finalContent.Substring(startIdx + 7, endIdx - (startIdx + 7)).Trim();
+                        thoughtTrace = $"🧠 [DeepSeek-R1 CoT Thought Trace]:\n{rawThink}";
+                        finalContent = finalContent.Substring(endIdx + 8).Trim();
+                    }
+                }
+
                 return new CoPilotResponseDto
                 {
                     SessionId = Guid.NewGuid().ToString("N"),
-                    ThoughtTrace = "Phân tích yêu cầu và ngữ cảnh làm việc hiện tại qua UniversalAiRouter (UAR).\n" +
-                                  $"Định tuyến thành công qua mô hình {aiResponse.ModelUsed} với độ trễ {sw.ElapsedMilliseconds}ms.",
+                    ThoughtTrace = thoughtTrace,
                     ToolCalls = new List<CoPilotToolCallDto>
                     {
                         new CoPilotToolCallDto
@@ -166,7 +197,7 @@ namespace Aegis.Infrastructure.Services
                             DurationMs = aiResponse.DurationMs
                         }
                     },
-                    Content = aiResponse.Content,
+                    Content = finalContent,
                     SuggestedActions = GenerateSuggestedActionsForPersona(request.Persona),
                     ModelUsed = aiResponse.ModelUsed,
                     LatencyMs = sw.ElapsedMilliseconds,
@@ -180,6 +211,17 @@ namespace Aegis.Infrastructure.Services
 
                 return GenerateResilientFallbackResponse(request, rawMessage, ex.Message, sw);
             }
+        }
+
+        private static bool IsMathOrComplexLogicQuery(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            var t = text.ToLowerInvariant();
+            return t.Contains("$") || t.Contains("\\int") || t.Contains("\\frac") || t.Contains("\\lim") ||
+                   t.Contains("tích phân") || t.Contains("đạo hàm") || t.Contains("phương trình") ||
+                   t.Contains("hệ số") || t.Contains("mệnh đề") || t.Contains("đúng hay sai") ||
+                   t.Contains("chứng minh") || t.Contains("tìm m") || t.Contains("oxyz") ||
+                   t.Contains("lập luận") || t.Contains("giải thích tại sao") || t.Contains("r1");
         }
 
         private static bool IsGreetingOrStatusQuery(string text)

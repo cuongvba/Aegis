@@ -240,7 +240,8 @@ namespace Aegis.Infrastructure.AI
                     (WellKnownAiProviders.GitHubModels, "GitHub Models GPT-4o", "https://models.inference.ai.azure.com/chat/completions", "gpt-4o", CognitiveArchetype.LinguisticArbiter, 2.5, 10.0, 1350, 450, 128000),
                     (WellKnownAiProviders.OpenRouter, "OpenRouter Gateway (GPT-4o)", "https://openrouter.ai/api/v1/chat/completions", "openai/gpt-4o", CognitiveArchetype.LinguisticArbiter, 2.5, 10.0, 1330, 380, 128000),
                     (WellKnownAiProviders.Replicate, "Replicate MusicGen Multimodal", "https://api.replicate.com/v1/predictions", "facebook/musicgen-small", CognitiveArchetype.MassiveContext, 0.05, 0.1, 1200, 800, 32000),
-                    (WellKnownAiProviders.LocalOllama, "Local Sovereign Qwen 2.5 32B", "http://localhost:11434/v1/chat/completions", "qwen2.5:14b", CognitiveArchetype.SovereignLocal, 0.0, 0.0, 1260, 300, 32768)
+                    (WellKnownAiProviders.LocalOllama, "Local Qwen 2.5 (Siêu Tốc 0đ)", "http://localhost:11434/v1/chat/completions", "qwen2.5:3b", CognitiveArchetype.UltraFastScanner, 0.0, 0.0, 1260, 200, 32768),
+                    ("local-deepseek-r1", "Local DeepSeek-R1 (Lập Luận Sâu 0đ)", "http://localhost:11434/v1/chat/completions", "deepseek-r1:7b", CognitiveArchetype.DeepReasoner, 0.0, 0.0, 1380, 800, 65536)
                 };
 
                 int pSeq = 1;
