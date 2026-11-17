@@ -48,6 +48,7 @@ const AchievementsPage = lazyRetry(() => import('@/pages/gamification/Achievemen
 const PathExplorer = lazyRetry(() => import('@/pages/paths/PathExplorer').then(m => ({ default: m.PathExplorer })));
 const PaywallPage = lazyRetry(() => import('@/pages/paywall/PaywallPage').then(m => ({ default: m.PaywallPage })));
 const ArenaHubPage = lazyRetry(() => import('@/pages/arena/ArenaHubPage').then(m => ({ default: m.ArenaHubPage })));
+const VisualLearningLabPage = lazyRetry(() => import('@/pages/visual-lab/VisualLearningLabPage'));
 const ArenaJoinPage = lazyRetry(() => import('@/pages/arena/ArenaJoinPage').then(m => ({ default: m.ArenaJoinPage })));
 const ArenaRoomPage = lazyRetry(() => import('@/pages/arena/ArenaRoomPage').then(m => ({ default: m.ArenaRoomPage })));
 const ArenaStudioPage = lazyRetry(() => import('@/pages/arena/ArenaStudioPage').then(m => ({ default: m.ArenaStudioPage })));
@@ -108,6 +109,7 @@ export default function App() {
                 <Route path="achievements" element={<AchievementsPage />} />
                 <Route path="paths" element={<PathExplorer />} />
                 <Route path="arena" element={<ArenaHubPage />} />
+                <Route path="visual-lab" element={<VisualLearningLabPage />} />
                 <Route path="symposium" element={<UniversalSymposiumPage />} />
               </Route>
 

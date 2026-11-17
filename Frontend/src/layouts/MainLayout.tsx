@@ -27,6 +27,7 @@ export function MainLayout() {
     const path = location.pathname;
     if (path.includes('dashboard')) return 'Dashboard';
     if (path.includes('arena')) return 'Arena Sân Đấu';
+    if (path.includes('visual-lab')) return 'Phòng Lab Trực Quan 60fps';
     if (path.includes('symposium')) return 'Đại Hội Thảo AI';
     if (path.includes('practice')) return 'Luyện Tập Khảo Thí';
     return 'Tổng Quan Aegis';
