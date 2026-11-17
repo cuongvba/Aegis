@@ -501,6 +501,36 @@ namespace Aegis.Domain.Entities
         }
     }
 
+    // ─── Tập viết / Vẽ nét trên Canvas (M-Write / Kanji / Math Handwriting) ───
+    // Payload schema: { "targetGlyph": "A", "minStrokes": 1 }
+    public class HandwritingQuestion : QuestionBase
+    {
+        public HandwritingQuestion() => QuestionType = "HANDWRITING";
+
+        public override double EvaluateAnswer(string studentAnswerJson)
+        {
+            if (string.IsNullOrWhiteSpace(studentAnswerJson)) return 0.0;
+
+            int minStrokes = 1;
+            if (TryGetPayloadProperty(Payload, "minStrokes", out var msEl) && msEl.TryGetInt32(out var parsedMs))
+                minStrokes = Math.Max(1, parsedMs);
+
+            try
+            {
+                using var doc = JsonDocument.Parse(studentAnswerJson);
+                if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                {
+                    int strokes = doc.RootElement.TryGetProperty("strokes", out var sEl) && sEl.TryGetInt32(out var sVal) ? sVal : 0;
+                    double coverage = doc.RootElement.TryGetProperty("coveragePct", out var cEl) && cEl.TryGetDouble(out var cVal) ? cVal : 0.0;
+                    return (strokes >= minStrokes && coverage >= 1.0) ? 1.0 : 0.0;
+                }
+            }
+            catch { }
+
+            return 0.0;
+        }
+    }
+
     // ─── Sắp xếp thứ tự ───────────────────────────────────────────────────────
     // Payload schema: { "items": [...], "correctOrder": ["2","3","1"] }
     // studentAnswerJson: JSON array hoặc comma-separated

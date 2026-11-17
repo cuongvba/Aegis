@@ -1,4 +1,4 @@
-import { Mic, MicOff, Volume2, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2, RotateCcw, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import type { QuestionWidgetProps } from './types';
 
@@ -10,13 +10,25 @@ function normalizeTokens(text: string): string[] {
     .filter(Boolean);
 }
 
+const SPEECH_LANGS = [
+  { code: 'en-US', label: 'EN (US)' },
+  { code: 'vi-VN', label: 'VI' },
+  { code: 'ja-JP', label: 'JA' },
+  { code: 'zh-CN', label: 'ZH' },
+  { code: 'ko-KR', label: 'KO' },
+  { code: 'fr-FR', label: 'FR' },
+];
+
 export default function SpeakOutWidget({
   question,
   answer,
   onUpdate,
   disabled,
 }: QuestionWidgetProps) {
+  const defaultLang = String((question.payload as any)?.lang || 'en-US');
+  const [speechLang, setSpeechLang] = useState(defaultLang);
   const [isRecording, setIsRecording] = useState(false);
+  const [shadowBeat, setShadowBeat] = useState<string | null>(null);
   const [speechError, setSpeechError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -40,25 +52,22 @@ export default function SpeakOutWidget({
     return Math.round((hits / targetTokens.length) * 100);
   }, [targetTokens, spokenTokens]);
 
-  const playNativeSample = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window) || !targetPhrase) return;
+  const playNativeSample = (onEnd?: () => void) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window) || !targetPhrase) {
+      onEnd?.();
+      return;
+    }
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(targetPhrase);
-    utter.lang = 'en-US';
+    utter.lang = speechLang;
     utter.rate = 0.92;
+    if (onEnd) utter.onend = onEnd;
     window.speechSynthesis.speak(utter);
   };
 
-  const toggleRecording = () => {
+  const startRecording = () => {
     if (disabled) return;
     setSpeechError(null);
-
-    if (isRecording && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-      return;
-    }
-
     const SpeechRecognitionCtor =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
@@ -68,7 +77,7 @@ export default function SpeakOutWidget({
     }
 
     const recognition = new SpeechRecognitionCtor();
-    recognition.lang = 'en-US';
+    recognition.lang = speechLang;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
@@ -86,25 +95,65 @@ export default function SpeakOutWidget({
     };
 
     recognition.onend = () => setIsRecording(false);
-
     recognitionRef.current = recognition;
     setIsRecording(true);
     recognition.start();
+  };
+
+  const toggleRecording = () => {
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+      return;
+    }
+    startRecording();
+  };
+
+  const startShadowingMode = () => {
+    if (disabled || isRecording) return;
+    setShadowBeat('Đang phát mẫu...');
+    playNativeSample(() => {
+      setShadowBeat('Chuẩn bị nhại lại: 2...');
+      window.setTimeout(() => {
+        setShadowBeat('1... Nói ngay!');
+        window.setTimeout(() => {
+          setShadowBeat(null);
+          startRecording();
+        }, 450);
+      }, 450);
+    });
   };
 
   return (
     <div className="space-y-4 rounded-2xl border-2 border-sky-200/80 bg-gradient-to-br from-sky-50/70 via-white to-indigo-50/60 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-xs font-extrabold uppercase tracking-wider text-sky-900">
-          Speak Out AI — Luyện phát âm chuẩn bản xứ
+          Speak Out AI &amp; Shadowing Đa Ngôn Ngữ
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={speechLang}
+            onChange={(e) => setSpeechLang(e.target.value)}
+            className="rounded-xl border border-sky-200 bg-white px-2 py-1.5 text-xs font-bold text-sky-900"
+          >
+            {SPEECH_LANGS.map((l) => (
+              <option key={l.code} value={l.code}>{l.label}</option>
+            ))}
+          </select>
           <button
             type="button"
-            onClick={playNativeSample}
+            onClick={() => playNativeSample()}
             className="inline-flex items-center gap-1.5 rounded-xl border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 hover:bg-sky-50 transition shadow-sm"
           >
             <Volume2 className="h-3.5 w-3.5" /> Nghe mẫu
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={startShadowingMode}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition shadow-sm disabled:opacity-50"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> Shadowing
           </button>
           <button
             type="button"
@@ -115,10 +164,16 @@ export default function SpeakOutWidget({
             } disabled:opacity-50`}
           >
             {isRecording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
-            {isRecording ? 'Đang thu âm... (Bấm dừng)' : 'Bấm để Nói'}
+            {isRecording ? 'Dừng thu âm' : 'Bấm để Nói'}
           </button>
         </div>
       </div>
+
+      {shadowBeat && (
+        <div className="rounded-xl bg-indigo-600 text-white px-3 py-2 text-xs font-extrabold text-center animate-pulse">
+          {shadowBeat}
+        </div>
+      )}
 
       {targetTokens.length > 0 && (
         <div className="flex flex-wrap gap-1.5 rounded-xl bg-white/90 p-3 border border-slate-200">

@@ -12,6 +12,8 @@ export const QuestionWidgetRegistry: Record<string, React.LazyExoticComponent<Co
   MATCHING: lazy(() => import('./MatchingWidget')),
   ORDERING: lazy(() => import('./OrderingWidget')),
   SPEAK_OUT: lazy(() => import('./SpeakOutWidget')),
+  HANDWRITING: lazy(() => import('./HandwritingWidget')),
+  FLASHCARD_RAPID: lazy(() => import('./GlennDomanFlashcardWidget')),
   ESSAY: lazy(() => import('./EssayWidget')),
 };
 

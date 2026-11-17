@@ -50,5 +50,18 @@ namespace Aegis.UnitTests
             Assert.True(q.EvaluateAnswer("The quick brown fox") >= 0.75);
             Assert.Equal(0.0, q.EvaluateAnswer("Hello world"));
         }
+
+        [Fact]
+        public void HandwritingQuestion_ShouldEvaluateStrokesAndCoverage()
+        {
+            var hw = new HandwritingQuestion
+            {
+                Payload = JsonDocument.Parse("{\"targetGlyph\":\"A\",\"minStrokes\":2}")
+            };
+
+            Assert.Equal(1.0, hw.EvaluateAnswer("{\"strokes\":3,\"coveragePct\":12.5}"));
+            Assert.Equal(0.0, hw.EvaluateAnswer("{\"strokes\":1,\"coveragePct\":12.5}"));
+            Assert.Equal(0.0, hw.EvaluateAnswer(""));
+        }
     }
 }
