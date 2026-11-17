@@ -91,6 +91,7 @@ builder.Services.AddScoped<IUniversalExcelExportService, Aegis.Infrastructure.Ex
 builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Transpiler.MoodleXmlExportStrategy>();
 builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Transpiler.MoodleGiftExportStrategy>();
 builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Transpiler.Qti30PackageExportStrategy>();
+builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Transpiler.Scorm12PackageExportStrategy>();
 builder.Services.AddScoped<IUniversalExamTranspilerService, Aegis.Infrastructure.Transpiler.UniversalExamTranspilerService>();
 builder.Services.AddScoped<IExamExportTranspilerService, Aegis.Infrastructure.Services.Docx.DocxExamExportTranspilerService>();
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();

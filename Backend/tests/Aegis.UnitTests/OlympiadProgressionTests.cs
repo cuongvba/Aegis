@@ -1,8 +1,13 @@
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
+using Aegis.Application.DTOs;
+using Aegis.Application.Interfaces;
 using Aegis.Application.Services;
 using Aegis.Domain.Entities;
+using Aegis.Infrastructure.Transpiler;
 using Xunit;
 
 namespace Aegis.UnitTests
@@ -62,6 +67,42 @@ namespace Aegis.UnitTests
             Assert.Equal(1.0, hw.EvaluateAnswer("{\"strokes\":3,\"coveragePct\":12.5}"));
             Assert.Equal(0.0, hw.EvaluateAnswer("{\"strokes\":1,\"coveragePct\":12.5}"));
             Assert.Equal(0.0, hw.EvaluateAnswer(""));
+        }
+
+        [Fact]
+        public void Scorm12PackageExport_ShouldGenerateValidManifestAndPlayer()
+        {
+            var strategy = new Scorm12PackageExportStrategy();
+            var questions = new List<DocxImportPreviewDto>
+            {
+                new()
+                {
+                    Content = "What is 2 + 2?",
+                    QuestionType = "SINGLE",
+                    Options = new() { "3", "4", "5", "6" },
+                    SuggestedAnswer = "2"
+                }
+            };
+
+            var zipBytes = strategy.Transpile(questions, new TranspileOptionsDto { ExamTitle = "Aegis SCORM Demo" });
+            Assert.NotEmpty(zipBytes);
+
+            using var ms = new MemoryStream(zipBytes);
+            using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+            var manifestEntry = archive.GetEntry("imsmanifest.xml");
+            var playerEntry = archive.GetEntry("index.html");
+            Assert.NotNull(manifestEntry);
+            Assert.NotNull(playerEntry);
+
+            using var mr = new StreamReader(manifestEntry!.Open());
+            var manifestXml = mr.ReadToEnd();
+            Assert.Contains("ADL SCORM", manifestXml);
+            Assert.Contains("<schemaversion>1.2</schemaversion>", manifestXml);
+
+            using var pr = new StreamReader(playerEntry!.Open());
+            var playerHtml = pr.ReadToEnd();
+            Assert.Contains("LMSInitialize", playerHtml);
+            Assert.Contains("cmi.core.score.raw", playerHtml);
         }
     }
 }
