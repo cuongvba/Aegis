@@ -1,0 +1,101 @@
+[
+  {
+    "templateCode": "MOET_2025_TOAN",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — Môn Toán THPT",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "TOAN",
+    "targetLevel": "K12",
+    "durationMinutes": 90,
+    "isSystemDefault": true,
+    "description": "Cấu trúc chính thức Kỳ thi Tốt nghiệp THPT 2025 (QĐ 764/QĐ-BGDĐT): 12 Trắc nghiệm + 4 Đúng/Sai chùm + 6 Trả lời ngắn.",
+    "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm nhiều phương án lựa chọn", "questionType": "SINGLE", "count": 12, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Trắc nghiệm Đúng / Sai (4 ý/câu)", "questionType": "MULTI_TRUE_FALSE", "count": 4, "pointsPerQuestion": 1.0 },
+      { "code": "PART_3", "title": "Phần III. Trắc nghiệm trả lời ngắn", "questionType": "SHORT_ANSWER", "count": 6, "pointsPerQuestion": 0.5 }
+    ]
+  },
+  {
+    "templateCode": "MOET_2025_KHTN_NAT",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — KHTN (Lý / Hóa / Sinh)",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "VAT_LY",
+    "targetLevel": "K12",
+    "durationMinutes": 50,
+    "isSystemDefault": true,
+    "description": "Cấu trúc chuẩn 28 câu (50 phút) cho các môn Vật Lý, Hóa Học, Sinh Học theo GDPT 2025.",
+    "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm nhiều lựa chọn", "questionType": "SINGLE", "count": 18, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Trắc nghiệm Đúng / Sai (4 ý/câu)", "questionType": "MULTI_TRUE_FALSE", "count": 4, "pointsPerQuestion": 1.0 },
+      { "code": "PART_3", "title": "Phần III. Trắc nghiệm trả lời ngắn", "questionType": "SHORT_ANSWER", "count": 6, "pointsPerQuestion": 0.25 }
+    ]
+  },
+  {
+    "templateCode": "MOET_2025_TIENG_ANH",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — Tiếng Anh THPT",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "TIENG_ANH",
+    "targetLevel": "K12",
+    "durationMinutes": 50,
+    "isSystemDefault": true,
+    "description": "Cấu trúc 40 câu trắc nghiệm đọc hiểu & ngữ pháp chuẩn GDPT 2025 (50 phút).",
+    "bloomWeights": { "recall": 35, "comprehend": 35, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm Tiếng Anh tổng hợp & Đọc hiểu", "questionType": "SINGLE", "count": 40, "pointsPerQuestion": 0.25 }
+    ]
+  },
+  {
+    "templateCode": "CORP_BANKING_CREDIT_60",
+    "title": "Quy chuẩn Ngân hàng — Sát hạch Tín dụng & AML (60p)",
+    "category": "COMPANY_POLICY",
+    "domainCode": "BANKING",
+    "topicCode": "TIN_DUNG_AML",
+    "targetLevel": "Chuyên viên QHKH",
+    "durationMinutes": 60,
+    "isSystemDefault": true,
+    "description": "Mẫu đánh giá năng lực thẩm định tín dụng, phòng chống rửa tiền AML/KYC và xử lý tình huống thực tế.",
+    "bloomWeights": { "recall": 30, "comprehend": 35, "apply": 25, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Nghiệp vụ Tín dụng & Tuân thủ", "questionType": "SINGLE", "count": 30, "pointsPerQuestion": 0.2 },
+      { "code": "PART_2", "title": "Phần II. Thẩm định Đúng / Sai theo Quy trình", "questionType": "MULTI_TRUE_FALSE", "count": 5, "pointsPerQuestion": 0.4 },
+      { "code": "PART_3", "title": "Phần III. Tính toán chỉ số tài chính & Hạn mức", "questionType": "SHORT_ANSWER", "count": 5, "pointsPerQuestion": 0.4 }
+    ]
+  },
+  {
+    "templateCode": "CORP_ITSEC_SOC_45",
+    "title": "Quy chuẩn Doanh nghiệp — An toàn thông tin & ISO 27001",
+    "category": "COMPANY_POLICY",
+    "domainCode": "IT_SECURITY",
+    "topicCode": "ISO_27001",
+    "targetLevel": "Kỹ sư / Nhân viên IT",
+    "durationMinutes": 45,
+    "isSystemDefault": true,
+    "description": "Bộ đề sát hạch nhận thức bảo mật SOC, OWASP và tiêu chuẩn ISO/IEC 27001.",
+    "bloomWeights": { "recall": 30, "comprehend": 30, "apply": 30, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm kiến thức Bảo mật", "questionType": "SINGLE", "count": 22, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Phân tích lỗ hổng đa lựa chọn", "questionType": "MULTI", "count": 4, "pointsPerQuestion": 0.5 },
+      { "code": "PART_3", "title": "Phần III. Xử lý sự cố ngắn", "questionType": "SHORT_ANSWER", "count": 4, "pointsPerQuestion": 0.625 }
+    ]
+  },
+  {
+    "templateCode": "CORP_HSE_SAFETY_30",
+    "title": "Quy chuẩn Nhà máy — An toàn Lao động HSE (30p)",
+    "category": "COMPANY_POLICY",
+    "domainCode": "HSE",
+    "topicCode": "HSE_SAFETY",
+    "targetLevel": "Toàn thể nhân sự",
+    "durationMinutes": 30,
+    "isSystemDefault": true,
+    "description": "Bài kiểm tra định kỳ An toàn - Sức khỏe - Môi trường (HSE) cho khối sản xuất & vận hành.",
+    "bloomWeights": { "recall": 50, "comprehend": 30, "apply": 15, "highApply": 5 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Quy tắc An toàn & PCCC", "questionType": "SINGLE", "count": 20, "pointsPerQuestion": 0.4 },
+      { "code": "PART_2", "title": "Phần II. Nhận diện nguy cơ Đúng / Sai", "questionType": "MULTI_TRUE_FALSE", "count": 5, "pointsPerQuestion": 0.4 }
+    ]
+  }
+]

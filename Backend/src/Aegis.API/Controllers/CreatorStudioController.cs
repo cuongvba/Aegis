@@ -31,6 +31,7 @@ namespace Aegis.API.Controllers
         private readonly IPdfExtractorService _pdfParser;
         private readonly IExamDeduplicationEngine _dedupEngine;
         private readonly IExamExportTranspilerService _examTranspiler;
+        private readonly IExamMatrixGeneratorService? _matrixGenerator;
         private readonly AegisDbContext _db;
         private readonly ArenaRoomManager _roomManager;
         private readonly ITenantContext _tenant;
@@ -49,7 +50,8 @@ namespace Aegis.API.Controllers
             ArenaRoomManager roomManager,
             ITenantContext tenant,
             ILogger<CreatorStudioController> logger,
-            IPaymentOrchestratorService? paymentOrchestrator = null)
+            IPaymentOrchestratorService? paymentOrchestrator = null,
+            IExamMatrixGeneratorService? matrixGenerator = null)
         {
             _taxonomyDispatcher = taxonomyDispatcher;
             _docxParser = docxParser;
@@ -62,6 +64,7 @@ namespace Aegis.API.Controllers
             _tenant = tenant;
             _logger = logger;
             _paymentOrchestrator = paymentOrchestrator;
+            _matrixGenerator = matrixGenerator;
         }
 
         [HttpPost("sniff")]
@@ -1265,6 +1268,44 @@ namespace Aegis.API.Controllers
 
             string html = _examTranspiler.GenerateOmrAnswerSheetHtml(total, request ?? new ExamExportOptionsDto());
             return Content(html, "text/html; charset=utf-8");
+        }
+
+        [HttpGet("matrix-templates")]
+        public async Task<IActionResult> GetMatrixTemplates()
+        {
+            if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
+            var templates = await _matrixGenerator.GetTemplatesAsync(_tenant.CurrentTenantId);
+            return Ok(templates);
+        }
+
+        [HttpPost("matrix-templates")]
+        public async Task<IActionResult> SaveCustomMatrixTemplate([FromBody] ExamMatrixTemplateDto template)
+        {
+            if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
+            if (template == null || string.IsNullOrWhiteSpace(template.Title))
+                return BadRequest(new { error = "Vui lòng nhập tên bộ quy chuẩn ma trận." });
+
+            var saved = await _matrixGenerator.SaveCustomTemplateAsync(_tenant.CurrentTenantId, template);
+            return Ok(saved);
+        }
+
+        [HttpDelete("matrix-templates/{templateCode}")]
+        public async Task<IActionResult> DeleteCustomMatrixTemplate(string templateCode)
+        {
+            if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
+            bool deleted = await _matrixGenerator.DeleteCustomTemplateAsync(_tenant.CurrentTenantId, templateCode);
+            return deleted ? Ok(new { deleted = true }) : NotFound();
+        }
+
+        [HttpPost("generate-matrix-exam")]
+        public async Task<IActionResult> GenerateMatrixExam([FromBody] GenerateMatrixExamRequestDto request)
+        {
+            if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
+            if (request == null)
+                return BadRequest(new { error = "Thiếu cấu hình ma trận sinh đề." });
+
+            var result = await _matrixGenerator.GenerateFromRealBankAsync(_tenant.CurrentTenantId, request);
+            return Ok(result);
         }
     }
 }

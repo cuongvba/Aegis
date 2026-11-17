@@ -1,7 +1,14 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Sliders, BookOpen, Layers, ArrowRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import type { ZenUploadResult } from '../types/zen-studio.types';
+import React, { useEffect, useState } from 'react';
+import { X, Sparkles, Sliders, Building2, GraduationCap, Save, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { ZenUploadResult, ZenQuestionPreview } from '../types/zen-studio.types';
+import {
+  examMatrixService,
+  ExamMatrixBloomWeights,
+  ExamMatrixSectionRule,
+  ExamMatrixTemplate,
+  MatrixSectionCoverage,
+} from '../../../../services/examMatrix.service';
+import { MatrixSectionEditor } from './MatrixSectionEditor';
 
 interface ExamMatrixWizardModalProps {
   isOpen: boolean;
@@ -9,197 +16,287 @@ interface ExamMatrixWizardModalProps {
   onMatrixGenerated: (result: ZenUploadResult) => void;
 }
 
-const SUBJECT_OPTIONS = [
-  { code: 'MATH', name: 'Toán Học' },
-  { code: 'PHYS', name: 'Vật Lý' },
-  { code: 'CHEM', name: 'Hóa Học' },
-  { code: 'BIO', name: 'Sinh Học' },
-  { code: 'ENG', name: 'Tiếng Anh' },
-];
+const DEFAULT_BLOOM: ExamMatrixBloomWeights = { recall: 40, comprehend: 30, apply: 20, highApply: 10 };
 
-export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({
-  isOpen,
-  onClose,
-  onMatrixGenerated,
-}) => {
-  const { t } = useTranslation();
-  const [subject, setSubject] = useState<string>('MATH');
-  const [grade, setGrade] = useState<string>('12');
-  const [recall, setRecall] = useState<number>(40);        // Nhận biết
-  const [comprehend, setComprehend] = useState<number>(30); // Thông hiểu
-  const [apply, setApply] = useState<number>(20);          // Vận dụng
-  const [highApply, setHighApply] = useState<number>(10);  // Vận dụng cao
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({ isOpen, onClose, onMatrixGenerated }) => {
+  const [templates, setTemplates] = useState<ExamMatrixTemplate[]>([]);
+  const [selectedCode, setSelectedCode] = useState<string>('MOET_2025_TOAN');
+  const [title, setTitle] = useState('Đề chuẩn Bộ GD&ĐT 2025 — Môn Toán THPT');
+  const [domainCode, setDomainCode] = useState('EDUCATION');
+  const [topicCode, setTopicCode] = useState('TOAN');
+  const [targetLevel, setTargetLevel] = useState('K12');
+  const [durationMinutes, setDurationMinutes] = useState(90);
+  const [bloom, setBloom] = useState<ExamMatrixBloomWeights>(DEFAULT_BLOOM);
+  const [sections, setSections] = useState<ExamMatrixSectionRule[]>([
+    { code: 'PART_1', title: 'Phần I. Trắc nghiệm nhiều phương án lựa chọn', questionType: 'SINGLE', count: 12, pointsPerQuestion: 0.25 },
+    { code: 'PART_2', title: 'Phần II. Trắc nghiệm Đúng / Sai (4 ý/câu)', questionType: 'MULTI_TRUE_FALSE', count: 4, pointsPerQuestion: 1.0 },
+    { code: 'PART_3', title: 'Phần III. Trắc nghiệm trả lời ngắn', questionType: 'SHORT_ANSWER', count: 6, pointsPerQuestion: 0.5 },
+  ]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [coverages, setCoverages] = useState<MatrixSectionCoverage[]>([]);
+
+  const applyTemplate = (tpl: ExamMatrixTemplate) => {
+    setSelectedCode(tpl.templateCode);
+    setTitle(tpl.title);
+    setDomainCode(tpl.domainCode);
+    setTopicCode(tpl.topicCode);
+    setTargetLevel(tpl.targetLevel || '');
+    setDurationMinutes(tpl.durationMinutes);
+    setBloom({ ...tpl.bloomWeights });
+    setSections(tpl.sections.map((s) => ({ ...s })));
+    setStatusMessage(null);
+    setCoverages([]);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    examMatrixService.getTemplates()
+      .then((list) => {
+        setTemplates(list);
+        const initial = list.find((t) => t.templateCode === selectedCode) || list[0];
+        if (initial) applyTemplate(initial);
+      })
+      .catch(() => setStatusMessage('Không tải được danh sách quy chuẩn từ máy chủ.'));
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleGenerate = () => {
+  const selectedTemplate = templates.find((t) => t.templateCode === selectedCode);
+
+  const handleSaveCompanyTemplate = async () => {
+    setIsSaving(true);
+    setStatusMessage(null);
+    try {
+      const code = selectedTemplate && !selectedTemplate.isSystemDefault
+        ? selectedTemplate.templateCode
+        : `COMP_${topicCode}_${Date.now().toString().slice(-4)}`;
+      const saved = await examMatrixService.saveCustomTemplate({
+        templateCode: code,
+        title: title.trim() || `Quy chuẩn ${topicCode}`,
+        category: 'COMPANY_POLICY',
+        domainCode: domainCode.trim().toUpperCase(),
+        topicCode: topicCode.trim().toUpperCase(),
+        targetLevel: targetLevel.trim() || undefined,
+        durationMinutes,
+        isSystemDefault: false,
+        bloomWeights: bloom,
+        sections,
+      });
+      const updated = await examMatrixService.getTemplates();
+      setTemplates(updated);
+      applyTemplate(saved);
+      setStatusMessage(`Đã lưu bộ quy chuẩn công ty "${saved.title}".`);
+    } catch {
+      setStatusMessage('Lưu bộ quy chuẩn thất bại. Kiểm tra đăng nhập hoặc quyền Tenant.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteTemplate = async () => {
+    if (!selectedTemplate || selectedTemplate.isSystemDefault) return;
+    try {
+      await examMatrixService.deleteCustomTemplate(selectedTemplate.templateCode);
+      const updated = await examMatrixService.getTemplates();
+      setTemplates(updated);
+      if (updated[0]) applyTemplate(updated[0]);
+      setStatusMessage('Đã xóa bộ quy chuẩn tùy chỉnh.');
+    } catch {
+      setStatusMessage('Không thể xóa bộ quy chuẩn.');
+    }
+  };
+
+  const handleGenerate = async () => {
     setIsGenerating(true);
-    const subjName = SUBJECT_OPTIONS.find((s) => s.code === subject)?.name || 'Toán Học';
-    const topicCode = `MATRIX_${subject}_K${grade}_${Date.now().toString().slice(-4)}`;
+    setStatusMessage(null);
+    try {
+      const res = await examMatrixService.generateFromRealBank({
+        templateCode: selectedCode,
+        examTitle: title,
+        domainCode,
+        topicCode,
+        targetLevel: targetLevel || undefined,
+        durationMinutes,
+        bloomWeights: bloom,
+        sections,
+      });
+      setCoverages(res.sectionCoverages || []);
 
-    const mockQuestions = [
-      {
-        id: 'q1',
-        content: 'Trong không gian $Oxyz$, cho mặt cầu $(S): (x-1)^2 + (y+2)^2 + (z-3)^2 = 16$. Tọa độ tâm $I$ và bán kính $R$ là:',
-        difficulty: 1,
-        questionType: 'SINGLE',
-        points: 0.25,
-        options: [
-          { key: 'A', text: '$I(1; -2; 3)$ và $R = 4$', isCorrect: true },
-          { key: 'B', text: '$I(-1; 2; -3)$ và $R = 4$', isCorrect: false },
-          { key: 'C', text: '$I(1; -2; 3)$ và $R = 16$', isCorrect: false },
-          { key: 'D', text: '$I(-1; 2; -3)$ và $R = 16$', isCorrect: false },
-        ],
-        explanation: 'Mặt cầu $(x-a)^2 + (y-b)^2 + (z-c)^2 = R^2$ có tâm $I(a;b;c)$ và bán kính $R$.',
-      },
-      {
-        id: 'q2',
-        content: 'Cho hàm số $y = f(x) = x^3 - 3x + 1$. Đồ thị có điểm cực đại là:\n```visual\n{\n  "type": "function_plot",\n  "title": "Đồ thị bậc ba",\n  "fn": "x^3 - 3*x + 1",\n  "xRange": [-3, 3],\n  "yRange": [-4, 4]\n}\n```',
-        difficulty: 2,
-        questionType: 'SINGLE',
-        points: 0.25,
-        options: [
-          { key: 'A', text: '$(-1; 3)$', isCorrect: true },
-          { key: 'B', text: '$(1; -1)$', isCorrect: false },
-          { key: 'C', text: '$(0; 1)$', isCorrect: false },
-          { key: 'D', text: '$(2; 3)$', isCorrect: false },
-        ],
-        explanation: 'Ta có $f\'(x) = 3x^2 - 3 = 0 \\Leftrightarrow x = \\pm 1$. Cực đại tại $(-1; 3)$.',
-      },
-      {
-        id: 'q3',
-        content: 'Cho hình chóp $S.ABCD$ có đáy là hình vuông cạnh $a$, $SA \\perp (ABCD)$ và $SA = a\\sqrt{3}$.\n```visual\n{\n  "type": "geometry_3d",\n  "solid": "pyramid_s_abcd",\n  "title": "Hình chóp S.ABCD"\n}\n```\nCác mệnh đề sau đúng hay sai?',
-        difficulty: 3,
-        questionType: 'MULTI_TRUE_FALSE',
-        points: 1.0,
-        options: [
-          { key: 'A', text: 'Đường thẳng $SA \\perp (ABCD)$.', isCorrect: true },
-          { key: 'B', text: 'Thể tích khối chóp $V = \\frac{a^3\\sqrt{3}}{3}$.', isCorrect: true },
-          { key: 'C', text: 'Góc giữa $SC$ và $(ABCD)$ bằng $30^\\circ$.', isCorrect: false },
-          { key: 'D', text: 'Khoảng cách $d(A, (SBC)) = \\frac{a\\sqrt{3}}{2}$.', isCorrect: true },
-        ],
-        explanation: 'Thể tích $V = \\frac{1}{3} S_{ABCD} \\cdot SA = \\frac{1}{3} a^2 \\cdot a\\sqrt{3} = \\frac{a^3\\sqrt{3}}{3}$.',
-      },
-      {
-        id: 'q4',
-        content: 'Hải đăng $A$ cách bờ biển $AB = 4\\text{ km}$. Người gác chèo thuyền rồi đi bộ đến trạm điện. Tính thời gian nhỏ nhất (làm tròn hàng phần mười phút).',
-        difficulty: 4,
-        questionType: 'SHORT_ANSWER',
-        points: 0.5,
-        options: [{ key: 'ANS', text: '28.5', isCorrect: true }],
-        explanation: 'Tối ưu hàm mục tiêu thời gian $t(x)$. Nghiệm đạt cực tiểu tại $x_0$.',
-      },
-    ];
+      if (!res.questions || res.questions.length === 0) {
+        setStatusMessage(res.warningMessage || `Kho câu hỏi thật cho "${topicCode}" hiện chưa có câu hỏi phù hợp.`);
+        return;
+      }
 
-    setTimeout(() => {
+      const mapped: ZenQuestionPreview[] = res.questions.map((q) => ({
+        order: q.order,
+        content: q.content,
+        canonicalHash: q.questionId,
+        isDuplicate: false,
+        questionType: q.questionType,
+        options: q.options || [],
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        contextId: q.contextId,
+        contextTitle: q.contextTitle,
+        contextContent: q.contextContent,
+      }));
+
       onMatrixGenerated({
         success: true,
-        examTitle: `Đề Khảo Thí ${subjName} Lớp ${grade} (Ma Trận GDPT 2025)`,
-        totalQuestions: mockQuestions.length,
+        examTitle: res.examTitle,
+        totalQuestions: mapped.length,
         duplicateCount: 0,
-        uniqueCount: mockQuestions.length,
+        uniqueCount: mapped.length,
         deduplicationRatePercentage: 0,
-        questions: mockQuestions as any,
+        questions: mapped,
       });
+
+      if (res.missingTotal > 0 && res.warningMessage) {
+        setStatusMessage(res.warningMessage);
+      } else {
+        onClose();
+      }
+    } catch {
+      setStatusMessage('Lỗi khi gọi API sinh đề từ kho thật. Vui lòng thử lại.');
+    } finally {
       setIsGenerating(false);
-      onClose();
-    }, 800);
+    }
   };
+
+  const bloomTotal = bloom.recall + bloom.comprehend + bloom.apply + bloom.highApply;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl p-5 sm:p-6 text-slate-100">
+      <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl p-5 text-slate-100">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-slate-800/60 hover:bg-slate-800 transition">
           <X size={18} />
         </button>
 
         <div className="flex items-center gap-3 mb-4">
           <div className="p-3 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/20">
-            <Sparkles size={22} />
+            <Sparkles size={20} />
           </div>
           <div>
-            <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-              Trình Tạo Đề Theo Ma Trận Nhận Thức
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                GDPT 2025
+            <h2 className="text-base font-black text-white flex items-center gap-2">
+              Sinh Đề Từ Kho Thật — Chuẩn Bộ GD&amp;ĐT &amp; Công Ty
+              <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                REAL BANK
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Phân hóa 4 mức độ nhận thức bám sát cấu trúc đề minh họa Bộ GD&amp;ĐT</p>
+            <p className="text-xs text-slate-400">Bốc câu hỏi thật từ kho theo Ma trận 3 phần GDPT 2025 hoặc Quy chuẩn riêng từng Công ty</p>
           </div>
         </div>
 
-        <div className="space-y-4 text-xs">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5 flex items-center gap-1">
-                <BookOpen size={13} className="text-cyan-400" /> Môn Học:
-              </label>
-              <select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:border-cyan-400 focus:outline-none">
-                {SUBJECT_OPTIONS.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-              </select>
+        <div className="space-y-3 text-xs">
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedCode}
+              onChange={(e) => {
+                const found = templates.find((t) => t.templateCode === e.target.value);
+                if (found) applyTemplate(found);
+              }}
+              className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-semibold focus:border-cyan-400 focus:outline-none"
+            >
+              <optgroup label="Chuẩn Bộ GD&ĐT (GDPT 2025)">
+                {templates.filter((t) => t.category === 'MOET_2025').map((t) => (
+                  <option key={t.templateCode} value={t.templateCode}>{t.title}</option>
+                ))}
+              </optgroup>
+              <optgroup label="Quy chuẩn Công ty / Tổ chức">
+                {templates.filter((t) => t.category !== 'MOET_2025').map((t) => (
+                  <option key={t.templateCode} value={t.templateCode}>
+                    {t.isSystemDefault ? '[Mẫu] ' : '[Công ty] '}{t.title}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+            {selectedTemplate && !selectedTemplate.isSystemDefault && (
+              <button type="button" onClick={handleDeleteTemplate} className="p-2 rounded-xl bg-rose-500/15 text-rose-300 hover:bg-rose-500/25" title="Xóa quy chuẩn này">
+                <Trash2 size={15} />
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tên đề / Quy chuẩn" className="col-span-2 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:border-cyan-400 focus:outline-none" />
+            <input value={domainCode} onChange={(e) => setDomainCode(e.target.value.toUpperCase())} placeholder="Domain (EDUCATION/BANKING)" className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-cyan-300 font-mono focus:border-cyan-400 focus:outline-none" />
+            <input value={topicCode} onChange={(e) => setTopicCode(e.target.value.toUpperCase())} placeholder="Mã môn (TOAN/VAT_LY)" className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-emerald-300 font-mono focus:border-cyan-400 focus:outline-none" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-1.5">
+              <GraduationCap size={14} className="text-indigo-400 shrink-0" />
+              <input value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} placeholder="Khối / Cấp bậc (VD: K12, RM)" className="w-full bg-transparent text-white focus:outline-none" />
             </div>
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5 flex items-center gap-1">
-                <Layers size={13} className="text-indigo-400" /> Khối Lớp:
-              </label>
-              <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:border-indigo-400 focus:outline-none">
-                <option value="12">Lớp 12 (Tốt Nghiệp THPT)</option>
-                <option value="11">Lớp 11</option>
-                <option value="10">Lớp 10</option>
-                <option value="DGNL">Đánh Giá Năng Lực (ĐHQG)</option>
-              </select>
+            <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-1.5">
+              <Building2 size={14} className="text-amber-400 shrink-0" />
+              <span className="text-slate-400">Thời gian (phút):</span>
+              <input type="number" min={5} max={240} value={durationMinutes} onChange={(e) => setDurationMinutes(Number(e.target.value) || 45)} className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-center text-white font-bold" />
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between font-bold text-slate-300">
-              <span className="flex items-center gap-1.5"><Sliders size={14} className="text-amber-400" /> Phân Bổ Tỷ Lệ Ma Trận 4 Mức Độ:</span>
-              <span className="text-[11px] font-mono text-cyan-300 font-bold">Tổng: {recall + comprehend + apply + highApply}%</span>
+          <MatrixSectionEditor sections={sections} onChange={setSections} />
+
+          <div className="rounded-2xl bg-slate-950/70 border border-slate-800 p-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="col-span-full flex items-center justify-between text-slate-300 font-bold">
+              <span className="flex items-center gap-1"><Sliders size={12} className="text-indigo-400" /> Tỷ lệ Bloom (Tổng: {bloomTotal}%)</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span>Nhận biết (Bloom 1-2):</span>
-                  <span className="font-bold text-cyan-400">{recall}%</span>
-                </div>
-                <input type="range" min={10} max={60} value={recall} onChange={(e) => setRecall(Number(e.target.value))} className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span>Thông hiểu (Bloom 3):</span>
-                  <span className="font-bold text-indigo-400">{comprehend}%</span>
-                </div>
-                <input type="range" min={10} max={60} value={comprehend} onChange={(e) => setComprehend(Number(e.target.value))} className="w-full accent-indigo-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span>Vận dụng (Bloom 4):</span>
-                  <span className="font-bold text-emerald-400">{apply}%</span>
-                </div>
-                <input type="range" min={5} max={40} value={apply} onChange={(e) => setApply(Number(e.target.value))} className="w-full accent-emerald-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
-              </div>
-              <div>
-                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
-                  <span>Vận dụng cao (Bloom 5-6):</span>
-                  <span className="font-bold text-rose-400">{highApply}%</span>
-                </div>
-                <input type="range" min={5} max={30} value={highApply} onChange={(e) => setHighApply(Number(e.target.value))} className="w-full accent-rose-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg" />
-              </div>
-            </div>
+            {[
+              { key: 'recall', label: 'Nhận biết' },
+              { key: 'comprehend', label: 'Thông hiểu' },
+              { key: 'apply', label: 'Vận dụng' },
+              { key: 'highApply', label: 'Vận dụng cao' },
+            ].map((item) => (
+              <label key={item.key} className="flex items-center justify-between bg-slate-900 rounded-lg px-2 py-1 border border-slate-800">
+                <span className="text-slate-400">{item.label}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={bloom[item.key as keyof ExamMatrixBloomWeights]}
+                  onChange={(e) => setBloom({ ...bloom, [item.key]: Math.max(0, Number(e.target.value) || 0) })}
+                  className="w-12 bg-transparent text-right font-bold text-cyan-300 focus:outline-none"
+                />
+              </label>
+            ))}
           </div>
 
-          <div className="flex items-center justify-between gap-3 pt-2">
-            <span className="text-[11px] text-slate-400">Tự động sinh kèm KaTeX và mô hình hình học ADVS 60fps.</span>
+          {statusMessage && (
+            <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-3 py-2 text-amber-200 flex items-start gap-2">
+              <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-400" />
+              <div>
+                <p>{statusMessage}</p>
+                {coverages.length > 0 && (
+                  <p className="text-[11px] text-amber-300/80 mt-1">
+                    {coverages.map((c) => `${c.sectionTitle}: ${c.matchedCount}/${c.requestedCount}`).join(' · ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <button
+              type="button"
+              onClick={handleSaveCompanyTemplate}
+              disabled={isSaving}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold transition disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              Lưu Quy Chuẩn Công Ty
+            </button>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={onClose} className="px-3 py-2 font-semibold text-slate-400 hover:text-white transition">Hủy</button>
+              <button type="button" onClick={onClose} className="px-3 py-2 font-semibold text-slate-400 hover:text-white transition">Đóng</button>
               <button
                 type="button"
                 onClick={handleGenerate}
                 disabled={isGenerating}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-black shadow-lg shadow-indigo-500/25 active:scale-95 disabled:opacity-50 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-white font-black shadow-lg shadow-indigo-500/25 transition disabled:opacity-50"
               >
-                {isGenerating ? <span>Đang tổng hợp...</span> : <><span>Sinh Đề Thi Chuẩn Ma Trận</span><ArrowRight size={14} /></>}
+                {isGenerating ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+                {isGenerating ? 'Đang bốc đề thật...' : 'Sinh Đề Từ Kho Thật'}
               </button>
             </div>
           </div>

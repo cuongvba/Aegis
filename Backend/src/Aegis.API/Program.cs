@@ -94,6 +94,7 @@ builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Tr
 builder.Services.AddSingleton<ITranspilerExportStrategy, Aegis.Infrastructure.Transpiler.Scorm12PackageExportStrategy>();
 builder.Services.AddScoped<IUniversalExamTranspilerService, Aegis.Infrastructure.Transpiler.UniversalExamTranspilerService>();
 builder.Services.AddScoped<IExamExportTranspilerService, Aegis.Infrastructure.Services.Docx.DocxExamExportTranspilerService>();
+builder.Services.AddScoped<IExamMatrixGeneratorService, Aegis.Infrastructure.Services.ExamMatrixGeneratorService>();
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();
 builder.Services.AddScoped<IDocxStateMachineClassifier, Aegis.Infrastructure.Services.Docx.DocxStateMachineClassifierService>();
 builder.Services.AddScoped<IDynamicDomainContextService, DynamicDomainContextService>();
