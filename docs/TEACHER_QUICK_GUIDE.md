@@ -91,3 +91,30 @@ Bất cứ lúc nào đang làm việc, Thầy/Cô có thể nhấn **`Ctrl + J`
 ## 6. Mẹo Nhỏ Giúp Thầy/Cô Làm Nhanh Gấp 3 Lần
 1. **Đặt tên file gọn gàng** trước khi tải lên (ví dụ: `Toan-7-Giua-ky-1-nam-25-26.docx`) hoặc ghi rõ 3 dòng đầu đề (`ĐỀ KIỂM TRA...`, `NĂM HỌC...`, `MÔN:...`) $\rightarrow$ hệ thống sẽ tự xếp đúng ngăn **Khối + Môn + Kỳ + Năm** 100%.
 2. **Nếu quên hoặc gặp lỗi**: Nhấn `Ctrl + F5` để làm mới trang hoặc hỏi ngay **Aegis Co-Pilot** ngay trên màn hình.
+
+---
+
+## 7. Trải Nghiệm & Ứng Dụng 4 Đột Phá Mới Vào Giảng Dạy
+
+### 7.1. Đồ thị Biến đổi Phương trình theo Thời gian 60fps (Toán – Lý)
+Khi soạn câu hỏi hoặc giảng bài trên lớp tại **Ngân hàng Câu hỏi** (`/admin/questions` $\rightarrow$ **Thêm câu hỏi / Sửa câu hỏi** $\rightarrow$ **Chèn Mô Hình Trực Quan ADVS**):
+1. Chọn mẫu **Sóng cơ biến đổi theo thời gian $u(x,t) = A\sin(2x - 3t)$** hoặc **Chuyển động ném xiên $(x(t), y(t))$** (hoặc **Parabol có tham số $m$**).
+2. Khi trình chiếu cho học sinh:
+   - Bấm **Chạy `t` (Play)** để cả lớp thấy đỉnh sóng truyền đi hoặc vật ném xiên bay theo quỹ đạo Parabol 60fps.
+   - Bấm **Tạm dừng (Pause)** hoặc kéo thanh trượt **`t`** đúng thời điểm cần giảng (ví dụ lúc vật đạt độ cao cực đại $v_y = 0$), công thức **KaTeX biến đổi tương ứng** bên dưới sẽ tự động đổi theo từng pha.
+   - Kéo thanh trượt biên độ **`A`** hoặc tốc độ **`0.5x / 1x / 2x`** để học sinh tự quan sát mối liên hệ giữa tham số đại số và hình học.
+
+### 7.2. Bộ 4 Trò Chơi Tương Tác Đa Giác Quan (Tiểu học, THCS & Ngoại ngữ)
+Trong giao diện **Luyện tập (Practice)** — kể cả ở **Chế độ Trẻ em** (đã mở khóa toàn bộ **Cấu hình phiên học** để Thầy/Cô và học sinh tự chọn xáo câu/xáo đáp án/hẹn giờ):
+- **Chạm từ ghép câu siêu tốc (`ORDERING`)**: Với câu sắp xếp từ/cụm từ ngắn, hệ thống tự bật chế độ **Chạm nhanh** — học sinh chạm từng thẻ từ để ghép câu cực nhanh (hoặc bấm chuyển về **Kéo thả**).
+- **Điền chữ cái khuyết (`FILL_BLANK`)**: Tự động hiển thị ô gõ tốc độ cao kèm gợi ý chữ cái khuyết (ví dụ `c _ m p _ t _ r`).
+- **Lật thẻ trí nhớ (`MATCHING`)**: Bấm nút **Lật thẻ trí nhớ** ở góc phải bài ghép cặp để biến bài nối từ/công thức thành trò chơi lật thẻ tìm cặp đôi.
+- **Tráo thẻ Glenn Doman + FSRS (`FLASHCARD_RAPID`) & Tập viết Canvas (`HANDWRITING`)**: Dùng cho từ vựng ngoại ngữ, ký hiệu Toán học, chữ Hán/Nhật/Hàn hoặc tập tô chữ cái cho học sinh nhỏ.
+
+### 7.3. Luyện Phát Âm & Shadowing Đa Ngôn Ngữ (`SPEAK_OUT`)
+- Học sinh chọn ngôn ngữ (`EN-US`, `VI`, `JA`, `ZH`, `KO`, `FR`), bấm **Nghe mẫu** để nghe phát âm chuẩn, rồi bấm **Shadowing** (nghe xong $\rightarrow$ đếm nhịp `2..1` $\rightarrow$ tự động thu âm nhại lại tức thời).
+- Hệ thống tô **xanh ngọc** những từ đọc chuẩn, tô **đỏ** những từ cần luyện lại và chấm `%` độ khớp ngay lập tức.
+
+### 7.4. Xuất Gói Chuẩn SCORM 1.2 Mang Lên Mọi Hệ Thống LMS
+- Bộ đề soạn trên **AegisGlobal** (`https://daotao.dehoc.vn`) có thể xuất ra gói **`.scorm12.zip`** (`SCORM_12`) tương thích trực tiếp với Moodle, Canvas, TalentLMS, Blackboard... kèm trình phát HTML5 tự chấm điểm offline.
+
