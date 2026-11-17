@@ -43,10 +43,12 @@ d:/Cuong/DuAn/mybank/AegisGlobal/docs/
 │   ├── AEGIS_GLOBAL_SUPREME_AUDIT_REPORT_2026.md <-- [GLOBAL SUPREME 2026] Báo Cáo Kiểm Toán & Đánh Giá Toàn Diện Hệ Thống Chuẩn Cao Nhất Thế Giới (ISO 25010, OWASP, IRT, CLEAR)
 │   ├── BACKEND_WORLD_CLASS_SUPREME_AUDIT_REPORT.md   <-- [SUPREME 2026] Báo Cáo Kiểm Toán Toàn Diện Backend Đạt Cảnh Giới Tốt Nhất
 │   ├── SYSTEM_ARCHITECTURE.md                        <-- Kiến trúc phân tầng, luồng dữ liệu, Clean Architecture, CQRS
+│   ├── UCTE_GLOBAL_SYSTEM_ARCHITECTURE.md            <-- [ALDS-UCTE-V4.0] Kiến trúc Hệ 5 Trục Tọa Độ Toàn Cầu Data-Driven & OCP MultiLang
 │   ├── DATA_MODELS.md                                <-- Sơ đồ ERD, Database Schema PostgreSQL, In-Memory State
 │   └── SECURITY_AND_PROCTORING.md                    <-- Phòng thi bảo mật (SecureExamRoom), chống gian lận & PKI Auth
 │
 ├── 🧩 modules/ (Các Phân Hệ Chuyên Sâu)
+│   ├── AEGIS_OLYMPIAD_PEDAGOGY_AND_SCORM_UPGRADES.md <-- [NEW 2026] Nâng Cấp Olympiad 35 Vòng, Sư Phạm Đa Giác Quan (Glenn Doman, Handwriting, Shadowing, Memory Flip) & SCORM 1.2
 │   ├── RECENT_SYSTEM_BREAKTHROUGHS_2026.md           <-- [HOT 2026] Báo Cáo Các Đột Phá Công Nghệ & Tính Năng Vượt Trội Mới Nhất
 │   ├── ARENA_PLUGIN_ENGINE.md                        <-- Kiến trúc cắm rút Đấu trường Gameshow, SignalR, Microsecond Clock
 │   ├── DOCX_PARSER_AND_MATH_ENGINE.md                <-- Bóc tách đề thi Word, WMF/EMF Vector to SVG, OMML to LaTeX
