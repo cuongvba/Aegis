@@ -51,6 +51,45 @@ const PRESET_MODELS: { id: string; label: string; icon: any; spec: DynamicVisual
     },
   },
   {
+    id: 'travelling_wave_time',
+    label: 'Sóng cơ biến đổi theo thời gian u(x,t)',
+    icon: Activity,
+    spec: {
+      type: 'function_plot',
+      title: 'Sóng cơ truyền theo thời gian u(x,t) = A·sin(2x - 3t)',
+      fn: 'A * sin(2*x - 3*t)',
+      xRange: [-4, 4],
+      yRange: [-3, 3],
+      parameters: [{ name: 'A', value: 1.8, min: 0.5, max: 2.5, step: 0.1 }],
+      timeConfig: { min: 0, max: 6.28, step: 0.04, speed: 1.4, loop: true, autoPlay: true, label: 'Thời gian t (s)' },
+      morphSteps: [
+        { timeAt: 0, latex: 'u(x,t) = A \\sin(kx - \\omega t)', note: 'Pha ban đầu t = 0: Sóng bắt đầu lan truyền theo chiều +Ox' },
+        { timeAt: 2.1, latex: 'v = \\frac{\\omega}{k} = \\frac{3}{2}\\ (\\text{m/s})', note: 'Đỉnh sóng dịch chuyển đều theo thời gian t' },
+        { timeAt: 4.2, latex: 'T = \\frac{2\\pi}{\\omega} \\approx 2.09\\text{s}', note: 'Sau mỗi chu kỳ T, trạng thái dao động lặp lại như cũ' }
+      ],
+      caption: 'Nhấn Play/Pause để quan sát sóng truyền 60fps theo thời gian thực',
+    },
+  },
+  {
+    id: 'projectile_parametric',
+    label: 'Chuyển động ném xiên (x(t), y(t))',
+    icon: Compass,
+    spec: {
+      type: 'function_plot',
+      title: 'Quỹ đạo ném xiên (x(t), y(t)) theo thời gian',
+      xRange: [-1, 9],
+      yRange: [-1, 5],
+      parametric: { xFn: '3.2 * t', yFn: '4.5 * t - 2.4 * t^2', showTrail: true },
+      timeConfig: { min: 0, max: 2.0, step: 0.02, speed: 0.8, loop: true, autoPlay: true, label: 'Thời gian bay t (s)' },
+      morphSteps: [
+        { timeAt: 0, latex: 'x(t) = v_{0x}t,\\quad y(t) = v_{0y}t - \\frac{1}{2}gt^2', note: 'Vật rời bệ phóng tại t = 0' },
+        { timeAt: 0.9, latex: 'v_y(t) = 0 \\Rightarrow y_{\\max}', note: 'Đạt độ cao cực đại tại đỉnh Parabol' },
+        { timeAt: 1.7, latex: 'y(x) = x\\tan\\alpha - \\frac{g}{2v_0^2\\cos^2\\alpha}x^2', note: 'Phương trình quỹ đạo Parabol hoàn chỉnh' }
+      ],
+      caption: 'Chấm sáng + vệt quỹ đạo mô phỏng chuyển động 60fps',
+    },
+  },
+  {
     id: 'pyramid_s_abcd',
     label: 'Hình chóp S.ABCD (Đáy tứ giác)',
     icon: Box,

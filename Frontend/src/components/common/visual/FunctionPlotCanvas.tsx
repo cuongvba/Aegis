@@ -1,12 +1,18 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import type { DynamicVisualSpec, VisualParameter } from './visual-types';
+import type { DynamicVisualSpec } from './visual-types';
+import { evaluateMathExpression } from './mathExpressionEvaluator';
 
 interface FunctionPlotCanvasProps {
   spec: DynamicVisualSpec;
   paramValues: Record<string, number>;
+  timeValue?: number;
 }
 
-export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({ spec, paramValues }) => {
+export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({
+  spec,
+  paramValues,
+  timeValue = 0,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [hoverCoord, setHoverCoord] = useState<{ x: number; y: number } | null>(null);
 
@@ -15,35 +21,11 @@ export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({ spec, pa
   const yMin = spec.yRange?.[0] ?? -5;
   const yMax = spec.yRange?.[1] ?? 5;
 
-  const evaluateFn = useCallback((x: number): number | null => {
-    try {
-      let expression = spec.fn || 'x^2';
-      // Thay thế các tham số
-      Object.entries(paramValues).forEach(([k, v]) => {
-        const regex = new RegExp(`\\b${k}\\b`, 'g');
-        expression = expression.replace(regex, `(${v})`);
-      });
-      // Chuẩn hóa cú pháp toán thông thường sang JS
-      const sanitized = expression
-        .replace(/\^/g, '**')
-        .replace(/sin\(/g, 'Math.sin(')
-        .replace(/cos\(/g, 'Math.cos(')
-        .replace(/tan\(/g, 'Math.tan(')
-        .replace(/sqrt\(/g, 'Math.sqrt(')
-        .replace(/abs\(/g, 'Math.abs(')
-        .replace(/ln\(/g, 'Math.log(')
-        .replace(/e\^/g, 'Math.exp(')
-        .replace(/pi/g, 'Math.PI');
-
-      // Đánh giá hàm an toàn
-      const fnCalc = new Function('x', `"use strict"; return (${sanitized});`);
-      const res = fnCalc(x);
-      if (typeof res !== 'number' || isNaN(res) || !isFinite(res)) return null;
-      return res;
-    } catch {
-      return null;
-    }
-  }, [spec.fn, paramValues]);
+  const evaluateAt = useCallback(
+    (expr: string, x: number, tOverride?: number): number | null =>
+      evaluateMathExpression(expr, { ...paramValues, t: tOverride ?? timeValue, x }),
+    [paramValues, timeValue]
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -53,15 +35,12 @@ export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({ spec, pa
 
     const width = canvas.width;
     const height = canvas.height;
-
-    // Chuyển đổi toạ độ thực sang toạ độ canvas
     const toScreenX = (x: number) => ((x - xMin) / (xMax - xMin)) * width;
     const toScreenY = (y: number) => height - ((y - yMin) / (yMax - yMin)) * height;
 
-    // 1. Xóa canvas
     ctx.clearRect(0, 0, width, height);
 
-    // 2. Vẽ lưới toạ độ (Grid)
+    // 1. Lưới tọa độ (Grid)
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.15)';
     ctx.lineWidth = 1;
     for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
@@ -79,104 +58,124 @@ export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({ spec, pa
       ctx.stroke();
     }
 
-    // 3. Vẽ hai trục tọa độ Ox và Oy
+    // 2. Hai trục Ox, Oy
     const originX = toScreenX(0);
     const originY = toScreenY(0);
-
     ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2;
-    // Trục Ox
+    ctx.lineWidth = 1.75;
     ctx.beginPath();
     ctx.moveTo(0, originY);
     ctx.lineTo(width, originY);
-    ctx.stroke();
-    // Mũi tên Ox
-    ctx.beginPath();
-    ctx.moveTo(width - 8, originY - 4);
-    ctx.lineTo(width, originY);
-    ctx.lineTo(width - 8, originY + 4);
-    ctx.stroke();
-
-    // Trục Oy
-    ctx.beginPath();
     ctx.moveTo(originX, height);
     ctx.lineTo(originX, 0);
     ctx.stroke();
-    // Mũi tên Oy
-    ctx.beginPath();
-    ctx.moveTo(originX - 4, 8);
-    ctx.lineTo(originX, 0);
-    ctx.lineTo(originX + 4, 8);
-    ctx.stroke();
 
-    // Nhãn trục
     ctx.fillStyle = '#94a3b8';
     ctx.font = 'bold 11px sans-serif';
-    ctx.fillText('x', width - 12, originY - 6);
-    ctx.fillText('y', originX + 6, 12);
-    ctx.fillText('O', originX - 12, originY + 14);
-
-    // Đánh số trên trục
-    for (let x = Math.ceil(xMin); x <= Math.floor(xMax); x++) {
-      if (x === 0) continue;
-      const sx = toScreenX(x);
-      ctx.fillText(String(x), sx - 4, originY + 12);
-    }
-    for (let y = Math.ceil(yMin); y <= Math.floor(yMax); y++) {
-      if (y === 0) continue;
-      const sy = toScreenY(y);
-      ctx.fillText(String(y), originX - 16, sy + 4);
+    ctx.fillText('x', width - 12, Math.max(12, Math.min(height - 6, originY - 6)));
+    ctx.fillText('y', Math.max(6, Math.min(width - 14, originX + 6)), 12);
+    if (originX > 10 && originX < width - 10 && originY > 10 && originY < height - 10) {
+      ctx.fillText('O', originX - 12, originY + 14);
     }
 
-    // 4. Vẽ đường cong hàm số y = f(x)
-    ctx.strokeStyle = '#f43f5e';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-
-    const step = (xMax - xMin) / width;
-    let isDrawing = false;
-
-    for (let px = 0; px <= width; px++) {
-      const rx = xMin + px * step;
-      const ry = evaluateFn(rx);
-
-      if (ry !== null && ry >= yMin - 10 && ry <= yMax + 10) {
-        const sy = toScreenY(ry);
-        if (!isDrawing) {
-          ctx.moveTo(px, sy);
-          isDrawing = true;
+    const drawCurve = (expr: string, color: string, lineWidth: number, dashed = false) => {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      if (dashed) ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      const step = (xMax - xMin) / width;
+      let isDrawing = false;
+      for (let px = 0; px <= width; px++) {
+        const rx = xMin + px * step;
+        const ry = evaluateAt(expr, rx);
+        if (ry !== null && ry >= yMin - 10 && ry <= yMax + 10) {
+          const sy = toScreenY(ry);
+          if (!isDrawing) {
+            ctx.moveTo(px, sy);
+            isDrawing = true;
+          } else {
+            ctx.lineTo(px, sy);
+          }
         } else {
-          ctx.lineTo(px, sy);
+          isDrawing = false;
         }
-      } else {
-        isDrawing = false;
+      }
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    // 3. Đồ thị hàm số chính y = f(x, t) & đạo hàm f'(x, t)
+    if (spec.fn) {
+      drawCurve(spec.fn, '#f43f5e', 2.6);
+    }
+    if (spec.derivative) {
+      drawCurve(spec.derivative, '#f59e0b', 1.8, true);
+    }
+
+    // 4. Quỹ đạo tham số theo thời gian (x(t), y(t)) + Chấm sáng chuyển động
+    if (spec.parametric) {
+      const tMin = spec.timeConfig?.min ?? 0;
+      const tEnd = Math.max(tMin, timeValue);
+      const samples = 160;
+      if (spec.parametric.showTrail !== false && tEnd > tMin) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.85)';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        let started = false;
+        for (let i = 0; i <= samples; i++) {
+          const ti = tMin + ((tEnd - tMin) * i) / samples;
+          const pxVal = evaluateMathExpression(spec.parametric.xFn, { ...paramValues, t: ti });
+          const pyVal = evaluateMathExpression(spec.parametric.yFn, { ...paramValues, t: ti });
+          if (pxVal !== null && pyVal !== null) {
+            const sx = toScreenX(pxVal);
+            const sy = toScreenY(pyVal);
+            if (!started) {
+              ctx.moveTo(sx, sy);
+              started = true;
+            } else {
+              ctx.lineTo(sx, sy);
+            }
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const curX = evaluateMathExpression(spec.parametric.xFn, { ...paramValues, t: timeValue });
+      const curY = evaluateMathExpression(spec.parametric.yFn, { ...paramValues, t: timeValue });
+      if (curX !== null && curY !== null) {
+        const cx = toScreenX(curX);
+        const cy = toScreenY(curY);
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.25)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#22d3ee';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
-    ctx.stroke();
 
-    // 5. Vẽ điểm rê chuột nếu có
+    // 5. Điểm rê chuột
     if (hoverCoord) {
-      const hx = toScreenX(hoverCoord.x);
-      const hy = toScreenY(hoverCoord.y);
       ctx.fillStyle = '#10b981';
       ctx.beginPath();
-      ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+      ctx.arc(toScreenX(hoverCoord.x), toScreenY(hoverCoord.y), 5, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, [xMin, xMax, yMin, yMax, evaluateFn, hoverCoord]);
+  }, [xMin, xMax, yMin, yMax, spec.fn, spec.derivative, spec.parametric, spec.timeConfig, paramValues, timeValue, evaluateAt, hoverCoord]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !spec.fn) return;
     const rect = canvas.getBoundingClientRect();
-    const px = e.clientX - rect.left;
+    const px = ((e.clientX - rect.left) / rect.width) * canvas.width;
     const rx = Number((xMin + (px / canvas.width) * (xMax - xMin)).toFixed(2));
-    const ry = evaluateFn(rx);
-    if (ry !== null) {
-      setHoverCoord({ x: rx, y: Number(ry.toFixed(2)) });
-    } else {
-      setHoverCoord(null);
-    }
+    const ry = evaluateAt(spec.fn, rx);
+    setHoverCoord(ry !== null ? { x: rx, y: Number(ry.toFixed(2)) } : null);
   };
 
   return (
@@ -197,4 +196,3 @@ export const FunctionPlotCanvas: React.FC<FunctionPlotCanvasProps> = ({ spec, pa
     </div>
   );
 };
-

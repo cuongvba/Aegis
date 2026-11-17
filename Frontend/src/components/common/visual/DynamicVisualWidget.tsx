@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Sliders, Sparkles, ExternalLink } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Sliders, Sparkles, Play, Pause, RotateCcw, Clock } from 'lucide-react';
+import { MathRenderer } from '@/components/common/MathRenderer';
 import type { DynamicVisualSpec } from './visual-types';
 import { FunctionPlotCanvas } from './FunctionPlotCanvas';
 import { Geometry3dCanvas } from './Geometry3dCanvas';
@@ -10,7 +11,6 @@ interface DynamicVisualWidgetProps {
 }
 
 export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, className = '' }) => {
-  // Trạng thái tham số động cho đồ thị hàm số
   const [paramValues, setParamValues] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     spec.parameters?.forEach((p) => {
@@ -19,13 +19,72 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
     return initial;
   });
 
-  const handleParamChange = (name: string, value: number) => {
-    setParamValues((prev) => ({ ...prev, [name]: value }));
-  };
+  const hasTimeAxis = useMemo(
+    () =>
+      Boolean(spec.timeConfig) ||
+      Boolean(spec.parametric) ||
+      Boolean(spec.animateParam) ||
+      /\bt\b/.test(spec.fn || ''),
+    [spec.timeConfig, spec.parametric, spec.animateParam, spec.fn]
+  );
+
+  const tMin = spec.timeConfig?.min ?? 0;
+  const tMax = spec.timeConfig?.max ?? 10;
+  const tStep = spec.timeConfig?.step ?? 0.05;
+  const tBaseSpeed = spec.timeConfig?.speed ?? 1.5;
+
+  const [timeValue, setTimeValue] = useState<number>(tMin);
+  const [isPlaying, setIsPlaying] = useState<boolean>(Boolean(spec.timeConfig?.autoPlay));
+  const [speedMult, setSpeedMult] = useState<number>(1);
+  const lastFrameRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setTimeValue(tMin);
+    setIsPlaying(Boolean(spec.timeConfig?.autoPlay));
+  }, [spec.title, tMin, spec.timeConfig?.autoPlay]);
+
+  useEffect(() => {
+    if (!isPlaying || !hasTimeAxis) {
+      lastFrameRef.current = null;
+      return;
+    }
+
+    let rafId = 0;
+    const tick = (now: number) => {
+      if (lastFrameRef.current !== null) {
+        const dt = (now - lastFrameRef.current) / 1000;
+        const delta = dt * tBaseSpeed * speedMult;
+        setTimeValue((prev) => {
+          const next = prev + delta;
+          if (next >= tMax) {
+            if (spec.timeConfig?.loop !== false) return tMin;
+            setIsPlaying(false);
+            return tMax;
+          }
+          return Number(next.toFixed(3));
+        });
+      }
+      lastFrameRef.current = now;
+      rafId = window.requestAnimationFrame(tick);
+    };
+
+    rafId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(rafId);
+  }, [isPlaying, hasTimeAxis, tBaseSpeed, speedMult, tMin, tMax, spec.timeConfig?.loop]);
+
+  const effectiveParams = useMemo(() => {
+    if (!spec.animateParam) return paramValues;
+    return { ...paramValues, [spec.animateParam]: timeValue };
+  }, [paramValues, spec.animateParam, timeValue]);
+
+  const activeMorphStep = useMemo(() => {
+    if (!spec.morphSteps || spec.morphSteps.length === 0) return null;
+    const sorted = [...spec.morphSteps].sort((a, b) => a.timeAt - b.timeAt);
+    return sorted.filter((s) => s.timeAt <= timeValue).pop() || sorted[0];
+  }, [spec.morphSteps, timeValue]);
 
   return (
     <div className={`my-4 p-4 rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl max-w-lg mx-auto ${className}`}>
-      {/* Tiêu đề & Huy hiệu */}
       <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
@@ -36,20 +95,15 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
           </h4>
         </div>
         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700 uppercase">
-          {spec.type === 'geometry_3d' ? '3D Geometry' : spec.type === 'geogebra_embed' ? 'GeoGebra' : 'Dynamic Graph'}
+          {spec.type === 'geometry_3d' ? '3D Geometry' : spec.type === 'geogebra_embed' ? 'GeoGebra' : hasTimeAxis ? '60fps Time-Morph' : 'Dynamic Graph'}
         </span>
       </div>
 
-      {/* Vùng hiển thị Canvas theo loại mô hình */}
       <div className="flex justify-center">
         {spec.type === 'function_plot' && (
-          <FunctionPlotCanvas spec={spec} paramValues={paramValues} />
+          <FunctionPlotCanvas spec={spec} paramValues={effectiveParams} timeValue={timeValue} />
         )}
-
-        {spec.type === 'geometry_3d' && (
-          <Geometry3dCanvas spec={spec} />
-        )}
-
+        {spec.type === 'geometry_3d' && <Geometry3dCanvas spec={spec} />}
         {spec.type === 'geogebra_embed' && (
           <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
             <iframe
@@ -62,48 +116,97 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
         )}
       </div>
 
-      {/* Thanh điều chỉnh tham số tương tác (Interactive Sliders) */}
+      {hasTimeAxis && spec.type === 'function_plot' && (
+        <div className="mt-3 p-3 rounded-2xl bg-slate-950/90 border border-cyan-500/30 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-cyan-300">
+              <Clock size={13} />
+              <span>{spec.timeConfig?.label || (spec.animateParam ? `Biến thiên ${spec.animateParam}` : 'Trục thời gian t')} = {timeValue.toFixed(2)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsPlaying((p) => !p)}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white transition ${
+                  isPlaying ? 'bg-rose-600 hover:bg-rose-500' : 'bg-cyan-600 hover:bg-cyan-500'
+                }`}
+              >
+                {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                {isPlaying ? 'Tạm dừng' : 'Chạy t'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsPlaying(false); setTimeValue(tMin); }}
+                className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700"
+                title="Đặt lại t"
+              >
+                <RotateCcw size={12} />
+              </button>
+              <select
+                value={speedMult}
+                onChange={(e) => setSpeedMult(Number(e.target.value))}
+                className="rounded-lg bg-slate-800 border border-slate-700 px-1.5 py-1 text-[10px] font-bold text-slate-200"
+              >
+                <option value={0.5}>0.5x</option>
+                <option value={1}>1x</option>
+                <option value={2}>2x</option>
+              </select>
+            </div>
+          </div>
+          <input
+            type="range"
+            min={tMin}
+            max={tMax}
+            step={tStep}
+            value={timeValue}
+            onChange={(e) => { setIsPlaying(false); setTimeValue(Number(e.target.value)); }}
+            className="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+          />
+        </div>
+      )}
+
+      {activeMorphStep && (
+        <div className="mt-3 p-3 rounded-2xl bg-indigo-950/50 border border-indigo-500/30 text-center space-y-1">
+          <div className="text-xs sm:text-sm font-bold text-indigo-100">
+            <MathRenderer content={`$$${activeMorphStep.latex}$$`} />
+          </div>
+          {activeMorphStep.note && (
+            <div className="text-[11px] text-indigo-300 font-medium">{activeMorphStep.note}</div>
+          )}
+        </div>
+      )}
+
       {spec.parameters && spec.parameters.length > 0 && (
-        <div className="mt-3.5 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+        <div className="mt-3 p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
           <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300">
             <Sliders size={13} className="text-amber-400" />
             <span>Thanh Trượt Tham Số Động:</span>
           </div>
-
-          <div className="space-y-2">
-            {spec.parameters.map((param) => {
-              const currentVal = paramValues[param.name] ?? param.value;
-              return (
-                <div key={param.name} className="flex items-center gap-3 text-xs">
-                  <span className="font-mono font-bold text-cyan-300 w-16">
-                    {param.name} = {currentVal}
-                  </span>
-                  <input
-                    type="range"
-                    min={param.min}
-                    max={param.max}
-                    step={param.step || 0.1}
-                    value={currentVal}
-                    onChange={(e) => handleParamChange(param.name, Number(e.target.value))}
-                    className="flex-1 accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
-                  />
-                  <span className="font-mono text-[10px] text-slate-500 w-8 text-right">
-                    {param.max}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          {spec.parameters.map((param) => {
+            const currentVal = effectiveParams[param.name] ?? param.value;
+            return (
+              <div key={param.name} className="flex items-center gap-3 text-xs">
+                <span className="font-mono font-bold text-cyan-300 w-20">
+                  {param.name} = {Number(currentVal).toFixed(1)}
+                </span>
+                <input
+                  type="range"
+                  min={param.min}
+                  max={param.max}
+                  step={param.step || 0.1}
+                  value={currentVal}
+                  onChange={(e) => setParamValues((prev) => ({ ...prev, [param.name]: Number(e.target.value) }))}
+                  className="flex-1 accent-cyan-400 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Chú thích */}
       {spec.caption && (
-        <p className="text-[11px] text-slate-400 text-center mt-2.5 italic">
-          {spec.caption}
-        </p>
+        <p className="mt-2.5 text-[11px] text-center text-slate-400 italic">{spec.caption}</p>
       )}
     </div>
   );
 };
-
