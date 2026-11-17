@@ -890,9 +890,14 @@ export function PracticePage() {
             </div>
           ) : isKidsUniverse ? (
             <KidsWorldHub
-              topics={topics}
               stars={kidStars}
-              onStartQuest={handleStartSession}
+              onEarnStars={(delta) => {
+                setKidStars((prev) => {
+                  const next = prev + delta;
+                  localStorage.setItem('aegis-kids-stars', String(next));
+                  return next;
+                });
+              }}
               t={t}
               lang={lang}
             />

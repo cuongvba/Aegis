@@ -1,0 +1,89 @@
+using System.Collections.Generic;
+
+namespace Aegis.Application.DTOs
+{
+    public class KidsConceptAtomDto
+    {
+        public string AtomCode { get; set; } = string.Empty;
+        public string IslandId { get; set; } = "english";
+        public string AgeBand { get; set; } = "3-5";
+        public int Order { get; set; } = 1;
+        public string Emoji { get; set; } = "🌟";
+        public string PrimaryText { get; set; } = string.Empty;
+        public string SecondaryText { get; set; } = string.Empty;
+        public string? Phonetic { get; set; }
+        public int? NumericValue { get; set; }
+        public string SampleSentenceEn { get; set; } = string.Empty;
+        public string SampleSentenceVi { get; set; } = string.Empty;
+        public string FunFactEn { get; set; } = string.Empty;
+        public string FunFactVi { get; set; } = string.Empty;
+        public bool IsAiGenerated { get; set; }
+    }
+
+    public class KidsChoiceOptionDto
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Emoji { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public bool IsCorrect { get; set; }
+    }
+
+    public class KidsActivityDto
+    {
+        public string ActivityId { get; set; } = string.Empty;
+        public string AtomCode { get; set; } = string.Empty;
+        /// <summary>"EXPOSE_CARD" | "INTERACT_COUNT" | "SPEAK_ECHO" | "MINI_CHALLENGE"</summary>
+        public string ActivityType { get; set; } = "EXPOSE_CARD";
+        public string TitleVi { get; set; } = string.Empty;
+        public string TitleEn { get; set; } = string.Empty;
+        public string PromptVi { get; set; } = string.Empty;
+        public string PromptEn { get; set; } = string.Empty;
+        public string SpeechTextVi { get; set; } = string.Empty;
+        public string SpeechTextEn { get; set; } = string.Empty;
+        public string Emoji { get; set; } = "🌟";
+        public string PrimaryText { get; set; } = string.Empty;
+        public string SecondaryText { get; set; } = string.Empty;
+        public string? Phonetic { get; set; }
+        public int? VisualCount { get; set; }
+        public string? TargetSpeakText { get; set; }
+        public string? FunFactVi { get; set; }
+        public string? FunFactEn { get; set; }
+        public List<KidsChoiceOptionDto> Options { get; set; } = new();
+    }
+
+    public class GenerateKidsAdventureRequestDto
+    {
+        public string IslandId { get; set; } = "english";
+        public string? AgeBand { get; set; }
+        public int AtomCount { get; set; } = 3;
+        public List<string>? WeakAtomCodes { get; set; }
+    }
+
+    public class KidsLessonPlanDto
+    {
+        public string LessonId { get; set; } = string.Empty;
+        public string IslandId { get; set; } = string.Empty;
+        public string AgeBand { get; set; } = string.Empty;
+        public int AtomCount { get; set; }
+        public int ActivityCount { get; set; }
+        public List<KidsConceptAtomDto> Atoms { get; set; } = new();
+        public List<KidsActivityDto> Activities { get; set; } = new();
+    }
+
+    public class AiBuildKidsCurriculumRequestDto
+    {
+        public string TopicTitle { get; set; } = string.Empty;
+        public string IslandId { get; set; } = "explore";
+        public string AgeBand { get; set; } = "6-8";
+        public int ItemCount { get; set; } = 4;
+    }
+
+    public class AiBuildKidsCurriculumResponseDto
+    {
+        public bool Success { get; set; }
+        public bool UsedAi { get; set; }
+        public string IslandId { get; set; } = string.Empty;
+        public List<KidsConceptAtomDto> Atoms { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
+    }
+}
