@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass } from 'lucide-react';
+import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass, Wand2 } from 'lucide-react';
 import { DynamicVisualWidget } from '@/components/common/visual/DynamicVisualWidget';
 import { InteractiveVisualStudioModal } from '@/components/common/visual/InteractiveVisualStudioModal';
 import type { DynamicVisualSpec } from '@/components/common/visual/visual-types';
@@ -7,6 +7,7 @@ import {
   VISUAL_LESSON_PRESETS,
   type InteractiveVisualLesson,
 } from '@/components/common/visual/visualLessonPresets';
+import { ProblemVisualImporterModal } from './ProblemVisualImporterModal';
 
 function tryParseUrlSpec(): InteractiveVisualLesson | null {
   try {
@@ -35,6 +36,7 @@ export default function VisualLearningLabPage() {
   const [selectedId, setSelectedId] = useState<string>(lessons[0].id);
   const [subjectFilter, setSubjectFilter] = useState<'ALL' | 'TOAN' | 'VAT_LY' | 'HINH_HOC_3D'>('ALL');
   const [studioOpen, setStudioOpen] = useState(false);
+  const [importerOpen, setImporterOpen] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
   const [copiedType, setCopiedType] = useState<'link' | 'embed' | null>(null);
 
@@ -102,6 +104,13 @@ export default function VisualLearningLabPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setImporterOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 px-4 py-2 text-xs font-extrabold text-white shadow-lg transition"
+            >
+              <Wand2 className="h-4 w-4" /> Nạp Đề / Bài Toán Bất Kỳ
+            </button>
             <button
               type="button"
               onClick={() => setStudioOpen(true)}
@@ -215,6 +224,14 @@ export default function VisualLearningLabPage() {
         isOpen={studioOpen}
         onClose={() => setStudioOpen(false)}
         onInsertVisual={handleInsertCustomLesson}
+      />
+      <ProblemVisualImporterModal
+        isOpen={importerOpen}
+        onClose={() => setImporterOpen(false)}
+        onLessonsGenerated={(generated) => {
+          setLessons((prev) => [...generated, ...prev]);
+          if (generated[0]) setSelectedId(generated[0].id);
+        }}
       />
     </div>
   );

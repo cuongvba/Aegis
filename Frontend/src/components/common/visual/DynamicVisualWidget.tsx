@@ -19,6 +19,14 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
     return initial;
   });
 
+  useEffect(() => {
+    const next: Record<string, number> = {};
+    spec.parameters?.forEach((p) => {
+      next[p.name] = p.value;
+    });
+    setParamValues(next);
+  }, [spec]);
+
   const hasTimeAxis = useMemo(
     () =>
       Boolean(spec.timeConfig) ||
@@ -73,9 +81,15 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
   }, [isPlaying, hasTimeAxis, tBaseSpeed, speedMult, tMin, tMax, spec.timeConfig?.loop]);
 
   const effectiveParams = useMemo(() => {
-    if (!spec.animateParam) return paramValues;
-    return { ...paramValues, [spec.animateParam]: timeValue };
-  }, [paramValues, spec.animateParam, timeValue]);
+    const base: Record<string, number> = {};
+    spec.parameters?.forEach((p) => {
+      base[p.name] = paramValues[p.name] ?? p.value;
+    });
+    if (spec.animateParam) {
+      base[spec.animateParam] = timeValue;
+    }
+    return base;
+  }, [paramValues, spec.parameters, spec.animateParam, timeValue]);
 
   const activeMorphStep = useMemo(() => {
     if (!spec.morphSteps || spec.morphSteps.length === 0) return null;
