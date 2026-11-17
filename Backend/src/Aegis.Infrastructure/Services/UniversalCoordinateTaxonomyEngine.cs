@@ -1411,6 +1411,25 @@ namespace Aegis.Infrastructure.Services
                 if (dominantTopicGroup.Count() >= results.Count * 0.4 || isSingleSubjectExam)
                 {
                     string domCode = dominantTopicGroup.Key;
+                    if (!Regex.IsMatch(domCode, @"_K\d+$", RegexOptions.IgnoreCase)
+                        && results.Any(q => string.Equals(q.DomainCode, "EDUCATION", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        var sampleCanonical = results.Select(q => q.CanonicalTopicCode).FirstOrDefault(c => !string.IsNullOrWhiteSpace(c));
+                        var mCanonGrade = sampleCanonical != null ? Regex.Match(sampleCanonical, @"_K(\d{2})_") : Match.Empty;
+                        if (mCanonGrade.Success && int.TryParse(mCanonGrade.Groups[1].Value, out var cg) && cg >= 1 && cg <= 12)
+                        {
+                            domCode = $"{domCode}_K{cg:D2}";
+                        }
+                        else
+                        {
+                            var sampleLevel = results.Select(q => q.TargetLevel).FirstOrDefault(l => !string.IsNullOrWhiteSpace(l));
+                            var mLvl = sampleLevel != null ? Regex.Match(sampleLevel, @"(?i)(?:Lớp|Khối|Grade|K)\s*(\d{1,2})") : Match.Empty;
+                            if (mLvl.Success && int.TryParse(mLvl.Groups[1].Value, out var lg) && lg >= 1 && lg <= 12)
+                            {
+                                domCode = $"{domCode}_K{lg:D2}";
+                            }
+                        }
+                    }
                     var baseDomCode = Regex.Replace(domCode, @"_K\d+$", "", RegexOptions.IgnoreCase);
                     var matchedTopic = dynamicContext?.Topics?.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase) || t.Code.Equals(baseDomCode, StringComparison.OrdinalIgnoreCase))
                         ?? DynamicDomainContext.CreateDefault().Topics.FirstOrDefault(t => t.Code.Equals(domCode, StringComparison.OrdinalIgnoreCase) || t.Code.Equals(baseDomCode, StringComparison.OrdinalIgnoreCase));

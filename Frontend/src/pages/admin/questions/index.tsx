@@ -30,6 +30,7 @@ import { TaxonomyMatrixModal } from './components/TaxonomyMatrixModal';
 
 function Pagination({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) {
   const { t } = useTranslation('admin_questions');
+
   return (
     <div className="flex items-center gap-1.5">
       <button onClick={() => onChange(Math.max(1, page - 1))} disabled={page === 1} className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-850 text-slate-400 hover:text-white border border-slate-855 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold transition-all">{t('pagination.prev')}</button>
@@ -250,6 +251,10 @@ export function AdminQuestionsPage() {
     finally { setIsCleaningOrphans(false); }
   };
 
+  const openFilePicker = () => {
+    window.setTimeout(() => fileInputRef.current?.click(), 0);
+  };
+
   return (
     <div className="space-y-6 font-sans">
       <div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 pb-1">
@@ -277,9 +282,9 @@ export function AdminQuestionsPage() {
               <button type="button" onClick={() => setShowGovernanceModal(true)} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-slate-300 px-3 py-1.5 rounded-xl font-semibold text-xs border border-slate-800"><Network size={14} className="text-sky-400" /> {t('actions.hierarchyAndDomain')}</button>
               <button type="button" onClick={() => navigate('/admin/topics')} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-xl font-bold text-xs"><Network size={14} className="text-amber-400" /> Cây Phân Cấp Chủ Đề &rarr;</button>
               <div className="relative group">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl font-bold text-xs"><UploadCloud size={14} className="text-emerald-400" /> {t('actions.importExam')} <ChevronDown size={12} /></button>
+                <button type="button" onClick={openFilePicker} className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl font-bold text-xs"><UploadCloud size={14} className="text-emerald-400" /> {t('actions.importExam')} <ChevronDown size={12} /></button>
                 <div className="absolute right-0 mt-1.5 w-60 bg-slate-900/95 border border-slate-700/80 rounded-2xl shadow-2xl p-1.5 hidden group-hover:block z-50 backdrop-blur-xl">
-                  <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2"><FileUp size={14} className="text-emerald-400" /> <div><div className="font-bold">{t('actions.uploadFiles')}</div><div className="text-[10px] text-slate-400">{t('actions.uploadFilesDesc')}</div></div></button>
+                  <button type="button" onClick={openFilePicker} className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2"><FileUp size={14} className="text-emerald-400" /> <div><div className="font-bold">{t('actions.uploadFiles')}</div><div className="text-[10px] text-slate-400">{t('actions.uploadFilesDesc')}</div></div></button>
                   <button type="button" onClick={importEngine.handleOpenExcelStudio} className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2 border-t border-slate-800"><FileSpreadsheet size={14} className="text-cyan-400" /> <div><div className="font-bold">{t('actions.cognitiveStudio')}</div><div className="text-[10px] text-slate-400">{t('actions.cognitiveStudioDesc')}</div></div></button>
                   <button type="button" onClick={() => navigate('/admin/studio')} className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-200 hover:bg-slate-800 flex items-center gap-2 border-t border-slate-800"><Columns size={14} className="text-indigo-400" /> <div><div className="font-bold">{t('actions.splitScreenStudio')}</div><div className="text-[10px] text-slate-400">{t('actions.splitScreenStudioDesc')}</div></div></button>
                 </div>
@@ -296,10 +301,10 @@ export function AdminQuestionsPage() {
         </div>
       </div>
 
-      <input type="file" ref={fileInputRef} onChange={importEngine.handleFileChange} accept=".xlsx,.xls,.docx,.pdf" className="hidden" />
+      <input type="file" ref={fileInputRef} onChange={importEngine.handleFileChange} accept=".xlsx,.xls,.docx,.pdf" className="sr-only" tabIndex={-1} aria-hidden="true" />
       {hasWritePermission && (
         <div onDragOver={e => { e.preventDefault(); setDragActive(true); }} onDragLeave={() => setDragActive(false)} onDrop={e => { e.preventDefault(); setDragActive(false); if (e.dataTransfer.files?.[0]) importEngine.handleFileImport(e.dataTransfer.files[0]); }} className={`rounded-2xl border transition-all px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 ${dragActive ? 'border-blue-500 bg-blue-500/15' : 'border-slate-800/80 bg-slate-900/40'}`}>
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={openFilePicker}>
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400"><UploadCloud size={16} /></div>
             <div className="text-xs sm:text-sm font-semibold text-slate-200">{t('dropzone.dragDropPrefix')} <span className="text-emerald-400 font-bold font-mono">DOCX/PDF/Excel</span> {t('dropzone.dragDropSuffix')}</div>
           </div>

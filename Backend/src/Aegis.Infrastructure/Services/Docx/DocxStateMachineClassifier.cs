@@ -714,6 +714,14 @@ namespace Aegis.Infrastructure.Services.Docx
                         ? currentTopicCode 
                         : (documentSubject ?? InferTopicFromContent(questionBody, dynamicContext));
 
+                    // [Consistency SSoT] Nếu Header đã chuyên biệt hóa chủ đề (ví dụ TOAN -> TOAN_K12, TIENG_ANH -> TIENG_ANH_K12),
+                    // đồng bộ toàn bộ câu hỏi theo mã chuyên biệt thay vì giữ mã gốc rời rạc.
+                    if (!string.IsNullOrWhiteSpace(headerTaxonomy.TopicCode) && headerTaxonomy.TopicCode != "GENERAL"
+                        && (inferredTopic == "GENERAL" || headerTaxonomy.TopicCode.StartsWith(inferredTopic + "_", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        inferredTopic = headerTaxonomy.TopicCode;
+                    }
+
                     string initialAnswer = "";
                     if (answerKeyMap != null && !string.Equals(resolvedScopeType, "ESSAY", StringComparison.OrdinalIgnoreCase))
                     {
