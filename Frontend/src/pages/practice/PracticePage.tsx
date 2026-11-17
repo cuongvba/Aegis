@@ -4,6 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Clock3, Flag, Lightbulb, ChevronDown, ChevronUp, RefreshCw, Home, ArrowLeft, CheckCircle, AlertTriangle, Sparkles, Smartphone } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PracticeSetup } from '@/components/quiz/PracticeSetup';
+import { KidsWorldHub } from '@/components/kids/KidsWorldHub';
+import { KidsStageBanner } from '@/components/kids/KidsStageBanner';
+import { KidsParentGateModal } from '@/components/kids/KidsParentGateModal';
 import { QuestionCard } from '@/components/quiz/QuestionCard';
 import { QuestionNavigator } from '@/components/quiz/QuestionNavigator';
 import { ResultScreen } from '@/components/quiz/ResultScreen';
@@ -218,6 +221,26 @@ export function PracticePage() {
   const [kidBestStreak, setKidBestStreak] = useState(0);
   const [kidFeedback, setKidFeedback] = useState('');
   const [kidMilestone, setKidMilestone] = useState('');
+  const [isKidsUniverse, setIsKidsUniverse] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const modeParam = new URLSearchParams(window.location.search).get('mode');
+    if (modeParam === 'kids') return true;
+    return localStorage.getItem('aegis-kids-world') === 'true';
+  });
+  const [isParentGateOpen, setIsParentGateOpen] = useState(false);
+  const [kidStars, setKidStars] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    return Number(localStorage.getItem('aegis-kids-stars') || '0') || 0;
+  });
+
+  useEffect(() => {
+    if (kidStreak <= 0) return;
+    setKidStars((prev) => {
+      const next = prev + 1;
+      localStorage.setItem('aegis-kids-stars', String(next));
+      return next;
+    });
+  }, [kidStreak]);
   const kidFeedbackTimerRef = useRef<number | null>(null);
   const kidMilestoneTimerRef = useRef<number | null>(null);
   const [studentName, setStudentName] = useState(() => localStorage.getItem('student_display_name') || '');
@@ -734,6 +757,26 @@ export function PracticePage() {
                 </button>
               )}
 
+              <button
+                type="button"
+                onClick={() => {
+                  if (isKidsUniverse) {
+                    setIsParentGateOpen(true);
+                  } else {
+                    localStorage.setItem('aegis-kids-world', 'true');
+                    setIsKidsUniverse(true);
+                  }
+                }}
+                className={`flex items-center gap-1.5 rounded-xl px-2.5 h-8 text-[11px] font-black transition-all shadow-sm active:scale-95 ${
+                  isKidsUniverse
+                    ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white border border-amber-300'
+                    : 'bg-gradient-to-r from-pink-500/10 to-amber-500/10 border border-amber-300 text-amber-700 hover:bg-amber-50'
+                }`}
+              >
+                <span>🌈</span>
+                <span className="hidden sm:inline">{isKidsUniverse ? t('kidsModeExit') : t('kidsModeToggle')}</span>
+              </button>
+
               <a
                 href="/m"
                 className="flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 px-2.5 h-8 text-[11px] font-bold transition-all shadow-sm active:scale-95"
@@ -845,6 +888,14 @@ export function PracticePage() {
               <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
               Đang chuẩn bị câu hỏi từ ngân hàng...
             </div>
+          ) : isKidsUniverse ? (
+            <KidsWorldHub
+              topics={topics}
+              stars={kidStars}
+              onStartQuest={handleStartSession}
+              t={t}
+              lang={lang}
+            />
           ) : (
             <PracticeSetup
               topics={topics}
@@ -960,6 +1011,18 @@ export function PracticePage() {
               ) : (
                 currentQuestion && (
                   <>
+                    {(isKidsUniverse || isKidMode) && (
+                      <KidsStageBanner
+                        questionContent={currentQuestion.content}
+                        currentIndex={currentIndex}
+                        totalQuestions={sessionQuestions.length}
+                        streak={kidStreak}
+                        stars={kidStars}
+                        feedback={kidFeedback}
+                        lang={lang}
+                        t={t}
+                      />
+                    )}
                     {currentQuestion.sourceSectionName && (
                       <div className="rounded-2xl bg-indigo-50 border border-indigo-200/80 px-4 py-2 text-xs sm:text-sm font-black text-indigo-800 flex items-center justify-between gap-2">
                         <span>{currentQuestion.sourceSectionName}</span>
@@ -1225,6 +1288,18 @@ export function PracticePage() {
           </div>
         </div>
       )}
+
+      <KidsParentGateModal
+        isOpen={isParentGateOpen}
+        onClose={() => setIsParentGateOpen(false)}
+        onUnlocked={() => {
+          setIsParentGateOpen(false);
+          localStorage.setItem('aegis-kids-world', 'false');
+          setIsKidsUniverse(false);
+          if (hasStarted) restart();
+        }}
+        t={t}
+      />
     </main>
   );
 }
