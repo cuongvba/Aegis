@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, FolderTree, FileQuestion, Users, GraduationCap } from 'lucide-react';
+import { Sparkles, FolderTree, FileQuestion, Users, GraduationCap, Compass } from 'lucide-react';
 import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
 import { UserProfileDropdown } from '@/widgets/app-header/UserProfileDropdown';
 
@@ -42,6 +42,13 @@ export const CreatorWorkspaceNav: React.FC<CreatorWorkspaceNavProps> = ({ rightS
       path: '/team',
       icon: <Users className="w-4 h-4 text-cyan-400" />,
       activeClass: 'bg-cyan-600/25 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/10',
+    },
+    {
+      id: 'visual-lab',
+      label: t('workspaceNav.visualLab', 'Phòng Lab 60fps'),
+      path: '/visual-lab',
+      icon: <Compass className="w-4 h-4 text-sky-400" />,
+      activeClass: 'bg-sky-600/25 text-sky-300 border-sky-500/40 shadow-sm shadow-sky-500/10',
     },
   ];
 
