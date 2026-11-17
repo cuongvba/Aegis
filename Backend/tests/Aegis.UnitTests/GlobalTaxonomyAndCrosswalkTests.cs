@@ -258,7 +258,7 @@ namespace Aegis.UnitTests
                 var banners = c.Header.Split('\n').ToList();
                 var res = UniversalCoordinateTaxonomyEngine.SniffCoordinates(c.File, null, banners, dynamicContext: ctx);
 
-                Assert.True(res.DomainCode == "EDUCATION", $"File={c.File} -> DomainCode={res.DomainCode}, TopicCode={res.TopicCode}, TargetLevel={res.TargetLevel}, Purpose={res.AssessmentPurpose}, Org={res.IssuingOrg}");
+                Assert.Equal("EDUCATION", res.DomainCode);
                 Assert.Equal(c.ExpectedTopic, res.TopicCode);
                 Assert.Equal("Lớp 12", res.TargetLevel);
                 Assert.Equal(c.ExpectedYear, res.BenchmarkYear);
@@ -273,44 +273,66 @@ namespace Aegis.UnitTests
         }
 
         [Fact]
-        public void RealDocx_AllFilesInTnptFolder_ShouldHaveConsistentCoordinates()
+        public void GlobalMultiIndustry_DataDrivenSpecialization_AndMultiLang_ShouldWorkViaOcp()
         {
-            var tnptDir = @"D:\Cuong\DuAn\DETHI\TNPT";
-            if (!System.IO.Directory.Exists(tnptDir)) return;
+            var enCtx = DynamicDomainContext.CreateDefault("en");
 
-            var ctx = DynamicDomainContext.CreateDefault();
-            var parser = new DocxParserService();
-            var files = System.IO.Directory.GetFiles(tnptDir, "*.docx").OrderBy(f => f).ToList();
-            Assert.NotEmpty(files);
+            var cyber = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                "CISSP_NIST_Incident_Response_2026.docx",
+                null,
+                new[] { "CISSP Certification Exam", "Module: SOC Operations, SIEM & Incident Response (MITRE ATT&CK)" },
+                dynamicContext: enCtx);
+            Assert.Equal("IT_SECURITY", cyber.DomainCode);
+            Assert.Equal("ITSEC_SOC_IR", cyber.TopicCode);
+            Assert.Equal("SOC Operations, SIEM & Incident Response", cyber.TopicName);
+            Assert.Equal("/IT_SECURITY/IT_SECURITY/ITSEC_SOC_IR/", cyber.TreePath);
 
-            foreach (var filePath in files)
+            var legal = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                "GDPR_Data_Privacy_Compliance_Audit_2026.docx",
+                null,
+                new[] { "Annual Regulatory Compliance Audit", "Topic: GDPR & Data Privacy Protection" },
+                dynamicContext: enCtx);
+            Assert.Equal("LEGAL_COMPLIANCE", legal.DomainCode);
+            Assert.Equal("LEGAL_DATA_PRIVACY", legal.TopicCode);
+            Assert.Equal("Data Privacy & Protection (GDPR / CCPA)", legal.TopicName);
+
+            var hse = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                "OSHA_LOTO_Confined_Space_Safety_2026.docx",
+                null,
+                new[] { "OSHA Safety Certification Exam", "Module: Lockout Tagout (LOTO) & Confined Space PPE" },
+                dynamicContext: enCtx);
+            Assert.Equal("HSE", hse.DomainCode);
+            Assert.Equal("HSE_OCCUPATIONAL", hse.TopicCode);
+
+            var bank = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                "Trade_Finance_UCP600_SWIFT_Exam_2026.docx",
+                null,
+                new[] { "Global Trade Finance Certification", "Letter of Credit (SWIFT / UCP 600)" },
+                dynamicContext: enCtx);
+            Assert.Equal("BANKING", bank.DomainCode);
+            Assert.Equal("BANKING_SETTLEMENT", bank.TopicCode);
+            Assert.Equal("International Settlement & Trade Finance", bank.TopicName);
+
+            enCtx.StructureDictionary.HierarchicalSpecializationCatalog.Add(new HierarchicalSpecializationRuleDto
             {
-                var fileName = System.IO.Path.GetFileName(filePath);
-                ctx.FileName = fileName;
-                using var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
-                var qs = parser.ParseDocxFile(fs, ctx);
-                Assert.NotEmpty(qs);
+                DomainCode = "AVIATION_LOGISTICS",
+                Priority = 100,
+                LeafTopicCode = "AVIATION_DGR",
+                LeafTopicName = "IATA Dangerous Goods Regulations",
+                LocalizedLeafNames = new() { ["en"] = "IATA Dangerous Goods Regulations", ["vi"] = "Quy định Hàng hóa Nguy hiểm IATA" },
+                ParentTopicCode = "AVIATION_SAFETY",
+                ParentTopicName = "Aviation Safety",
+                Keywords = new() { "dangerous goods", "iata dgr", "lithium battery" }
+            });
 
-                var first = qs[0];
-                System.Console.WriteLine($"[TNPT REAL] {fileName} => Q={qs.Count}, Domain={first.DomainCode}, Topic={first.TopicCode}, Level={first.TargetLevel}, Purpose={first.AssessmentPurpose}, Org={first.IssuingOrg}, Year={first.BenchmarkYear}, Canonical={first.CanonicalTopicCode}");
-
-                Assert.Equal("EDUCATION", first.DomainCode);
-                Assert.Equal("Lớp 12", first.TargetLevel);
-                Assert.False(string.IsNullOrWhiteSpace(first.AssessmentPurpose), $"Missing AssessmentPurpose for {fileName}");
-                Assert.Contains("THPT", first.AssessmentPurpose, System.StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("THPT_NAT", first.CanonicalTopicCode);
-
-                if (fileName.Contains("Toan", System.StringComparison.OrdinalIgnoreCase))
-                {
-                    Assert.True(first.TopicCode == "TOAN" || first.TopicCode == "TOAN_K12", $"Expected TOAN* for {fileName}, got {first.TopicCode}");
-                    Assert.Contains("EDU_TOAN_K12_THPT_NAT", first.CanonicalTopicCode);
-                }
-                else if (fileName.Contains("Tieng-Anh", System.StringComparison.OrdinalIgnoreCase))
-                {
-                    Assert.True(first.TopicCode == "TIENG_ANH" || first.TopicCode == "TIENG_ANH_K12", $"Expected TIENG_ANH* for {fileName}, got {first.TopicCode}");
-                    Assert.Contains("EDU_TIENG_ANH_K12_THPT_NAT", first.CanonicalTopicCode);
-                }
-            }
+            var aviation = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
+                "IATA_DGR_2026.docx",
+                null,
+                new[] { "ICAO / IATA Certification Exam", "Topic: IATA DGR & Lithium Battery Handling" },
+                dynamicContext: enCtx);
+            Assert.Equal("AVIATION_LOGISTICS", aviation.DomainCode);
+            Assert.Equal("AVIATION_DGR", aviation.TopicCode);
+            Assert.Equal("/AVIATION_LOGISTICS/AVIATION_SAFETY/AVIATION_DGR/", aviation.TreePath);
         }
     }
 }

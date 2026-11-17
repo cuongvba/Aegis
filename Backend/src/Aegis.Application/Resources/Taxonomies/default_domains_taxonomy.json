@@ -9,7 +9,8 @@
     },
     "Aliases": ["BANKING", "FINANCE", "NGAN_HANG"],
     "Keywords": [
-      "tín dụng", "khdn", "khcn", "tiền gửi", "ngân hàng", "chi nhánh", "rửa tiền", "aml", "thế chấp", "tài sản bảo đảm", "e-banking", "ebanking", "agribank", "vietcombank", "bidv", "vietinbank", "cic", "kho tiền", "ngân quỹ", "thẩm định", "cho vay", "bảo lãnh", "lãi suất", "sổ tiết kiệm", "thẻ tín dụng", "quy định số 1686", "nhno", "hạn mức"
+      "tín dụng", "khdn", "khcn", "tiền gửi", "ngân hàng", "chi nhánh", "rửa tiền", "aml", "thế chấp", "tài sản bảo đảm", "e-banking", "ebanking", "agribank", "vietcombank", "bidv", "vietinbank", "cic", "kho tiền", "ngân quỹ", "thẩm định", "cho vay", "bảo lãnh", "lãi suất", "sổ tiết kiệm", "thẻ tín dụng", "quy định số 1686", "nhno", "hạn mức",
+      "banking", "basel iii", "ifrs 9", "kyc", "cdd", "fatf", "swift", "trade finance", "letter of credit", "treasury", "retail banking", "corporate banking", "underwriting", "cfa", "frm"
     ]
   },
   {
@@ -19,11 +20,15 @@
     "LocalizedNames": {
       "vi": "Giáo dục phổ thông & Đại học",
       "en": "K-12 & Higher Education",
-      "fr": "Éducation"
+      "fr": "Éducation",
+      "ja": "教育",
+      "ko": "교육",
+      "zh": "教育"
     },
     "Aliases": ["EDUCATION", "EDU", "GIAO_DUC"],
     "Keywords": [
-      "toán", "đạo hàm", "tích phân", "hàm số", "ngữ văn", "tiếng anh", "vật lý", "hóa học", "gdpt", "thpt", "lớp 12", "lớp 11", "lớp 10", "k-12", "reading passage", "pronunciation", "chuyên amsterdam"
+      "toán", "đạo hàm", "tích phân", "hàm số", "ngữ văn", "tiếng anh", "vật lý", "hóa học", "gdpt", "thpt", "lớp 12", "lớp 11", "lớp 10", "k-12", "reading passage", "pronunciation", "chuyên amsterdam",
+      "mathematics", "physics", "chemistry", "biology", "calculus", "linear algebra", "curriculum", "ielts", "toefl", "sat", "gcse", "a-level", "cefr", "ib diploma", "ap exam", "university", "syllabus"
     ]
   },
   {
@@ -36,7 +41,8 @@
     },
     "Aliases": ["GOV_DRIVING", "DRIVING", "GPLX"],
     "Keywords": [
-      "gplx", "sa hình", "biển báo", "lái xe", "vượt ẩu", "xe cơ giới", "tốc độ tối đa", "điểm liệt", "cục đường bộ"
+      "gplx", "sa hình", "biển báo", "lái xe", "vượt ẩu", "xe cơ giới", "tốc độ tối đa", "điểm liệt", "cục đường bộ",
+      "driver license", "driving test", "road signs", "traffic signs", "hazard perception", "right of way", "highway code", "dmv", "dvsa"
     ]
   },
   {
@@ -49,7 +55,8 @@
     },
     "Aliases": ["HEALTHCARE", "MEDICAL", "Y_TE"],
     "Keywords": [
-      "bác sĩ", "dược lâm sàng", "phác đồ", "điều trị", "bệnh nhân", "bệnh viện", "bộ y tế", "y khoa"
+      "bác sĩ", "dược lâm sàng", "phác đồ", "điều trị", "bệnh nhân", "bệnh viện", "bộ y tế", "y khoa",
+      "clinical", "pharmacology", "nursing", "hipaa", "usmle", "osce", "nclex", "diagnosis", "pathology", "patient care", "who guidelines"
     ]
   },
   {
@@ -62,7 +69,8 @@
     },
     "Aliases": ["HSE", "SAFETY", "AN_TOAN_LAO_DONG"],
     "Keywords": [
-      "an toàn lao động", "bảo hộ lao động", "pccc", "phòng cháy chữa cháy", "vslđ", "iso 45001", "hóa chất", "an toàn điện"
+      "an toàn lao động", "bảo hộ lao động", "pccc", "phòng cháy chữa cháy", "vslđ", "iso 45001", "hóa chất", "an toàn điện",
+      "osha", "nebosh", "ppe", "fire safety", "iso 14001", "lockout tagout", "confined space", "occupational health", "hazard assessment"
     ]
   },
   {
@@ -75,7 +83,50 @@
     },
     "Aliases": ["IT_SECURITY", "CYBERSECURITY", "AN_NINH_MANG"],
     "Keywords": [
-      "an toàn thông tin", "an ninh mạng", "cntt", "công nghệ thông tin", "iso 27001", "bảo mật", "soc", "pentest"
+      "an toàn thông tin", "an ninh mạng", "cntt", "công nghệ thông tin", "iso 27001", "bảo mật", "soc", "pentest",
+      "cybersecurity", "nist", "owasp", "soc 2", "cissp", "cism", "zero trust", "siem", "incident response", "devsecops", "cloud security", "iam"
+    ]
+  },
+  {
+    "DomainCode": "LEGAL_COMPLIANCE",
+    "DomainName": "Pháp luật & Tuân thủ",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "Pháp luật & Tuân thủ",
+      "en": "Legal & Regulatory Compliance"
+    },
+    "Aliases": ["LEGAL_COMPLIANCE", "LEGAL", "COMPLIANCE", "PHAP_LUAT"],
+    "Keywords": [
+      "luật doanh nghiệp", "hợp đồng", "dữ liệu cá nhân", "tuân thủ pháp luật", "sở hữu trí tuệ", "chống tham nhũng",
+      "gdpr", "ccpa", "pdpa", "data privacy", "corporate law", "contract law", "fcpa", "iso 37001", "regulatory compliance", "legal"
+    ]
+  },
+  {
+    "DomainCode": "AVIATION_LOGISTICS",
+    "DomainName": "Hàng không & Logistics",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "Hàng không & Logistics",
+      "en": "Aviation, Maritime & Global Logistics"
+    },
+    "Aliases": ["AVIATION_LOGISTICS", "AVIATION", "LOGISTICS", "HANG_KHONG"],
+    "Keywords": [
+      "hàng không", "an toàn bay", "vận tải biển", "chuỗi cung ứng", "hải quan",
+      "icao", "iata", "faa", "easa", "dangerous goods", "supply chain", "incoterms", "customs", "airworthiness"
+    ]
+  },
+  {
+    "DomainCode": "CORPORATE_HR",
+    "DomainName": "Nhân sự & Quản trị Lãnh đạo",
+    "Weight": 2,
+    "LocalizedNames": {
+      "vi": "Nhân sự & Quản trị Lãnh đạo",
+      "en": "Human Resources, Agile & Leadership"
+    },
+    "Aliases": ["CORPORATE_HR", "HR", "LEADERSHIP", "NHAN_SU"],
+    "Keywords": [
+      "nhân sự", "hội nhập nhân viên", "đánh giá năng lực", "quản trị dự án",
+      "pmp", "scrum", "agile", "shrm", "hr compliance", "onboarding", "leadership", "okr", "performance management"
     ]
   },
   {

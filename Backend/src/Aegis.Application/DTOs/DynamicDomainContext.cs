@@ -72,22 +72,26 @@ namespace Aegis.Application.DTOs
         public List<QuestionParsingRuleDto> ParsingRules { get; set; } = new();
 
         /// <summary>
-        /// Tạo ngữ cảnh mặc định từ chuẩn hệ thống
+        /// Tạo ngữ cảnh mặc định từ chuẩn hệ thống (mặc định ngôn ngữ vi, hỗ trợ đa ngôn ngữ toàn cầu)
         /// </summary>
-        public static DynamicDomainContext CreateDefault()
-        {
-            var ctx = new DynamicDomainContext();
+        public static DynamicDomainContext CreateDefault() => CreateDefault("vi");
 
-            ctx.Domains = new List<DynamicDomainSummaryDto>
-            {
-                new() { Code = "BANKING", Name = "Tài chính - Ngân hàng", Description = "Tín dụng, ngân quỹ, thanh toán quốc tế, AML, thẩm định tài sản", Synonyms = new() { "tín dụng", "ngân hàng", "chi nhánh", "kho tiền", "ngân quỹ", "aml", "vcb", "bidv", "agribank", "vietinbank", "cic" } },
-                new() { Code = "EDUCATION", Name = "Giáo dục & Học thuật", Description = "Toán học, vật lý, hóa học, sinh học, ngữ văn, tiếng anh, GDPT 2018, THPT", Synonyms = new() { "toán", "đạo hàm", "tích phân", "hàm số", "vật lý", "hóa học", "tiếng anh", "gdpt", "thpt", "lớp 12" } },
-                new() { Code = "GOV_DRIVING", Name = "Sát hạch Lái xe Quốc gia", Description = "GPLX B2, C, sa hình, biển báo, điểm liệt, luật giao thông đường bộ", Synonyms = new() { "gplx", "sa hình", "biển báo", "lái xe", "vượt ẩu", "điểm liệt", "cục đường bộ" } },
-                new() { Code = "HEALTHCARE", Name = "Y tế & Dược phẩm", Description = "Y khoa, bác sĩ, dược lâm sàng, phác đồ điều trị, điều dưỡng, bệnh viện", Synonyms = new() { "bác sĩ", "dược lâm sàng", "phác đồ", "bệnh viện", "bộ y tế", "y khoa", "điều trị" } },
-                new() { Code = "HSE", Name = "An toàn - Môi trường LĐ", Description = "An toàn vệ sinh lao động, bảo hộ lao động, PCCC, ISO 45001", Synonyms = new() { "an toàn lao động", "bảo hộ lao động", "pccc", "phòng cháy", "iso 45001", "vslđ" } },
-                new() { Code = "IT_SECURITY", Name = "CNTT & An Toàn Thông Tin", Description = "An ninh mạng, ISO 27001, SOC, Pentest, DevSecOps, phần mềm", Synonyms = new() { "an toàn thông tin", "an ninh mạng", "cntt", "công nghệ thông tin", "iso 27001", "bảo mật" } },
-                new() { Code = "GENERAL", Name = "Tổng hợp / Đại cương", Description = "Nâng ngạch, tuyển dụng, kỹ năng mềm, văn hóa doanh nghiệp", Synonyms = new() { "tổng hợp", "đại cương", "tuyển dụng", "kỹ năng mềm" } }
-            };
+        /// <summary>
+        /// Tạo ngữ cảnh mặc định từ chuẩn hệ thống theo ngôn ngữ chỉ định ("vi", "en", "fr", "ja", "ko", "zh"...)
+        /// </summary>
+        public static DynamicDomainContext CreateDefault(string language)
+        {
+            var ctx = new DynamicDomainContext { Language = language };
+
+            // [Zero-Hardcode / MultiLang] Nạp danh mục Miền tri thức toàn cầu từ Seed JSON
+            ctx.Domains = Aegis.Application.Services.TaxonomyResourceSeedLoader.GetDefaultDomains()
+                .Select(d => new DynamicDomainSummaryDto
+                {
+                    Code = d.DomainCode,
+                    Name = d.GetDisplayName(language),
+                    Synonyms = new List<string>(d.Keywords)
+                })
+                .ToList();
 
             ctx.CoordinatePresets = new List<TenantCoordinatePresetDto>
             {
@@ -134,8 +138,22 @@ namespace Aegis.Application.DTOs
                 new() { DomainCode = "HSE", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "ISO_45001_2018", PresetLabel = "Nghị định 44/2016/NĐ-CP & ISO 45001", Synonyms = new() { "iso 45001", "nghị định 44", "qcvn" } },
                 new() { DomainCode = "HSE", CoordinateType = "ASSESSMENT_PURPOSE", PresetCode = "HUAN_LUYEN_VSLD", PresetLabel = "Huấn luyện An toàn VSLĐ định kỳ", Synonyms = new() { "huấn luyện an toàn", "vsld", "an toàn lao động", "atvsld", "vệ sinh lao động" } },
 
-                // IT_SECURITY
-                new() { DomainCode = "IT_SECURITY", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "ISO_27001_2022", PresetLabel = "ISO/IEC 27001:2022", Synonyms = new() { "iso 27001", "iso/iec 27001", "an toàn thông tin", "an ninh mạng" } }
+                // IT_SECURITY (Global Cybersecurity & Cloud Frameworks)
+                new() { DomainCode = "IT_SECURITY", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "ISO_27001_2022", PresetLabel = "ISO/IEC 27001:2022", Synonyms = new() { "iso 27001", "iso/iec 27001", "isms" } },
+                new() { DomainCode = "IT_SECURITY", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "NIST_OWASP_SOC2", PresetLabel = "NIST CSF / OWASP / SOC 2", Synonyms = new() { "nist", "owasp", "soc 2", "mitre att&ck", "zero trust" } },
+                new() { DomainCode = "IT_SECURITY", CoordinateType = "ASSESSMENT_PURPOSE", PresetCode = "CYBER_CERT", PresetLabel = "Cybersecurity Certification (CISSP / CISM / CEH)", Synonyms = new() { "cissp", "cism", "ceh", "comptia security+", "oscp", "aws certified security" } },
+
+                // GLOBAL EDUCATION FRAMEWORKS (CEFR, AP, IB, SAT, GCSE, A-Level, EQF)
+                new() { DomainCode = "EDUCATION", CoordinateType = "TARGET_LEVEL", PresetCode = "CEFR_LEVEL", PresetLabel = "CEFR (A1–C2)", Synonyms = new() { "cefr", "c1 advanced", "c2 proficiency", "b2 upper-intermediate", "b1 intermediate" } },
+                new() { DomainCode = "EDUCATION", CoordinateType = "ASSESSMENT_PURPOSE", PresetCode = "INTL_CERT_EXAM", PresetLabel = "International Academic & Language Exam", Synonyms = new() { "ielts", "toefl", "sat", "act", "gre", "gmat", "ap exam", "ib diploma", "gcse", "a-level" } },
+
+                // GLOBAL BANKING & HEALTHCARE & HSE & LEGAL & AVIATION & HR
+                new() { DomainCode = "BANKING", CoordinateType = "ASSESSMENT_PURPOSE", PresetCode = "GLOBAL_FIN_CERT", PresetLabel = "Global Finance Certification (CFA / FRM)", Synonyms = new() { "cfa", "frm", "fintech", "fatf", "ifrs 9" } },
+                new() { DomainCode = "HEALTHCARE", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "HIPAA_WHO_USMLE", PresetLabel = "WHO Clinical Guidelines & HIPAA", Synonyms = new() { "hipaa", "who guidelines", "usmle", "osce", "nclex" } },
+                new() { DomainCode = "HSE", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "OSHA_NEBOSH", PresetLabel = "OSHA / NEBOSH Safety Standard", Synonyms = new() { "osha", "nebosh", "nfpa", "iso 14001" } },
+                new() { DomainCode = "LEGAL_COMPLIANCE", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "GDPR_ISO37001", PresetLabel = "GDPR / CCPA & ISO 37001", Synonyms = new() { "gdpr", "ccpa", "pdpa", "fcpa", "uk bribery act", "iso 37001" } },
+                new() { DomainCode = "AVIATION_LOGISTICS", CoordinateType = "BENCHMARK_STANDARD", PresetCode = "ICAO_IATA", PresetLabel = "ICAO / IATA & Incoterms", Synonyms = new() { "icao", "iata", "faa", "easa", "incoterms", "dangerous goods" } },
+                new() { DomainCode = "CORPORATE_HR", CoordinateType = "ASSESSMENT_PURPOSE", PresetCode = "HR_PM_CERT", PresetLabel = "Leadership & Agile / PMP Assessment", Synonyms = new() { "pmp", "scrum", "pmbok", "shrm", "onboarding", "leadership assessment" } }
             };
 
             // [Zero-Hardcode / MultiLang Taxonomy] Khởi tạo danh mục Chủ đề & Môn học nạp động từ Seed Data

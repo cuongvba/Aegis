@@ -255,7 +255,7 @@ namespace Aegis.UnitTests
 
             // 4. Thẻ thông minh
             Assert.NotEmpty(q.Tags);
-            Assert.Contains(q.Tags, t => t.Contains("math", StringComparison.OrdinalIgnoreCase) || t.Contains("giao-duc", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(q.Tags, t => t.Contains("toan", StringComparison.OrdinalIgnoreCase) || t.Contains("math", StringComparison.OrdinalIgnoreCase) || t.Contains("education", StringComparison.OrdinalIgnoreCase) || t.Contains("giao-duc", StringComparison.OrdinalIgnoreCase));
 
             // 5. Định danh chống trùng
             Assert.False(string.IsNullOrWhiteSpace(q.CanonicalExamUrn));

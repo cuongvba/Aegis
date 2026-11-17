@@ -17,6 +17,7 @@ namespace Aegis.Application.Services
     {
         private static readonly Lazy<List<TopicTaxonomyEntryDto>> _lazyTopics = new(LoadTopicsFromResource);
         private static readonly Lazy<List<DomainTaxonomyEntryDto>> _lazyDomains = new(LoadDomainsFromResource);
+        private static readonly Lazy<List<HierarchicalSpecializationRuleDto>> _lazySpecializations = new(LoadSpecializationsFromResource);
 
         public static List<TopicTaxonomyEntryDto> GetDefaultTopics()
         {
@@ -27,6 +28,11 @@ namespace Aegis.Application.Services
         public static List<DomainTaxonomyEntryDto> GetDefaultDomains()
         {
             return _lazyDomains.Value.Select(CloneDomain).ToList();
+        }
+
+        public static List<HierarchicalSpecializationRuleDto> GetDefaultHierarchicalSpecializations()
+        {
+            return _lazySpecializations.Value.Select(CloneSpecialization).ToList();
         }
 
         public static List<BankTopicSummaryDto> GetDefaultBankTopics()
@@ -89,6 +95,58 @@ namespace Aegis.Application.Services
 
             return GetMinimalFallbackDomains();
         }
+
+        private static List<HierarchicalSpecializationRuleDto> LoadSpecializationsFromResource()
+        {
+            try
+            {
+                var json = ReadResourceContent("default_hierarchical_specializations.json");
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var list = JsonSerializer.Deserialize<List<HierarchicalSpecializationRuleDto>>(json, options);
+                    if (list != null && list.Count > 0)
+                    {
+                        foreach (var rule in list)
+                        {
+                            var set = new HashSet<string>(rule.Keywords ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
+                            if (rule.LocalizedKeywords != null)
+                            {
+                                foreach (var kw in rule.LocalizedKeywords.Values.SelectMany(v => v))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(kw)) set.Add(kw);
+                                }
+                            }
+                            rule.Keywords = set.ToList();
+                        }
+                        return list;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Fallback im lặng
+            }
+
+            return new List<HierarchicalSpecializationRuleDto>();
+        }
+
+        private static HierarchicalSpecializationRuleDto CloneSpecialization(HierarchicalSpecializationRuleDto r) => new()
+        {
+            DomainCode = r.DomainCode,
+            TopicCodeFilter = r.TopicCodeFilter,
+            RequireHigherEd = r.RequireHigherEd,
+            Priority = r.Priority,
+            IsDefaultFallback = r.IsDefaultFallback,
+            LeafTopicCode = r.LeafTopicCode,
+            LeafTopicName = r.LeafTopicName,
+            LocalizedLeafNames = new Dictionary<string, string>(r.LocalizedLeafNames ?? new(), StringComparer.OrdinalIgnoreCase),
+            ParentTopicCode = r.ParentTopicCode,
+            ParentTopicName = r.ParentTopicName,
+            LocalizedParentNames = new Dictionary<string, string>(r.LocalizedParentNames ?? new(), StringComparer.OrdinalIgnoreCase),
+            Keywords = new List<string>(r.Keywords ?? new()),
+            LocalizedKeywords = (r.LocalizedKeywords ?? new()).ToDictionary(kv => kv.Key, kv => new List<string>(kv.Value), StringComparer.OrdinalIgnoreCase)
+        };
 
         private static string? ReadResourceContent(string fileName)
         {

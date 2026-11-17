@@ -1,0 +1,564 @@
+[
+  {
+    "DomainCode": "EDUCATION",
+    "TopicCodeFilter": "TOAN",
+    "RequireHigherEd": true,
+    "Priority": 100,
+    "LeafTopicCode": "TOAN_CALCULUS",
+    "LeafTopicName": "Giải tích (Calculus)",
+    "LocalizedLeafNames": {
+      "vi": "Giải tích (Calculus)",
+      "en": "Calculus & Mathematical Analysis"
+    },
+    "ParentTopicCode": "TOAN_HIGHER_ED",
+    "ParentTopicName": "Toán Cao cấp & Đại học",
+    "LocalizedParentNames": {
+      "vi": "Toán Cao cấp & Đại học",
+      "en": "Higher Education Mathematics"
+    },
+    "LocalizedKeywords": {
+      "vi": ["giải tích", "vi tích phân", "chuỗi số", "tích phân bội"],
+      "en": ["calculus", "differential equations", "multivariable calculus", "real analysis"]
+    }
+  },
+  {
+    "DomainCode": "EDUCATION",
+    "TopicCodeFilter": "TOAN",
+    "RequireHigherEd": true,
+    "Priority": 95,
+    "LeafTopicCode": "TOAN_LINEAR_ALGEBRA",
+    "LeafTopicName": "Đại số tuyến tính (Linear Algebra)",
+    "LocalizedLeafNames": {
+      "vi": "Đại số tuyến tính (Linear Algebra)",
+      "en": "Linear Algebra"
+    },
+    "ParentTopicCode": "TOAN_HIGHER_ED",
+    "ParentTopicName": "Toán Cao cấp & Đại học",
+    "LocalizedParentNames": {
+      "vi": "Toán Cao cấp & Đại học",
+      "en": "Higher Education Mathematics"
+    },
+    "LocalizedKeywords": {
+      "vi": ["đại số tuyến tính", "ma trận", "không gian vector", "định thức", "trị riêng"],
+      "en": ["linear algebra", "matrix", "eigenvalue", "vector space", "determinant"]
+    }
+  },
+  {
+    "DomainCode": "EDUCATION",
+    "TopicCodeFilter": "TOAN",
+    "RequireHigherEd": true,
+    "Priority": 90,
+    "LeafTopicCode": "TOAN_PROB_STAT",
+    "LeafTopicName": "Xác suất & Thống kê toán (Đại học)",
+    "LocalizedLeafNames": {
+      "vi": "Xác suất & Thống kê toán (Đại học)",
+      "en": "Probability & Mathematical Statistics"
+    },
+    "ParentTopicCode": "TOAN_HIGHER_ED",
+    "ParentTopicName": "Toán Cao cấp & Đại học",
+    "LocalizedParentNames": {
+      "vi": "Toán Cao cấp & Đại học",
+      "en": "Higher Education Mathematics"
+    },
+    "LocalizedKeywords": {
+      "vi": ["xác suất", "thống kê", "phân phối chuẩn", "kiểm định giả thuyết"],
+      "en": ["probability", "statistics", "bayesian", "hypothesis testing", "stochastic"]
+    }
+  },
+  {
+    "DomainCode": "EDUCATION",
+    "TopicCodeFilter": "TOAN",
+    "RequireHigherEd": true,
+    "Priority": 10,
+    "IsDefaultFallback": true,
+    "LeafTopicCode": "TOAN_HIGHER_ED",
+    "LeafTopicName": "Toán học Cao cấp (Đại học)",
+    "LocalizedLeafNames": {
+      "vi": "Toán học Cao cấp (Đại học)",
+      "en": "Higher Education Mathematics"
+    },
+    "ParentTopicCode": "TOAN",
+    "ParentTopicName": "Toán học",
+    "LocalizedParentNames": {
+      "vi": "Toán học",
+      "en": "Mathematics"
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 100,
+    "LeafTopicCode": "CREDIT_RETAIL",
+    "LeafTopicName": "Tín dụng Khách hàng Cá nhân (KHCN)",
+    "LocalizedLeafNames": {
+      "vi": "Tín dụng Khách hàng Cá nhân (KHCN)",
+      "en": "Retail Banking & Consumer Credit"
+    },
+    "ParentTopicCode": "BANKING_CREDIT",
+    "ParentTopicName": "Nghiệp vụ Tín dụng",
+    "LocalizedParentNames": {
+      "vi": "Nghiệp vụ Tín dụng",
+      "en": "Credit & Lending Operations"
+    },
+    "LocalizedKeywords": {
+      "vi": ["khách hàng cá nhân", "khcn", "tiêu dùng", "thấu chi", "thẻ tín dụng", "vay mua nhà"],
+      "en": ["retail banking", "consumer credit", "mortgage", "personal loan", "overdraft"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 95,
+    "LeafTopicCode": "CREDIT_SME",
+    "LeafTopicName": "Tín dụng Khách hàng Doanh nghiệp (KHDN)",
+    "LocalizedLeafNames": {
+      "vi": "Tín dụng Khách hàng Doanh nghiệp (KHDN)",
+      "en": "Corporate & SME Lending"
+    },
+    "ParentTopicCode": "BANKING_CREDIT",
+    "ParentTopicName": "Nghiệp vụ Tín dụng",
+    "LocalizedParentNames": {
+      "vi": "Nghiệp vụ Tín dụng",
+      "en": "Credit & Lending Operations"
+    },
+    "LocalizedKeywords": {
+      "vi": ["khách hàng doanh nghiệp", "khdn", "bảo lãnh", "hạn mức tín dụng", "tài trợ dự án"],
+      "en": ["sme", "corporate banking", "commercial lending", "syndicated loan", "working capital"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 90,
+    "LeafTopicCode": "CREDIT_APPRAISAL",
+    "LeafTopicName": "Thẩm định giá & Tài sản Bảo đảm",
+    "LocalizedLeafNames": {
+      "vi": "Thẩm định giá & Tài sản Bảo đảm",
+      "en": "Credit Appraisal & Collateral Valuation"
+    },
+    "ParentTopicCode": "BANKING_CREDIT",
+    "ParentTopicName": "Nghiệp vụ Tín dụng",
+    "LocalizedParentNames": {
+      "vi": "Nghiệp vụ Tín dụng",
+      "en": "Credit & Lending Operations"
+    },
+    "LocalizedKeywords": {
+      "vi": ["thẩm định", "tài sản bảo đảm", "định giá", "tsđb", "thế chấp"],
+      "en": ["collateral", "valuation", "credit appraisal", "underwriting", "ltv"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 85,
+    "LeafTopicCode": "TREASURY_OPS",
+    "LeafTopicName": "Nghiệp vụ Kho quỹ & Quản lý Tiền mặt",
+    "LocalizedLeafNames": {
+      "vi": "Nghiệp vụ Kho quỹ & Quản lý Tiền mặt",
+      "en": "Treasury & Cash Management Operations"
+    },
+    "ParentTopicCode": "BANKING_TREASURY",
+    "ParentTopicName": "Kế toán & Ngân quỹ",
+    "LocalizedParentNames": {
+      "vi": "Kế toán & Ngân quỹ",
+      "en": "Treasury & Accounting"
+    },
+    "LocalizedKeywords": {
+      "vi": ["kho quỹ", "ngân quỹ", "tiền mặt", "atm", "kho tiền"],
+      "en": ["treasury", "cash management", "vault", "liquidity"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 80,
+    "LeafTopicCode": "BANK_ACCOUNTING",
+    "LeafTopicName": "Kế toán Ngân hàng Thương mại",
+    "LocalizedLeafNames": {
+      "vi": "Kế toán Ngân hàng Thương mại",
+      "en": "Bank Accounting & Financial Reporting (IFRS 9)"
+    },
+    "ParentTopicCode": "BANKING_TREASURY",
+    "ParentTopicName": "Kế toán & Ngân quỹ",
+    "LocalizedParentNames": {
+      "vi": "Kế toán & Ngân quỹ",
+      "en": "Treasury & Accounting"
+    },
+    "LocalizedKeywords": {
+      "vi": ["kế toán", "hạch toán", "bảng cân đối"],
+      "en": ["ifrs 9", "general ledger", "bank accounting", "reconciliation"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 75,
+    "LeafTopicCode": "BANKING_SETTLEMENT",
+    "LeafTopicName": "Thanh toán Quốc tế & Tài trợ Thương mại",
+    "LocalizedLeafNames": {
+      "vi": "Thanh toán Quốc tế & Tài trợ Thương mại",
+      "en": "International Settlement & Trade Finance"
+    },
+    "ParentTopicCode": "BANKING",
+    "ParentTopicName": "Tài chính - Ngân hàng",
+    "LocalizedParentNames": {
+      "vi": "Tài chính - Ngân hàng",
+      "en": "Banking & Finance"
+    },
+    "LocalizedKeywords": {
+      "vi": ["thanh toán quốc tế", "tài trợ thương mại", "tín dụng chứng từ"],
+      "en": ["trade finance", "letter of credit", "swift", "iso 20022", "ucp 600", "incoterms"]
+    }
+  },
+  {
+    "DomainCode": "BANKING",
+    "Priority": 70,
+    "LeafTopicCode": "BANKING_COMPLIANCE",
+    "LeafTopicName": "Tuân thủ & Phòng chống Rửa tiền (AML)",
+    "LocalizedLeafNames": {
+      "vi": "Tuân thủ & Phòng chống Rửa tiền (AML)",
+      "en": "AML, KYC & Regulatory Compliance (Basel III)"
+    },
+    "ParentTopicCode": "BANKING",
+    "ParentTopicName": "Tài chính - Ngân hàng",
+    "LocalizedParentNames": {
+      "vi": "Tài chính - Ngân hàng",
+      "en": "Banking & Finance"
+    },
+    "LocalizedKeywords": {
+      "vi": ["aml", "rửa tiền", "tuân thủ", "phòng chống rửa tiền"],
+      "en": ["anti-money laundering", "kyc", "cdd", "fatf", "basel iii", "sanctions"]
+    }
+  },
+  {
+    "DomainCode": "GOV_DRIVING",
+    "Priority": 100,
+    "LeafTopicCode": "DRIVING_CRITICAL",
+    "LeafTopicName": "Sát hạch Lái xe - Câu hỏi Điểm liệt",
+    "LocalizedLeafNames": {
+      "vi": "Sát hạch Lái xe - Câu hỏi Điểm liệt",
+      "en": "Critical Safety & Zero-Tolerance Rules"
+    },
+    "ParentTopicCode": "GOV_DRIVING",
+    "ParentTopicName": "Sát hạch Lái xe",
+    "LocalizedParentNames": {
+      "vi": "Sát hạch Lái xe",
+      "en": "Driving License & Road Safety"
+    },
+    "LocalizedKeywords": {
+      "vi": ["điểm liệt"],
+      "en": ["critical safety", "zero tolerance", "emergency stop"]
+    }
+  },
+  {
+    "DomainCode": "GOV_DRIVING",
+    "Priority": 90,
+    "LeafTopicCode": "DRIVING_SIMULATION",
+    "LeafTopicName": "Sát hạch Lái xe - Sa hình & Mô phỏng Tình huống",
+    "LocalizedLeafNames": {
+      "vi": "Sát hạch Lái xe - Sa hình & Mô phỏng Tình huống",
+      "en": "Hazard Perception & Intersection Simulation"
+    },
+    "ParentTopicCode": "GOV_DRIVING",
+    "ParentTopicName": "Sát hạch Lái xe",
+    "LocalizedParentNames": {
+      "vi": "Sát hạch Lái xe",
+      "en": "Driving License & Road Safety"
+    },
+    "LocalizedKeywords": {
+      "vi": ["sa hình", "mô phỏng", "tình huống"],
+      "en": ["hazard perception", "right of way", "intersection", "simulation"]
+    }
+  },
+  {
+    "DomainCode": "GOV_DRIVING",
+    "Priority": 80,
+    "LeafTopicCode": "DRIVING_SIGNS",
+    "LeafTopicName": "Sát hạch Lái xe - Hệ thống Biển báo Đường bộ",
+    "LocalizedLeafNames": {
+      "vi": "Sát hạch Lái xe - Hệ thống Biển báo Đường bộ",
+      "en": "Traffic Signs & Road Markings"
+    },
+    "ParentTopicCode": "GOV_DRIVING",
+    "ParentTopicName": "Sát hạch Lái xe",
+    "LocalizedParentNames": {
+      "vi": "Sát hạch Lái xe",
+      "en": "Driving License & Road Safety"
+    },
+    "LocalizedKeywords": {
+      "vi": ["biển báo", "hiệu lệnh", "cấm"],
+      "en": ["traffic signs", "road signs", "road markings", "speed limit sign"]
+    }
+  },
+  {
+    "DomainCode": "GOV_DRIVING",
+    "Priority": 10,
+    "IsDefaultFallback": true,
+    "LeafTopicCode": "DRIVING_THEORY",
+    "LeafTopicName": "Sát hạch Lái xe - Luật Giao thông Đường bộ",
+    "LocalizedLeafNames": {
+      "vi": "Sát hạch Lái xe - Luật Giao thông Đường bộ",
+      "en": "Road Traffic Law & Driving Theory"
+    },
+    "ParentTopicCode": "GOV_DRIVING",
+    "ParentTopicName": "Sát hạch Lái xe",
+    "LocalizedParentNames": {
+      "vi": "Sát hạch Lái xe",
+      "en": "Driving License & Road Safety"
+    }
+  },
+  {
+    "DomainCode": "HEALTHCARE",
+    "Priority": 100,
+    "LeafTopicCode": "HEALTHCARE_PHARMACY",
+    "LeafTopicName": "Dược lý & Dược lâm sàng",
+    "LocalizedLeafNames": {
+      "vi": "Dược lý & Dược lâm sàng",
+      "en": "Pharmacology & Clinical Pharmacy"
+    },
+    "ParentTopicCode": "HEALTHCARE",
+    "ParentTopicName": "Y tế & Chăm sóc Sức khỏe",
+    "LocalizedParentNames": {
+      "vi": "Y tế & Chăm sóc Sức khỏe",
+      "en": "Healthcare & Medicine"
+    },
+    "LocalizedKeywords": {
+      "vi": ["dược", "thuốc", "kháng sinh", "dược lý"],
+      "en": ["pharmacy", "pharmacology", "pharmacokinetics", "antibiotic", "dosage"]
+    }
+  },
+  {
+    "DomainCode": "HEALTHCARE",
+    "Priority": 90,
+    "LeafTopicCode": "HEALTHCARE_CLINICAL",
+    "LeafTopicName": "Y học Lâm sàng & Phác đồ Điều trị",
+    "LocalizedLeafNames": {
+      "vi": "Y học Lâm sàng & Phác đồ Điều trị",
+      "en": "Clinical Medicine & Treatment Protocols"
+    },
+    "ParentTopicCode": "HEALTHCARE",
+    "ParentTopicName": "Y tế & Chăm sóc Sức khỏe",
+    "LocalizedParentNames": {
+      "vi": "Y tế & Chăm sóc Sức khỏe",
+      "en": "Healthcare & Medicine"
+    },
+    "LocalizedKeywords": {
+      "vi": ["lâm sàng", "bệnh án", "nội khoa", "ngoại khoa", "chẩn đoán"],
+      "en": ["clinical", "diagnosis", "pathology", "osce", "usmle", "internal medicine", "surgery"]
+    }
+  },
+  {
+    "DomainCode": "HEALTHCARE",
+    "Priority": 80,
+    "LeafTopicCode": "HEALTHCARE_NURSING",
+    "LeafTopicName": "Nghiệp vụ Điều dưỡng & Kiểm soát Nhiễm khuẩn",
+    "LocalizedLeafNames": {
+      "vi": "Nghiệp vụ Điều dưỡng & Kiểm soát Nhiễm khuẩn",
+      "en": "Nursing Practice & Infection Control"
+    },
+    "ParentTopicCode": "HEALTHCARE",
+    "ParentTopicName": "Y tế & Chăm sóc Sức khỏe",
+    "LocalizedParentNames": {
+      "vi": "Y tế & Chăm sóc Sức khỏe",
+      "en": "Healthcare & Medicine"
+    },
+    "LocalizedKeywords": {
+      "vi": ["điều dưỡng", "chăm sóc", "tiêm truyền", "nhiễm khuẩn"],
+      "en": ["nursing", "nclex", "infection control", "patient care", "triage"]
+    }
+  },
+  {
+    "DomainCode": "HEALTHCARE",
+    "Priority": 70,
+    "LeafTopicCode": "HEALTHCARE_ETHICS",
+    "LeafTopicName": "Pháp luật Y tế & Đạo đức Hành nghề",
+    "LocalizedLeafNames": {
+      "vi": "Pháp luật Y tế & Đạo đức Hành nghề",
+      "en": "Medical Ethics & Healthcare Regulation (HIPAA)"
+    },
+    "ParentTopicCode": "HEALTHCARE",
+    "ParentTopicName": "Y tế & Chăm sóc Sức khỏe",
+    "LocalizedParentNames": {
+      "vi": "Y tế & Chăm sóc Sức khỏe",
+      "en": "Healthcare & Medicine"
+    },
+    "LocalizedKeywords": {
+      "vi": ["y đức", "đạo đức", "luật khám chữa bệnh"],
+      "en": ["hipaa", "medical ethics", "informed consent", "patient privacy"]
+    }
+  },
+  {
+    "DomainCode": "IT_SECURITY",
+    "Priority": 100,
+    "LeafTopicCode": "ITSEC_SOC_IR",
+    "LeafTopicName": "Giám sát An ninh (SOC) & Ứng cứu Sự cố",
+    "LocalizedLeafNames": {
+      "vi": "Giám sát An ninh (SOC) & Ứng cứu Sự cố",
+      "en": "SOC Operations, SIEM & Incident Response"
+    },
+    "ParentTopicCode": "IT_SECURITY",
+    "ParentTopicName": "CNTT & An Toàn Thông Tin",
+    "LocalizedParentNames": {
+      "vi": "CNTT & An Toàn Thông Tin",
+      "en": "IT & Cybersecurity"
+    },
+    "LocalizedKeywords": {
+      "vi": ["ứng cứu sự cố", "giám sát an ninh", "mã độc"],
+      "en": ["soc", "siem", "incident response", "threat hunting", "malware analysis", "mitre att&ck"]
+    }
+  },
+  {
+    "DomainCode": "IT_SECURITY",
+    "Priority": 90,
+    "LeafTopicCode": "ITSEC_PENTEST",
+    "LeafTopicName": "Kiểm thử Xâm nhập & Bảo mật Ứng dụng",
+    "LocalizedLeafNames": {
+      "vi": "Kiểm thử Xâm nhập & Bảo mật Ứng dụng",
+      "en": "Penetration Testing & Application Security (OWASP)"
+    },
+    "ParentTopicCode": "IT_SECURITY",
+    "ParentTopicName": "CNTT & An Toàn Thông Tin",
+    "LocalizedParentNames": {
+      "vi": "CNTT & An Toàn Thông Tin",
+      "en": "IT & Cybersecurity"
+    },
+    "LocalizedKeywords": {
+      "vi": ["kiểm thử xâm nhập", "lỗ hổng", "bảo mật ứng dụng"],
+      "en": ["pentest", "owasp", "xss", "sql injection", "appsec", "devsecops", "cve"]
+    }
+  },
+  {
+    "DomainCode": "IT_SECURITY",
+    "Priority": 80,
+    "LeafTopicCode": "ITSEC_GOVERNANCE",
+    "LeafTopicName": "Quản trị Rủi ro & Tuân thủ ATTT (ISO 27001 / NIST)",
+    "LocalizedLeafNames": {
+      "vi": "Quản trị Rủi ro & Tuân thủ ATTT (ISO 27001 / NIST)",
+      "en": "Security Governance, Risk & Compliance (ISO 27001 / NIST)"
+    },
+    "ParentTopicCode": "IT_SECURITY",
+    "ParentTopicName": "CNTT & An Toàn Thông Tin",
+    "LocalizedParentNames": {
+      "vi": "CNTT & An Toàn Thông Tin",
+      "en": "IT & Cybersecurity"
+    },
+    "LocalizedKeywords": {
+      "vi": ["iso 27001", "quản trị rủi ro", "chính sách bảo mật"],
+      "en": ["nist", "soc 2", "cissp", "cism", "isms", "risk assessment", "grc"]
+    }
+  },
+  {
+    "DomainCode": "IT_SECURITY",
+    "Priority": 70,
+    "LeafTopicCode": "ITSEC_CLOUD_NET",
+    "LeafTopicName": "Bảo mật Đám mây, IAM & Zero Trust",
+    "LocalizedLeafNames": {
+      "vi": "Bảo mật Đám mây, IAM & Zero Trust",
+      "en": "Cloud Security, IAM & Zero Trust Architecture"
+    },
+    "ParentTopicCode": "IT_SECURITY",
+    "ParentTopicName": "CNTT & An Toàn Thông Tin",
+    "LocalizedParentNames": {
+      "vi": "CNTT & An Toàn Thông Tin",
+      "en": "IT & Cybersecurity"
+    },
+    "LocalizedKeywords": {
+      "vi": ["đám mây", "tường lửa", "mã hóa"],
+      "en": ["zero trust", "iam", "cloud security", "kubernetes security", "aws", "firewall", "tls"]
+    }
+  },
+  {
+    "DomainCode": "HSE",
+    "Priority": 100,
+    "LeafTopicCode": "HSE_FIRE_SAFETY",
+    "LeafTopicName": "Phòng cháy Chữa cháy & Ứng phó Khẩn cấp",
+    "LocalizedLeafNames": {
+      "vi": "Phòng cháy Chữa cháy & Ứng phó Khẩn cấp",
+      "en": "Fire Safety & Emergency Response"
+    },
+    "ParentTopicCode": "HSE",
+    "ParentTopicName": "An toàn - Sức khỏe - Môi trường",
+    "LocalizedParentNames": {
+      "vi": "An toàn - Sức khỏe - Môi trường",
+      "en": "Health, Safety & Environment (HSE)"
+    },
+    "LocalizedKeywords": {
+      "vi": ["pccc", "phòng cháy", "chữa cháy", "thoát nạn"],
+      "en": ["fire safety", "emergency evacuation", "fire extinguisher", "nfpa"]
+    }
+  },
+  {
+    "DomainCode": "HSE",
+    "Priority": 90,
+    "LeafTopicCode": "HSE_OCCUPATIONAL",
+    "LeafTopicName": "An toàn Lao động, PPE & OSHA",
+    "LocalizedLeafNames": {
+      "vi": "An toàn Lao động, PPE & OSHA",
+      "en": "Occupational Safety, PPE & Workplace Hazards (OSHA)"
+    },
+    "ParentTopicCode": "HSE",
+    "ParentTopicName": "An toàn - Sức khỏe - Môi trường",
+    "LocalizedParentNames": {
+      "vi": "An toàn - Sức khỏe - Môi trường",
+      "en": "Health, Safety & Environment (HSE)"
+    },
+    "LocalizedKeywords": {
+      "vi": ["an toàn lao động", "bảo hộ lao động", "vslđ", "an toàn điện", "làm việc trên cao"],
+      "en": ["osha", "nebosh", "ppe", "lockout tagout", "loto", "confined space", "working at height"]
+    }
+  },
+  {
+    "DomainCode": "HSE",
+    "Priority": 80,
+    "LeafTopicCode": "HSE_ENV_ISO",
+    "LeafTopicName": "Quản lý Môi trường & Chuẩn ISO 45001 / 14001",
+    "LocalizedLeafNames": {
+      "vi": "Quản lý Môi trường & Chuẩn ISO 45001 / 14001",
+      "en": "Environmental Compliance & ISO 45001 / 14001"
+    },
+    "ParentTopicCode": "HSE",
+    "ParentTopicName": "An toàn - Sức khỏe - Môi trường",
+    "LocalizedParentNames": {
+      "vi": "An toàn - Sức khỏe - Môi trường",
+      "en": "Health, Safety & Environment (HSE)"
+    },
+    "LocalizedKeywords": {
+      "vi": ["iso 45001", "iso 14001", "chất thải nguy hại", "môi trường"],
+      "en": ["iso 45001", "iso 14001", "hazardous waste", "environmental impact"]
+    }
+  },
+  {
+    "DomainCode": "LEGAL_COMPLIANCE",
+    "Priority": 100,
+    "LeafTopicCode": "LEGAL_DATA_PRIVACY",
+    "LeafTopicName": "Bảo vệ Dữ liệu Cá nhân & Quyền riêng tư (GDPR / CCPA)",
+    "LocalizedLeafNames": {
+      "vi": "Bảo vệ Dữ liệu Cá nhân & Quyền riêng tư (GDPR / CCPA)",
+      "en": "Data Privacy & Protection (GDPR / CCPA)"
+    },
+    "ParentTopicCode": "LEGAL_COMPLIANCE",
+    "ParentTopicName": "Pháp luật & Tuân thủ",
+    "LocalizedParentNames": {
+      "vi": "Pháp luật & Tuân thủ",
+      "en": "Legal & Regulatory Compliance"
+    },
+    "LocalizedKeywords": {
+      "vi": ["dữ liệu cá nhân", "quyền riêng tư", "nghị định 13"],
+      "en": ["gdpr", "ccpa", "data privacy", "dpo", "data controller", "pdpa"]
+    }
+  },
+  {
+    "DomainCode": "LEGAL_COMPLIANCE",
+    "Priority": 90,
+    "LeafTopicCode": "LEGAL_CORPORATE",
+    "LeafTopicName": "Luật Doanh nghiệp, Hợp đồng & Chống Tham nhũng",
+    "LocalizedLeafNames": {
+      "vi": "Luật Doanh nghiệp, Hợp đồng & Chống Tham nhũng",
+      "en": "Corporate Law, Contracts & Anti-Bribery (ISO 37001)"
+    },
+    "ParentTopicCode": "LEGAL_COMPLIANCE",
+    "ParentTopicName": "Pháp luật & Tuân thủ",
+    "LocalizedParentNames": {
+      "vi": "Pháp luật & Tuân thủ",
+      "en": "Legal & Regulatory Compliance"
+    },
+    "LocalizedKeywords": {
+      "vi": ["luật doanh nghiệp", "hợp đồng thương mại", "sở hữu trí tuệ", "chống tham nhũng"],
+      "en": ["corporate law", "contract law", "fcpa", "uk bribery act", "iso 37001", "intellectual property"]
+    }
+  }
+]

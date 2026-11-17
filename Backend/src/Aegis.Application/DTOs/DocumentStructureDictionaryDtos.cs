@@ -113,6 +113,12 @@ namespace Aegis.Application.DTOs
         public static List<TermPhaseEntryDto> GetDefaultTermPhases() =>
             DocumentStructureSeedFactory.GetDefaultTermPhases();
 
+        /// <summary>Danh mục quy tắc chi tiết hóa Node Lá đa ngành đa ngôn ngữ nạp động từ JSON/DB (Zero Hard-code & OCP).</summary>
+        public List<HierarchicalSpecializationRuleDto> HierarchicalSpecializationCatalog { get; set; } = GetDefaultHierarchicalSpecializations();
+
+        public static List<HierarchicalSpecializationRuleDto> GetDefaultHierarchicalSpecializations() =>
+            TaxonomyResourceSeedLoader.GetDefaultHierarchicalSpecializations();
+
         /// <summary>Danh sách từ viết tắt chuyên ngành viết hoa.</summary>
         public List<string> KnownAcronyms { get; set; } = GetDefaultAcronyms();
 
@@ -432,6 +438,42 @@ namespace Aegis.Application.DTOs
             if (LocalizedNames != null && LocalizedNames.TryGetValue(locale, out var name) && !string.IsNullOrWhiteSpace(name))
                 return name;
             return !string.IsNullOrWhiteSpace(DomainName) ? DomainName : DomainCode;
+        }
+    }
+
+    /// <summary>
+    /// [Data-Driven Hierarchical Leaf Specialization Rule]
+    /// Quy tắc chi tiết hóa Node Lá đa ngành đa ngôn ngữ (BANKING, HEALTHCARE, IT_SECURITY, HSE, GOV_DRIVING, LEGAL_COMPLIANCE, HIGHER_ED...).
+    /// Thay thế hoàn toàn các nhánh if/else if cứng trong UniversalCoordinateTaxonomyEngine.
+    /// </summary>
+    public class HierarchicalSpecializationRuleDto
+    {
+        public string DomainCode { get; set; } = string.Empty;
+        public string? TopicCodeFilter { get; set; }
+        public bool RequireHigherEd { get; set; } = false;
+        public int Priority { get; set; } = 0;
+        public bool IsDefaultFallback { get; set; } = false;
+        public string LeafTopicCode { get; set; } = string.Empty;
+        public string LeafTopicName { get; set; } = string.Empty;
+        public Dictionary<string, string> LocalizedLeafNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public string ParentTopicCode { get; set; } = string.Empty;
+        public string ParentTopicName { get; set; } = string.Empty;
+        public Dictionary<string, string> LocalizedParentNames { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public List<string> Keywords { get; set; } = new();
+        public Dictionary<string, List<string>> LocalizedKeywords { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public string GetLeafDisplayName(string locale = "vi")
+        {
+            if (LocalizedLeafNames != null && LocalizedLeafNames.TryGetValue(locale, out var name) && !string.IsNullOrWhiteSpace(name))
+                return name;
+            return !string.IsNullOrWhiteSpace(LeafTopicName) ? LeafTopicName : LeafTopicCode;
+        }
+
+        public string GetParentDisplayName(string locale = "vi")
+        {
+            if (LocalizedParentNames != null && LocalizedParentNames.TryGetValue(locale, out var name) && !string.IsNullOrWhiteSpace(name))
+                return name;
+            return !string.IsNullOrWhiteSpace(ParentTopicName) ? ParentTopicName : ParentTopicCode;
         }
     }
 
