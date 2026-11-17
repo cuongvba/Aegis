@@ -196,7 +196,7 @@ namespace Aegis.Application.Services
             new() { TermCode = "HK2_FIN", SemesterPhase = "CUOI_HK2", DisplayName = "Cuối Học kỳ 2", Keywords = new() { "cuối học kỳ 2", "cuối kì 2", "cuối kỳ 2", "cuối học kì 2", "cuoi hk2", "cuoi ki 2", "final 2", "spring final", "term 2 final" } },
             new() { TermCode = "HK2", SemesterPhase = "HK2", DisplayName = "Học kỳ 2", Keywords = new() { "học kỳ 2", "học kì 2", "hk2", "hk 2", "semester 2", "term 2", "spring semester", "第二学期" } },
             new() { TermCode = "TS10", SemesterPhase = "TS10", DisplayName = "Tuyển sinh 10", Keywords = new() { "tuyển sinh 10", "tuyển sinh vào lớp 10", "vào 10", "ts10", "vao lop 10", "high school entrance", "中考" } },
-            new() { TermCode = "THPT_NAT", SemesterPhase = "THPT_NAT", DisplayName = "Tốt nghiệp THPT", Keywords = new() { "tốt nghiệp thpt", "thpt quốc gia", "thi tốt nghiệp", "thpt_nat", "quốc gia", "đgnl", "danh gia nang luc", "national high school", "高考" } }
+            new() { TermCode = "THPT_NAT", SemesterPhase = "THPT_NAT", DisplayName = "Tốt nghiệp THPT", Keywords = new() { "tốt nghiệp thpt", "tốt nghiệp trung học phổ thông", "tot nghiep thpt", "tn thpt", "tot thpt", "tnpt", "thpt quốc gia", "thi tốt nghiệp", "de thi tot nghiep", "thpt_nat", "quốc gia", "đgnl", "danh gia nang luc", "national high school", "高考" } }
         };
 
         /// <summary>Danh sách từ viết tắt chuyên ngành viết hoa.</summary>

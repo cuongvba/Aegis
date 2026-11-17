@@ -1,6 +1,6 @@
 [
   {
-    "TopicCode": "MATH",
+    "TopicCode": "TOAN",
     "StandardIscedCode": "MATH",
     "TopicName": "Toán học",
     "DomainCode": "EDUCATION",
@@ -11,7 +11,7 @@
       "zh": "数学",
       "ja": "数学"
     },
-    "Aliases": ["MATH", "TOAN", "TOAN_HOC", "MATHEMATICS"],
+    "Aliases": ["TOAN", "MATH", "TOAN_HOC", "MATHEMATICS"],
     "LocalizedKeywords": {
       "vi": ["toán", "toan", "toán học", "toan hoc", "môn toán", "mon toan", "giải tích", "hình học", "hàm số", "đồ thị", "tích phân", "đạo hàm", "nguyên hàm", "xác suất", "tiệm cận", "vectơ", "vector", "phương trình", "bất phương trình", "tọa độ", "oxyz", "bảng biến thiên", "cực trị"],
       "en": ["math", "mathematics", "calculus", "algebra", "geometry", "derivative", "integral", "matrix", "vector", "probability"]

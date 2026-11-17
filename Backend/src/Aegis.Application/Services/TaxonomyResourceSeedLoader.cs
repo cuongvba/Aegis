@@ -202,7 +202,7 @@ namespace Aegis.Application.Services
 
         private static List<TopicTaxonomyEntryDto> GetMinimalFallbackTopics() => new()
         {
-            new() { TopicCode = "MATH", TopicName = "Toán học", DomainCode = "EDUCATION", Keywords = new() { "toán", "toán học", "math", "đạo hàm", "tích phân" } },
+            new() { TopicCode = "TOAN", TopicName = "Toán học", DomainCode = "EDUCATION", Keywords = new() { "toán", "toán học", "math", "đạo hàm", "tích phân" } },
             new() { TopicCode = "HOA_HOC", TopicName = "Hóa học", DomainCode = "EDUCATION", Keywords = new() { "hóa học", "hoá học", "chemistry", "axit", "mol" } },
             new() { TopicCode = "VAT_LY", TopicName = "Vật lý", DomainCode = "EDUCATION", Keywords = new() { "vật lý", "vật lí", "physics", "dao động", "sóng" } },
             new() { TopicCode = "SINH_HOC", TopicName = "Sinh học", DomainCode = "EDUCATION", Keywords = new() { "sinh học", "biology", "gen", "adn" } },

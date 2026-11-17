@@ -284,9 +284,9 @@ namespace Aegis.UnitTests
             string resolvedAnh = DocxStateMachineClassifier.ResolveTopicCode("BÀI THI: TIẾNG ANH", ctx);
             Assert.Equal("TIENG_ANH", resolvedAnh);
 
-            // 5. Môn thi: TOÁN HỌC phải giải mã thành "MATH"
+            // 5. Môn thi: TOÁN HỌC phải giải mã thành "TOAN"
             string resolvedToan = DocxStateMachineClassifier.ResolveTopicCode("Môn: Toán học", ctx);
-            Assert.Equal("MATH", resolvedToan);
+            Assert.Equal("TOAN", resolvedToan);
 
             // 6. Kiểm tra bóc tách đề Hóa thi tốt nghiệp THPT Quốc gia
             IDocxStateMachineClassifier classifier = new DocxStateMachineClassifierService();

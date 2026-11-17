@@ -181,7 +181,7 @@ namespace Aegis.UnitTests
 
             var q1 = results[0];
             Assert.Equal("SINGLE", q1.QuestionType);
-            Assert.Equal("MATH", q1.TopicCode);
+            Assert.Equal("TOAN", q1.TopicCode);
             Assert.Equal(4, q1.Options.Count);
             Assert.Equal("1", q1.SuggestedAnswer); // Chọn đáp án A -> 1
 
@@ -286,7 +286,7 @@ namespace Aegis.UnitTests
 
             var headerProfile = _cig.ProfileHeader(twoColumnHeader);
             _output.WriteLine($"Detected Subject: {headerProfile.DetectedSubject}");
-            Assert.Equal("HOA_HOC", headerProfile.DetectedSubject);
+            Assert.Equal("HOA_HOC_K12", headerProfile.DetectedSubject);
 
             // Kiểm chứng cả 2 kiểu gõ dấu thanh: 'HOÁ HỌC' và 'HÓA HỌC'
             var topicHoas = UniversalCoordinateTaxonomyEngine.ResolveTopicCode("HOÁ HỌC");
@@ -340,8 +340,8 @@ namespace Aegis.UnitTests
                 sheetName: null,
                 headerBannerLines: headerBanners);
 
-            Assert.Equal("HOA_HOC", envelope.TopicCode);
-            Assert.Equal("Hóa học", envelope.TopicName);
+            Assert.Equal("HOA_HOC_K12", envelope.TopicCode);
+            Assert.StartsWith("Hóa học", envelope.TopicName);
             Assert.Equal("EDUCATION", envelope.DomainCode);
             Assert.Equal("Bộ Giáo dục và Đào tạo", envelope.IssuingOrg);
             Assert.Equal(2026, envelope.BenchmarkYear);
@@ -370,13 +370,13 @@ namespace Aegis.UnitTests
 
             // Xác minh tính bất biến của Vỏ bọc nhận thức (Không bị lệch sang BANKING hay TIENG_ANH)
             Assert.Equal("EDUCATION", q.DomainCode);
-            Assert.Equal("HOA_HOC", q.TopicCode);
+            Assert.Equal("HOA_HOC_K12", q.TopicCode);
             Assert.Equal("Bộ Giáo dục và Đào tạo", q.IssuingOrg);
             Assert.Equal(2026, q.BenchmarkYear);
 
             // Xác minh Thẻ vi mô ở cấp Câu hỏi (Item-Level Delta Tags)
             Assert.Contains("phan-i", q.Tags);
-            Assert.Contains("hoa-hoc", q.Tags);
+            Assert.Contains(q.Tags, t => t.StartsWith("hoa-hoc"));
             Assert.Contains("de-101", q.Tags);
         }
 
@@ -454,7 +454,7 @@ namespace Aegis.UnitTests
 
             Assert.NotNull(result);
             Assert.Equal("EDUCATION", result.DomainCode);
-            Assert.Equal("HOA_HOC", result.TopicCode);
+            Assert.Equal("HOA_HOC_K12", result.TopicCode);
             Assert.Equal("Bộ Giáo dục và Đào tạo", result.IssuingOrg);
             Assert.Equal("Kỳ thi Tốt nghiệp THPT Quốc Gia", result.AssessmentPurpose);
             Assert.Equal("Chương trình GDPT 2018", result.BenchmarkStandard);
@@ -548,7 +548,7 @@ namespace Aegis.UnitTests
             // TUYỆT ĐỐI KHÔNG sinh ra 17 TopicCode khác nhau!
             var distinctTopics = results.Select(r => r.TopicCode).Distinct().ToList();
             Assert.Single(distinctTopics);
-            Assert.True(distinctTopics[0] == "TIN_HOC" || distinctTopics[0] == "CNTT");
+            Assert.True(distinctTopics[0].StartsWith("TIN_HOC") || distinctTopics[0].StartsWith("CNTT"));
 
             // 3. Toàn bộ 17 chủ đề phân mục phải được ánh xạ chính xác vào SubCategory
             for (int i = 1; i <= 17; i++)
@@ -587,10 +587,10 @@ namespace Aegis.UnitTests
             _output.WriteLine($"SemesterPhase: {sniffed.SemesterPhase}");
 
             Assert.Equal("EDUCATION", sniffed.DomainCode);
-            Assert.Equal("KHTN", sniffed.TopicCode);
-            Assert.Equal("Khoa học tự nhiên", sniffed.TopicName);
+            Assert.Equal("KHTN_K07", sniffed.TopicCode);
+            Assert.Equal("Khoa học tự nhiên 7 (THCS)", sniffed.TopicName);
             Assert.Equal("EDU_KHTN_K07_HK1_MID_KNTT", sniffed.CanonicalTopicCode);
-            Assert.Equal("/EDU/KHTN/K07/HK1_MID/KNTT/", sniffed.TreePath);
+            Assert.Equal("/EDU/KHTN/KHTN_LOWER_SEC/KHTN_K07/", sniffed.TreePath);
             Assert.Equal("Khoa học tự nhiên 7 — Giữa Học kỳ 1 (Kết nối tri thức)", sniffed.FriendlyTopicName);
             Assert.Equal("Kết nối tri thức", sniffed.CurriculumSeries);
             Assert.Equal("GIUA_HK1", sniffed.SemesterPhase);

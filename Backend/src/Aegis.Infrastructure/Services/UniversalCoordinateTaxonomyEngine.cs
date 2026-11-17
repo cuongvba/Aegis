@@ -396,7 +396,8 @@ namespace Aegis.Infrastructure.Services
                 if (Regex.IsMatch(norm, @"\b(?:giua\s*(?:hoc\s*)?ky\s*(?:2|ii)|gk\s*2|gk2)\b")) return "Giữa kỳ II";
                 if (Regex.IsMatch(norm, @"\b(?:(?:cuoi\s*)?(?:hoc\s*)?ky\s*(?:1|i)|hk\s*1|hk1)\b")) return "Học kỳ I";
                 if (Regex.IsMatch(norm, @"\b(?:(?:cuoi\s*)?(?:hoc\s*)?ky\s*(?:2|ii)|hk\s*2|hk2)\b")) return "Học kỳ II";
-                if (Regex.IsMatch(norm, @"\b(?:thi\s*thu\s*thpt|tot\s*nghiep\s*thpt)\b")) return "Thi thử THPT";
+                if (Regex.IsMatch(norm, @"\b(?:thi\s*thu\s*(?:tn\s*)?thpt|thi\s*thu\s*tot\s*nghiep)\b")) return "Thi thử THPT";
+                if (Regex.IsMatch(norm, @"\b(?:tn\s*thpt|tot\s*(?:nghiep\s*)?thpt|tot\s*nghiep\s*trung\s*hoc\s*pho\s*thong|de\s*thi\s*tot\s*nghiep|tnpt)\b")) return "Kỳ thi Tốt nghiệp THPT";
                 if (Regex.IsMatch(norm, @"\b(?:tuyen\s*sinh\s*10|vao\s*10)\b")) return "Tuyển sinh 10";
                 if (Regex.IsMatch(norm, @"\b(?:hoc\s*sinh\s*gioi|hsg)\b")) return "Học sinh giỏi";
             }
@@ -723,19 +724,26 @@ namespace Aegis.Infrastructure.Services
 
         private static bool PresetMentioned(TenantCoordinatePresetDto preset, string combinedAll)
         {
-            if (!string.IsNullOrWhiteSpace(preset.PresetLabel) && IsSafeWordOrPhraseMatch(preset.PresetLabel, combinedAll)) return true;
-            return preset.Synonyms.Any(s => !string.IsNullOrWhiteSpace(s) && IsSafeWordOrPhraseMatch(s, combinedAll));
+            var normSource = NormalizeForMatching(combinedAll);
+            if (!string.IsNullOrWhiteSpace(preset.PresetLabel) &&
+                (IsSafeWordOrPhraseMatch(preset.PresetLabel, combinedAll) || IsSafeWordOrPhraseMatch(NormalizeForMatching(preset.PresetLabel), normSource)))
+            {
+                return true;
+            }
+            return preset.Synonyms.Any(s =>
+                !string.IsNullOrWhiteSpace(s) &&
+                (IsSafeWordOrPhraseMatch(s, combinedAll) || IsSafeWordOrPhraseMatch(NormalizeForMatching(s), normSource)));
         }
 
         /// <summary>
-        /// So khớp chuỗi an toàn: Đối với các từ viết tắt / từ ngắn (&lt;= 4 ký tự như 'aml', 'nhno', 'vcb', 'thpt'),
+        /// So khớp chuỗi an toàn: Đối với các từ viết tắt / từ ngắn (&lt;= 6 ký tự như 'aml', 'nhno', 'vcb', 'thpt', 'bo gd'),
         /// bắt buộc phải khớp theo ranh giới từ (\b) để tránh nhận diện nhầm các công thức hóa học hay ký hiệu con.
         /// </summary>
         private static bool IsSafeWordOrPhraseMatch(string candidate, string source)
         {
             if (string.IsNullOrWhiteSpace(candidate) || string.IsNullOrWhiteSpace(source)) return false;
             var trimmed = candidate.Trim();
-            if (trimmed.Length <= 4)
+            if (trimmed.Length <= 6)
             {
                 return Regex.IsMatch(source, $@"(?i)\b{Regex.Escape(trimmed)}\b");
             }
@@ -1045,17 +1053,27 @@ namespace Aegis.Infrastructure.Services
                     .Where(t => !string.Equals(t.Code, "GENERAL", StringComparison.OrdinalIgnoreCase) &&
                                 !string.Equals(t.Code, "EDUCATION", StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(t => t.Name?.Length ?? 0)
-                    .ThenByDescending(t => t.Code.Length);
+                    .ThenByDescending(t => t.Code.Length)
+                    .ToList();
 
-                var foundTopic = sortedTopics.FirstOrDefault(t =>
+                // Pass 1: Khớp chính xác theo Code / Name / Slug (tránh "TOÁN" bị nuốt bởi "Kế toán")
+                var exactTopic = sortedTopics.FirstOrDefault(t =>
                     t.Code.Equals(clean, StringComparison.OrdinalIgnoreCase)
                     || t.Name.Equals(clean, StringComparison.OrdinalIgnoreCase)
                     || slug.Equals(NormalizeToCodeSlug(t.Code), StringComparison.OrdinalIgnoreCase)
-                    || slug.Equals(NormalizeToCodeSlug(t.Name), StringComparison.OrdinalIgnoreCase)
-                    || (clean.Length > 2 && t.Name.Contains(clean, StringComparison.OrdinalIgnoreCase))
-                    || (t.Name.Length > 2 && clean.Contains(t.Name, StringComparison.OrdinalIgnoreCase))
-                    || t.Keywords.Any(kw => IsSafeKeywordMatch(kw, clean, slug)));
-                if (foundTopic != null) return foundTopic.Code;
+                    || slug.Equals(NormalizeToCodeSlug(t.Name), StringComparison.OrdinalIgnoreCase));
+                if (exactTopic != null) return exactTopic.Code;
+
+                // Pass 2: Khớp an toàn theo Keywords / Token (ưu tiên từ khóa chuyên biệt của từng môn)
+                var keywordTopic = sortedTopics.FirstOrDefault(t =>
+                    t.Keywords.Any(kw => IsSafeKeywordMatch(kw, clean, slug)));
+                if (keywordTopic != null) return keywordTopic.Code;
+
+                // Pass 3: Fallback bao hàm chuỗi dài (>= 6 ký tự) hoặc tên topic nằm trọn trong chuỗi đầu vào
+                var partialTopic = sortedTopics.FirstOrDefault(t =>
+                    (t.Name.Length > 2 && clean.Contains(t.Name, StringComparison.OrdinalIgnoreCase))
+                    || (clean.Length >= 6 && t.Name.Contains(clean, StringComparison.OrdinalIgnoreCase)));
+                if (partialTopic != null) return partialTopic.Code;
             }
 
             // 3. Khớp qua Từ điển Taxonomy cấu hình đa ngôn ngữ (DocumentStructureDictionary / DB / SSoT)
@@ -1565,9 +1583,11 @@ namespace Aegis.Infrastructure.Services
             string gradeDisplay = "";
             int gradeNum = 0;
             var lowerText = text.ToLowerInvariant();
+            var normalizedAll = NormalizeForMatching(text);
             bool isTnptExam = lowerText.Contains("tốt nghiệp thpt")
                 || lowerText.Contains("tốt nghiệp trung học phổ thông")
-                || Regex.IsMatch(text, @"(?i)\b(?:tnpt|thpt\s*nat|thpt_nat)\b");
+                || Regex.IsMatch(text, @"(?i)\b(?:tnpt|thpt\s*nat|thpt_nat)\b")
+                || Regex.IsMatch(normalizedAll, @"\b(?:tn\s*thpt|tot\s*(?:nghiep\s*)?thpt|tot\s*nghiep\s*trung\s*hoc\s*pho\s*thong|de\s*thi\s*tot\s*nghiep|tnpt)\b");
 
             // 3a. Quét từ TargetLevel đã nhận diện trước
             if (!string.IsNullOrWhiteSpace(result.TargetLevel))
@@ -1610,8 +1630,6 @@ namespace Aegis.Infrastructure.Services
                     }
                 }
             }
-
-            var normalizedAll = NormalizeForMatching(text);
 
             // 3c. Quét từ text tổng hợp và fileName theo GradeDetectionPatterns (+ tên file không dấu dạng Tieng-Anh-7, LOP7)
             if (gradeNum == 0)
@@ -1791,34 +1809,34 @@ namespace Aegis.Infrastructure.Services
 
                 if (isHigherEd && (gradeNum == 0 || gradeNum > 12))
                 {
-                    if (topic == "MATH")
+                    if (topic == "TOAN" || topic == "MATH")
                     {
                         if (lowerText.Contains("giải tích") || lowerText.Contains("calculus") || lowerText.Contains("vi tích phân"))
                         {
-                            result.TopicCode = "MATH_CALCULUS";
+                            result.TopicCode = "TOAN_CALCULUS";
                             result.TopicName = "Giải tích (Calculus)";
-                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicCode = "TOAN_HIGHER_ED";
                             result.ParentTopicName = "Toán Cao cấp & Đại học";
                         }
                         else if (lowerText.Contains("đại số tuyến tính") || lowerText.Contains("linear algebra") || lowerText.Contains("ma trận") || lowerText.Contains("không gian vector"))
                         {
-                            result.TopicCode = "MATH_LINEAR_ALGEBRA";
+                            result.TopicCode = "TOAN_LINEAR_ALGEBRA";
                             result.TopicName = "Đại số tuyến tính (Linear Algebra)";
-                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicCode = "TOAN_HIGHER_ED";
                             result.ParentTopicName = "Toán Cao cấp & Đại học";
                         }
                         else if (lowerText.Contains("xác suất") || lowerText.Contains("thống kê") || lowerText.Contains("probability"))
                         {
-                            result.TopicCode = "MATH_PROB_STAT";
+                            result.TopicCode = "TOAN_PROB_STAT";
                             result.TopicName = "Xác suất & Thống kê toán (Đại học)";
-                            result.ParentTopicCode = "MATH_HIGHER_ED";
+                            result.ParentTopicCode = "TOAN_HIGHER_ED";
                             result.ParentTopicName = "Toán Cao cấp & Đại học";
                         }
                         else
                         {
-                            result.TopicCode = "MATH_HIGHER_ED";
+                            result.TopicCode = "TOAN_HIGHER_ED";
                             result.TopicName = "Toán học Cao cấp (Đại học)";
-                            result.ParentTopicCode = "MATH";
+                            result.ParentTopicCode = "TOAN";
                             result.ParentTopicName = topicDisplay;
                         }
                     }

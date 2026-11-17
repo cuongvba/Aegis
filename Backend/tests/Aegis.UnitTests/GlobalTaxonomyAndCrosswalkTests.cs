@@ -105,9 +105,9 @@ namespace Aegis.UnitTests
                 headerBannerLines: new List<string> { "BỘ GIÁO DỤC VÀ ĐÀO TẠO", "KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2026", "Môn thi: TOÁN - Lớp 12" },
                 dynamicContext: ctx);
 
-            Assert.Equal("MATH_K12", sniffedK12.TopicCode);
-            Assert.Equal("MATH_UPPER_SEC", sniffedK12.ParentTopicCode);
-            Assert.Contains("/EDU/MATH/MATH_UPPER_SEC/MATH_K12/", sniffedK12.TreePath);
+            Assert.Equal("TOAN_K12", sniffedK12.TopicCode);
+            Assert.Equal("TOAN_UPPER_SEC", sniffedK12.ParentTopicCode);
+            Assert.Contains("/EDU/TOAN/TOAN_UPPER_SEC/TOAN_K12/", sniffedK12.TreePath);
 
             // 2. Đề thi Toán Tiểu học Lớp 5
             var sniffedK05 = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
@@ -116,9 +116,9 @@ namespace Aegis.UnitTests
                 headerBannerLines: new List<string> { "TRƯỜNG TIỂU HỌC NGUYỄN DU", "ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TOÁN LỚP 5" },
                 dynamicContext: ctx);
 
-            Assert.Equal("MATH_K05", sniffedK05.TopicCode);
-            Assert.Equal("MATH_PRIMARY", sniffedK05.ParentTopicCode);
-            Assert.Contains("/EDU/MATH/MATH_PRIMARY/MATH_K05/", sniffedK05.TreePath);
+            Assert.Equal("TOAN_K05", sniffedK05.TopicCode);
+            Assert.Equal("TOAN_PRIMARY", sniffedK05.ParentTopicCode);
+            Assert.Contains("/EDU/TOAN/TOAN_PRIMARY/TOAN_K05/", sniffedK05.TreePath);
 
             // 3. Đề thi Toán Đại học - Giải tích
             var sniffedHigherEd = UniversalCoordinateTaxonomyEngine.SniffCoordinates(
@@ -127,9 +127,9 @@ namespace Aegis.UnitTests
                 headerBannerLines: new List<string> { "TRƯỜNG ĐẠI HỌC BÁCH KHOA", "KHOA TOÁN - TIN", "HỌC PHẦN: GIẢI TÍCH 1 (CALCULUS)" },
                 dynamicContext: ctx);
 
-            Assert.Equal("MATH_CALCULUS", sniffedHigherEd.TopicCode);
-            Assert.Equal("MATH_HIGHER_ED", sniffedHigherEd.ParentTopicCode);
-            Assert.Contains("/EDU/MATH/MATH_HIGHER_ED/MATH_CALCULUS/", sniffedHigherEd.TreePath);
+            Assert.Equal("TOAN_CALCULUS", sniffedHigherEd.TopicCode);
+            Assert.Equal("TOAN_HIGHER_ED", sniffedHigherEd.ParentTopicCode);
+            Assert.Contains("/EDU/TOAN/TOAN_HIGHER_ED/TOAN_CALCULUS/", sniffedHigherEd.TreePath);
         }
 
         [Fact]
@@ -236,6 +236,80 @@ namespace Aegis.UnitTests
                 var first = qs[0];
                 System.Console.WriteLine($"[REAL HOA DOCX] TopicCode={first.TopicCode}, Canonical={first.CanonicalTopicCode}, TreePath={first.TreePath}");
                 Assert.Equal("HOA_HOC_K12", first.TopicCode);
+            }
+        }
+
+        [Fact]
+        public void Tnpt_AllSubjects_ConsistentFiveAxisCoordinates_AndToanTopicCode()
+        {
+            var ctx = DynamicDomainContext.CreateDefault();
+            var cases = new[]
+            {
+                (File: "thuvienhoclieu.com-De-thi-TN-THPT-2026-mon-Toan-Bo-GD-ma-de-103.docx", Header: "KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2026\nMôn thi: TOÁN", ExpectedTopic: "TOAN_K12", ExpectedYear: 2026, ExpectBoGd: true),
+                (File: "thuvienhoclieu.com-De-thi-Tot-THPT-2026-mon-Toan-Bo-GD-lan-2-ma-de-0108.docx", Header: "KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2026\nLẦN 2\nMôn thi: TOÁN", ExpectedTopic: "TOAN_K12", ExpectedYear: 2026, ExpectBoGd: true),
+                (File: "thuvienhoclieu.com-De-thi-TN-THPT-2026-Tieng-Anh-Lan-2-Bo-GD-ma-de-1102.docx", Header: "KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2026\nLẦN 2\nMôn thi: TIẾNG ANH", ExpectedTopic: "TIENG_ANH_K12", ExpectedYear: 2026, ExpectBoGd: true),
+                (File: "thuvienhoclieu.com-De-thi-tot-nghiep-2026-Tieng-Anh-Du-Doan-De-2.docx", Header: "ĐỀ DỰ ĐOÁN TỐT NGHIỆP THPT NĂM 2026\nMÔN: TIẾNG ANH", ExpectedTopic: "TIENG_ANH_K12", ExpectedYear: 2026, ExpectBoGd: false),
+                (File: "thuvienhoclieu.com-Bo-10-De-thi-thu-TN-THPT-2025-mon-Tin.docx", Header: "BỘ ĐỀ THI THỬ TỐT NGHIỆP THPT NĂM 2025\nMôn: TIN HỌC", ExpectedTopic: "TIN_HOC_K12", ExpectedYear: 2025, ExpectBoGd: false),
+                (File: "thuvienhoclieu.com-De-thi-TN-THPT-2026-mon-Vat-Li-Li-Bo-GD-ma-de-0211.docx", Header: "KỲ THI TỐT NGHIỆP TRUNG HỌC PHỔ THÔNG NĂM 2026\nMôn thi: VẬT LÍ", ExpectedTopic: "VAT_LY_K12", ExpectedYear: 2026, ExpectBoGd: true),
+            };
+
+            foreach (var c in cases)
+            {
+                var banners = c.Header.Split('\n').ToList();
+                var res = UniversalCoordinateTaxonomyEngine.SniffCoordinates(c.File, null, banners, dynamicContext: ctx);
+
+                Assert.True(res.DomainCode == "EDUCATION", $"File={c.File} -> DomainCode={res.DomainCode}, TopicCode={res.TopicCode}, TargetLevel={res.TargetLevel}, Purpose={res.AssessmentPurpose}, Org={res.IssuingOrg}");
+                Assert.Equal(c.ExpectedTopic, res.TopicCode);
+                Assert.Equal("Lớp 12", res.TargetLevel);
+                Assert.Equal(c.ExpectedYear, res.BenchmarkYear);
+                Assert.Contains("THPT_NAT", res.CanonicalTopicCode);
+                Assert.False(string.IsNullOrWhiteSpace(res.AssessmentPurpose));
+                Assert.Contains("Tốt nghiệp THPT", res.AssessmentPurpose);
+                if (c.ExpectBoGd)
+                {
+                    Assert.Equal("Bộ Giáo dục và Đào tạo", res.IssuingOrg);
+                }
+            }
+        }
+
+        [Fact]
+        public void RealDocx_AllFilesInTnptFolder_ShouldHaveConsistentCoordinates()
+        {
+            var tnptDir = @"D:\Cuong\DuAn\DETHI\TNPT";
+            if (!System.IO.Directory.Exists(tnptDir)) return;
+
+            var ctx = DynamicDomainContext.CreateDefault();
+            var parser = new DocxParserService();
+            var files = System.IO.Directory.GetFiles(tnptDir, "*.docx").OrderBy(f => f).ToList();
+            Assert.NotEmpty(files);
+
+            foreach (var filePath in files)
+            {
+                var fileName = System.IO.Path.GetFileName(filePath);
+                ctx.FileName = fileName;
+                using var fs = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite);
+                var qs = parser.ParseDocxFile(fs, ctx);
+                Assert.NotEmpty(qs);
+
+                var first = qs[0];
+                System.Console.WriteLine($"[TNPT REAL] {fileName} => Q={qs.Count}, Domain={first.DomainCode}, Topic={first.TopicCode}, Level={first.TargetLevel}, Purpose={first.AssessmentPurpose}, Org={first.IssuingOrg}, Year={first.BenchmarkYear}, Canonical={first.CanonicalTopicCode}");
+
+                Assert.Equal("EDUCATION", first.DomainCode);
+                Assert.Equal("Lớp 12", first.TargetLevel);
+                Assert.False(string.IsNullOrWhiteSpace(first.AssessmentPurpose), $"Missing AssessmentPurpose for {fileName}");
+                Assert.Contains("THPT", first.AssessmentPurpose, System.StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("THPT_NAT", first.CanonicalTopicCode);
+
+                if (fileName.Contains("Toan", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.True(first.TopicCode == "TOAN" || first.TopicCode == "TOAN_K12", $"Expected TOAN* for {fileName}, got {first.TopicCode}");
+                    Assert.Contains("EDU_TOAN_K12_THPT_NAT", first.CanonicalTopicCode);
+                }
+                else if (fileName.Contains("Tieng-Anh", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.True(first.TopicCode == "TIENG_ANH" || first.TopicCode == "TIENG_ANH_K12", $"Expected TIENG_ANH* for {fileName}, got {first.TopicCode}");
+                    Assert.Contains("EDU_TIENG_ANH_K12_THPT_NAT", first.CanonicalTopicCode);
+                }
             }
         }
     }
