@@ -1271,6 +1271,7 @@ namespace Aegis.API.Controllers
         }
 
         [HttpGet("matrix-templates")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMatrixTemplates()
         {
             if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
@@ -1298,6 +1299,7 @@ namespace Aegis.API.Controllers
         }
 
         [HttpPost("generate-matrix-exam")]
+        [AllowAnonymous]
         public async Task<IActionResult> GenerateMatrixExam([FromBody] GenerateMatrixExamRequestDto request)
         {
             if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });

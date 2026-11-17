@@ -593,6 +593,27 @@ export function PracticePage() {
     }
   };
 
+  const handleStartMatrixSession = (
+    generated: LearnerQuestion[],
+    config: PracticeConfig,
+    warning?: string
+  ) => {
+    const processedQuestions = processBackendQuestions(generated, config);
+    setSessionConfig(config);
+    setSessionQuestions(processedQuestions);
+    setHasStarted(true);
+    setSubmitted(false);
+    setAnswers({});
+    setCurrentIndex(0);
+    setKidStreak(0);
+    setKidBestStreak(0);
+    setKidFeedback(warning || '');
+    setExpiredQuestions({});
+    setFlaggedQuestions({});
+    setIsGlobalHintActive(false);
+    setQuestionSecondsLeft({});
+  };
+
   // [Auto-Practice] Tự động tải và bắt đầu bài làm nếu URL có ?topic=STUDIO_XXXX
   useEffect(() => {
     if (topicParam && !hasStarted && autoStartedTopicRef.current !== topicParam) {
@@ -829,6 +850,7 @@ export function PracticePage() {
               topics={topics}
               domainGroups={domainGroups}
               onStart={handleStartSession}
+              onStartMatrix={handleStartMatrixSession}
               forcedDomainCode={domainParam || undefined}
               isDomainLocked={Boolean(domainParam)}
               t={t}

@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import { CognitiveTopicExplorer } from '@/components/quiz/CognitiveTopicExplorer';
 import { PracticeLaunchPad } from '@/components/quiz/PracticeLaunchPad';
+import { PracticeMatrixLauncher } from '@/components/quiz/PracticeMatrixLauncher';
 import type {
   CognitiveDomainGroupDto,
   ExamCategoryPreset,
+  LearnerQuestion,
   PracticeConfig,
   PracticeMode,
   PracticeTopicConfig,
@@ -14,6 +16,7 @@ type Props = {
   topics: TopicSummary[];
   domainGroups?: CognitiveDomainGroupDto[];
   onStart: (config: PracticeConfig) => void;
+  onStartMatrix?: (questions: LearnerQuestion[], config: PracticeConfig, warning?: string) => void;
   forcedDomainCode?: string;
   isDomainLocked?: boolean;
   t: (key: string) => string;
@@ -29,7 +32,7 @@ function defaultTopicConfig(topicKey: string): PracticeTopicConfig {
   };
 }
 
-export function PracticeSetup({ topics, domainGroups, onStart, forcedDomainCode, isDomainLocked, t }: Props) {
+export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, forcedDomainCode, isDomainLocked, t }: Props) {
   const [mode, setMode] = useState<PracticeMode>('study');
   const [topicConfigs, setTopicConfigs] = useState<PracticeTopicConfig[]>([]);
   const [shuffleOptions, setShuffleOptions] = useState(true);
@@ -167,6 +170,13 @@ export function PracticeSetup({ topics, domainGroups, onStart, forcedDomainCode,
       </section>
 
       {/* ─── TRỌNG TÂM: ĐỒ THỊ NHẬN THỨC CHUYÊN ĐỀ (COGNITIVE TOPIC EXPLORER) ─── */}
+      {onStartMatrix && (
+        <PracticeMatrixLauncher
+          forcedDomainCode={forcedDomainCode}
+          onLaunchMatrix={onStartMatrix}
+        />
+      )}
+
       <section>
         <CognitiveTopicExplorer
           domainGroups={domainGroups}
