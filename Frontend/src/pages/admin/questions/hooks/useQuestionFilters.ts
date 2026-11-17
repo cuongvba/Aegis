@@ -167,6 +167,8 @@ export function useQuestionFilters(
             (cleanGradeNum === '12' && /(?:thpt|tnpt|tốt\s*nghiệp)/i.test(q.targetLevel))
           )) ||
           (cleanGradeNum === '12' && q.topicCode && /(?:thpt|tnpt)/i.test(q.topicCode)) ||
+          (q.topicCode && q.topicCode.toUpperCase().endsWith(`_K${cleanGradeNum.padStart(2, '0')}`)) ||
+          (q.canonicalTopicCode && q.canonicalTopicCode.toUpperCase().includes(`_K${cleanGradeNum.padStart(2, '0')}_`)) ||
           (q.tags || []).some(t => {
             const ut = t.toUpperCase();
             return ut.includes(`K${cleanGradeNum.padStart(2, '0')}`) ||

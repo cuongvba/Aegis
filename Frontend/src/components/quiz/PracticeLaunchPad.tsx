@@ -300,8 +300,7 @@ export const PracticeLaunchPad: React.FC<Props> = ({
                       <span>{t('shuffleOptions') || 'Xáo vị trí phương án'}</span>
                       <input
                         type="checkbox"
-                        checked={mode === 'kids' ? true : shuffleOptions}
-                        disabled={mode === 'kids'}
+                        checked={shuffleOptions}
                         onChange={(e) => onShuffleOptionsChange(e.target.checked)}
                         className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
                       />
@@ -311,8 +310,7 @@ export const PracticeLaunchPad: React.FC<Props> = ({
                       <span>{t('shuffleQuestions') || 'Xáo trộn thứ tự câu hỏi'}</span>
                       <input
                         type="checkbox"
-                        checked={mode === 'kids' ? true : shuffleQuestions}
-                        disabled={mode === 'kids'}
+                        checked={shuffleQuestions}
                         onChange={(e) => onShuffleQuestionsChange(e.target.checked)}
                         className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
                       />
@@ -339,8 +337,7 @@ export const PracticeLaunchPad: React.FC<Props> = ({
                       <span>{t('autoNextTimeout') || 'Tự động qua câu khi hết giờ'}</span>
                       <input
                         type="checkbox"
-                        checked={mode === 'kids' ? true : autoNextOnTimeout}
-                        disabled={mode === 'kids'}
+                        checked={autoNextOnTimeout}
                         onChange={(e) => onAutoNextChange(e.target.checked)}
                         className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 cursor-pointer"
                       />

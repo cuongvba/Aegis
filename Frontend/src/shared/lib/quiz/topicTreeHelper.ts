@@ -24,7 +24,19 @@ export function doesQuestionMatchTopicCode(
 
   const qTopic = (q.topicCode || '').trim().toUpperCase();
   const qCat = (q.categoryCode || '').trim().toUpperCase();
-  if (qTopic === target || qCat === target) return true;
+  if (
+    qTopic === target ||
+    qCat === target ||
+    qTopic.startsWith(`${target}_`) ||
+    qCat.startsWith(`${target}_`)
+  ) {
+    return true;
+  }
+
+  const qTreePath = (q.treePath || '').trim().toUpperCase();
+  if (qTreePath && qTreePath.includes(`/${target}/`)) {
+    return true;
+  }
 
   // Hỗ trợ kiểm tra qua Tags (#CODE, #topic:CODE, CODE)
   const tagTarget1 = `#${target}`;

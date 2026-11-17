@@ -67,12 +67,14 @@ export const TaxonomyPivotDrawer: React.FC<TaxonomyPivotDrawerProps> = ({
 
   const handleNodeClick = (node: TaxonomyPivotTreeNode) => {
     if (node.nodeType === 'TOPIC') {
-      onApplyFilter({ topicCode: node.code, treePath: node.materializedPath });
+      onApplyFilter({ topicCode: node.code });
     } else if (node.nodeType === 'GRADE') {
-      onApplyFilter({ grade: node.code, treePath: node.materializedPath });
+      onApplyFilter({ grade: node.code });
     } else if (node.nodeType === 'TERM') {
-      onApplyFilter({ termPhase: node.code, term: node.code, treePath: node.materializedPath });
-    } else if (node.materializedPath) {
+      onApplyFilter({ termPhase: node.code, term: node.code });
+    } else if (node.nodeType === 'SERIES') {
+      onApplyFilter({ series: node.code } as any);
+    } else if (node.materializedPath && !/\/(?:SUBJECT|GRADE|TERM)\//i.test(node.materializedPath)) {
       onApplyFilter({ treePath: node.materializedPath });
     }
     onClose();

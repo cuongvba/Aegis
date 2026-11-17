@@ -389,12 +389,12 @@ export function AdminQuestionsPage() {
         onClose={() => setShowPivotDrawer(false)}
         domainCode={qFilters.qDomainFilter === 'ALL' ? 'EDUCATION' : qFilters.qDomainFilter}
         onApplyFilter={(facet: { topicCode?: string; grade?: string; series?: string; term?: string; termPhase?: string; treePath?: string }) => {
-          if (facet.treePath) qFilters.setQTreePathFilter(facet.treePath);
-          if (facet.topicCode) qFilters.setQTopicFilter(facet.topicCode);
-          if (facet.grade) qFilters.setQGradeFilter(facet.grade);
-          if (facet.series) qFilters.setQCurriculumSeriesFilter(facet.series);
-          const termVal = facet.term || facet.termPhase;
-          if (termVal) qFilters.setQSemesterPhaseFilter(termVal);
+          qFilters.setQTreePathFilter(facet.treePath || '');
+          qFilters.setQTopicFilter(facet.topicCode || '');
+          qFilters.setQGradeFilter(facet.grade || '');
+          qFilters.setQCurriculumSeriesFilter(facet.series || '');
+          const termVal = facet.term || facet.termPhase || '';
+          qFilters.setQSemesterPhaseFilter(termVal);
         }}
       />
       <TaxonomyMatrixModal
@@ -402,8 +402,11 @@ export function AdminQuestionsPage() {
         onClose={() => setShowMatrixModal(false)}
         domainCode={qFilters.qDomainFilter === 'ALL' ? 'EDUCATION' : qFilters.qDomainFilter}
         onSelectCell={facet => {
-          if (facet.topicCode) qFilters.setQTopicFilter(facet.topicCode);
-          if (facet.grade) qFilters.setQGradeFilter(facet.grade);
+          qFilters.setQTreePathFilter('');
+          qFilters.setQCurriculumSeriesFilter('');
+          qFilters.setQSemesterPhaseFilter('');
+          qFilters.setQTopicFilter(facet.topicCode || '');
+          qFilters.setQGradeFilter(facet.grade || '');
         }}
       />
     </div>
