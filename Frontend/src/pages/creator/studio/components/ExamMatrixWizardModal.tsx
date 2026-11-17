@@ -6,6 +6,7 @@ import {
   ExamMatrixBloomWeights,
   ExamMatrixSectionRule,
   ExamMatrixTemplate,
+  MatrixInventory,
   MatrixSectionCoverage,
 } from '../../../../services/examMatrix.service';
 import { MatrixSectionEditor } from './MatrixSectionEditor';
@@ -36,6 +37,7 @@ export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({ is
   const [isSaving, setIsSaving] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [coverages, setCoverages] = useState<MatrixSectionCoverage[]>([]);
+  const [inventory, setInventory] = useState<MatrixInventory | null>(null);
 
   const applyTemplate = (tpl: ExamMatrixTemplate) => {
     setSelectedCode(tpl.templateCode);
@@ -60,6 +62,17 @@ export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({ is
       })
       .catch(() => setStatusMessage('Không tải được danh sách quy chuẩn từ máy chủ.'));
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !topicCode.trim()) return;
+    const timer = setTimeout(() => {
+      examMatrixService
+        .getInventory(domainCode, topicCode, targetLevel || 'ALL')
+        .then(setInventory)
+        .catch(() => setInventory(null));
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [isOpen, domainCode, topicCode, targetLevel]);
 
   if (!isOpen) return null;
 
@@ -222,13 +235,24 @@ export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({ is
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tên đề / Quy chuẩn" className="col-span-2 bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:border-cyan-400 focus:outline-none" />
             <input value={domainCode} onChange={(e) => setDomainCode(e.target.value.toUpperCase())} placeholder="Domain (EDUCATION/BANKING)" className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-cyan-300 font-mono focus:border-cyan-400 focus:outline-none" />
-            <input value={topicCode} onChange={(e) => setTopicCode(e.target.value.toUpperCase())} placeholder="Mã môn (TOAN/VAT_LY)" className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-emerald-300 font-mono focus:border-cyan-400 focus:outline-none" />
+            <input list="studio-subject-suggestions" value={topicCode} onChange={(e) => setTopicCode(e.target.value.toUpperCase())} placeholder="Mã môn (TOAN/VAT_LY)" className="bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-1.5 text-emerald-300 font-mono focus:border-cyan-400 focus:outline-none" />
+            <datalist id="studio-subject-suggestions">
+              {(inventory?.availableSubjects || ['TOAN', 'VAT_LY', 'HOA_HOC', 'SINH_HOC', 'TIENG_ANH']).map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-1.5">
               <GraduationCap size={14} className="text-indigo-400 shrink-0" />
-              <input value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} placeholder="Khối / Cấp bậc (VD: K12, RM)" className="w-full bg-transparent text-white focus:outline-none" />
+              <input list="studio-grade-suggestions" value={targetLevel} onChange={(e) => setTargetLevel(e.target.value)} placeholder="Khối / Cấp bậc (VD: K07, K12, ALL)" className="w-full bg-transparent text-white focus:outline-none" />
+              <datalist id="studio-grade-suggestions">
+                <option value="ALL" />
+                {['K06', 'K07', 'K08', 'K09', 'K10', 'K11', 'K12'].map((g) => (
+                  <option key={g} value={g} />
+                ))}
+              </datalist>
             </div>
             <div className="flex items-center gap-2 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-1.5">
               <Building2 size={14} className="text-amber-400 shrink-0" />
@@ -236,6 +260,19 @@ export const ExamMatrixWizardModal: React.FC<ExamMatrixWizardModalProps> = ({ is
               <input type="number" min={5} max={240} value={durationMinutes} onChange={(e) => setDurationMinutes(Number(e.target.value) || 45)} className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-center text-white font-bold" />
             </div>
           </div>
+
+          {inventory && (
+            <div className="rounded-xl bg-cyan-500/10 border border-cyan-500/25 px-3 py-1.5 text-[11px] text-cyan-200 flex flex-wrap items-center justify-between gap-2">
+              <span>
+                Kho thật ({topicCode} • {targetLevel || 'ALL'}): <strong className="text-white">{inventory.totalCount} câu</strong>
+                {Object.keys(inventory.byQuestionType).length > 0 &&
+                  ` (${Object.entries(inventory.byQuestionType).map(([k, v]) => `${k}: ${v}`).join(' · ')})`}
+              </span>
+              {inventory.availableGrades.length > 0 && (
+                <span className="text-cyan-300/80">Khối có sẵn: {inventory.availableGrades.join(', ')}</span>
+              )}
+            </div>
+          )}
 
           <MatrixSectionEditor sections={sections} onChange={setSections} />
 

@@ -1,5 +1,22 @@
 [
   {
+    "templateCode": "MOET_2025_THCS_45P",
+    "title": "Khung Bộ GD&ĐT — Kiểm tra THCS 45p (Lớp 6, 7, 8, 9 - Mọi môn)",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "TOAN",
+    "targetLevel": "K07",
+    "durationMinutes": 45,
+    "isSystemDefault": true,
+    "description": "Khung ma trận động dùng chung cho mọi môn THCS (Toán 7, KHTN 7, Ngữ văn...): chỉ cần xoay Môn & Khối lớp.",
+    "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm khách quan", "questionType": "SINGLE", "count": 12, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Đúng / Sai nhận định", "questionType": "MULTI_TRUE_FALSE", "count": 2, "pointsPerQuestion": 1.0 },
+      { "code": "PART_3", "title": "Phần III. Trả lời ngắn / Tự luận", "questionType": "SHORT_ANSWER", "count": 4, "pointsPerQuestion": 1.25 }
+    ]
+  },
+  {
     "templateCode": "MOET_2025_TOAN",
     "title": "Đề chuẩn Bộ GD&ĐT 2025 — Môn Toán THPT",
     "category": "MOET_2025",

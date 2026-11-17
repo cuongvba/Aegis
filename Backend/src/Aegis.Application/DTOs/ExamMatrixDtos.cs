@@ -89,4 +89,16 @@ namespace Aegis.Application.DTOs
         public List<MatrixGeneratedQuestionDto> Questions { get; set; } = new();
         public string? WarningMessage { get; set; }
     }
+
+    public class MatrixInventoryDto
+    {
+        public string DomainCode { get; set; } = string.Empty;
+        public string TopicCode { get; set; } = string.Empty;
+        public string? TargetLevel { get; set; }
+        public int TotalCount { get; set; }
+        public Dictionary<string, int> ByQuestionType { get; set; } = new();
+        public Dictionary<int, int> ByDifficulty { get; set; } = new();
+        public List<string> AvailableSubjects { get; set; } = new();
+        public List<string> AvailableGrades { get; set; } = new();
+    }
 }

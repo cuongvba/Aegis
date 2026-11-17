@@ -24,5 +24,12 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             GenerateMatrixExamRequestDto request,
             CancellationToken ct = default);
+
+        Task<MatrixInventoryDto> GetInventoryAsync(
+            Guid tenantId,
+            string? domainCode,
+            string? topicCode,
+            string? targetLevel,
+            CancellationToken ct = default);
     }
 }

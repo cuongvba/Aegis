@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, Building2, GraduationCap, Play, Loader2, AlertTriangle, Clock } from 'lucide-react';
-import { examMatrixService, ExamMatrixTemplate } from '@/services/examMatrix.service';
+import { Sparkles, Building2, GraduationCap, Play, Loader2, AlertTriangle, Clock, Database } from 'lucide-react';
+import { examMatrixService, ExamMatrixTemplate, MatrixInventory } from '@/services/examMatrix.service';
 import type { LearnerQuestion, PracticeConfig, QuestionType } from '@/types/quiz';
 
 interface PracticeMatrixLauncherProps {
@@ -8,12 +8,17 @@ interface PracticeMatrixLauncherProps {
   onLaunchMatrix: (questions: LearnerQuestion[], config: PracticeConfig, warning?: string) => void;
 }
 
+const GRADE_CHOICES = ['ALL', 'K06', 'K07', 'K08', 'K09', 'K10', 'K11', 'K12'];
+
 export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
   forcedDomainCode,
   onLaunchMatrix,
 }) => {
   const [templates, setTemplates] = useState<ExamMatrixTemplate[]>([]);
   const [selectedCode, setSelectedCode] = useState<string>('');
+  const [topicCode, setTopicCode] = useState<string>('TOAN');
+  const [targetLevel, setTargetLevel] = useState<string>('K12');
+  const [inventory, setInventory] = useState<MatrixInventory | null>(null);
   const [isLaunching, setIsLaunching] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -26,17 +31,44 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
           : list;
         const effective = filtered.length > 0 ? filtered : list;
         setTemplates(effective);
-        if (effective[0]) setSelectedCode(effective[0].templateCode);
+        const preferred = effective.find((t) => t.templateCode === 'MOET_2025_TOAN') || effective[0];
+        if (preferred) {
+          setSelectedCode(preferred.templateCode);
+          setTopicCode(preferred.topicCode);
+          setTargetLevel(preferred.targetLevel || 'ALL');
+        }
       })
       .catch(() => {
         // Silent fallback if matrix endpoint is unavailable
       });
   }, [forcedDomainCode]);
 
-  if (templates.length === 0) return null;
-
   const active = templates.find((t) => t.templateCode === selectedCode) || templates[0];
+
+  useEffect(() => {
+    if (!active || !topicCode.trim()) return;
+    const timer = setTimeout(() => {
+      examMatrixService
+        .getInventory(active.domainCode, topicCode, targetLevel)
+        .then(setInventory)
+        .catch(() => setInventory(null));
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [active?.domainCode, topicCode, targetLevel]);
+
+  if (templates.length === 0 || !active) return null;
+
   const totalCount = active.sections.reduce((sum, s) => sum + s.count, 0);
+
+  const handleSelectTemplate = (code: string) => {
+    setSelectedCode(code);
+    setErrorMsg(null);
+    const tpl = templates.find((t) => t.templateCode === code);
+    if (tpl) {
+      setTopicCode(tpl.topicCode);
+      setTargetLevel(tpl.targetLevel || 'ALL');
+    }
+  };
 
   const handleLaunch = async () => {
     setIsLaunching(true);
@@ -44,10 +76,10 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
     try {
       const res = await examMatrixService.generateFromRealBank({
         templateCode: active.templateCode,
-        examTitle: active.title,
+        examTitle: `${active.title} (${topicCode}${targetLevel && targetLevel !== 'ALL' ? ` - ${targetLevel}` : ''})`,
         domainCode: active.domainCode,
-        topicCode: active.topicCode,
-        targetLevel: active.targetLevel,
+        topicCode: topicCode.trim().toUpperCase(),
+        targetLevel: targetLevel === 'ALL' ? undefined : targetLevel,
         durationMinutes: active.durationMinutes,
         bloomWeights: active.bloomWeights,
         sections: active.sections,
@@ -56,7 +88,7 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
       if (!res.questions || res.questions.length === 0) {
         setErrorMsg(
           res.warningMessage ||
-            `Kho đề thật (${active.topicCode}) chưa có câu hỏi phù hợp cho ma trận "${active.title}".`
+            `Kho đề thật (${topicCode} • ${targetLevel}) chưa có câu hỏi phù hợp cho khung "${active.title}".`
         );
         return;
       }
@@ -94,7 +126,7 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
           },
         ],
         shuffleOptions: true,
-        shuffleQuestions: false, // Giữ đúng thứ tự Phần I -> Phần II -> Phần III của ma trận
+        shuffleQuestions: false,
         enableQuestionTimer: false,
         timeLimitSec: Math.max(0, res.durationMinutes) * 60,
         autoNextOnTimeout: false,
@@ -117,53 +149,66 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-              Thi Thử Theo Ma Trận Chuẩn (Kho Thật)
+              Thi Thử Theo Ma Trận Chuẩn × Tọa Độ Động
               <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-600/10 text-indigo-700 dark:bg-cyan-500/20 dark:text-cyan-300">
                 GDPT 2025 &amp; Công ty
               </span>
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Bốc đề trực tiếp từ kho thật đúng cấu trúc 3 phần Bộ GD&amp;ĐT hoặc quy chuẩn riêng của Công ty
+              Chọn Khung Ma trận rồi xoay trục Môn học &amp; Khối lớp (Toán 7, Toán 12, KHTN...) theo kho thật
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-stretch">
         <select
           value={active.templateCode}
-          onChange={(e) => {
-            setSelectedCode(e.target.value);
-            setErrorMsg(null);
-          }}
-          className="flex-1 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:outline-none"
+          onChange={(e) => handleSelectTemplate(e.target.value)}
+          className="sm:col-span-5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:outline-none"
         >
           <optgroup label="Chuẩn Bộ GD&ĐT (GDPT 2025)">
-            {templates
-              .filter((t) => t.category === 'MOET_2025')
-              .map((t) => (
-                <option key={t.templateCode} value={t.templateCode}>
-                  {t.title}
-                </option>
-              ))}
+            {templates.filter((t) => t.category === 'MOET_2025').map((t) => (
+              <option key={t.templateCode} value={t.templateCode}>{t.title}</option>
+            ))}
           </optgroup>
           <optgroup label="Quy chuẩn Công ty / Tổ chức">
-            {templates
-              .filter((t) => t.category !== 'MOET_2025')
-              .map((t) => (
-                <option key={t.templateCode} value={t.templateCode}>
-                  {t.isSystemDefault ? '[Mẫu] ' : '[Công ty] '}
-                  {t.title}
-                </option>
-              ))}
+            {templates.filter((t) => t.category !== 'MOET_2025').map((t) => (
+              <option key={t.templateCode} value={t.templateCode}>
+                {t.isSystemDefault ? '[Mẫu] ' : '[Công ty] '}{t.title}
+              </option>
+            ))}
           </optgroup>
+        </select>
+
+        <input
+          list="practice-subject-suggestions"
+          value={topicCode}
+          onChange={(e) => { setTopicCode(e.target.value.toUpperCase()); setErrorMsg(null); }}
+          placeholder="Mã môn (TOAN...)"
+          className="sm:col-span-2 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2.5 text-xs font-mono font-bold text-indigo-700 dark:text-cyan-300 focus:border-indigo-500 focus:outline-none"
+        />
+        <datalist id="practice-subject-suggestions">
+          {(inventory?.availableSubjects || ['TOAN', 'VAT_LY', 'HOA_HOC', 'SINH_HOC', 'TIENG_ANH']).map((s) => (
+            <option key={s} value={s} />
+          ))}
+        </datalist>
+
+        <select
+          value={GRADE_CHOICES.includes(targetLevel) ? targetLevel : 'ALL'}
+          onChange={(e) => { setTargetLevel(e.target.value); setErrorMsg(null); }}
+          className="sm:col-span-2 rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:border-indigo-500 focus:outline-none"
+        >
+          {GRADE_CHOICES.map((g) => (
+            <option key={g} value={g}>{g === 'ALL' ? 'Mọi khối' : `Khối ${g.replace('K0', '').replace('K', '')}`}</option>
+          ))}
         </select>
 
         <button
           type="button"
           onClick={handleLaunch}
           disabled={isLaunching}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 px-5 py-2.5 text-xs sm:text-sm font-black text-white shadow-md shadow-indigo-500/25 transition disabled:opacity-50"
+          className="sm:col-span-3 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 px-4 py-2.5 text-xs sm:text-sm font-black text-white shadow-md shadow-indigo-500/25 transition disabled:opacity-50"
         >
           {isLaunching ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
           {isLaunching ? 'Đang bốc đề...' : 'Vào Thi Ngay'}
@@ -171,19 +216,22 @@ export const PracticeMatrixLauncher: React.FC<PracticeMatrixLauncherProps> = ({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+        {inventory && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 font-bold">
+            <Database size={12} />
+            Kho thật: {inventory.totalCount} câu
+            {Object.keys(inventory.byQuestionType).length > 0 &&
+              ` (${Object.entries(inventory.byQuestionType).map(([k, v]) => `${k}: ${v}`).join(' · ')})`}
+          </span>
+        )}
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold">
           {active.category === 'MOET_2025' ? <GraduationCap size={12} className="text-indigo-500" /> : <Building2 size={12} className="text-amber-500" />}
-          {active.topicCode} {active.targetLevel ? `• ${active.targetLevel}` : ''}
+          {topicCode} • {targetLevel}
         </span>
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold">
           <Clock size={12} className="text-cyan-500" />
-          {active.durationMinutes} phút • {totalCount} câu
+          {active.durationMinutes}p • {totalCount} câu
         </span>
-        {active.sections.map((s) => (
-          <span key={s.code} className="px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-700/50 font-medium">
-            {s.title}: {s.count} câu
-          </span>
-        ))}
       </div>
 
       {errorMsg && (

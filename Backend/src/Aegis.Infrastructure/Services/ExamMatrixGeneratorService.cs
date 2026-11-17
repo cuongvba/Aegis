@@ -201,16 +201,12 @@ namespace Aegis.Infrastructure.Services
             }
 
             // Query only accessible questions for this tenant & domain (DB-translatable columns only)
-            var candidates = await _db.Questions
-                .AsNoTracking()
-                .Include(q => q.Context)
-                .Where(q => (q.TenantId == tenantId || q.TenantId == Guid.Empty || q.IsPublic) &&
-                            (string.IsNullOrEmpty(domainCode) || q.DomainCode.ToUpper() == domainCode))
-                .ToListAsync(ct);
+            var candidates = await LoadCandidateQuestionsAsync(tenantId, domainCode, ct);
+            var bankTopicMap = await LoadBankTopicMapAsync(tenantId, ct);
 
-            // Strict topic isolation in-memory (supports CategoryCode, SubCategory, CanonicalTopicCode, TreePath, Tags)
+            // Tokenized multi-signal isolation (Subject × Grade across CategoryCode, BankTopics, CanonicalTopicCode, TreePath, Tags)
             var topicPool = candidates
-                .Where(q => MatchesTopicStrict(q, topicCode) && MatchesTargetLevel(q, targetLevel))
+                .Where(q => MatchesTopicStrict(q, topicCode, bankTopicMap) && MatchesTargetLevel(q, targetLevel, bankTopicMap))
                 .ToList();
 
             var usedQuestionIds = new HashSet<Guid>();
@@ -293,19 +289,111 @@ namespace Aegis.Infrastructure.Services
             };
         }
 
-        private static bool MatchesTopicStrict(QuestionBase q, string topicCode)
+        public async Task<MatrixInventoryDto> GetInventoryAsync(
+            Guid tenantId,
+            string? domainCode,
+            string? topicCode,
+            string? targetLevel,
+            CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(topicCode) || topicCode == "ALL") return true;
+            string normDomain = string.IsNullOrWhiteSpace(domainCode) ? string.Empty : domainCode.Trim().ToUpperInvariant();
+            string normTopic = string.IsNullOrWhiteSpace(topicCode) ? "ALL" : topicCode.Trim().ToUpperInvariant();
+            string? normLevel = string.IsNullOrWhiteSpace(targetLevel) || string.Equals(targetLevel.Trim(), "ALL", StringComparison.OrdinalIgnoreCase)
+                ? null
+                : targetLevel.Trim();
+
+            var candidates = await LoadCandidateQuestionsAsync(tenantId, normDomain, ct);
+            var bankTopicMap = await LoadBankTopicMapAsync(tenantId, ct);
+
+            var availableSubjects = candidates
+                .Select(q => ExtractSubjectToken(q.CategoryCode))
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(s => s)
+                .ToList();
+
+            var subjectMatched = candidates
+                .Where(q => MatchesTopicStrict(q, normTopic, bankTopicMap))
+                .ToList();
+
+            var availableGrades = subjectMatched
+                .Select(q => ResolveQuestionGrade(q, bankTopicMap))
+                .Where(g => !string.IsNullOrWhiteSpace(g))
+                .Select(g => g!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(g => g)
+                .ToList();
+
+            var finalMatched = subjectMatched
+                .Where(q => MatchesTargetLevel(q, normLevel, bankTopicMap))
+                .ToList();
+
+            return new MatrixInventoryDto
+            {
+                DomainCode = normDomain,
+                TopicCode = normTopic,
+                TargetLevel = normLevel,
+                TotalCount = finalMatched.Count,
+                ByQuestionType = finalMatched
+                    .GroupBy(q => (q.QuestionType ?? "SINGLE").Trim().ToUpperInvariant())
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                ByDifficulty = finalMatched
+                    .GroupBy(q => q.Difficulty)
+                    .ToDictionary(g => g.Key, g => g.Count()),
+                AvailableSubjects = availableSubjects,
+                AvailableGrades = availableGrades
+            };
+        }
+
+        private Task<List<QuestionBase>> LoadCandidateQuestionsAsync(Guid tenantId, string domainCode, CancellationToken ct) =>
+            _db.Questions
+                .AsNoTracking()
+                .Include(q => q.Context)
+                .Where(q => (q.TenantId == tenantId || q.TenantId == Guid.Empty || q.IsPublic) &&
+                            (string.IsNullOrEmpty(domainCode) || q.DomainCode.ToUpper() == domainCode))
+                .ToListAsync(ct);
+
+        private async Task<Dictionary<string, string>> LoadBankTopicMapAsync(Guid tenantId, CancellationToken ct)
+        {
+            var topics = await _db.BankTopics
+                .AsNoTracking()
+                .Where(t => t.TenantId == tenantId || t.TenantId == Guid.Empty || t.VisibilityScope == TopicVisibility.Public)
+                .Select(t => new { t.Code, t.CategoryCode })
+                .ToListAsync(ct);
+
+            var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var t in topics)
+            {
+                if (!string.IsNullOrWhiteSpace(t.Code) && !string.IsNullOrWhiteSpace(t.CategoryCode))
+                    map[t.Code.Trim()] = t.CategoryCode.Trim();
+            }
+            return map;
+        }
+
+        private static bool MatchesTopicStrict(
+            QuestionBase q,
+            string topicCode,
+            IReadOnlyDictionary<string, string>? bankTopicMap = null)
+        {
+            if (string.IsNullOrWhiteSpace(topicCode) || string.Equals(topicCode, "ALL", StringComparison.OrdinalIgnoreCase))
+                return true;
+
             string norm = topicCode.Trim();
             string prefix = norm + "_";
             string dashPrefix = norm + "-";
 
-            if (string.Equals(q.CategoryCode, norm, StringComparison.OrdinalIgnoreCase) ||
-                (!string.IsNullOrWhiteSpace(q.CategoryCode) && q.CategoryCode.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+            bool TokenMatches(string? value) =>
+                !string.IsNullOrWhiteSpace(value) &&
+                (string.Equals(value.Trim(), norm, StringComparison.OrdinalIgnoreCase) ||
+                 value.Trim().StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                 value.Trim().StartsWith(dashPrefix, StringComparison.OrdinalIgnoreCase));
+
+            if (TokenMatches(q.CategoryCode) || TokenMatches(q.SubCategory))
                 return true;
 
-            if (string.Equals(q.SubCategory, norm, StringComparison.OrdinalIgnoreCase) ||
-                (!string.IsNullOrWhiteSpace(q.SubCategory) && q.SubCategory.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+            if (bankTopicMap != null && !string.IsNullOrWhiteSpace(q.CategoryCode) &&
+                bankTopicMap.TryGetValue(q.CategoryCode.Trim(), out var mappedCategory) &&
+                TokenMatches(mappedCategory))
                 return true;
 
             if (!string.IsNullOrWhiteSpace(q.CanonicalTopicCode) &&
@@ -316,32 +404,88 @@ namespace Aegis.Infrastructure.Services
                 q.TreePath.Contains($"/{norm}/", StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            if (q.Tags != null && q.Tags.Any(t =>
-            {
-                var clean = t.TrimStart('#');
-                return string.Equals(clean, norm, StringComparison.OrdinalIgnoreCase) ||
-                       clean.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
-                       clean.StartsWith(dashPrefix, StringComparison.OrdinalIgnoreCase);
-            }))
+            if (q.Tags != null && q.Tags.Any(t => TokenMatches(t.TrimStart('#'))))
                 return true;
 
             return false;
         }
 
-        private static bool MatchesTargetLevel(QuestionBase q, string? targetLevel)
+        private static bool MatchesTargetLevel(
+            QuestionBase q,
+            string? targetLevel,
+            IReadOnlyDictionary<string, string>? bankTopicMap = null)
         {
-            if (string.IsNullOrWhiteSpace(targetLevel)) return true;
-            // If question has no level metadata, keep it eligible; if it has explicit level, match it.
-            string? qLevel = q.Grade ?? q.TargetLevel;
-            if (string.IsNullOrWhiteSpace(qLevel)) return true;
+            if (string.IsNullOrWhiteSpace(targetLevel) || string.Equals(targetLevel.Trim(), "ALL", StringComparison.OrdinalIgnoreCase))
+                return true;
 
-            static string NormalizeLevel(string s) =>
-                s.Trim().ToUpperInvariant().Replace("LỚP ", "").Replace("K", "");
+            string reqGrade = NormalizeGradeToken(targetLevel);
+            string? actualGrade = ResolveQuestionGrade(q, bankTopicMap);
+            if (string.IsNullOrWhiteSpace(actualGrade)) return true;
 
-            string reqNorm = NormalizeLevel(targetLevel);
-            string actualNorm = NormalizeLevel(qLevel);
-            return actualNorm == reqNorm ||
-                   qLevel.Contains(targetLevel.Trim(), StringComparison.OrdinalIgnoreCase);
+            return string.Equals(actualGrade, reqGrade, StringComparison.OrdinalIgnoreCase) ||
+                   actualGrade.Contains(targetLevel.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string? ResolveQuestionGrade(
+            QuestionBase q,
+            IReadOnlyDictionary<string, string>? bankTopicMap = null)
+        {
+            string? explicitLevel = q.Grade ?? q.TargetLevel;
+            if (!string.IsNullOrWhiteSpace(explicitLevel))
+                return NormalizeGradeToken(explicitLevel);
+
+            foreach (var signal in new[] { q.CategoryCode, q.SubCategory, q.CanonicalTopicCode, q.TreePath })
+            {
+                var g = ExtractGradeFromToken(signal);
+                if (g != null) return g;
+            }
+
+            if (bankTopicMap != null && !string.IsNullOrWhiteSpace(q.CategoryCode) &&
+                bankTopicMap.TryGetValue(q.CategoryCode.Trim(), out var mappedCategory))
+            {
+                var g = ExtractGradeFromToken(mappedCategory);
+                if (g != null) return g;
+            }
+
+            if (q.Tags != null)
+            {
+                foreach (var tag in q.Tags)
+                {
+                    var g = ExtractGradeFromToken(tag);
+                    if (g != null) return g;
+                }
+            }
+
+            return null;
+        }
+
+        private static string NormalizeGradeToken(string raw)
+        {
+            string upper = raw.Trim().ToUpperInvariant().Replace("LỚP", "").Replace("LOP", "").Trim();
+            var match = System.Text.RegularExpressions.Regex.Match(upper, @"^K?0?(\d{1,2})$");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int num) && num >= 1 && num <= 12)
+                return $"K{num:00}";
+            return raw.Trim();
+        }
+
+        private static string? ExtractGradeFromToken(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            var match = System.Text.RegularExpressions.Regex.Match(
+                raw.ToUpperInvariant(),
+                @"(?:^|[_\-/])(?:K|LOP[_\-\s]?)?0?([1-9]|1[0-2])(?:$|[_\-/])");
+            if (match.Success && int.TryParse(match.Groups[1].Value, out int gradeNum))
+                return $"K{gradeNum:00}";
+            return null;
+        }
+
+        private static string ExtractSubjectToken(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+            return System.Text.RegularExpressions.Regex.Replace(
+                raw.Trim().ToUpperInvariant(),
+                @"[_\-](?:K?0?(?:[1-9]|1[0-2]))$",
+                string.Empty);
         }
 
         private static bool MatchesQuestionType(QuestionBase q, string requestedType)

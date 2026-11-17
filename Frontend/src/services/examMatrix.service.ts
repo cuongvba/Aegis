@@ -80,9 +80,27 @@ export interface GenerateMatrixExamResponse {
   warningMessage?: string;
 }
 
+export interface MatrixInventory {
+  domainCode: string;
+  topicCode: string;
+  targetLevel?: string;
+  totalCount: number;
+  byQuestionType: Record<string, number>;
+  byDifficulty: Record<number, number>;
+  availableSubjects: string[];
+  availableGrades: string[];
+}
+
 export const examMatrixService = {
   async getTemplates(): Promise<ExamMatrixTemplate[]> {
     const res = await api.get<ExamMatrixTemplate[]>('/api/creator/studio/matrix-templates');
+    return res.data;
+  },
+
+  async getInventory(domainCode: string, topicCode: string, targetLevel?: string): Promise<MatrixInventory> {
+    const res = await api.get<MatrixInventory>('/api/creator/studio/matrix-inventory', {
+      params: { domainCode, topicCode, targetLevel: targetLevel || undefined },
+    });
     return res.data;
   },
 

@@ -1279,6 +1279,19 @@ namespace Aegis.API.Controllers
             return Ok(templates);
         }
 
+        [HttpGet("matrix-inventory")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetMatrixInventory(
+            [FromQuery] string? domainCode,
+            [FromQuery] string? topicCode,
+            [FromQuery] string? targetLevel)
+        {
+            if (_matrixGenerator == null) return StatusCode(503, new { error = "Matrix generator not configured." });
+            var inventory = await _matrixGenerator.GetInventoryAsync(
+                _tenant.CurrentTenantId, domainCode, topicCode, targetLevel);
+            return Ok(inventory);
+        }
+
         [HttpPost("matrix-templates")]
         public async Task<IActionResult> SaveCustomMatrixTemplate([FromBody] ExamMatrixTemplateDto template)
         {

@@ -196,5 +196,66 @@ namespace Aegis.UnitTests
             var templatesAfter = await service.GetTemplatesAsync(tenantA);
             Assert.DoesNotContain(templatesAfter, t => t.TemplateCode == "VCB_RM_2025");
         }
+
+        [Fact]
+        public async Task GenerateAndInventory_GradeIsolation_Toan7NeverMixesToan12()
+        {
+            await using var db = CreateInMemoryDb(nameof(GenerateAndInventory_GradeIsolation_Toan7NeverMixesToan12));
+            var tenantId = Guid.NewGuid();
+
+            for (int i = 1; i <= 5; i++)
+            {
+                db.Questions.Add(new SingleChoiceQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    DomainCode = "EDUCATION",
+                    CategoryCode = "TOAN_K07",
+                    Difficulty = 2,
+                    Content = $"Toán lớp 7 câu #{i}",
+                    Options = new List<string> { "A. 1", "B. 2" },
+                    CorrectOption = "A"
+                });
+            }
+
+            for (int i = 1; i <= 10; i++)
+            {
+                db.Questions.Add(new SingleChoiceQuestion
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    DomainCode = "EDUCATION",
+                    CategoryCode = "TOAN_K12",
+                    Difficulty = 3,
+                    Content = $"Toán lớp 12 decoy #{i}",
+                    Options = new List<string> { "A. 1", "B. 2" },
+                    CorrectOption = "A"
+                });
+            }
+            await db.SaveChangesAsync();
+
+            var service = new ExamMatrixGeneratorService(db, NullLogger<ExamMatrixGeneratorService>.Instance);
+            var inventory7 = await service.GetInventoryAsync(tenantId, "EDUCATION", "TOAN", "K07");
+
+            Assert.Equal(5, inventory7.TotalCount);
+            Assert.Contains("TOAN", inventory7.AvailableSubjects);
+            Assert.Contains("K07", inventory7.AvailableGrades);
+            Assert.Contains("K12", inventory7.AvailableGrades);
+
+            var exam7 = await service.GenerateFromRealBankAsync(tenantId, new GenerateMatrixExamRequestDto
+            {
+                DomainCode = "EDUCATION",
+                TopicCode = "TOAN",
+                TargetLevel = "K07",
+                Sections = new List<ExamMatrixSectionRuleDto>
+                {
+                    new() { Code = "PART_1", Title = "TN", QuestionType = "SINGLE", Count = 5 }
+                }
+            });
+
+            Assert.Equal(5, exam7.TotalQuestions);
+            Assert.All(exam7.Questions, q => Assert.Contains("Toán lớp 7", q.Content));
+            Assert.All(exam7.Questions, q => Assert.DoesNotContain("lớp 12", q.Content));
+        }
     }
 }
