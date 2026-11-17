@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, GripHorizontal, Layers } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowDown, ArrowUp, GripHorizontal, Layers, RotateCcw, Sparkles } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import { getDisplayOptions } from '@/lib/quiz-helpers';
 import type { QuestionWidgetProps } from './types';
@@ -13,11 +13,40 @@ export default function OrderingWidget({
   soundEnabled
 }: QuestionWidgetProps) {
   const displayOptions = getDisplayOptions(question);
+  const isWordTileFriendly = useMemo(
+    () => displayOptions.length >= 2 && displayOptions.every((o) => (o.value || '').trim().length <= 28),
+    [displayOptions]
+  );
+  const [tapMode, setTapMode] = useState<boolean>(isWordTileFriendly);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const currentOrder = answer?.ordering && answer.ordering.length > 0 
     ? answer.ordering 
-    : displayOptions.map((x) => x.id);
+    : (tapMode ? [] : displayOptions.map((x) => x.id));
+
+  const remainingTiles = useMemo(
+    () => displayOptions.filter((opt) => !currentOrder.includes(opt.id)),
+    [displayOptions, currentOrder]
+  );
+
+  const appendTile = (optionId: string) => {
+    if (disabled || currentOrder.includes(optionId)) return;
+    onUpdate({ ordering: [...currentOrder, optionId] });
+    playSynthGameSound('gem', soundEnabled);
+  };
+
+  const removeTileAt = (index: number) => {
+    if (disabled) return;
+    const next = [...currentOrder];
+    next.splice(index, 1);
+    onUpdate({ ordering: next });
+    playSynthGameSound('gem', soundEnabled);
+  };
+
+  const resetTiles = () => {
+    if (disabled) return;
+    onUpdate({ ordering: [] });
+  };
 
   const move = (index: number, offset: number) => {
     const nextIndex = index + offset;
@@ -61,12 +90,72 @@ export default function OrderingWidget({
             <Layers className="h-4 w-4" />
           </div>
           <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
-            Khỉ Thông Minh: Sắp Xếp Trật Tự Câu Chuẩn Xác
+            {tapMode ? 'Chạm từ ghép câu siêu tốc (Olympiad)' : 'Sắp Xếp Trật Tự Chuẩn Xác'}
           </span>
         </div>
-        <span className="text-xs text-slate-500 font-medium">Kéo thả hoặc dùng mũi tên</span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setTapMode((prev) => !prev)}
+            className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2.5 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 transition"
+          >
+            <Sparkles className="h-3 w-3" />
+            {tapMode ? 'Chế độ Kéo thả' : 'Chế độ Chạm nhanh'}
+          </button>
+          {tapMode && currentOrder.length > 0 && !disabled && (
+            <button
+              type="button"
+              onClick={resetTiles}
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-600 hover:bg-slate-100 transition"
+            >
+              <RotateCcw className="h-3 w-3" /> Xóa lại
+            </button>
+          )}
+        </div>
       </div>
 
+      {tapMode ? (
+        <div className="space-y-4">
+          <div className="min-h-[68px] rounded-2xl border-2 border-dashed border-indigo-300 bg-indigo-50/40 p-3 flex flex-wrap items-center gap-2">
+            {currentOrder.length === 0 ? (
+              <span className="text-xs font-medium text-slate-400 italic">
+                Chạm vào từng từ bên dưới theo đúng thứ tự để ghép câu...
+              </span>
+            ) : (
+              currentOrder.map((optionId, idx) => {
+                const opt = displayOptions.find((x) => x.id === optionId);
+                if (!opt) return null;
+                return (
+                  <button
+                    key={`${opt.id}-${idx}`}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => removeTileAt(idx)}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400 bg-white px-3 py-1.5 text-sm font-bold text-indigo-900 shadow-sm hover:border-rose-400 hover:bg-rose-50 hover:text-rose-700 transition"
+                  >
+                    <span className="text-[10px] font-black text-indigo-400">{idx + 1}.</span>
+                    <MathRenderer content={opt.value} inline />
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {remainingTiles.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                disabled={disabled}
+                onClick={() => appendTile(opt.id)}
+                className="rounded-xl border-2 border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-800 active:scale-95 transition disabled:opacity-40"
+              >
+                <MathRenderer content={opt.value} inline />
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className="space-y-2.5" onDragLeave={() => setDragOverIndex(null)}>
         {currentOrder.map((optionId, index) => {
           const option = displayOptions.find((x) => x.id === optionId);
@@ -120,6 +209,7 @@ export default function OrderingWidget({
           );
         })}
       </div>
+      )}
     </div>
   );
 }

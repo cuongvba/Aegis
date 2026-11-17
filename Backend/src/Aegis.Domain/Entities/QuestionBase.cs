@@ -461,6 +461,46 @@ namespace Aegis.Domain.Entities
         }
     }
 
+    // ─── Luyện nói & Chấm phát âm (Speak Out / ASR) ──────────────────────────
+    // Payload schema: { "targetPhrase": "Hello world", "minAccuracy": 0.75 }
+    public class SpeakOutQuestion : QuestionBase
+    {
+        public SpeakOutQuestion() => QuestionType = "SPEAK_OUT";
+
+        public override double EvaluateAnswer(string studentAnswerJson)
+        {
+            var expected = TryGetPayloadProperty(Payload, "targetPhrase", out var targetEl)
+                ? targetEl.ToString()
+                : (TryGetPayloadProperty(Payload, "correctAnswer", out var corrEl) ? corrEl.ToString() : CorrectOption);
+
+            if (string.IsNullOrWhiteSpace(expected) || string.IsNullOrWhiteSpace(studentAnswerJson))
+                return 0.0;
+
+            var expTokens = NormalizeSpeechTokens(expected);
+            var subTokens = NormalizeSpeechTokens(studentAnswerJson);
+            if (expTokens.Length == 0 || subTokens.Length == 0) return 0.0;
+
+            int matched = expTokens.Count(t => subTokens.Contains(t, StringComparer.OrdinalIgnoreCase));
+            double ratio = (double)matched / expTokens.Length;
+
+            double minAcc = 0.75;
+            if (TryGetPayloadProperty(Payload, "minAccuracy", out var accEl) && accEl.TryGetDouble(out var parsedAcc))
+            {
+                minAcc = Math.Clamp(parsedAcc, 0.3, 1.0);
+            }
+
+            return ratio >= minAcc ? Math.Round(ratio, 2) : 0.0;
+        }
+
+        private static string[] NormalizeSpeechTokens(string input)
+        {
+            var cleaned = new string(input.Trim().ToLowerInvariant()
+                .Select(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c) ? c : ' ')
+                .ToArray());
+            return cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        }
+    }
+
     // ─── Sắp xếp thứ tự ───────────────────────────────────────────────────────
     // Payload schema: { "items": [...], "correctOrder": ["2","3","1"] }
     // studentAnswerJson: JSON array hoặc comma-separated

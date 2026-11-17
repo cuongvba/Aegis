@@ -11,6 +11,7 @@ export const QuestionWidgetRegistry: Record<string, React.LazyExoticComponent<Co
   FILL_BLANK: lazy(() => import('./ShortAnswerWidget')),
   MATCHING: lazy(() => import('./MatchingWidget')),
   ORDERING: lazy(() => import('./OrderingWidget')),
+  SPEAK_OUT: lazy(() => import('./SpeakOutWidget')),
   ESSAY: lazy(() => import('./EssayWidget')),
 };
 
