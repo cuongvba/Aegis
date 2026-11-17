@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Sliders, Sparkles, Play, Pause, RotateCcw, Clock } from 'lucide-react';
+import { Sliders, Sparkles, Play, Pause, RotateCcw, Clock, Volume2, VolumeX, Mic } from 'lucide-react';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import type { DynamicVisualSpec } from './visual-types';
 import { FunctionPlotCanvas } from './FunctionPlotCanvas';
 import { Geometry3dCanvas } from './Geometry3dCanvas';
+import { visualAudioEngine } from './visualAudioEngine';
 
 interface DynamicVisualWidgetProps {
   spec: DynamicVisualSpec;
@@ -44,7 +45,10 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
   const [timeValue, setTimeValue] = useState<number>(tMin);
   const [isPlaying, setIsPlaying] = useState<boolean>(Boolean(spec.timeConfig?.autoPlay));
   const [speedMult, setSpeedMult] = useState<number>(1);
+  const [soundOn, setSoundOn] = useState<boolean>(true);
+  const [voiceOn, setVoiceOn] = useState<boolean>(false);
   const lastFrameRef = useRef<number | null>(null);
+  const lastMorphRef = useRef<number | null>(null);
 
   useEffect(() => {
     setTimeValue(tMin);
@@ -97,6 +101,17 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
     return sorted.filter((s) => s.timeAt <= timeValue).pop() || sorted[0];
   }, [spec.morphSteps, timeValue]);
 
+  useEffect(() => {
+    if (!activeMorphStep) return;
+    if (lastMorphRef.current !== null && lastMorphRef.current !== activeMorphStep.timeAt) {
+      if (soundOn) visualAudioEngine.playPhaseChime();
+      if (voiceOn && activeMorphStep.note) visualAudioEngine.speakNote(activeMorphStep.note);
+    }
+    lastMorphRef.current = activeMorphStep.timeAt;
+  }, [activeMorphStep, soundOn, voiceOn]);
+
+  useEffect(() => () => visualAudioEngine.stopAllVoice(), []);
+
   return (
     <div className={`my-4 p-4 rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl max-w-lg mx-auto ${className}`}>
       <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-800">
@@ -140,7 +155,11 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setIsPlaying((p) => !p)}
+                onClick={() => {
+                  const next = !isPlaying;
+                  setIsPlaying(next);
+                  if (soundOn) visualAudioEngine.playToggleClick(next);
+                }}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold text-white transition ${
                   isPlaying ? 'bg-rose-600 hover:bg-rose-500' : 'bg-cyan-600 hover:bg-cyan-500'
                 }`}
@@ -150,11 +169,40 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
               </button>
               <button
                 type="button"
-                onClick={() => { setIsPlaying(false); setTimeValue(tMin); }}
+                onClick={() => {
+                  setIsPlaying(false);
+                  setTimeValue(tMin);
+                  if (soundOn) visualAudioEngine.playToggleClick(false);
+                }}
                 className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700"
                 title="Đặt lại t"
               >
                 <RotateCcw size={12} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSoundOn((v) => !v)}
+                className={`p-1.5 rounded-lg border transition ${
+                  soundOn ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-slate-500'
+                }`}
+                title={soundOn ? 'Tắt âm thanh phụ họa' : 'Bật âm thanh phụ họa'}
+              >
+                {soundOn ? <Volume2 size={12} /> : <VolumeX size={12} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !voiceOn;
+                  setVoiceOn(next);
+                  if (!next) visualAudioEngine.stopAllVoice();
+                  else if (activeMorphStep?.note) visualAudioEngine.speakNote(activeMorphStep.note);
+                }}
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-bold transition ${
+                  voiceOn ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'
+                }`}
+                title="Bật/tắt giọng đọc thuyết minh từng pha"
+              >
+                <Mic size={11} /> Thuyết minh
               </button>
               <select
                 value={speedMult}
