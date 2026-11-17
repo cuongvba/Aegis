@@ -3,6 +3,8 @@ import { FileUp, Loader2, Sparkles, Wand2, X } from 'lucide-react';
 import { learnerQuizService } from '@/services/learner-quiz.service';
 import { convertProblemTextToVisualLesson } from '@/components/common/visual/problemToVisualConverter';
 import type { InteractiveVisualLesson } from '@/components/common/visual/visualLessonPresets';
+import { handleSmartRichPaste, hasRichPreviewContent } from '@/shared/lib/quiz/smartClipboardMedia';
+import { MathRenderer } from '@/components/common/MathRenderer';
 
 interface ProblemVisualImporterModalProps {
   isOpen: boolean;
@@ -20,7 +22,13 @@ export const ProblemVisualImporterModal: React.FC<ProblemVisualImporterModalProp
   );
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [pasteNotice, setPasteNotice] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const notifySmartMedia = (msg: string) => {
+    setPasteNotice(msg);
+    window.setTimeout(() => setPasteNotice(null), 3500);
+  };
 
   if (!isOpen) return null;
 
@@ -98,10 +106,20 @@ export const ProblemVisualImporterModal: React.FC<ProblemVisualImporterModalProp
             <textarea
               value={rawProblem}
               onChange={(e) => setRawProblem(e.target.value)}
+              onPaste={(e) => handleSmartRichPaste(e, rawProblem, setRawProblem, notifySmartMedia)}
               rows={5}
-              placeholder="Ví dụ: Sóng cơ có phương trình u = 4*cos(2*x - 3*t) hoặc Cho hình chóp tứ giác đều S.ABCD..."
+              placeholder="Ví dụ: Sóng cơ có phương trình u = 4*cos(2*x - 3*t) hoặc Ctrl+V trực tiếp từ Word / MathType..."
               className="w-full rounded-2xl border border-slate-700 bg-slate-950 p-3.5 text-sm text-white outline-none focus:border-cyan-400"
             />
+            {pasteNotice && (
+              <div className="mt-1.5 text-xs font-semibold text-emerald-400">{pasteNotice}</div>
+            )}
+            {hasRichPreviewContent(rawProblem) && (
+              <div className="mt-2 rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs text-slate-200">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 mb-1">Xem trước công thức vừa dán:</div>
+                <MathRenderer content={rawProblem} />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
