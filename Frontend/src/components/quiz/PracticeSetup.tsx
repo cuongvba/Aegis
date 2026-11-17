@@ -20,6 +20,7 @@ type Props = {
   forcedDomainCode?: string;
   isDomainLocked?: boolean;
   t: (key: string) => string;
+  lang?: string;
 };
 
 
@@ -32,7 +33,7 @@ function defaultTopicConfig(topicKey: string): PracticeTopicConfig {
   };
 }
 
-export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, forcedDomainCode, isDomainLocked, t }: Props) {
+export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, forcedDomainCode, isDomainLocked, t, lang = 'vi' }: Props) {
   const [mode, setMode] = useState<PracticeMode>('study');
   const [topicConfigs, setTopicConfigs] = useState<PracticeTopicConfig[]>([]);
   const [shuffleOptions, setShuffleOptions] = useState(true);
@@ -172,28 +173,28 @@ export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, fo
 
       {/* ─── TRỌNG TÂM: ĐỒ THỊ NHẬN THỨC CHUYÊN ĐỀ (COGNITIVE TOPIC EXPLORER) ─── */}
       {onStartMatrix && (
-        <div className="inline-flex rounded-2xl bg-slate-100/90 p-1.5 border border-slate-200/80 shadow-2xs">
+        <div className="inline-flex flex-wrap gap-1.5 rounded-2xl bg-slate-900/95 p-1.5 border border-slate-800 shadow-lg">
           <button
             type="button"
             onClick={() => setSetupTab('matrix')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               setupTab === 'matrix'
-                ? 'bg-white text-indigo-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md shadow-indigo-500/20'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Thi Theo Ma Trận Chuẩn (Bộ GD&amp;ĐT / Công ty)
+            {t('tabMatrixExam')}
           </button>
           <button
             type="button"
             onClick={() => setSetupTab('custom')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
               setupTab === 'custom'
-                ? 'bg-white text-cyan-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            Tự Chọn Chuyên Đề &amp; Ôn Tập Tùy Biến
+            {t('tabCustomPractice')}
           </button>
         </div>
       )}
@@ -202,6 +203,8 @@ export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, fo
         <PracticeMatrixLauncher
           forcedDomainCode={forcedDomainCode}
           onLaunchMatrix={onStartMatrix}
+          t={t}
+          lang={lang}
         />
       ) : (
         <>

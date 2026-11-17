@@ -740,7 +740,7 @@ export function PracticePage() {
                 title="Mở Ứng Dụng Di Động Chuyên Biệt (PWA / Mobile Native)"
               >
                 <Smartphone size={13} className="text-purple-600" />
-                <span className="hidden sm:inline">Bản Di Động</span>
+                <span className="hidden sm:inline">{t('mobileVersion')}</span>
                 <span className="sm:hidden">App</span>
               </a>
 
@@ -854,6 +854,7 @@ export function PracticePage() {
               forcedDomainCode={domainParam || undefined}
               isDomainLocked={Boolean(domainParam)}
               t={t}
+              lang={lang}
             />
           )
         ) : submitted ? (
