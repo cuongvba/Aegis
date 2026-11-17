@@ -22,9 +22,14 @@ export default function SpeakOutWidget({
 
   const spokenText = answer?.shortText ?? '';
   const targetPhrase = useMemo(() => {
-    const raw = (question.payload as any)?.targetPhrase || question.correctOption || question.content || '';
+    const raw =
+      (question.payload as any)?.targetPhrase ||
+      (question as any).correctOption ||
+      question.answerRaw ||
+      question.content ||
+      '';
     return String(raw).replace(/<[^>]+>/g, '').trim();
-  }, [question.payload, question.correctOption, question.content]);
+  }, [question]);
 
   const targetTokens = useMemo(() => normalizeTokens(targetPhrase), [targetPhrase]);
   const spokenTokens = useMemo(() => normalizeTokens(spokenText), [spokenText]);
