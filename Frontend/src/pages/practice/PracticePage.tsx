@@ -937,6 +937,11 @@ export function PracticePage() {
               {isPaperMode ? (
                 sessionQuestions.map((q, idx) => (
                   <div key={q.id} id={`question-${idx}`} className="scroll-mt-[100px]">
+                    {q.sourceSectionName && (idx === 0 || sessionQuestions[idx - 1]?.sourceSectionName !== q.sourceSectionName) && (
+                      <div className="mb-3 rounded-2xl bg-indigo-50 border border-indigo-200/80 px-4 py-2 text-xs sm:text-sm font-black text-indigo-800">
+                        {q.sourceSectionName}
+                      </div>
+                    )}
                     <div className="mb-2 text-sm font-extrabold uppercase tracking-widest text-slate-500">
                       {t('questionLabel')} {idx + 1}
                     </div>
@@ -953,15 +958,27 @@ export function PracticePage() {
                 ))
               ) : (
                 currentQuestion && (
-                  <QuestionCard
-                    question={currentQuestion}
-                    answer={answers[currentQuestion.id]}
-                    onAnswerChange={updateAnswer}
-                    disabled={Boolean(expiredQuestions[currentQuestion.id])}
-                    questionSecondsLeft={sessionConfig?.enableQuestionTimer !== false && currentQuestion.durationSec > 0 ? (questionSecondsLeft[currentQuestion.id] ?? currentQuestion.durationSec) : null}
-                    showHint={isStudyMode && isGlobalHintActive}
-                    t={t}
-                  />
+                  <>
+                    {currentQuestion.sourceSectionName && (
+                      <div className="rounded-2xl bg-indigo-50 border border-indigo-200/80 px-4 py-2 text-xs sm:text-sm font-black text-indigo-800 flex items-center justify-between gap-2">
+                        <span>{currentQuestion.sourceSectionName}</span>
+                        {currentQuestion.sourceExamName && (
+                          <span className="text-[11px] font-semibold text-indigo-600 truncate max-w-[50%]">
+                            {currentQuestion.sourceExamName}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <QuestionCard
+                      question={currentQuestion}
+                      answer={answers[currentQuestion.id]}
+                      onAnswerChange={updateAnswer}
+                      disabled={Boolean(expiredQuestions[currentQuestion.id])}
+                      questionSecondsLeft={sessionConfig?.enableQuestionTimer !== false && currentQuestion.durationSec > 0 ? (questionSecondsLeft[currentQuestion.id] ?? currentQuestion.durationSec) : null}
+                      showHint={isStudyMode && isGlobalHintActive}
+                      t={t}
+                    />
+                  </>
                 )
               )}
 

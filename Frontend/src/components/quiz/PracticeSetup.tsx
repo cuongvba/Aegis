@@ -41,6 +41,7 @@ export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, fo
   const [timeLimitMin, setTimeLimitMin] = useState(0);
   const [autoNextOnTimeout, setAutoNextOnTimeout] = useState(true);
   const [activePreset, setActivePreset] = useState<ExamCategoryPreset | null>(null);
+  const [setupTab, setSetupTab] = useState<'matrix' | 'custom'>(onStartMatrix ? 'matrix' : 'custom');
 
   const handleSelectMultipleTopics = (keys: string[], select: boolean) => {
     if (select) {
@@ -171,49 +172,78 @@ export function PracticeSetup({ topics, domainGroups, onStart, onStartMatrix, fo
 
       {/* ─── TRỌNG TÂM: ĐỒ THỊ NHẬN THỨC CHUYÊN ĐỀ (COGNITIVE TOPIC EXPLORER) ─── */}
       {onStartMatrix && (
+        <div className="inline-flex rounded-2xl bg-slate-100/90 p-1.5 border border-slate-200/80 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setSetupTab('matrix')}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              setupTab === 'matrix'
+                ? 'bg-white text-indigo-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Thi Theo Ma Trận Chuẩn (Bộ GD&amp;ĐT / Công ty)
+          </button>
+          <button
+            type="button"
+            onClick={() => setSetupTab('custom')}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              setupTab === 'custom'
+                ? 'bg-white text-cyan-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Tự Chọn Chuyên Đề &amp; Ôn Tập Tùy Biến
+          </button>
+        </div>
+      )}
+
+      {onStartMatrix && setupTab === 'matrix' ? (
         <PracticeMatrixLauncher
           forcedDomainCode={forcedDomainCode}
           onLaunchMatrix={onStartMatrix}
         />
+      ) : (
+        <>
+          <section>
+            <CognitiveTopicExplorer
+              domainGroups={domainGroups}
+              legacyTopics={topics}
+              topicConfigs={topicConfigs}
+              selectedMap={selectedMap}
+              activePreset={activePreset}
+              onSelectDrivingPreset={applyDrivingPreset}
+              onToggleTopic={toggleTopic}
+              onUpdateTopicConfig={updateTopicConfig}
+              onSelectMultipleTopics={handleSelectMultipleTopics}
+              forcedDomainCode={forcedDomainCode}
+              isDomainLocked={isDomainLocked}
+              t={t}
+            />
+          </section>
+
+          {/* ─── SMART LAUNCH PAD (COMBO CHỌN CHẾ ĐỘ + TÙY CHỌN + NÚT BẮT ĐẦU) ─── */}
+          <PracticeLaunchPad
+            mode={mode}
+            onModeChange={handleModeChange}
+            totalSelected={totalSelected}
+            topicCount={topicConfigs.length}
+            timeLimitMin={timeLimitMin}
+            onTimeLimitChange={setTimeLimitMin}
+            shuffleOptions={shuffleOptions}
+            onShuffleOptionsChange={setShuffleOptions}
+            shuffleQuestions={shuffleQuestions}
+            onShuffleQuestionsChange={setShuffleQuestions}
+            enableQuestionTimer={enableQuestionTimer}
+            onEnableQuestionTimerChange={setEnableQuestionTimer}
+            autoNextOnTimeout={autoNextOnTimeout}
+            onAutoNextChange={setAutoNextOnTimeout}
+            onStart={handleStart}
+            onResetTopics={resetTopics}
+            t={t}
+          />
+        </>
       )}
-
-      <section>
-        <CognitiveTopicExplorer
-          domainGroups={domainGroups}
-          legacyTopics={topics}
-          topicConfigs={topicConfigs}
-          selectedMap={selectedMap}
-          activePreset={activePreset}
-          onSelectDrivingPreset={applyDrivingPreset}
-          onToggleTopic={toggleTopic}
-          onUpdateTopicConfig={updateTopicConfig}
-          onSelectMultipleTopics={handleSelectMultipleTopics}
-          forcedDomainCode={forcedDomainCode}
-          isDomainLocked={isDomainLocked}
-          t={t}
-        />
-      </section>
-
-      {/* ─── SMART LAUNCH PAD (COMBO CHỌN CHẾ ĐỘ + TÙY CHỌN + NÚT BẮT ĐẦU) ─── */}
-      <PracticeLaunchPad
-        mode={mode}
-        onModeChange={handleModeChange}
-        totalSelected={totalSelected}
-        topicCount={topicConfigs.length}
-        timeLimitMin={timeLimitMin}
-        onTimeLimitChange={setTimeLimitMin}
-        shuffleOptions={shuffleOptions}
-        onShuffleOptionsChange={setShuffleOptions}
-        shuffleQuestions={shuffleQuestions}
-        onShuffleQuestionsChange={setShuffleQuestions}
-        enableQuestionTimer={enableQuestionTimer}
-        onEnableQuestionTimerChange={setEnableQuestionTimer}
-        autoNextOnTimeout={autoNextOnTimeout}
-        onAutoNextChange={setAutoNextOnTimeout}
-        onStart={handleStart}
-        onResetTopics={resetTopics}
-        t={t}
-      />
     </div>
   );
 }
