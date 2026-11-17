@@ -18,14 +18,48 @@
   },
   {
     "templateCode": "MOET_2025_KHTN_NAT",
-    "title": "Đề chuẩn Bộ GD&ĐT 2025 — KHTN (Lý / Hóa / Sinh)",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — Vật Lý THPT",
     "category": "MOET_2025",
     "domainCode": "EDUCATION",
     "topicCode": "VAT_LY",
     "targetLevel": "K12",
     "durationMinutes": 50,
     "isSystemDefault": true,
-    "description": "Cấu trúc chuẩn 28 câu (50 phút) cho các môn Vật Lý, Hóa Học, Sinh Học theo GDPT 2025.",
+    "description": "Cấu trúc chuẩn 28 câu (50 phút) môn Vật Lý theo GDPT 2025.",
+    "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm nhiều lựa chọn", "questionType": "SINGLE", "count": 18, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Trắc nghiệm Đúng / Sai (4 ý/câu)", "questionType": "MULTI_TRUE_FALSE", "count": 4, "pointsPerQuestion": 1.0 },
+      { "code": "PART_3", "title": "Phần III. Trắc nghiệm trả lời ngắn", "questionType": "SHORT_ANSWER", "count": 6, "pointsPerQuestion": 0.25 }
+    ]
+  },
+  {
+    "templateCode": "MOET_2025_HOA_HOC",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — Hóa Học THPT",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "HOA_HOC",
+    "targetLevel": "K12",
+    "durationMinutes": 50,
+    "isSystemDefault": true,
+    "description": "Cấu trúc chuẩn 28 câu (50 phút) môn Hóa Học theo GDPT 2025.",
+    "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
+    "sections": [
+      { "code": "PART_1", "title": "Phần I. Trắc nghiệm nhiều lựa chọn", "questionType": "SINGLE", "count": 18, "pointsPerQuestion": 0.25 },
+      { "code": "PART_2", "title": "Phần II. Trắc nghiệm Đúng / Sai (4 ý/câu)", "questionType": "MULTI_TRUE_FALSE", "count": 4, "pointsPerQuestion": 1.0 },
+      { "code": "PART_3", "title": "Phần III. Trắc nghiệm trả lời ngắn", "questionType": "SHORT_ANSWER", "count": 6, "pointsPerQuestion": 0.25 }
+    ]
+  },
+  {
+    "templateCode": "MOET_2025_SINH_HOC",
+    "title": "Đề chuẩn Bộ GD&ĐT 2025 — Sinh Học THPT",
+    "category": "MOET_2025",
+    "domainCode": "EDUCATION",
+    "topicCode": "SINH_HOC",
+    "targetLevel": "K12",
+    "durationMinutes": 50,
+    "isSystemDefault": true,
+    "description": "Cấu trúc chuẩn 28 câu (50 phút) môn Sinh Học theo GDPT 2025.",
     "bloomWeights": { "recall": 40, "comprehend": 30, "apply": 20, "highApply": 10 },
     "sections": [
       { "code": "PART_1", "title": "Phần I. Trắc nghiệm nhiều lựa chọn", "questionType": "SINGLE", "count": 18, "pointsPerQuestion": 0.25 },

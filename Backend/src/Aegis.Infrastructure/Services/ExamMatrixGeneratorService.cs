@@ -296,14 +296,33 @@ namespace Aegis.Infrastructure.Services
         private static bool MatchesTopicStrict(QuestionBase q, string topicCode)
         {
             if (string.IsNullOrWhiteSpace(topicCode) || topicCode == "ALL") return true;
+            string norm = topicCode.Trim();
+            string prefix = norm + "_";
+            string dashPrefix = norm + "-";
 
-            if (string.Equals(q.CategoryCode, topicCode, StringComparison.OrdinalIgnoreCase)) return true;
-            if (string.Equals(q.SubCategory, topicCode, StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(q.CategoryCode, norm, StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrWhiteSpace(q.CategoryCode) && q.CategoryCode.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                return true;
+
+            if (string.Equals(q.SubCategory, norm, StringComparison.OrdinalIgnoreCase) ||
+                (!string.IsNullOrWhiteSpace(q.SubCategory) && q.SubCategory.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+                return true;
+
             if (!string.IsNullOrWhiteSpace(q.CanonicalTopicCode) &&
-                q.CanonicalTopicCode.Contains(topicCode, StringComparison.OrdinalIgnoreCase)) return true;
+                q.CanonicalTopicCode.Contains(norm, StringComparison.OrdinalIgnoreCase))
+                return true;
+
             if (!string.IsNullOrWhiteSpace(q.TreePath) &&
-                q.TreePath.Contains($"/{topicCode}/", StringComparison.OrdinalIgnoreCase)) return true;
-            if (q.Tags != null && q.Tags.Any(t => string.Equals(t.TrimStart('#'), topicCode, StringComparison.OrdinalIgnoreCase)))
+                q.TreePath.Contains($"/{norm}/", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (q.Tags != null && q.Tags.Any(t =>
+            {
+                var clean = t.TrimStart('#');
+                return string.Equals(clean, norm, StringComparison.OrdinalIgnoreCase) ||
+                       clean.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                       clean.StartsWith(dashPrefix, StringComparison.OrdinalIgnoreCase);
+            }))
                 return true;
 
             return false;
@@ -315,7 +334,13 @@ namespace Aegis.Infrastructure.Services
             // If question has no level metadata, keep it eligible; if it has explicit level, match it.
             string? qLevel = q.Grade ?? q.TargetLevel;
             if (string.IsNullOrWhiteSpace(qLevel)) return true;
-            return string.Equals(qLevel.Trim(), targetLevel.Trim(), StringComparison.OrdinalIgnoreCase) ||
+
+            static string NormalizeLevel(string s) =>
+                s.Trim().ToUpperInvariant().Replace("LỚP ", "").Replace("K", "");
+
+            string reqNorm = NormalizeLevel(targetLevel);
+            string actualNorm = NormalizeLevel(qLevel);
+            return actualNorm == reqNorm ||
                    qLevel.Contains(targetLevel.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
