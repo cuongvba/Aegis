@@ -1289,5 +1289,223 @@ YÊU CẦU ĐỐI THOẠI:
                 return new();
             }
         }
+
+        // ── 7. NOTEBOOK STUDIO V2 (PODCAST 2 MC, MIND MAP, STUDY GUIDE, FAQ) ──
+
+        public async Task<NotebookStudioArtifactDto> GenerateStudioArtifactAsync(
+            Guid notebookId,
+            Guid tenantId,
+            NotebookStudioGenerateRequestDto request,
+            CancellationToken ct = default)
+        {
+            var notebook = await _db.Notebooks
+                .AsNoTracking()
+                .Include(n => n.Sources)
+                .Include(n => n.Chapters)
+                .FirstOrDefaultAsync(n => n.Id == notebookId && n.TenantId == tenantId, ct);
+
+            if (notebook == null)
+                throw new KeyNotFoundException("Không tìm thấy Notebook hoặc bạn không có quyền truy cập.");
+
+            string artifactType = string.IsNullOrWhiteSpace(request.ArtifactType)
+                ? "AUDIO_PODCAST"
+                : request.ArtifactType.Trim().ToUpperInvariant();
+            bool isVi = !string.Equals(request.Language, "en", StringComparison.OrdinalIgnoreCase);
+
+            var contextSb = new StringBuilder();
+            contextSb.AppendLine($"Notebook: {notebook.Title}");
+            if (!string.IsNullOrWhiteSpace(notebook.Description))
+                contextSb.AppendLine($"Mô tả: {notebook.Description}");
+
+            int srcIdx = 1;
+            foreach (var src in notebook.Sources.OrderByDescending(s => s.Authority).Take(8))
+                contextSb.AppendLine($"[Nguồn {srcIdx++}] {src.Title} (Thẩm quyền: {src.Authority})");
+
+            foreach (var ch in notebook.Chapters.OrderBy(c => c.OrderIndex).Take(8))
+            {
+                string excerpt = !string.IsNullOrWhiteSpace(ch.Summary) ? ch.Summary : ch.RawContent;
+                if (excerpt.Length > 700) excerpt = excerpt.Substring(0, 700) + "...";
+                contextSb.AppendLine($"## {ch.Title}\n{excerpt}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(notebook.ConflictReportJson) && notebook.ConflictReportJson != "{}")
+                contextSb.AppendLine($"Báo cáo xung đột nguồn: {notebook.ConflictReportJson}");
+
+            string groundedContext = contextSb.ToString();
+            if (groundedContext.Length > 7500) groundedContext = groundedContext.Substring(0, 7500);
+
+            if (artifactType == "AUDIO_PODCAST")
+                return await BuildPodcastArtifactAsync(notebook, groundedContext, request.FocusPrompt, isVi, tenantId, ct);
+
+            return await BuildMarkdownStudioArtifactAsync(notebook, artifactType, groundedContext, request.FocusPrompt, isVi, tenantId, ct);
+        }
+
+        private async Task<NotebookStudioArtifactDto> BuildPodcastArtifactAsync(
+            Notebook notebook,
+            string groundedContext,
+            string? focusPrompt,
+            bool isVi,
+            Guid tenantId,
+            CancellationToken ct)
+        {
+            string hostFName = isVi ? "Cô Hoài Mỹ" : "Ms. Jenny";
+            string hostMName = isVi ? "Chú Nam Minh" : "Mr. Andrew";
+            string voiceF = isVi ? "vi-VN-HoaiMyNeural" : "en-US-JennyNeural";
+            string voiceM = isVi ? "vi-VN-NamMinhNeural" : "en-US-AndrewNeural";
+
+            List<NotebookPodcastTurnDto>? turns = null;
+            bool usedAi = false;
+
+            if (_aiRouter != null)
+            {
+                try
+                {
+                    string prompt = $@"Create an engaging 6-to-8-turn two-host educational Podcast script discussing the Notebook sources below.
+Language: {(isVi ? "Vietnamese" : "English")}.
+{(string.IsNullOrWhiteSpace(focusPrompt) ? "" : $"Focus angle: {focusPrompt}")}
+Return ONLY a JSON array (no markdown fences) where each item has:
+{{ ""speaker"": ""HOST_F"" or ""HOST_M"", ""text"": ""natural spoken dialogue citing [Nguồn 1], [Nguồn 2] where relevant"" }}
+
+--- SOURCES ---
+{groundedContext}";
+
+                    var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                    {
+                        TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
+                        SystemPrompt = "You are a world-class Podcast Producer for AegisNotebook. Output strictly valid JSON array.",
+                        Prompt = prompt
+                    });
+
+                    if (aiRes.Success && !string.IsNullOrWhiteSpace(aiRes.Content))
+                    {
+                        int s = aiRes.Content.IndexOf('[');
+                        int e = aiRes.Content.LastIndexOf(']');
+                        if (s >= 0 && e > s)
+                        {
+                            var parsed = JsonSerializer.Deserialize<List<NotebookPodcastTurnDto>>(
+                                aiRes.Content.Substring(s, e - s + 1),
+                                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (parsed != null && parsed.Count > 0)
+                            {
+                                turns = parsed;
+                                usedAi = true;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[NotebookStudio] Podcast AI fallback | NotebookId={Id}", notebook.Id);
+                }
+            }
+
+            if (turns == null || turns.Count == 0)
+            {
+                var firstChapter = notebook.Chapters.OrderBy(c => c.OrderIndex).FirstOrDefault()?.Title ?? notebook.Title;
+                turns = isVi
+                    ? new List<NotebookPodcastTurnDto>
+                    {
+                        new() { Speaker = "HOST_F", Text = $"Chào mừng bạn đến với Aegis Podcast! Hôm nay chúng ta cùng mổ xẻ chủ đề \"{notebook.Title}\" từ {notebook.Sources.Count} nguồn tài liệu." },
+                        new() { Speaker = "HOST_M", Text = $"Điểm đắt giá nhất nằm ở phần \"{firstChapter}\". Khi đối chiếu các nguồn theo mức thẩm quyền, chúng ta thấy bức tranh toàn cảnh rất rõ nét." },
+                        new() { Speaker = "HOST_F", Text = "Đúng vậy! Không chỉ dừng ở lý thuyết, các tài liệu còn chỉ ra cách áp dụng thực tế và những điểm cần lưu ý khi kiểm tra chéo." },
+                        new() { Speaker = "HOST_M", Text = "Hãy bấm sang tab Thi & Kiểm định ngay trong Notebook Studio để thử sức với bộ câu hỏi tình huống Bloom 5–6 nhé!" }
+                    }
+                    : new List<NotebookPodcastTurnDto>
+                    {
+                        new() { Speaker = "HOST_F", Text = $"Welcome to Aegis Podcast! Today we unpack \"{notebook.Title}\" across {notebook.Sources.Count} grounded sources." },
+                        new() { Speaker = "HOST_M", Text = $"The highlight is \"{firstChapter}\", where cross-source authority weighting reveals the core takeaway clearly." },
+                        new() { Speaker = "HOST_F", Text = "Exactly! And listeners can jump straight to the Exam Studio tab to test mastery at Bloom levels 5–6." }
+                    };
+            }
+
+            var md = new StringBuilder();
+            md.AppendLine($"# 🎙️ Audio Overview Podcast: {notebook.Title}");
+            md.AppendLine();
+            foreach (var t in turns)
+            {
+                bool isFemale = !string.Equals(t.Speaker, "HOST_M", StringComparison.OrdinalIgnoreCase);
+                t.Speaker = isFemale ? "HOST_F" : "HOST_M";
+                t.SpeakerName = isFemale ? hostFName : hostMName;
+                t.VoiceId = isFemale ? voiceF : voiceM;
+                md.AppendLine($"- **{t.SpeakerName}**: {t.Text}");
+            }
+
+            return new NotebookStudioArtifactDto
+            {
+                ArtifactType = "AUDIO_PODCAST",
+                Title = $"Podcast: {notebook.Title}",
+                UsedAi = usedAi,
+                ContentMarkdown = md.ToString().Trim(),
+                PodcastTurns = turns
+            };
+        }
+
+        private async Task<NotebookStudioArtifactDto> BuildMarkdownStudioArtifactAsync(
+            Notebook notebook,
+            string artifactType,
+            string groundedContext,
+            string? focusPrompt,
+            bool isVi,
+            Guid tenantId,
+            CancellationToken ct)
+        {
+            string instruction = artifactType switch
+            {
+                "MIND_MAP" => "Tạo Sơ đồ Tư duy (Mind Map) dạng cây phân cấp Markdown rõ ràng kèm khối ```mermaid flowchart TD``` trực quan tổng hợp toàn bộ các nguồn.",
+                "STUDY_GUIDE" => "Biên soạn Cẩm nang Ôn tập (Study Guide) gồm: 1) Trọng tâm cần nhớ có trích dẫn [Nguồn X], 2) Bảng Thuật ngữ cốt lõi, 3) 3 Câu hỏi Tự luận vận dụng cao.",
+                "BRIEFING" => "Viết Báo cáo Tóm tắt Điều hành (Executive Briefing Doc) súc tích cho lãnh đạo/giáo viên gồm: Bối cảnh, Phát hiện chính, Điểm xung đột giữa các nguồn (nếu có), Khuyến nghị hành động.",
+                "FAQ" => "Tạo bộ 6 Câu hỏi Thường gặp (FAQ) kèm câu trả lời chính xác trích dẫn [Nguồn X].",
+                "TIMELINE" => "Tổng hợp Dòng thời gian / Trình tự Quy trình (Timeline & Sequence) dạng bảng Markdown các mốc sự kiện/bước thực hiện.",
+                "FLASHCARDS" => "Tạo bộ 8 Thẻ Ghi Nhớ (Flashcards) dạng bảng Markdown: | Mặt trước (Câu hỏi / Khái niệm) | Mặt sau (Giải thích & Trích nguồn) |.",
+                _ => "Tổng hợp tài liệu học tập có cấu trúc từ các nguồn."
+            };
+
+            string? aiContent = null;
+            bool usedAi = false;
+
+            if (_aiRouter != null)
+            {
+                try
+                {
+                    var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                    {
+                        TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
+                        SystemPrompt = $"You are AegisNotebook Studio Architect. Language: {(isVi ? "Vietnamese" : "English")}. Ground every claim strictly in the provided sources with [Nguồn X] citations.",
+                        Prompt = $"Yêu cầu: {instruction}\n{(string.IsNullOrWhiteSpace(focusPrompt) ? "" : $"Trọng tâm thêm: {focusPrompt}\n")}\n--- NGUỒN TRI THỨC ---\n{groundedContext}"
+                    });
+
+                    if (aiRes.Success && !string.IsNullOrWhiteSpace(aiRes.Content))
+                    {
+                        aiContent = aiRes.Content.Trim();
+                        usedAi = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[NotebookStudio] Artifact AI fallback | Type={Type}", artifactType);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(aiContent))
+            {
+                var chList = notebook.Chapters.OrderBy(c => c.OrderIndex).Take(6).ToList();
+                var sb = new StringBuilder();
+                sb.AppendLine($"# {artifactType}: {notebook.Title}");
+                sb.AppendLine();
+                foreach (var ch in chList)
+                    sb.AppendLine($"- **{ch.Title}**: {(string.IsNullOrWhiteSpace(ch.Summary) ? "Nội dung trọng tâm từ nguồn tài liệu." : ch.Summary)}");
+                if (chList.Count == 0)
+                    sb.AppendLine("- Hãy tải thêm tài liệu nguồn (PDF/Word/URL) để Notebook Studio phân tích sâu hơn.");
+                aiContent = sb.ToString().Trim();
+            }
+
+            return new NotebookStudioArtifactDto
+            {
+                ArtifactType = artifactType,
+                Title = $"{artifactType}: {notebook.Title}",
+                UsedAi = usedAi,
+                ContentMarkdown = aiContent
+            };
+        }
     }
 }

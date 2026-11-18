@@ -145,4 +145,28 @@ namespace Aegis.Application.DTOs
         public Guid TargetBankTopicId { get; set; }
         public string VisibilityScope { get; set; } = "PRIVATE"; // PRIVATE, COMMUNITY, PUBLIC
     }
+
+    public class NotebookStudioGenerateRequestDto
+    {
+        public string ArtifactType { get; set; } = "AUDIO_PODCAST"; // AUDIO_PODCAST | MIND_MAP | STUDY_GUIDE | BRIEFING | FAQ | TIMELINE | FLASHCARDS
+        public string Language { get; set; } = "vi";
+        public string? FocusPrompt { get; set; }
+    }
+
+    public class NotebookPodcastTurnDto
+    {
+        public string Speaker { get; set; } = "HOST_F"; // HOST_F | HOST_M
+        public string SpeakerName { get; set; } = string.Empty;
+        public string VoiceId { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+    }
+
+    public class NotebookStudioArtifactDto
+    {
+        public string ArtifactType { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public bool UsedAi { get; set; }
+        public string ContentMarkdown { get; set; } = string.Empty;
+        public List<NotebookPodcastTurnDto> PodcastTurns { get; set; } = new();
+    }
 }

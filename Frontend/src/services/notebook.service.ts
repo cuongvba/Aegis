@@ -120,6 +120,21 @@ export interface PublishToBankParams {
   visibilityScope?: 'PRIVATE' | 'COMMUNITY' | 'PUBLIC';
 }
 
+export interface NotebookPodcastTurnDto {
+  speaker: 'HOST_F' | 'HOST_M' | string;
+  speakerName: string;
+  voiceId: string;
+  text: string;
+}
+
+export interface NotebookStudioArtifactDto {
+  artifactType: string;
+  title: string;
+  usedAi: boolean;
+  contentMarkdown: string;
+  podcastTurns: NotebookPodcastTurnDto[];
+}
+
 export const notebookService = {
   async getNotebooks(page = 1, pageSize = 50): Promise<NotebookSummaryDto[]> {
     const res = await api.get<NotebookSummaryDto[]>('/api/v1/notebooks', {
@@ -259,6 +274,17 @@ export const notebookService = {
     const res = await api.post<{ success: boolean; publishedCount: number; message: string }>(
       `/api/v1/notebooks/${notebookId}/publish-to-bank`, 
       params
+    );
+    return res.data;
+  },
+
+  async generateStudioArtifact(
+    notebookId: string,
+    payload: { artifactType: string; language?: string; focusPrompt?: string }
+  ): Promise<NotebookStudioArtifactDto> {
+    const res = await api.post<NotebookStudioArtifactDto>(
+      `/api/v1/notebooks/${notebookId}/studio/generate`,
+      payload
     );
     return res.data;
   }

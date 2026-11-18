@@ -361,5 +361,22 @@ namespace Aegis.API.Controllers
                 message = $"Đã xuất bản thành công {count} câu hỏi vào Ngân hàng tri thức." 
             });
         }
+
+        /// <summary>
+        /// [Notebook Studio V2] Sinh Podcast 2 MC, Sơ đồ tư duy, Cẩm nang ôn tập, FAQ, Timeline, Flashcards.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("{id:guid}/studio/generate")]
+        public async Task<IActionResult> GenerateStudioArtifact(
+            Guid id,
+            [FromBody] NotebookStudioGenerateRequestDto request,
+            CancellationToken ct = default)
+        {
+            if (request == null)
+                return BadRequest(new { message = "Request body is required." });
+
+            var artifact = await _notebookService.GenerateStudioArtifactAsync(id, GetCurrentTenantId(), request, ct);
+            return Ok(artifact);
+        }
     }
 }

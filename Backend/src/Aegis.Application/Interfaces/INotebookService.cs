@@ -113,5 +113,11 @@ namespace Aegis.Application.Interfaces
             Guid userId, 
             Guid tenantId, 
             CancellationToken ct = default);
+
+        Task<NotebookStudioArtifactDto> GenerateStudioArtifactAsync(
+            Guid notebookId,
+            Guid tenantId,
+            NotebookStudioGenerateRequestDto request,
+            CancellationToken ct = default);
     }
 }

@@ -16,6 +16,7 @@ import { learnerQuizService } from '../../../services/learner-quiz.service';
 import { aiSwarmService, WolfPackSwarmAuditResult } from '../../../services/ai-swarm.service';
 import type { BankTopic } from '../questions/types';
 import { MathRenderer } from '../../../components/common/MathRenderer';
+import { NotebookStudioPanel } from '../../../components/notebooks/NotebookStudioPanel';
 
 interface NotebookDualPaneStudioProps {
   notebookId: string;
@@ -35,8 +36,8 @@ export function NotebookDualPaneStudio({
   const [selectedChapter, setSelectedChapter] = useState<NotebookChapterDto | null>(null);
   const [selectedSource, setSelectedSource] = useState<NotebookSourceDto | null>(null);
   
-  // 5 Cognitive Tabs: 'topics' | 'sources' | 'conflicts' | 'persona' | 'exam'
-  const [activeTab, setActiveTab] = useState<'topics' | 'sources' | 'conflicts' | 'persona' | 'exam'>('topics');
+  // 6 Cognitive Tabs: 'topics' | 'sources' | 'conflicts' | 'persona' | 'exam' | 'studio'
+  const [activeTab, setActiveTab] = useState<'topics' | 'sources' | 'conflicts' | 'persona' | 'exam' | 'studio'>('topics');
   
   // Sources Hub state
   const [uploadingSource, setUploadingSource] = useState(false);
@@ -358,6 +359,15 @@ export function NotebookDualPaneStudio({
           >
             <Sparkles className="w-3.5 h-3.5" />
             Đề Thi Tự Động
+          </button>
+          <button
+            onClick={() => setActiveTab('studio')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === 'studio' ? 'bg-fuchsia-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Brain className="w-3.5 h-3.5" />
+            Podcast & Studio
           </button>
         </div>
 
@@ -802,6 +812,11 @@ export function NotebookDualPaneStudio({
                     </button>
                   </form>
                 </div>
+              )}
+
+              {/* TAB 6: PODCAST 2 MC & STUDIO (VƯỢT CHUẨN NOTEBOOKLM) */}
+              {activeTab === 'studio' && detail && (
+                <NotebookStudioPanel notebookId={detail.id} notebookTitle={detail.title} />
               )}
 
               {/* TAB 5: NHÀ MÁY ĐỀ THI TÌNH HUỐNG & XUẤT BẢN */}
