@@ -7,7 +7,7 @@
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Trophy, Shield, Gamepad2, Zap, Users, Atom, Sparkles, FileText } from 'lucide-react';
+import { BookOpen, Trophy, Gamepad2, Zap, Sparkles, FileText, Music } from 'lucide-react';
 
 interface NavItem {
   name:  string;
@@ -28,6 +28,7 @@ export function useNavItems(): NavItem[] {
     { name: t('nav.officeStudio', 'Office Studio'), path: '/office-studio', icon: <FileText className="w-4 h-4 text-sky-400" aria-hidden="true" /> },
     { name: t('nav.arena', 'Đấu trường'),    path: '/arena',       icon: <Zap      className="w-4 h-4 text-amber-400" aria-hidden="true" /> },
     { name: t('nav.visualLab', 'Phòng Lab 60fps'), path: '/visual-lab', icon: <Sparkles className="w-4 h-4 text-sky-400" aria-hidden="true" /> },
+    { name: t('nav.musicStudio', 'Nhạc V-OS'), path: '/music-studio', icon: <Music className="w-4 h-4 text-violet-400" aria-hidden="true" /> },
     { name: t('nav.leaderboard', 'Bảng vàng'), path: '/leaderboard', icon: <Trophy   className="w-4 h-4 text-yellow-400" aria-hidden="true" /> },
   ];
 }

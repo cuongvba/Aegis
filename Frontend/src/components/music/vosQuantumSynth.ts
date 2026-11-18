@@ -129,38 +129,75 @@ export function drawVosSynesthesiaFrame(
   ctx.fillStyle = '#060913';
   ctx.fillRect(0, 0, W, H);
 
-  const pulse = isPlaying ? 0.5 + 0.5 * Math.sin(tick * 0.06) : 0.25;
-  const glow = ctx.createRadialGradient(W / 2, H / 2, 16, W / 2, H / 2, 190 + pulse * 60);
-  glow.addColorStop(0, `${accent}44`);
+  const speedMul = isPlaying ? 1.35 : 0.45;
+  const pulse = 0.5 + 0.5 * Math.sin(tick * 0.08 * speedMul);
+  const glow = ctx.createRadialGradient(W / 2, H / 2, 8, W / 2, H / 2, 170 + pulse * 80);
+  glow.addColorStop(0, `${accent}77`);
+  glow.addColorStop(0.5, `${accent}22`);
   glow.addColorStop(1, 'transparent');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
+  // Cymatics concentric resonance rings
+  for (let r = 1; r <= 4; r++) {
+    const rad = 18 * r + pulse * 14 * (r % 2 === 0 ? 1 : -0.5);
+    ctx.beginPath();
+    ctx.strokeStyle = `${accent}${isPlaying ? '66' : '33'}`;
+    ctx.lineWidth = 1.5;
+    ctx.arc(W / 2, H / 2, Math.max(8, rad), 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  // Orbiting V-OS particles
+  for (let i = 0; i < 20; i++) {
+    const angle = tick * 0.025 * speedMul + (i * Math.PI * 2) / 20;
+    const orbitR = 38 + (i % 4) * 24 + Math.sin(tick * 0.05 + i) * 8;
+    const px = W / 2 + Math.cos(angle) * orbitR * 1.9;
+    const py = H / 2 + Math.sin(angle) * orbitR * 0.65;
+    ctx.fillStyle = i % 2 === 0 ? '#38bdf8' : '#f472b6';
+    ctx.beginPath();
+    ctx.arc(px, py, isPlaying ? 2.6 : 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Spectrum equalizer bars
+  const barCount = 28;
+  const barW = (W - 32) / barCount;
+  for (let b = 0; b < barCount; b++) {
+    const mag = (0.3 + 0.7 * Math.abs(Math.sin(tick * 0.09 * speedMul + b * 0.45))) * (isPlaying ? 36 : 14);
+    ctx.fillStyle = `${accent}55`;
+    ctx.fillRect(16 + b * barW, H - 26 - mag, Math.max(3, barW - 4), mag);
+  }
+
   // Draw 3-layer V-OS harmonic waves (Tonal / Vowel / Consonant)
   const layers = [
-    { amp: 24 + telemetry.huyenRatio * 55, freq: 0.014, speed: 0.03, color: accent },
-    { amp: 16 + telemetry.sacRatio * 60, freq: 0.028, speed: 0.06, color: '#38bdf8' },
-    { amp: 12 + telemetry.morphingDiphthongRatio * 65, freq: 0.042, speed: 0.09, color: '#f472b6' },
+    { amp: 24 + telemetry.huyenRatio * 55, freq: 0.015, speed: 0.045, color: accent },
+    { amp: 16 + telemetry.sacRatio * 60, freq: 0.028, speed: 0.08, color: '#38bdf8' },
+    { amp: 12 + telemetry.morphingDiphthongRatio * 65, freq: 0.042, speed: 0.11, color: '#f472b6' },
   ];
 
+  ctx.save();
+  ctx.shadowBlur = isPlaying ? 14 : 6;
   layers.forEach((ly) => {
     ctx.beginPath();
     ctx.strokeStyle = ly.color;
-    ctx.lineWidth = 2;
-    for (let x = 0; x <= W; x += 6) {
+    ctx.shadowColor = ly.color;
+    ctx.lineWidth = isPlaying ? 2.5 : 1.8;
+    for (let x = 0; x <= W; x += 5) {
       const env = Math.sin((x / W) * Math.PI);
-      const y = H / 2 + Math.sin(x * ly.freq + tick * ly.speed * (isPlaying ? 1 : 0.25)) * ly.amp * env;
+      const y = H / 2 + Math.sin(x * ly.freq + tick * ly.speed * speedMul) * ly.amp * env;
       if (x === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
   });
+  ctx.restore();
 
-  ctx.fillStyle = '#cbd5e1';
+  ctx.fillStyle = '#e2e8f0';
   ctx.font = '600 12px Inter, system-ui, sans-serif';
   ctx.fillText(
-    `V-OS ${recipe.baseFreqHz}Hz • ${recipe.musicalKey} • ${recipe.tempoBpm} BPM • ${recipe.visualArchetype}`,
+    `V-OS ${recipe.baseFreqHz}Hz • ${recipe.musicalKey} • ${recipe.tempoBpm} BPM • ${recipe.visualArchetype} ${isPlaying ? '● LIVE SYNTH' : '○ READY'}`,
     16,
-    H - 14,
+    H - 8,
   );
 }

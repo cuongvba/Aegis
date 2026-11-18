@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, FolderTree, FileQuestion, Users, GraduationCap, Compass } from 'lucide-react';
+import { Sparkles, FolderTree, FileQuestion, Users, GraduationCap, Compass, Music } from 'lucide-react';
 import { LanguageSwitcher } from '@/widgets/app-header/LanguageSwitcher';
 import { UserProfileDropdown } from '@/widgets/app-header/UserProfileDropdown';
 
@@ -49,6 +49,13 @@ export const CreatorWorkspaceNav: React.FC<CreatorWorkspaceNavProps> = ({ rightS
       path: '/visual-lab',
       icon: <Compass className="w-4 h-4 text-sky-400" />,
       activeClass: 'bg-sky-600/25 text-sky-300 border-sky-500/40 shadow-sm shadow-sky-500/10',
+    },
+    {
+      id: 'music-studio',
+      label: t('workspaceNav.musicStudio', 'Nhạc V-OS 7D'),
+      path: '/music-studio',
+      icon: <Music className="w-4 h-4 text-violet-400" />,
+      activeClass: 'bg-violet-600/25 text-violet-300 border-violet-500/40 shadow-sm shadow-violet-500/10',
     },
   ];
 
