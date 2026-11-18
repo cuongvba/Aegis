@@ -260,6 +260,8 @@ builder.Services.AddHttpClient("LtiAgsClient");
 
 // [World-Class Upgrade] Server-authoritative exam timer (học từ quiz-service)
 builder.Services.AddHostedService<ExamTimerService>();
+builder.Services.AddSingleton<Aegis.Application.Interfaces.IAegisBackgroundTaskQueue, Aegis.Infrastructure.Services.AegisBackgroundTaskQueue>();
+builder.Services.AddHostedService<Aegis.Infrastructure.Services.AegisBackgroundTaskWorker>();
 
 // [Enterprise Omni-Channel Payment Sovereignty & OCP Gateway Strategies]
 builder.Services.AddHttpClient<Aegis.Infrastructure.Payments.PayOSGatewayService>();

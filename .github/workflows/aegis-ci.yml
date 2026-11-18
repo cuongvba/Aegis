@@ -1,0 +1,36 @@
+name: AegisGlobal Scoped Quality Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-scoped-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore & Run Scoped Core Unit Tests
+        run: |
+          dotnet restore Backend/tests/Aegis.UnitTests/Aegis.UnitTests.csproj
+          dotnet test Backend/tests/Aegis.UnitTests/Aegis.UnitTests.csproj --no-restore --filter "FullyQualifiedName~NotebookStudioTests|FullyQualifiedName~OfficeDocumentWorkspaceServiceTests|FullyQualifiedName~EpistemicRouterTests|FullyQualifiedName~ScopedRbacAndTenantTests|FullyQualifiedName~BackgroundTaskQueueTests"
+
+  frontend-typecheck-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: Frontend/package-lock.json
+      - name: Install, Typecheck & Build Frontend
+        working-directory: Frontend
+        run: |
+          npm ci
+          npx tsc -b
+          npm run build
