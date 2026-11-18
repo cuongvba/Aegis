@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette } from 'lucide-react';
+import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette, Feather, ShieldCheck } from 'lucide-react';
 import { kidsCurriculumService, KidsLessonPlan } from '@/services/kidsCurriculum.service';
 import { useLearnerI18n } from '@/lib/i18n';
 import { KidsMagicalBackdrop } from '@/components/kids/KidsMagicalBackdrop';
@@ -9,6 +9,8 @@ import { KidsAiBuilderModal } from '@/components/kids/KidsAiBuilderModal';
 import { KidsParentGateModal } from '@/components/kids/KidsParentGateModal';
 import { KidsTheaterModal } from '@/components/kids/KidsTheaterModal';
 import { KidsStageManagerModal } from '@/components/kids/KidsStageManagerModal';
+import { YouthCreatorStudioModal } from '@/components/kids/YouthCreatorStudioModal';
+import { KidsReviewModal } from '@/components/kids/KidsReviewModal';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
 import { speakKidText } from '@/components/kids/kidsSpeech';
 
@@ -85,6 +87,8 @@ export const KidsWorldPage: React.FC = () => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
+  const [isYouthCreatorOpen, setIsYouthCreatorOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isGateOpen, setIsGateOpen] = useState(false);
 
   const pet = getPetStage(stars, isVi);
@@ -144,6 +148,20 @@ export const KidsWorldPage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-2xl bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-3 py-2 text-xs font-black transition"
             >
               <Palette size={14} /> {isVi ? 'Sân Khấu (DB)' : 'Stages'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsYouthCreatorOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-400 text-white px-3 py-2 text-xs font-black shadow-sm hover:brightness-105 transition"
+            >
+              <Feather size={14} /> {isVi ? 'Sáng Tác' : 'Create'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsReviewOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-3 py-2 text-xs font-black transition"
+            >
+              <ShieldCheck size={14} /> {isVi ? 'Duyệt Bài' : 'Review'}
             </button>
             <button
               type="button"
@@ -283,6 +301,8 @@ export const KidsWorldPage: React.FC = () => {
         onSelectStageToPlay={(st) => launchKingdom(st.preferredIslands?.[0] || 'fairytale', ageBand, st.stageCode)}
         lang={lang}
       />
+      <YouthCreatorStudioModal isOpen={isYouthCreatorOpen} onClose={() => setIsYouthCreatorOpen(false)} lang={lang} />
+      <KidsReviewModal isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} lang={lang} />
       <KidsAiBuilderModal
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}

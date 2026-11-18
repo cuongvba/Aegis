@@ -18,6 +18,15 @@ namespace Aegis.Application.DTOs
         public string FunFactEn { get; set; } = string.Empty;
         public string FunFactVi { get; set; } = string.Empty;
         public bool IsAiGenerated { get; set; }
+        public string? AuthorName { get; set; }
+        public string? AuthorClass { get; set; }
+        public string? CreatorDream { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? VoiceAudioUrl { get; set; }
+        /// <summary>"APPROVED" | "PENDING_REVIEW" | "REJECTED"</summary>
+        public string Status { get; set; } = "APPROVED";
+        public int GratitudeCount { get; set; }
+        public bool IsCommunityContribution { get; set; }
     }
 
     public class KidsChoiceOptionDto
@@ -84,6 +93,30 @@ namespace Aegis.Application.DTOs
         public bool IsSystemDefault { get; set; } = true;
         public List<string> PreferredIslands { get; set; } = new();
         public List<KidsStagePropDto> Props { get; set; } = new();
+        public string? AuthorName { get; set; }
+        public string? AuthorClass { get; set; }
+        public string? CreatorDream { get; set; }
+        public string? BackdropImageUrl { get; set; }
+        public string Status { get; set; } = "APPROVED";
+        public int GratitudeCount { get; set; }
+    }
+
+    public class SubmitKidsCreatorBundleDto
+    {
+        public string AuthorName { get; set; } = string.Empty;
+        public string? AuthorClass { get; set; }
+        public string? CreatorDream { get; set; }
+        public KidsStageThemeDto? CustomStage { get; set; }
+        public List<KidsConceptAtomDto> Atoms { get; set; } = new();
+    }
+
+    public class KidsCreatorBundleResponseDto
+    {
+        public bool Success { get; set; }
+        public string Status { get; set; } = "PENDING_REVIEW";
+        public string? StageCode { get; set; }
+        public List<string> AtomCodes { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
     }
 
     public class KidsLessonPlanDto

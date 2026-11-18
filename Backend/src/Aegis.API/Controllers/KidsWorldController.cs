@@ -21,9 +21,12 @@ namespace Aegis.API.Controllers
 
         [HttpGet("atoms")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetConceptAtoms([FromQuery] string? islandId, [FromQuery] string? ageBand)
+        public async Task<IActionResult> GetConceptAtoms(
+            [FromQuery] string? islandId,
+            [FromQuery] string? ageBand,
+            [FromQuery] bool includePending = false)
         {
-            var atoms = await _kidsService.GetConceptAtomsAsync(_tenant.CurrentTenantId, islandId, ageBand);
+            var atoms = await _kidsService.GetConceptAtomsAsync(_tenant.CurrentTenantId, islandId, ageBand, includePending);
             return Ok(atoms);
         }
 
@@ -50,9 +53,9 @@ namespace Aegis.API.Controllers
 
         [HttpGet("stages")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetStageThemes()
+        public async Task<IActionResult> GetStageThemes([FromQuery] bool includePending = false)
         {
-            var stages = await _kidsService.GetStageThemesAsync(_tenant.CurrentTenantId);
+            var stages = await _kidsService.GetStageThemesAsync(_tenant.CurrentTenantId, includePending);
             return Ok(stages);
         }
 
@@ -65,6 +68,31 @@ namespace Aegis.API.Controllers
 
             var saved = await _kidsService.SaveStageThemeAsync(_tenant.CurrentTenantId, stage);
             return Ok(saved);
+        }
+
+        [HttpPost("creator/submit-bundle")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SubmitCreatorBundle([FromBody] SubmitKidsCreatorBundleDto bundle)
+        {
+            if (bundle == null) return BadRequest(new { error = "Thiếu dữ liệu sáng tác." });
+            var res = await _kidsService.SubmitCreatorBundleAsync(_tenant.CurrentTenantId, bundle);
+            return Ok(res);
+        }
+
+        [HttpPost("contributions/{code}/moderate")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ModerateContribution(string code, [FromQuery] bool approve = true)
+        {
+            bool ok = await _kidsService.ModerateContributionAsync(_tenant.CurrentTenantId, code, approve);
+            return ok ? Ok(new { moderated = true, approved = approve }) : NotFound();
+        }
+
+        [HttpPost("contributions/{code}/gratitude")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GiveGratitude(string code)
+        {
+            int count = await _kidsService.GiveGratitudeAsync(_tenant.CurrentTenantId, code);
+            return Ok(new { gratitudeCount = count });
         }
     }
 }

@@ -49,6 +49,7 @@ namespace Aegis.Infrastructure.Services
             Guid tenantId,
             string? islandId = null,
             string? ageBand = null,
+            bool includePending = false,
             CancellationToken ct = default)
         {
             var atoms = DefaultAtomsCache.Value.Select(CloneAtom).ToList();
@@ -68,6 +69,9 @@ namespace Aegis.Infrastructure.Services
                 {
                     var atom = JsonSerializer.Deserialize<KidsConceptAtomDto>(preset.SynonymsJson, JsonOpts);
                     if (atom == null || string.IsNullOrWhiteSpace(atom.AtomCode)) continue;
+                    if (!includePending && !string.Equals(atom.Status, "APPROVED", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
                     int idx = atoms.FindIndex(a => string.Equals(a.AtomCode, atom.AtomCode, StringComparison.OrdinalIgnoreCase));
                     if (idx >= 0) atoms[idx] = atom;
                     else atoms.Add(atom);
@@ -104,9 +108,9 @@ namespace Aegis.Infrastructure.Services
             int atomCount = Math.Clamp(request?.AtomCount ?? 3, 1, 6);
             var weakSet = new HashSet<string>(request?.WeakAtomCodes ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
 
-            var allIslandAtoms = await GetConceptAtomsAsync(tenantId, island, ageBand, ct);
+            var allIslandAtoms = await GetConceptAtomsAsync(tenantId, island, ageBand, false, ct);
             if (allIslandAtoms.Count == 0)
-                allIslandAtoms = await GetConceptAtomsAsync(tenantId, "all", "all", ct);
+                allIslandAtoms = await GetConceptAtomsAsync(tenantId, "all", "all", false, ct);
 
             // FSRS-driven priority: 1) Weak/due atoms first, 2) Next atoms in order
             var selected = allIslandAtoms
@@ -136,7 +140,7 @@ namespace Aegis.Infrastructure.Services
             };
         }
 
-        public async Task<List<KidsStageThemeDto>> GetStageThemesAsync(Guid tenantId, CancellationToken ct = default)
+        public async Task<List<KidsStageThemeDto>> GetStageThemesAsync(Guid tenantId, bool includePending = false, CancellationToken ct = default)
         {
             var stages = DefaultStagesCache.Value.ToList();
             var custom = await _db.TenantCoordinatePresets
@@ -153,6 +157,9 @@ namespace Aegis.Infrastructure.Services
                 {
                     var st = JsonSerializer.Deserialize<KidsStageThemeDto>(preset.SynonymsJson, JsonOpts);
                     if (st == null || string.IsNullOrWhiteSpace(st.StageCode)) continue;
+                    if (!includePending && !string.Equals(st.Status, "APPROVED", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
                     st.IsSystemDefault = false;
                     int idx = stages.FindIndex(x => string.Equals(x.StageCode, st.StageCode, StringComparison.OrdinalIgnoreCase));
                     if (idx >= 0) stages[idx] = st;
@@ -162,6 +169,148 @@ namespace Aegis.Infrastructure.Services
             }
 
             return stages;
+        }
+
+        public async Task<KidsCreatorBundleResponseDto> SubmitCreatorBundleAsync(
+            Guid tenantId,
+            SubmitKidsCreatorBundleDto bundle,
+            CancellationToken ct = default)
+        {
+            if (bundle == null) throw new ArgumentNullException(nameof(bundle));
+            string authorName = string.IsNullOrWhiteSpace(bundle.AuthorName) ? "Tác giả trẻ Aegis" : bundle.AuthorName.Trim();
+            string? authorClass = string.IsNullOrWhiteSpace(bundle.AuthorClass) ? null : bundle.AuthorClass.Trim();
+            string? dream = string.IsNullOrWhiteSpace(bundle.CreatorDream) ? null : bundle.CreatorDream.Trim();
+
+            // Child-Safe Gate: Community contributions start as PENDING_REVIEW
+            const string initialStatus = "PENDING_REVIEW";
+            string? savedStageCode = null;
+
+            if (bundle.CustomStage != null && !string.IsNullOrWhiteSpace(bundle.CustomStage.TitleVi))
+            {
+                bundle.CustomStage.AuthorName = authorName;
+                bundle.CustomStage.AuthorClass = authorClass;
+                bundle.CustomStage.CreatorDream = dream;
+                bundle.CustomStage.Status = initialStatus;
+                var savedStage = await SaveStageThemeAsync(tenantId, bundle.CustomStage, ct);
+                savedStageCode = savedStage.StageCode;
+            }
+
+            var atomCodes = new List<string>();
+            int order = 200;
+            foreach (var atom in bundle.Atoms ?? Enumerable.Empty<KidsConceptAtomDto>())
+            {
+                if (string.IsNullOrWhiteSpace(atom.PrimaryText) && string.IsNullOrWhiteSpace(atom.SecondaryText))
+                    continue;
+
+                atom.AtomCode = string.IsNullOrWhiteSpace(atom.AtomCode)
+                    ? $"YOUTH_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{order}"
+                    : atom.AtomCode.Trim().ToUpperInvariant();
+                atom.AuthorName = authorName;
+                atom.AuthorClass = authorClass;
+                atom.CreatorDream = dream;
+                atom.Status = initialStatus;
+                atom.IsCommunityContribution = true;
+                atom.Order = order++;
+
+                string json = JsonSerializer.Serialize(atom, JsonOpts);
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = tenantId,
+                    DomainCode = "KIDS_WORLD",
+                    CoordinateType = KidsAtomCoordinateType,
+                    PresetCode = atom.AtomCode,
+                    PresetLabel = atom.SecondaryText ?? atom.PrimaryText,
+                    SynonymsJson = json,
+                    DisplayOrder = atom.Order
+                });
+                atomCodes.Add(atom.AtomCode);
+            }
+
+            await _db.SaveChangesAsync(ct);
+            _logger.LogInformation(
+                "[KidsCreator] Submitted bundle | TenantId={TenantId} Author={Author} Stage={Stage} Atoms={Count}",
+                tenantId, authorName, savedStageCode ?? "NONE", atomCodes.Count);
+
+            return new KidsCreatorBundleResponseDto
+            {
+                Success = true,
+                Status = initialStatus,
+                StageCode = savedStageCode,
+                AtomCodes = atomCodes,
+                Message = "Cảm ơn tác giả trẻ! Tác phẩm & sân khấu của bạn đã được gửi vào hàng đợi duyệt an toàn cho các em nhỏ."
+            };
+        }
+
+        public async Task<bool> ModerateContributionAsync(Guid tenantId, string presetCode, bool approve, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(presetCode)) return false;
+            string code = presetCode.Trim().ToUpperInvariant();
+
+            var preset = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => (p.TenantId == tenantId || p.TenantId == Guid.Empty) &&
+                     p.PresetCode == code &&
+                     (p.CoordinateType == KidsAtomCoordinateType || p.CoordinateType == KidsStageCoordinateType),
+                ct);
+
+            if (preset == null || string.IsNullOrWhiteSpace(preset.SynonymsJson)) return false;
+            string nextStatus = approve ? "APPROVED" : "REJECTED";
+
+            if (preset.CoordinateType == KidsStageCoordinateType)
+            {
+                var st = JsonSerializer.Deserialize<KidsStageThemeDto>(preset.SynonymsJson, JsonOpts);
+                if (st == null) return false;
+                st.Status = nextStatus;
+                preset.SynonymsJson = JsonSerializer.Serialize(st, JsonOpts);
+            }
+            else
+            {
+                var atom = JsonSerializer.Deserialize<KidsConceptAtomDto>(preset.SynonymsJson, JsonOpts);
+                if (atom == null) return false;
+                atom.Status = nextStatus;
+                preset.SynonymsJson = JsonSerializer.Serialize(atom, JsonOpts);
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return true;
+        }
+
+        public async Task<int> GiveGratitudeAsync(Guid tenantId, string presetCode, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(presetCode)) return 0;
+            string code = presetCode.Trim().ToUpperInvariant();
+
+            var preset = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => (p.TenantId == tenantId || p.TenantId == Guid.Empty) &&
+                     p.PresetCode == code &&
+                     (p.CoordinateType == KidsAtomCoordinateType || p.CoordinateType == KidsStageCoordinateType),
+                ct);
+
+            if (preset == null || string.IsNullOrWhiteSpace(preset.SynonymsJson)) return 0;
+
+            int updatedCount = 0;
+            if (preset.CoordinateType == KidsStageCoordinateType)
+            {
+                var st = JsonSerializer.Deserialize<KidsStageThemeDto>(preset.SynonymsJson, JsonOpts);
+                if (st != null)
+                {
+                    st.GratitudeCount++;
+                    updatedCount = st.GratitudeCount;
+                    preset.SynonymsJson = JsonSerializer.Serialize(st, JsonOpts);
+                }
+            }
+            else
+            {
+                var atom = JsonSerializer.Deserialize<KidsConceptAtomDto>(preset.SynonymsJson, JsonOpts);
+                if (atom != null)
+                {
+                    atom.GratitudeCount++;
+                    updatedCount = atom.GratitudeCount;
+                    preset.SynonymsJson = JsonSerializer.Serialize(atom, JsonOpts);
+                }
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return updatedCount;
         }
 
         public async Task<KidsStageThemeDto> SaveStageThemeAsync(Guid tenantId, KidsStageThemeDto stage, CancellationToken ct = default)
@@ -214,7 +363,7 @@ namespace Aegis.Infrastructure.Services
             string? preferredStageCode,
             CancellationToken ct)
         {
-            var all = await GetStageThemesAsync(tenantId, ct);
+            var all = await GetStageThemesAsync(tenantId, false, ct);
             if (!string.IsNullOrWhiteSpace(preferredStageCode))
             {
                 var exact = all.FirstOrDefault(s => string.Equals(s.StageCode, preferredStageCode.Trim(), StringComparison.OrdinalIgnoreCase));

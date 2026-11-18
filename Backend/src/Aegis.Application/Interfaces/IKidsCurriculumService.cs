@@ -12,6 +12,7 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             string? islandId = null,
             string? ageBand = null,
+            bool includePending = false,
             CancellationToken ct = default);
 
         Task<KidsLessonPlanDto> GenerateDailyAdventureAsync(
@@ -26,11 +27,28 @@ namespace Aegis.Application.Interfaces
 
         Task<List<KidsStageThemeDto>> GetStageThemesAsync(
             Guid tenantId,
+            bool includePending = false,
             CancellationToken ct = default);
 
         Task<KidsStageThemeDto> SaveStageThemeAsync(
             Guid tenantId,
             KidsStageThemeDto stage,
+            CancellationToken ct = default);
+
+        Task<KidsCreatorBundleResponseDto> SubmitCreatorBundleAsync(
+            Guid tenantId,
+            SubmitKidsCreatorBundleDto bundle,
+            CancellationToken ct = default);
+
+        Task<bool> ModerateContributionAsync(
+            Guid tenantId,
+            string presetCode,
+            bool approve,
+            CancellationToken ct = default);
+
+        Task<int> GiveGratitudeAsync(
+            Guid tenantId,
+            string presetCode,
             CancellationToken ct = default);
     }
 }

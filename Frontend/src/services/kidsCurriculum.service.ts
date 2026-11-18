@@ -15,6 +15,14 @@ export interface KidsConceptAtom {
   funFactEn: string;
   funFactVi: string;
   isAiGenerated: boolean;
+  authorName?: string;
+  authorClass?: string;
+  creatorDream?: string;
+  imageUrl?: string;
+  voiceAudioUrl?: string;
+  status?: string;
+  gratitudeCount?: number;
+  isCommunityContribution?: boolean;
 }
 
 export interface KidsChoiceOption {
@@ -64,6 +72,12 @@ export interface KidsStageTheme {
   isSystemDefault: boolean;
   preferredIslands: string[];
   props: KidsStageProp[];
+  authorName?: string;
+  authorClass?: string;
+  creatorDream?: string;
+  backdropImageUrl?: string;
+  status?: string;
+  gratitudeCount?: number;
 }
 
 export interface KidsLessonPlan {
@@ -131,14 +145,42 @@ export const kidsCurriculumService = {
     return res.data;
   },
 
-  async getStageThemes(): Promise<KidsStageTheme[]> {
-    const res = await api.get<KidsStageTheme[]>('/api/kids/stages');
+  async getStageThemes(includePending = false): Promise<KidsStageTheme[]> {
+    const res = await api.get<KidsStageTheme[]>('/api/kids/stages', { params: { includePending } });
+    return res.data;
+  },
+
+  async getConceptAtoms(includePending = false): Promise<KidsConceptAtom[]> {
+    const res = await api.get<KidsConceptAtom[]>('/api/kids/atoms', { params: { includePending } });
     return res.data;
   },
 
   async saveStageTheme(stage: KidsStageTheme): Promise<KidsStageTheme> {
     const res = await api.post<KidsStageTheme>('/api/kids/stages', stage);
     return res.data;
+  },
+
+  async submitCreatorBundle(bundle: {
+    authorName: string;
+    authorClass?: string;
+    creatorDream?: string;
+    customStage?: KidsStageTheme;
+    atoms: Partial<KidsConceptAtom>[];
+  }) {
+    const res = await api.post('/api/kids/creator/submit-bundle', bundle);
+    return res.data;
+  },
+
+  async moderateContribution(code: string, approve: boolean) {
+    const res = await api.post(`/api/kids/contributions/${encodeURIComponent(code)}/moderate`, null, {
+      params: { approve },
+    });
+    return res.data;
+  },
+
+  async giveGratitude(code: string): Promise<number> {
+    const res = await api.post<{ gratitudeCount: number }>(`/api/kids/contributions/${encodeURIComponent(code)}/gratitude`);
+    return res.data?.gratitudeCount ?? 0;
   },
 
   async buildCurriculumWithAi(

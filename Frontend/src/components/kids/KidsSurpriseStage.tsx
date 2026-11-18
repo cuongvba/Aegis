@@ -43,7 +43,11 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
     const speakMsg = isVi
       ? `${prop.labelVi}! ${atom.secondaryText}. ${atom.sampleSentenceVi}`
       : `${prop.labelEn}! ${atom.primaryText}. ${atom.sampleSentenceEn}`;
-    speakKidText(speakMsg, isVi ? 'vi' : 'en');
+    if (atom.voiceAudioUrl) {
+      new Audio(atom.voiceAudioUrl).play().catch(() => speakKidText(speakMsg, isVi ? 'vi' : 'en'));
+    } else {
+      speakKidText(speakMsg, isVi ? 'vi' : 'en');
+    }
   };
 
   const allOpened = openedIndices.length >= atoms.length;
@@ -51,7 +55,10 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
   const activeProp = revealedIdx !== null ? propsPool[revealedIdx % propsPool.length] : null;
 
   return (
-    <div className={`rounded-[2.4rem] bg-gradient-to-br ${stageTheme.backgroundGradient} p-5 sm:p-7 text-white shadow-2xl border-4 border-white space-y-5`}>
+    <div
+      style={stageTheme.backdropImageUrl ? { backgroundImage: `linear-gradient(rgba(15,23,42,0.45), rgba(15,23,42,0.55)), url(${stageTheme.backdropImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      className={`rounded-[2.4rem] bg-gradient-to-br ${stageTheme.backgroundGradient} p-5 sm:p-7 text-white shadow-2xl border-4 border-white space-y-5`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex items-center gap-2 rounded-full bg-white/25 backdrop-blur-sm px-4 py-1.5 text-xs sm:text-sm font-black">
           <span className="text-lg">{stageTheme.badgeEmoji}</span>
@@ -98,10 +105,15 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
       {/* Surprise Reveal Card */}
       {activeAtom && activeProp && (
         <div className="rounded-3xl bg-white text-slate-900 p-5 shadow-xl border-4 border-amber-200 flex flex-col sm:flex-row items-center gap-4 animate-fadeIn">
-          <div className="text-6xl sm:text-7xl shrink-0">{activeAtom.emoji}</div>
+          {activeAtom.imageUrl ? (
+            <img src={activeAtom.imageUrl} alt={activeAtom.secondaryText} className="w-24 h-24 rounded-2xl object-cover border-2 border-amber-200 shrink-0" />
+          ) : (
+            <div className="text-6xl sm:text-7xl shrink-0">{activeAtom.emoji}</div>
+          )}
           <div className="flex-1 text-center sm:text-left space-y-1">
             <div className="inline-flex items-center gap-1 text-[11px] font-black uppercase text-indigo-600">
               <Sparkles size={12} /> {isVi ? activeProp.labelVi : activeProp.labelEn}
+              {activeAtom.authorName && <span className="text-rose-600 ml-1">• ✍️ {activeAtom.authorName}</span>}
             </div>
             <h4 className="text-2xl font-black text-slate-900">
               {activeAtom.primaryText} <span className="text-orange-600">— {activeAtom.secondaryText}</span>

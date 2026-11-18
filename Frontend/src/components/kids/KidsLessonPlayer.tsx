@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Volume2, Mic, ArrowRight, Sparkles, Star, Trophy, RotateCcw } from 'lucide-react';
+import { Volume2, Mic, ArrowRight, Sparkles, Star, Trophy, RotateCcw, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { KidsLessonPlan, recordAtomOutcome } from '@/services/kidsCurriculum.service';
+import { kidsCurriculumService, KidsLessonPlan, recordAtomOutcome } from '@/services/kidsCurriculum.service';
 import { KidsSurpriseStage } from './KidsSurpriseStage';
 import { speakKidText, stopKidSpeech } from './kidsSpeech';
 
@@ -24,6 +24,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
   const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
   const [earnedStars, setEarnedStars] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [thanked, setThanked] = useState(false);
 
   const isVi = lang === 'vi';
   // Filter out EXPOSE_CARD when Play-First Surprise Stage already revealed all atoms interactively
@@ -54,6 +55,8 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
     );
   }
 
+  const contributorAtom = plan.atoms.find((a) => a.authorName);
+
   if (isCompleted || !activity) {
     return (
       <div className="rounded-[2.5rem] bg-gradient-to-br from-amber-100 via-white to-cyan-100 border-4 border-white p-8 text-center shadow-2xl space-y-5">
@@ -64,6 +67,28 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
         <p className="text-base font-bold text-amber-700 flex items-center justify-center gap-2">
           <Star className="fill-amber-400 text-amber-500" /> +{earnedStars} {isVi ? 'Sao Trí Tuệ' : 'Wisdom Stars'}
         </p>
+        {contributorAtom && (
+          <div className="mx-auto max-w-md rounded-2xl bg-rose-50 border-2 border-rose-200 p-4 space-y-2">
+            <div className="text-xs font-black text-rose-700">
+              ✍️ {isVi ? 'Tác giả:' : 'Created by:'} {contributorAtom.authorName} {contributorAtom.authorClass ? `(${contributorAtom.authorClass})` : ''}
+            </div>
+            {contributorAtom.creatorDream && (
+              <p className="text-xs italic text-slate-700">"{contributorAtom.creatorDream}"</p>
+            )}
+            <button
+              type="button"
+              disabled={thanked}
+              onClick={async () => {
+                setThanked(true);
+                await kidsCurriculumService.giveGratitude(contributorAtom.atomCode).catch(() => {});
+              }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 text-xs font-black disabled:opacity-60"
+            >
+              <Heart size={14} className="fill-current" />
+              {thanked ? (isVi ? 'Đã gửi lời cảm ơn!' : 'Thank You Sent!') : (isVi ? 'Tặng Sao Cảm Ơn Anh/Chị' : 'Send Gratitude Star')}
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           <button
             type="button"

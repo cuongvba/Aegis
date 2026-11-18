@@ -82,6 +82,57 @@ namespace Aegis.UnitTests
         }
 
         [Fact]
+        public async Task YouthCreatorBundle_PendingUntilApprovedAndSupportsGratitude()
+        {
+            await using var db = CreateInMemoryDb(nameof(YouthCreatorBundle_PendingUntilApprovedAndSupportsGratitude));
+            var tenantId = Guid.NewGuid();
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var submitted = await service.SubmitCreatorBundleAsync(tenantId, new SubmitKidsCreatorBundleDto
+            {
+                AuthorName = "Minh Anh",
+                AuthorClass = "Lớp 10A2",
+                CreatorDream = "Mong các em nhỏ luôn yêu thiên nhiên",
+                CustomStage = new KidsStageThemeDto
+                {
+                    TitleVi = "Khu Vườn Đom Đóm",
+                    TitleEn = "Firefly Garden",
+                    BadgeEmoji = "✨",
+                    PreferredIslands = new List<string> { "fairytale" }
+                },
+                Atoms = new List<KidsConceptAtomDto>
+                {
+                    new()
+                    {
+                        IslandId = "fairytale",
+                        AgeBand = "3-5",
+                        Emoji = "🐞",
+                        PrimaryText = "Ladybug",
+                        SecondaryText = "Bọ rùa xinh"
+                    }
+                }
+            });
+
+            Assert.True(submitted.Success);
+            Assert.Equal("PENDING_REVIEW", submitted.Status);
+            Assert.Single(submitted.AtomCodes);
+
+            // Hidden from kids before approval
+            var publicBefore = await service.GetConceptAtomsAsync(tenantId, "fairytale", "3-5", includePending: false);
+            Assert.DoesNotContain(publicBefore, a => a.AtomCode == submitted.AtomCodes[0]);
+
+            // Approve atom & stage
+            Assert.True(await service.ModerateContributionAsync(tenantId, submitted.AtomCodes[0], approve: true));
+            Assert.True(await service.ModerateContributionAsync(tenantId, submitted.StageCode!, approve: true));
+
+            var publicAfter = await service.GetConceptAtomsAsync(tenantId, "fairytale", "3-5", includePending: false);
+            Assert.Contains(publicAfter, a => a.AtomCode == submitted.AtomCodes[0] && a.AuthorName == "Minh Anh");
+
+            int stars = await service.GiveGratitudeAsync(tenantId, submitted.AtomCodes[0]);
+            Assert.Equal(1, stars);
+        }
+
+        [Fact]
         public async Task SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages()
         {
             await using var db = CreateInMemoryDb(nameof(SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages));
