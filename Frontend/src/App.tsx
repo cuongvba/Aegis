@@ -40,6 +40,7 @@ const Dashboard = lazyRetry(() => import('@/pages/dashboard/Dashboard').then(m =
 const LandingPage = lazyRetry(() => import('@/pages/landing/LandingPage').then(m => ({ default: m.LandingPage })));
 const PracticePage = lazyRetry(() => import('@/pages/practice/PracticePage').then(m => ({ default: m.PracticePage })));
 const KidsWorldPage = lazyRetry(() => import('@/pages/kids/KidsWorldPage').then(m => ({ default: m.KidsWorldPage })));
+const OfficeWorkspacePage = lazyRetry(() => import('@/pages/office/OfficeWorkspacePage').then(m => ({ default: m.OfficeWorkspacePage })));
 const AttemptRoom = lazyRetry(() => import('@/pages/quiz/AttemptRoom').then(m => ({ default: m.AttemptRoom })));
 const AdaptiveExamRoom = lazyRetry(() => import('@/pages/quiz/AdaptiveExamRoom'));
 const SecureExamRoom = lazyRetry(() => import('@/pages/quiz/SecureExamRoom'));
@@ -158,6 +159,7 @@ export default function App() {
               {/* Practice/Exam & Kids World are full screen so they stay separate from MainLayout */}
               <Route path="/practice" element={<PracticePage />} />
               <Route path="/kids" element={<KidsWorldPage />} />
+              <Route path="/office-studio" element={<OfficeWorkspacePage />} />
               <Route path="/creator/studio" element={<ProtectedRoute><CreatorZenStudioPage /></ProtectedRoute>} />
               <Route path="/creator/topics" element={<ProtectedRoute><ZenTopicsPage /></ProtectedRoute>} />
               <Route path="/creator/questions" element={<ProtectedRoute><ZenQuestionsPage /></ProtectedRoute>} />
