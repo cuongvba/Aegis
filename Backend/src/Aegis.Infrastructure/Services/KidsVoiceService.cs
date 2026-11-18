@@ -26,7 +26,7 @@ namespace Aegis.Infrastructure.Services
     public class KidsVoiceService : IKidsVoiceService
     {
         private const string TrustedClientToken = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
-        private const string SecMsGecVersion = "1-130.0.2849.68";
+        private const string SecMsGecVersion = "1-143.0.3650.75";
         private const long WindowsFileTimeEpochTicks = 11644473600L * 10_000_000L;
         private const int MaxCacheEntries = 500;
 
@@ -123,6 +123,14 @@ namespace Aegis.Infrastructure.Services
             {
                 CacheAudio(cacheKey, edgeBytes);
                 return edgeBytes;
+            }
+
+            // Tier 3: Zero-key Multilingual Google TTS fallback (supports 100+ languages)
+            var googleBytes = await TryGoogleTtsAsync(cleanText, locale, ct);
+            if (googleBytes != null && googleBytes.Length > 0)
+            {
+                CacheAudio(cacheKey, googleBytes);
+                return googleBytes;
             }
 
             return null;
@@ -253,6 +261,30 @@ namespace Aegis.Infrastructure.Services
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "[KidsVoice] Edge Neural TTS unavailable for Voice={Voice}", voiceId);
+                return null;
+            }
+        }
+
+        private async Task<byte[]?> TryGoogleTtsAsync(string text, string locale, CancellationToken ct)
+        {
+            try
+            {
+                string tl = locale.Equals("zh-CN", StringComparison.OrdinalIgnoreCase)
+                    ? "zh-CN"
+                    : locale.Split('-')[0].ToLowerInvariant();
+
+                string url = $"https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={Uri.EscapeDataString(tl)}&q={Uri.EscapeDataString(text)}";
+                using var msg = new HttpRequestMessage(HttpMethod.Get, url);
+                msg.Headers.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36");
+
+                using var res = await SharedHttp.SendAsync(msg, ct);
+                if (!res.IsSuccessStatusCode) return null;
+                byte[] bytes = await res.Content.ReadAsByteArrayAsync(ct);
+                return bytes.Length > 100 ? bytes : null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "[KidsVoice] Google TTS fallback unavailable for Locale={Locale}", locale);
                 return null;
             }
         }
