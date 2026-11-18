@@ -16,7 +16,7 @@ export const KidsAiBuilderModal: React.FC<KidsAiBuilderModalProps> = ({
   lang,
 }) => {
   const [topicTitle, setTopicTitle] = useState('');
-  const [islandId, setIslandId] = useState('explore');
+  const [islandId, setIslandId] = useState('fairytale');
   const [ageBand, setAgeBand] = useState('6-8');
   const [itemCount, setItemCount] = useState(4);
   const [isBuilding, setIsBuilding] = useState(false);
@@ -81,10 +81,10 @@ export const KidsAiBuilderModal: React.FC<KidsAiBuilderModalProps> = ({
 
           <div className="grid grid-cols-3 gap-2">
             <select value={islandId} onChange={(e) => setIslandId(e.target.value)} className="rounded-xl bg-slate-950 border border-slate-700 px-2.5 py-2 text-white">
-              <option value="english">🦁 English</option>
-              <option value="math">🧮 Math</option>
-              <option value="science">🚀 Science</option>
-              <option value="explore">🌈 Explore</option>
+              <option value="music">🎵 Lời Ca Tiếng Hát</option>
+              <option value="animals">🦁 Muôn Thú</option>
+              <option value="toys">🧸 Đồ Chơi</option>
+              <option value="fairytale">🧚 Thần Tiên</option>
             </select>
             <select value={ageBand} onChange={(e) => setAgeBand(e.target.value)} className="rounded-xl bg-slate-950 border border-slate-700 px-2.5 py-2 text-white">
               <option value="3-5">{isVi ? '3–5 tuổi' : 'Ages 3–5'}</option>

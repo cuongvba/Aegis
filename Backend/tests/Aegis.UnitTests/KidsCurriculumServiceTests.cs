@@ -29,10 +29,10 @@ namespace Aegis.UnitTests
 
             var all = await service.GetConceptAtomsAsync(Guid.NewGuid());
 
-            Assert.Contains(all, a => a.IslandId == "english");
-            Assert.Contains(all, a => a.IslandId == "math");
-            Assert.Contains(all, a => a.IslandId == "science");
-            Assert.Contains(all, a => a.IslandId == "explore");
+            Assert.Contains(all, a => a.IslandId == "music");
+            Assert.Contains(all, a => a.IslandId == "animals");
+            Assert.Contains(all, a => a.IslandId == "toys");
+            Assert.Contains(all, a => a.IslandId == "fairytale");
         }
 
         [Fact]
@@ -43,13 +43,13 @@ namespace Aegis.UnitTests
 
             var plan = await service.GenerateDailyAdventureAsync(Guid.NewGuid(), new GenerateKidsAdventureRequestDto
             {
-                IslandId = "math",
+                IslandId = "toys",
                 AtomCount = 2,
-                WeakAtomCodes = new List<string> { "MATH_MUL_3_4" }
+                WeakAtomCodes = new List<string> { "TOY_BALLOON" }
             });
 
             Assert.Equal(2, plan.Atoms.Count);
-            Assert.Equal("MATH_MUL_3_4", plan.Atoms[0].AtomCode);
+            Assert.Equal("TOY_BALLOON", plan.Atoms[0].AtomCode);
             Assert.Contains(plan.Activities, a => a.ActivityType == "EXPOSE_CARD");
             Assert.Contains(plan.Activities, a => a.ActivityType == "INTERACT_COUNT");
             Assert.Contains(plan.Activities, a => a.ActivityType == "MINI_CHALLENGE" && a.Options.Count >= 2);
