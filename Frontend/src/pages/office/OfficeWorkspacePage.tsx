@@ -272,10 +272,10 @@ export const OfficeWorkspacePage: React.FC = () => {
             <div className="rounded-2xl border border-slate-700 bg-slate-900 overflow-hidden h-[68vh] print:hidden">
               <iframe src={pdfPreviewUrl} title={title} className="w-full h-full border-0" />
             </div>
-            <RichDocEditorPane value={markdown} onChange={setMarkdown} />
+            <RichDocEditorPane value={markdown} onChange={setMarkdown} documentTitle={title} />
           </div>
         ) : (
-          <RichDocEditorPane value={markdown} onChange={setMarkdown} />
+          <RichDocEditorPane value={markdown} onChange={setMarkdown} documentTitle={title} />
         )}
       </div>
     </div>

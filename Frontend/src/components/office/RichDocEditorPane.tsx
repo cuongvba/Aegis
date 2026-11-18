@@ -7,30 +7,39 @@ import {
   Sparkles,
   Search,
   FileSpreadsheet,
+  Scissors,
+  Columns3,
 } from 'lucide-react';
-import { MathRenderer } from '@/components/common/MathRenderer';
 import { MathFormulaStudioModal } from '@/components/common/math-studio/MathFormulaStudioModal';
 import { DocumentOutlineSidebar } from './DocumentOutlineSidebar';
 import { FindReplaceBar } from './FindReplaceBar';
 import { VisualDocsCanvas } from './VisualDocsCanvas';
+import { PaginatedA4Viewer, type MarginPreset } from './PaginatedA4Viewer';
 
 interface RichDocEditorPaneProps {
   value: string;
   onChange: (next: string) => void;
+  documentTitle?: string;
 }
 
-export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onChange }) => {
+export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({
+  value,
+  onChange,
+  documentTitle,
+}) => {
   const [mode, setMode] = useState<'visual' | 'split' | 'preview'>('visual');
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [zoomPct, setZoomPct] = useState(100);
   const [fontFamily, setFontFamily] = useState("'Inter', system-ui, sans-serif");
   const [fontSizePx, setFontSizePx] = useState(15);
+  const [lineHeight, setLineHeight] = useState(1.55);
+  const [marginPreset, setMarginPreset] = useState<MarginPreset>('normal');
+  const [twoColumnExam, setTwoColumnExam] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const prevLenRef = useRef(0);
 
   useEffect(() => {
-    // When a rich math/image document is loaded from file, auto-open Song song LaTeX + A4 preview
     const jumped = Math.abs((value?.length || 0) - prevLenRef.current) > 120;
     prevLenRef.current = value?.length || 0;
     if (jumped && /(\$[^$\n]+\$|data:image\/)/i.test(value)) {
@@ -73,10 +82,13 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
           '## Phần I. Trắc nghiệm\n\n' +
           '**Câu 1:** Giải phương trình bậc hai $ax^2 + bx + c = 0$ ($a \\neq 0$) bằng công thức nghiệm:\n' +
           '$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n\n' +
+          '---page---\n\n' +
+          '## Phần II. Tự luận\n\n' +
           '**Câu 2:** Tính tích phân xác định:\n' +
           '$$I = \\int_0^1 (3x^2 + 2x)\\,dx$$\n\n' +
           '| Tiêu chí | Điểm tối đa |\n| --- | --- |\n| Trình bày công thức | 5.0 |\n| Đáp số chính xác | 5.0 |'
       );
+      setMode('split');
     } else {
       onChange(
         '# Giáo Án Theo Mô Hình 5E\n\n' +
@@ -102,27 +114,22 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
 
   return (
     <div className="space-y-2.5">
-      {/* Google Docs Top Workspace Control Bar */}
+      {/* Top Google Docs & Academic Pagination Control Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-slate-900 border border-slate-800 px-3 py-2 print:hidden">
         <div className="flex flex-wrap items-center gap-1.5">
           <div className="inline-flex rounded-xl bg-slate-950 p-1 text-xs font-bold">
             <button type="button" onClick={() => setMode('visual')} className={`px-2.5 py-1 rounded-lg ${mode === 'visual' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-              <PenLine size={13} className="inline mr-1" /> Google Docs Trực quan
+              <PenLine size={13} className="inline mr-1" /> Google Docs
             </button>
             <button type="button" onClick={() => setMode('split')} className={`px-2.5 py-1 rounded-lg ${mode === 'split' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}>
               <Columns2 size={13} className="inline mr-1" /> Song song LaTeX
             </button>
             <button type="button" onClick={() => setMode('preview')} className={`px-2.5 py-1 rounded-lg ${mode === 'preview' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-              <Eye size={13} className="inline mr-1" /> Trang A4
+              <Eye size={13} className="inline mr-1" /> Phân trang A4
             </button>
           </div>
 
-          <select
-            value={zoomPct}
-            onChange={(e) => setZoomPct(Number(e.target.value))}
-            className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200"
-            title="Thu phóng trang"
-          >
+          <select value={zoomPct} onChange={(e) => setZoomPct(Number(e.target.value))} className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200" title="Thu phóng">
             <option value={80}>80%</option>
             <option value={90}>90%</option>
             <option value={100}>100%</option>
@@ -130,39 +137,47 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
             <option value={125}>125%</option>
           </select>
 
-          <select
-            value={fontFamily}
-            onChange={(e) => setFontFamily(e.target.value)}
-            className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200"
-            title="Phông chữ"
-          >
+          <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200" title="Phông chữ">
             <option value="'Inter', system-ui, sans-serif">Sans (Hiện đại)</option>
             <option value="'Georgia', 'Times New Roman', serif">Serif (Sách/Đề thi)</option>
             <option value="'JetBrains Mono', monospace">Mono (Kỹ thuật)</option>
           </select>
 
-          <select
-            value={fontSizePx}
-            onChange={(e) => setFontSizePx(Number(e.target.value))}
-            className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200"
-            title="Cỡ chữ"
-          >
+          <select value={fontSizePx} onChange={(e) => setFontSizePx(Number(e.target.value))} className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200" title="Cỡ chữ">
             <option value={13}>13px</option>
             <option value={15}>15px</option>
             <option value={16}>16px</option>
             <option value={18}>18px</option>
           </select>
+
+          <select value={marginPreset} onChange={(e) => setMarginPreset(e.target.value as MarginPreset)} className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200" title="Căn lề A4">
+            <option value="narrow">Lề hẹp (1.2cm)</option>
+            <option value="normal">Lề chuẩn (2cm)</option>
+            <option value="wide">Lề rộng (2.5cm)</option>
+          </select>
+
+          <select value={lineHeight} onChange={(e) => setLineHeight(Number(e.target.value))} className="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1 text-xs font-bold text-slate-200" title="Giãn dòng">
+            <option value={1.35}>Dòng 1.35</option>
+            <option value={1.55}>Dòng 1.55</option>
+            <option value={1.8}>Dòng 1.80</option>
+          </select>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
+          <button type="button" onClick={() => setTwoColumnExam((v) => !v)} className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold border ${twoColumnExam ? 'bg-sky-500/20 border-sky-400 text-sky-200' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+            <Columns3 size={13} /> 2 Cột Đề
+          </button>
+          <button type="button" onClick={() => insertAtCursor('\n\n---page---\n\n')} className="inline-flex items-center gap-1 rounded-lg bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 text-xs font-bold text-slate-200" title="Chèn ngắt trang A4 mới">
+            <Scissors size={13} /> Ngắt trang
+          </button>
           <button type="button" onClick={() => setShowFindReplace((v) => !v)} className="inline-flex items-center gap-1 rounded-lg bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 text-xs font-bold text-slate-200">
-            <Search size={13} /> Tìm & Thay thế
+            <Search size={13} /> Tìm/Thay
           </button>
           <button type="button" onClick={() => applyTemplate('math')} className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/20 border border-indigo-400/40 hover:bg-indigo-500/30 px-2.5 py-1.5 text-xs font-bold text-indigo-200">
             <Sparkles size={13} /> Mẫu Đề Toán
           </button>
           <button type="button" onClick={() => applyTemplate('lesson5e')} className="inline-flex items-center gap-1 rounded-lg bg-emerald-500/20 border border-emerald-400/40 hover:bg-emerald-500/30 px-2.5 py-1.5 text-xs font-bold text-emerald-200">
-            <FileSpreadsheet size={13} /> Mẫu Giáo Án 5E
+            <FileSpreadsheet size={13} /> Giáo Án 5E
           </button>
           <button type="button" onClick={() => setIsMathModalOpen(true)} className="inline-flex items-center gap-1 rounded-lg bg-amber-500/20 border border-amber-400/50 hover:bg-amber-500/30 px-2.5 py-1.5 text-xs font-black text-amber-300">
             <Sigma size={13} /> KaTeX Studio
@@ -171,14 +186,10 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
       </div>
 
       {showFindReplace && (
-        <FindReplaceBar
-          markdown={value}
-          onChange={onChange}
-          onClose={() => setShowFindReplace(false)}
-        />
+        <FindReplaceBar markdown={value} onChange={onChange} onClose={() => setShowFindReplace(false)} />
       )}
 
-      {/* Main Workspace: Outline Sidebar + Active Editor Mode */}
+      {/* Main Workspace: Outline Sidebar + Active Mode */}
       <div className="flex gap-4 items-start">
         <DocumentOutlineSidebar markdown={value} onJumpToHeading={handleJumpToHeading} />
 
@@ -198,24 +209,21 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
                 ref={textareaRef}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                rows={22}
+                rows={24}
                 placeholder="Nhập nội dung giáo án, đề thi hoặc công thức LaTeX ($x^2$, $$\frac{a}{b}$$)..."
                 className="w-full rounded-2xl border border-slate-700 bg-slate-950 p-4 font-mono text-sm text-slate-100 leading-relaxed focus:border-cyan-400 focus:outline-none print:hidden"
               />
             )}
-            <div className="rounded-2xl border border-slate-300 bg-slate-300/90 p-3 sm:p-5 max-h-[68vh] overflow-auto print:max-h-none print:overflow-visible print:bg-white print:border-0 print:p-0">
-              <article
-                style={{
-                  transform: `scale(${zoomPct / 100})`,
-                  transformOrigin: 'top center',
-                  fontFamily,
-                  fontSize: `${fontSizePx}px`,
-                }}
-                className="mx-auto max-w-[794px] min-h-[720px] rounded-lg bg-white px-7 py-8 sm:px-12 sm:py-10 text-slate-900 shadow-2xl prose prose-slate max-w-none print:shadow-none print:p-0"
-              >
-                <MathRenderer content={value || '*Chưa có nội dung.*'} className="leading-relaxed space-y-2" />
-              </article>
-            </div>
+            <PaginatedA4Viewer
+              content={value}
+              pageHeader={documentTitle}
+              zoomPct={zoomPct}
+              fontFamily={fontFamily}
+              fontSizePx={fontSizePx}
+              lineHeight={lineHeight}
+              marginPreset={marginPreset}
+              twoColumnExam={twoColumnExam}
+            />
           </div>
         )}
       </div>
@@ -227,7 +235,7 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
           <span>📄 {stats.lines} dòng</span>
           <span className="text-amber-300">∑ {stats.formulas} công thức LaTeX/KaTeX</span>
         </div>
-        <span>Dùng Google Docs Trực quan để bấm sửa thẳng trên trang A4, hoặc Song song LaTeX để gõ công thức nhanh</span>
+        <span>Dùng `---page---` hoặc nút Ngắt trang để chia trang A4 chuẩn xác khi xuất Word & In PDF</span>
       </div>
 
       <MathFormulaStudioModal

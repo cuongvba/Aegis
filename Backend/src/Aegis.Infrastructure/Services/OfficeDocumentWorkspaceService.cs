@@ -260,7 +260,24 @@ namespace Aegis.Infrastructure.Services
             while (i < lines.Length)
             {
                 string line = lines[i].Trim();
-                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("<!--"))
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    i++;
+                    continue;
+                }
+
+                if (line == "---page---" || line.StartsWith("<!-- Trang ", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i > 0)
+                    {
+                        var pbPara = doc.CreateParagraph();
+                        pbPara.IsPageBreak = true;
+                    }
+                    i++;
+                    continue;
+                }
+
+                if (line.StartsWith("<!--"))
                 {
                     i++;
                     continue;
@@ -297,35 +314,35 @@ namespace Aegis.Infrastructure.Services
                 }
 
                 var para = doc.CreateParagraph();
-                var run = para.CreateRun();
 
                 if (line.StartsWith("### "))
                 {
+                    var run = para.CreateRun();
                     run.SetText(line.Substring(4).Trim());
                     run.IsBold = true;
                     run.FontSize = 13;
                 }
                 else if (line.StartsWith("## "))
                 {
+                    var run = para.CreateRun();
                     run.SetText(line.Substring(3).Trim());
                     run.IsBold = true;
                     run.FontSize = 15;
                 }
                 else if (line.StartsWith("# "))
                 {
+                    var run = para.CreateRun();
                     run.SetText(line.Substring(2).Trim());
                     run.IsBold = true;
                     run.FontSize = 17;
                 }
                 else if (line.StartsWith("- ") || line.StartsWith("* "))
                 {
-                    run.SetText("• " + line.Substring(2).Trim());
-                    run.FontSize = 11;
+                    AppendFormattedRuns(para, "• " + line.Substring(2).Trim(), 11);
                 }
                 else
                 {
-                    run.SetText(line);
-                    run.FontSize = 11;
+                    AppendFormattedRuns(para, line, 11);
                 }
 
                 i++;
@@ -334,6 +351,49 @@ namespace Aegis.Infrastructure.Services
             using var outMs = new MemoryStream();
             doc.Write(outMs);
             return outMs.ToArray();
+        }
+
+        private static void AppendFormattedRuns(XWPFParagraph para, string text, int fontSize)
+        {
+            var tokenRegex = new System.Text.RegularExpressions.Regex(@"(\*\*[^*]+\*\*|\*[^*]+\*|<mark>[^<]+</mark>)");
+            int lastIdx = 0;
+            foreach (System.Text.RegularExpressions.Match m in tokenRegex.Matches(text))
+            {
+                if (m.Index > lastIdx)
+                {
+                    var plainRun = para.CreateRun();
+                    plainRun.SetText(text.Substring(lastIdx, m.Index - lastIdx));
+                    plainRun.FontSize = fontSize;
+                }
+
+                string tok = m.Value;
+                var styledRun = para.CreateRun();
+                styledRun.FontSize = fontSize;
+                if (tok.StartsWith("**") && tok.EndsWith("**"))
+                {
+                    styledRun.SetText(tok.Substring(2, tok.Length - 4));
+                    styledRun.IsBold = true;
+                }
+                else if (tok.StartsWith("*") && tok.EndsWith("*"))
+                {
+                    styledRun.SetText(tok.Substring(1, tok.Length - 2));
+                    styledRun.IsItalic = true;
+                }
+                else if (tok.StartsWith("<mark>") && tok.EndsWith("</mark>"))
+                {
+                    styledRun.SetText(tok.Substring(6, tok.Length - 13));
+                    styledRun.SetColor("B45309");
+                    styledRun.IsBold = true;
+                }
+                lastIdx = m.Index + m.Length;
+            }
+
+            if (lastIdx < text.Length)
+            {
+                var tailRun = para.CreateRun();
+                tailRun.SetText(text.Substring(lastIdx));
+                tailRun.FontSize = fontSize;
+            }
         }
 
         public byte[] ExportXlsx(OfficeExportXlsxRequestDto request)
