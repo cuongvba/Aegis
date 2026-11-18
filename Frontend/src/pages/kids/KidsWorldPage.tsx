@@ -18,6 +18,8 @@ import {
   fetchKidsVoices,
   getSelectedKidVoiceId,
   setSelectedKidVoiceId,
+  getSelectedKidVoiceRate,
+  setSelectedKidVoiceRate,
   KidsVoiceProfile,
 } from '@/components/kids/kidsSpeech';
 
@@ -111,6 +113,7 @@ export const KidsWorldPage: React.FC = () => {
   const [activeLocaleCode, setActiveLocaleCode] = useState<string>(() => localStorage.getItem('aegis-kids-locale') || 'vi-VN');
   const [voices, setVoices] = useState<KidsVoiceProfile[]>([]);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => getSelectedKidVoiceId());
+  const [voiceRate, setVoiceRate] = useState<number>(() => getSelectedKidVoiceRate());
   const [isGateOpen, setIsGateOpen] = useState(false);
 
   useEffect(() => {
@@ -121,7 +124,16 @@ export const KidsWorldPage: React.FC = () => {
   const speechLang = activeLocale?.speechTag || lang;
 
   useEffect(() => {
-    fetchKidsVoices(speechLang).then(setVoices).catch(() => {});
+    const load = () => {
+      fetchKidsVoices(speechLang).then(setVoices).catch(() => {});
+    };
+    load();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = load;
+      return () => {
+        window.speechSynthesis.onvoiceschanged = null;
+      };
+    }
   }, [speechLang]);
 
   const pet = getPetStage(stars, isVi);
@@ -204,25 +216,45 @@ export const KidsWorldPage: React.FC = () => {
               <Wand2 size={14} /> {isVi ? 'AI Tạo Bài' : 'AI Builder'}
             </button>
             {voices.length > 0 && (
-              <select
-                value={selectedVoiceId}
-                onChange={(e) => {
-                  const vid = e.target.value;
-                  setSelectedVoiceId(vid);
-                  setSelectedKidVoiceId(vid);
-                  speakKidText(isVi ? 'Xin chào bé yêu! Mình cùng khám phá nhé!' : 'Hello little explorer!', speechLang, vid);
-                }}
-                aria-label="Kids Voice"
-                className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-black text-indigo-800 hover:border-indigo-400 focus:outline-none max-w-[175px]"
-                title={isVi ? 'Chọn giọng đọc AI' : 'Select AI Voice'}
-              >
-                <option value="">🎙️ {isVi ? 'Giọng mặc định' : 'Auto Voice'}</option>
-                {voices.map((v) => (
-                  <option key={v.voiceId} value={v.voiceId}>
-                    🎙️ {v.displayName}
-                  </option>
-                ))}
-              </select>
+              <div className="inline-flex items-center gap-1.5">
+                <select
+                  value={selectedVoiceId}
+                  onChange={(e) => {
+                    const vid = e.target.value;
+                    setSelectedVoiceId(vid);
+                    setSelectedKidVoiceId(vid);
+                    speakKidText(isVi ? 'Xin chào bé yêu! Mình cùng khám phá nhé!' : 'Hello little explorer!', speechLang, vid, voiceRate);
+                  }}
+                  aria-label="Kids Voice"
+                  className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-black text-indigo-800 hover:border-indigo-400 focus:outline-none max-w-[165px]"
+                  title={isVi ? 'Chọn giọng đọc AI' : 'Select AI Voice'}
+                >
+                  <option value="">🎙️ {isVi ? 'Giọng mặc định' : 'Auto Voice'}</option>
+                  {voices.map((v) => (
+                    <option key={v.voiceId} value={v.voiceId}>
+                      🎙️ {v.displayName}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={voiceRate}
+                  onChange={(e) => {
+                    const r = Number(e.target.value) || 1.0;
+                    setVoiceRate(r);
+                    setSelectedKidVoiceRate(r);
+                    speakKidText(isVi ? 'Tốc độ đọc mới nè bé ơi!' : 'Here is my new reading speed!', speechLang, selectedVoiceId, r);
+                  }}
+                  aria-label="Voice Speed"
+                  className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 px-2 py-1.5 text-xs font-black text-amber-800 hover:border-amber-400 focus:outline-none"
+                  title={isVi ? 'Tốc độ đọc' : 'Reading Speed'}
+                >
+                  <option value={0.75}>🐢 0.75x</option>
+                  <option value={0.9}>🐢 0.9x</option>
+                  <option value={1}>🦉 1.0x</option>
+                  <option value={1.15}>🚀 1.15x</option>
+                  <option value={1.3}>⚡ 1.3x</option>
+                </select>
+              </div>
             )}
             <button
               type="button"

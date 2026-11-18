@@ -163,11 +163,12 @@ namespace Aegis.API.Controllers
             if (request == null || string.IsNullOrWhiteSpace(request.Text))
                 return BadRequest(new { error = "Text is required." });
 
-            byte[]? audio = await _voiceService.SynthesizeSpeechAsync(request, ct);
-            if (audio == null || audio.Length == 0)
+            var result = await _voiceService.SynthesizeSpeechWithMetaAsync(request, ct);
+            if (result == null || result.AudioBytes.Length == 0)
                 return NoContent();
 
-            return File(audio, "audio/mpeg");
+            Response.Headers["X-Aegis-Voice-Provider"] = result.Provider;
+            return File(result.AudioBytes, "audio/mpeg");
         }
     }
 }

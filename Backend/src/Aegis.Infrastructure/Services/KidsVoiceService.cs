@@ -30,7 +30,7 @@ namespace Aegis.Infrastructure.Services
         private const long WindowsFileTimeEpochTicks = 11644473600L * 10_000_000L;
         private const int MaxCacheEntries = 500;
 
-        private static readonly ConcurrentDictionary<string, byte[]> AudioCache = new(StringComparer.Ordinal);
+        private static readonly ConcurrentDictionary<string, KidsTtsResultDto> AudioCache = new(StringComparer.Ordinal);
         private static readonly Regex EmojiStripRegex = new(@"[\p{Cs}\u2600-\u27BF\uFE0F]", RegexOptions.Compiled);
         private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(12) };
 
@@ -86,6 +86,12 @@ namespace Aegis.Infrastructure.Services
 
         public async Task<byte[]?> SynthesizeSpeechAsync(KidsTtsRequestDto request, CancellationToken ct = default)
         {
+            var res = await SynthesizeSpeechWithMetaAsync(request, ct);
+            return res?.AudioBytes;
+        }
+
+        public async Task<KidsTtsResultDto?> SynthesizeSpeechWithMetaAsync(KidsTtsRequestDto request, CancellationToken ct = default)
+        {
             if (request == null || string.IsNullOrWhiteSpace(request.Text))
                 return null;
 
@@ -112,8 +118,9 @@ namespace Aegis.Infrastructure.Services
                 var customBytes = await TryOpenAiCompatibleTtsAsync(customEndpoint, cleanText, voiceId, ct);
                 if (customBytes != null && customBytes.Length > 0)
                 {
-                    CacheAudio(cacheKey, customBytes);
-                    return customBytes;
+                    var result = new KidsTtsResultDto { AudioBytes = customBytes, Provider = "openai-tts" };
+                    CacheAudio(cacheKey, result);
+                    return result;
                 }
             }
 
@@ -121,16 +128,18 @@ namespace Aegis.Infrastructure.Services
             var edgeBytes = await TryEdgeNeuralTtsAsync(cleanText, locale, voiceId, rate, pitch, ct);
             if (edgeBytes != null && edgeBytes.Length > 0)
             {
-                CacheAudio(cacheKey, edgeBytes);
-                return edgeBytes;
+                var result = new KidsTtsResultDto { AudioBytes = edgeBytes, Provider = "edge-neural" };
+                CacheAudio(cacheKey, result);
+                return result;
             }
 
             // Tier 3: Zero-key Multilingual Google TTS fallback (supports 100+ languages)
             var googleBytes = await TryGoogleTtsAsync(cleanText, locale, ct);
             if (googleBytes != null && googleBytes.Length > 0)
             {
-                CacheAudio(cacheKey, googleBytes);
-                return googleBytes;
+                var result = new KidsTtsResultDto { AudioBytes = googleBytes, Provider = "google-tts" };
+                CacheAudio(cacheKey, result);
+                return result;
             }
 
             return null;
@@ -344,11 +353,11 @@ namespace Aegis.Infrastructure.Services
             return Convert.ToHexString(hash);
         }
 
-        private static void CacheAudio(string key, byte[] bytes)
+        private static void CacheAudio(string key, KidsTtsResultDto result)
         {
             if (AudioCache.Count >= MaxCacheEntries)
                 AudioCache.Clear();
-            AudioCache[key] = bytes;
+            AudioCache[key] = result;
         }
     }
 }

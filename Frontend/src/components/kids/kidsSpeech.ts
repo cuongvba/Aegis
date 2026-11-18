@@ -15,7 +15,11 @@ const LANG_VOICE_MAP: Record<string, string> = {
 };
 
 const VOICE_PREF_KEY = 'aegis-kids-voice-id';
-const neuralAudioCache = new Map<string, string>();
+const VOICE_RATE_KEY = 'aegis-kids-voice-rate';
+const MALE_VOICE_HINTS = ['namminh', 'andrew', 'ryan', 'keita', 'injoon', 'yunxi', 'henri', 'alvaro', 'conrad', 'niwat', 'ardi', 'antonio', 'dmitry', 'hamed'];
+const KID_VOICE_HINTS = ['ana'];
+
+const neuralAudioCache = new Map<string, { url: string; provider: string }>();
 let activeAudio: HTMLAudioElement | null = null;
 let activeFetchController: AbortController | null = null;
 
@@ -51,15 +55,55 @@ export function setSelectedKidVoiceId(voiceId: string): void {
   }
 }
 
-export async function fetchKidsVoices(locale?: string): Promise<KidsVoiceProfile[]> {
+export function getSelectedKidVoiceRate(): number {
   try {
-    const query = locale ? `?locale=${encodeURIComponent(normalizeBcp47(locale))}` : '';
-    const res = await fetch(`/api/kids/voices${query}`);
-    if (!res.ok) return [];
-    return (await res.json()) as KidsVoiceProfile[];
+    const val = Number(localStorage.getItem(VOICE_RATE_KEY));
+    return Number.isFinite(val) && val >= 0.7 && val <= 1.4 ? val : 1.0;
   } catch {
-    return [];
+    return 1.0;
   }
+}
+
+export function setSelectedKidVoiceRate(rate: number): void {
+  try {
+    const clamped = Math.max(0.7, Math.min(1.4, Number(rate) || 1.0));
+    localStorage.setItem(VOICE_RATE_KEY, String(clamped));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function getBrowserVoicesForLocale(locale: string): KidsVoiceProfile[] {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return [];
+  const norm = normalizeBcp47(locale).toLowerCase();
+  const prefix = norm.split('-')[0];
+  return window.speechSynthesis
+    .getVoices()
+    .filter((v) => v.lang.toLowerCase() === norm || v.lang.toLowerCase().startsWith(prefix + '-'))
+    .slice(0, 6)
+    .map((v) => ({
+      voiceId: `browser:${v.name}`,
+      displayName: `${v.name.replace(/Microsoft |Google |Online \(Natural\) /gi, '')} (Trình duyệt)`,
+      localeCode: v.lang,
+      gender: 'Neutral',
+      persona: 'Browser',
+      provider: 'browser-speech',
+    }));
+}
+
+export async function fetchKidsVoices(locale?: string): Promise<KidsVoiceProfile[]> {
+  const targetLocale = normalizeBcp47(locale || 'vi-VN');
+  let serverVoices: KidsVoiceProfile[] = [];
+  try {
+    const res = await fetch(`/api/kids/voices?locale=${encodeURIComponent(targetLocale)}`);
+    if (res.ok) {
+      serverVoices = (await res.json()) as KidsVoiceProfile[];
+    }
+  } catch {
+    // Ignore network errors
+  }
+  const browserVoices = getBrowserVoicesForLocale(targetLocale);
+  return [...serverVoices, ...browserVoices];
 }
 
 export function cleanTextForSpeech(raw: string): string {
@@ -74,10 +118,15 @@ export function cleanTextForSpeech(raw: string): string {
     .trim();
 }
 
-function pickBestBrowserVoice(targetBcp47: string): SpeechSynthesisVoice | null {
+function pickBestBrowserVoice(targetBcp47: string, explicitBrowserVoiceName?: string): SpeechSynthesisVoice | null {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
   const voices = window.speechSynthesis.getVoices();
   if (!voices || voices.length === 0) return null;
+
+  if (explicitBrowserVoiceName) {
+    const exact = voices.find((v) => v.name === explicitBrowserVoiceName);
+    if (exact) return exact;
+  }
 
   const norm = targetBcp47.toLowerCase();
   const prefix = norm.split('-')[0];
@@ -99,21 +148,50 @@ function pickBestBrowserVoice(targetBcp47: string): SpeechSynthesisVoice | null 
   return [...candidates].sort((a, b) => scoreVoice(b) - scoreVoice(a))[0] || null;
 }
 
-function speakWithBrowserVoice(text: string, targetBcp47: string): void {
+function speakWithBrowserVoice(
+  text: string,
+  targetBcp47: string,
+  rate: number,
+  explicitBrowserVoiceName?: string
+): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = targetBcp47;
-    const matchedVoice = pickBestBrowserVoice(targetBcp47);
+    const matchedVoice = pickBestBrowserVoice(targetBcp47, explicitBrowserVoiceName);
     if (matchedVoice) {
       utter.voice = matchedVoice;
     }
-    utter.rate = 0.96;
-    utter.pitch = 1.08;
+    utter.rate = rate;
+    utter.pitch = 1.05;
     window.speechSynthesis.speak(utter);
   } catch {
     // Ignore browser speech synthesis blocks
+  }
+}
+
+function applyAudioPlaybackSettings(
+  audio: HTMLAudioElement,
+  rate: number,
+  voiceId: string,
+  provider: string
+): void {
+  const lowerVoice = voiceId.toLowerCase();
+  const isSingleVoiceFallback = provider === 'google-tts';
+  const isMalePersona = MALE_VOICE_HINTS.some((h) => lowerVoice.includes(h));
+  const isKidPersona = KID_VOICE_HINTS.some((h) => lowerVoice.includes(h));
+
+  if (isSingleVoiceFallback && isMalePersona) {
+    // Warm deeper timbre when single-voice fallback is used for male/heroic persona
+    (audio as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = false;
+    audio.playbackRate = Math.max(0.65, Math.min(1.35, rate * 0.88));
+  } else if (isSingleVoiceFallback && isKidPersona) {
+    (audio as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = false;
+    audio.playbackRate = Math.max(0.75, Math.min(1.45, rate * 1.12));
+  } else {
+    (audio as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
+    audio.playbackRate = rate;
   }
 }
 
@@ -140,21 +218,33 @@ export function stopKidSpeech(): void {
   }
 }
 
-export function speakKidText(rawText: string, langOrBcp47: string = 'vi', explicitVoiceId?: string): void {
+export function speakKidText(
+  rawText: string,
+  langOrBcp47: string = 'vi',
+  explicitVoiceId?: string,
+  explicitRate?: number
+): void {
   const text = cleanTextForSpeech(rawText);
   if (!text) return;
 
   const targetBcp47 = normalizeBcp47(langOrBcp47);
   const voiceId = explicitVoiceId ?? getSelectedKidVoiceId();
-  const cacheKey = `${targetBcp47}|${voiceId}|${text}`;
+  const rate = explicitRate ?? getSelectedKidVoiceRate();
 
   stopKidSpeech();
 
-  const cachedUrl = neuralAudioCache.get(cacheKey);
-  if (cachedUrl) {
-    const audio = new Audio(cachedUrl);
+  if (voiceId.startsWith('browser:')) {
+    speakWithBrowserVoice(text, targetBcp47, rate, voiceId.slice('browser:'.length));
+    return;
+  }
+
+  const cacheKey = `${targetBcp47}|${voiceId}|${text}`;
+  const cached = neuralAudioCache.get(cacheKey);
+  if (cached) {
+    const audio = new Audio(cached.url);
+    applyAudioPlaybackSettings(audio, rate, voiceId, cached.provider);
     activeAudio = audio;
-    audio.play().catch(() => speakWithBrowserVoice(text, targetBcp47));
+    audio.play().catch(() => speakWithBrowserVoice(text, targetBcp47, rate));
     return;
   }
 
@@ -174,27 +264,29 @@ export function speakKidText(rawText: string, langOrBcp47: string = 'vi', explic
     .then(async (res) => {
       if (controller.signal.aborted) return;
       if (res.status === 200) {
+        const provider = res.headers.get('X-Aegis-Voice-Provider') || 'google-tts';
         const blob = await res.blob();
         if (blob.size > 0 && !controller.signal.aborted) {
           if (neuralAudioCache.size >= 100) {
             const firstKey = neuralAudioCache.keys().next().value;
             if (firstKey) {
-              URL.revokeObjectURL(neuralAudioCache.get(firstKey)!);
+              URL.revokeObjectURL(neuralAudioCache.get(firstKey)!.url);
               neuralAudioCache.delete(firstKey);
             }
           }
           const url = URL.createObjectURL(blob);
-          neuralAudioCache.set(cacheKey, url);
+          neuralAudioCache.set(cacheKey, { url, provider });
           const audio = new Audio(url);
+          applyAudioPlaybackSettings(audio, rate, voiceId, provider);
           activeAudio = audio;
           await audio.play();
           return;
         }
       }
-      speakWithBrowserVoice(text, targetBcp47);
+      speakWithBrowserVoice(text, targetBcp47, rate);
     })
     .catch((err) => {
       if (err?.name === 'AbortError') return;
-      speakWithBrowserVoice(text, targetBcp47);
+      speakWithBrowserVoice(text, targetBcp47, rate);
     });
 }

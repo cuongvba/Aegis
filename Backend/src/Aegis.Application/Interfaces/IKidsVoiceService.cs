@@ -23,11 +23,21 @@ namespace Aegis.Application.Interfaces
         public string? Pitch { get; set; }
     }
 
+    public class KidsTtsResultDto
+    {
+        public byte[] AudioBytes { get; set; } = System.Array.Empty<byte>();
+        public string Provider { get; set; } = "google-tts";
+    }
+
     public interface IKidsVoiceService
     {
         IReadOnlyList<KidsVoiceProfileDto> GetVoices(string? localeCode = null);
 
         Task<byte[]?> SynthesizeSpeechAsync(
+            KidsTtsRequestDto request,
+            CancellationToken ct = default);
+
+        Task<KidsTtsResultDto?> SynthesizeSpeechWithMetaAsync(
             KidsTtsRequestDto request,
             CancellationToken ct = default);
     }
