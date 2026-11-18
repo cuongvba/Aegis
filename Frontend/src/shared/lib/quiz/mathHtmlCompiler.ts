@@ -118,7 +118,7 @@ export function compileMathAndMarkdownHtml(sanitizedContent: string, effectiveBa
   processed = processed.replace(/!\[([^\]]*)\]\((data:image\/[^;]+;base64,[^)]+|https?:\/\/[^)\s]+)\)/g, (_match, alt, src) => {
     const safeSrc = src.startsWith('data:image/x-wmf') || src.startsWith('data:image/wmf') ? convertWmfDataUriToSvg(src) : src;
     const token = `__AEGIS_IMG_TOKEN_${tokenCounter++}__`;
-    mediaTokens[token] = `<div class="my-3 flex flex-col items-center"><div class="inline-block p-2.5 rounded-2xl bg-white border border-slate-200 shadow-md max-w-full"><img src="${safeSrc}" alt="${alt || 'Hình minh họa'}" class="max-h-96 max-w-full rounded-xl object-contain bg-white block mx-auto" /></div><span class="text-[11px] text-slate-400 mt-1.5 italic">${alt || 'Hình minh họa'}</span></div>`;
+    mediaTokens[token] = `<div class="my-3 flex flex-col items-center"><div class="inline-block p-2 rounded-2xl bg-white border border-slate-200 shadow-sm max-w-full"><img src="${safeSrc}" alt="${alt || 'Hình minh họa'}" style="width: auto; height: auto;" class="max-h-[720px] max-w-full rounded-xl object-contain bg-white block mx-auto" /></div><span class="text-[11px] text-slate-400 mt-1.5 italic">${alt || 'Hình minh họa'}</span></div>`;
     return token;
   });
 
@@ -130,6 +130,10 @@ export function compileMathAndMarkdownHtml(sanitizedContent: string, effectiveBa
         ? cleanSvgDataUri(src)
         : src;
     const token = `__AEGIS_IMG_TOKEN_${tokenCounter++}__`;
+    if (/^data:image\/(png|jpe?g|gif|webp|bmp);/i.test(safeSrc)) {
+      mediaTokens[token] = `<img src="${safeSrc}" alt="Hình minh họa" style="width: auto; height: auto; max-width: 100%; object-fit: contain;" class="inline-block my-2 rounded-lg bg-white align-middle" />`;
+      return token;
+    }
     const metrics = getFormulaMetrics(safeSrc, effectiveBaseUnit);
     mediaTokens[token] = `<img src="${safeSrc}" alt="Công thức" style="height: ${metrics.heightEm.toFixed(2)}em; max-height: var(--math-max-height, 14em); width: auto; max-width: 100%; vertical-align: ${metrics.vAlign}; object-fit: contain;" class="inline-block rounded px-2 py-0.5 mx-1 align-middle border border-slate-300 bg-white shadow-sm hover:scale-105 transition-transform cursor-zoom-in" />`;
     return token;
