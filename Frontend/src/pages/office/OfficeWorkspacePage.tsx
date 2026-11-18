@@ -19,29 +19,62 @@ import { RichDocEditorPane } from '@/components/office/RichDocEditorPane';
 import { SpreadsheetGridEditor } from '@/components/office/SpreadsheetGridEditor';
 import { OfficeAiCopilotBar } from '@/components/office/OfficeAiCopilotBar';
 
+const DRAFT_STORAGE_KEY = 'aegis-office-studio-draft-v1';
+
 export const OfficeWorkspacePage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [docKind, setDocKind] = useState<'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN'>('DOCX');
-  const [title, setTitle] = useState('Giáo Án Mới (Không Cần MS Office)');
-  const [markdown, setMarkdown] = useState(
-    '# Giáo Án Mẫu\n\n- Mục tiêu bài học: Khơi dậy niềm vui khám phá cho học sinh.\n\n| Hoạt động | Thời gian |\n| --- | --- |\n| Khởi động | 5 phút |\n| Khám phá | 15 phút |'
-  );
-  const [sheets, setSheets] = useState<OfficeSheet[]>([
-    {
-      name: 'DanhSach',
-      rows: [
-        ['STT', 'Họ và tên', 'Điểm', 'Nhận xét'],
-        ['1', 'Nguyễn Minh Anh', '10', 'Chăm ngoan, tích cực'],
-        ['2', 'Trần Gia Bảo', '9.5', 'Sáng tạo'],
-      ],
-    },
-  ]);
+  const [docKind, setDocKind] = useState<'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN'>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}');
+      return saved.docKind === 'XLSX' ? 'XLSX' : 'DOCX';
+    } catch { return 'DOCX'; }
+  });
+  const [title, setTitle] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}');
+      return saved.title || 'Giáo Án Mới (Không Cần MS Office)';
+    } catch { return 'Giáo Án Mới (Không Cần MS Office)'; }
+  });
+  const [markdown, setMarkdown] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}');
+      if (saved.markdown) return saved.markdown as string;
+    } catch { /* ignore */ }
+    return '# Giáo Án Mẫu\n\n- Mục tiêu bài học: Khơi dậy niềm vui khám phá cho học sinh.\n\n| Hoạt động | Thời gian |\n| --- | --- |\n| Khởi động | 5 phút |\n| Khám phá | 15 phút |';
+  });
+  const [sheets, setSheets] = useState<OfficeSheet[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || '{}');
+      if (Array.isArray(saved.sheets) && saved.sheets.length > 0) return saved.sheets;
+    } catch { /* ignore */ }
+    return [
+      {
+        name: 'DanhSach',
+        rows: [
+          ['STT', 'Họ và tên', 'Điểm', 'Nhận xét'],
+          ['1', 'Nguyễn Minh Anh', '10', 'Chăm ngoan, tích cực'],
+          ['2', 'Trần Gia Bảo', '9.5', 'Sáng tạo'],
+        ],
+      },
+    ];
+  });
+  const [lastSavedAt, setLastSavedAt] = useState<string>('');
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({ docKind, title, markdown, sheets }));
+        setLastSavedAt(new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      } catch { /* ignore quota */ }
+    }, 450);
+    return () => window.clearTimeout(timer);
+  }, [docKind, title, markdown, sheets]);
 
   useEffect(() => {
     return () => {
@@ -203,6 +236,11 @@ export const OfficeWorkspacePage: React.FC = () => {
           <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-bold text-cyan-300">
             {docKind}
           </span>
+          {lastSavedAt && (
+            <span className="hidden sm:inline-block text-[11px] font-semibold text-emerald-400">
+              💾 Đã lưu lúc {lastSavedAt}
+            </span>
+          )}
         </div>
 
         <OfficeAiCopilotBar
