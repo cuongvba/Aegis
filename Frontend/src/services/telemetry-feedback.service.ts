@@ -1,11 +1,19 @@
 import api from './api';
 
+export interface FeedbackAttachment {
+  url: string;
+  fileName: string;
+  kind: 'image' | 'video' | 'audio' | 'file';
+  sizeBytes: number;
+}
+
 export interface WishlistFeedbackItem {
   id: string;
   authorName: string;
   category: string;
   title: string;
   description: string;
+  attachments?: FeedbackAttachment[];
   upvotesCount: number;
   status: string;
   adminResponse?: string;
@@ -19,6 +27,7 @@ export interface FeedbackSubmitPayload {
   description: string;
   authorName?: string;
   authorEmail?: string;
+  attachments?: FeedbackAttachment[];
 }
 
 export const telemetryFeedbackService = {
@@ -59,6 +68,16 @@ export const telemetryFeedbackService = {
   // 6. Gửi nguyện vọng / ý tưởng mới
   async submitFeedback(payload: FeedbackSubmitPayload) {
     const res = await api.post('/api/feedback/submit', payload);
+    return res.data;
+  },
+
+  // 6B. Tải lên ảnh / video / audio / tài liệu đính kèm
+  async uploadFeedbackMedia(file: File): Promise<FeedbackAttachment> {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await api.post<FeedbackAttachment>('/api/feedback/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
 

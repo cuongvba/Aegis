@@ -344,13 +344,16 @@ namespace Aegis.API.Controllers
                     }
                     catch { }
 
+                    var (cleanDesc, attachments) = SplitAttachments(item.Description);
+
                     return new
                     {
                         item.Id,
                         item.AuthorName,
                         item.Category,
                         item.Title,
-                        item.Description,
+                        description = cleanDesc,
+                        attachments,
                         item.UpvotesCount,
                         item.Status,
                         item.AdminResponse,
@@ -381,6 +384,8 @@ namespace Aegis.API.Controllers
                 var userId = GetCurrentUserId() ?? $"ip_{GetClientIp()}";
                 var initialUpvoters = new List<string> { userId };
 
+                var storedDescription = AppendAttachments(req.Description.Trim(), req.Attachments);
+
                 var feedback = new PlatformWishlistFeedback
                 {
                     UserId = GetCurrentUserId(),
@@ -388,7 +393,7 @@ namespace Aegis.API.Controllers
                     AuthorEmail = req.AuthorEmail?.Trim(),
                     Category = string.IsNullOrWhiteSpace(req.Category) ? "FEATURE_REQUEST" : req.Category.Trim().ToUpperInvariant(),
                     Title = req.Title.Trim(),
-                    Description = req.Description.Trim(),
+                    Description = storedDescription,
                     UpvotesCount = 1,
                     Status = "OPEN",
                     UpvotedUserIdsJson = JsonSerializer.Serialize(initialUpvoters)
@@ -408,6 +413,118 @@ namespace Aegis.API.Controllers
             {
                 _logger.LogError(ex, "[FeedbackBoard] Error submitting feedback: {Message}", ex.Message);
                 return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+    // ── 6B. TẢI LÊN MEDIA / FILE ĐÍNH KÈM GÓP Ý ──────────────────────────
+        private static readonly HashSet<string> AllowedFeedbackExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".png", ".jpg", ".jpeg", ".webp", ".gif", ".pdf", ".docx", ".xlsx", ".txt", ".mp3", ".wav", ".mp4", ".webm"
+        };
+
+        private static string GetFeedbackMediaRoot()
+        {
+            var dir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "App_Data", "feedback-media");
+            System.IO.Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        [HttpPost("feedback/upload")]
+        [AllowAnonymous]
+        [RequestSizeLimit(16_000_000)]
+        public async Task<IActionResult> UploadFeedbackMedia([FromForm] Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Chưa chọn tệp đính kèm." });
+
+            if (file.Length > 15_000_000)
+                return BadRequest(new { message = "Dung lượng tệp tối đa 15MB." });
+
+            var ext = System.IO.Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(ext) || !AllowedFeedbackExtensions.Contains(ext))
+                return BadRequest(new { message = "Định dạng tệp chưa được hỗ trợ." });
+
+            var safeName = $"{Guid.NewGuid():N}{ext.ToLowerInvariant()}";
+            var fullPath = System.IO.Path.Combine(GetFeedbackMediaRoot(), safeName);
+
+            await using (var stream = new System.IO.FileStream(fullPath, System.IO.FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            string kind = ext.ToLowerInvariant() switch
+            {
+                ".png" or ".jpg" or ".jpeg" or ".webp" or ".gif" => "image",
+                ".mp4" or ".webm" => "video",
+                ".mp3" or ".wav" => "audio",
+                _ => "file"
+            };
+
+            return Ok(new FeedbackAttachmentDto
+            {
+                Url = $"/api/feedback/media/{safeName}",
+                FileName = file.FileName,
+                Kind = kind,
+                SizeBytes = file.Length
+            });
+        }
+
+        [HttpGet("feedback/media/{fileName}")]
+        [AllowAnonymous]
+        public IActionResult GetFeedbackMedia(string fileName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || fileName.Contains("..") || fileName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+                return BadRequest();
+
+            var fullPath = System.IO.Path.Combine(GetFeedbackMediaRoot(), fileName);
+            if (!System.IO.File.Exists(fullPath)) return NotFound();
+
+            var ext = System.IO.Path.GetExtension(fileName).ToLowerInvariant();
+            var contentType = ext switch
+            {
+                ".png" => "image/png",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".webp" => "image/webp",
+                ".gif" => "image/gif",
+                ".pdf" => "application/pdf",
+                ".mp4" => "video/mp4",
+                ".webm" => "video/webm",
+                ".mp3" => "audio/mpeg",
+                ".wav" => "audio/wav",
+                _ => "application/octet-stream"
+            };
+
+            return PhysicalFile(fullPath, contentType);
+        }
+
+        private const string AttachmentsMarker = "\n<!--AEGIS_ATTACHMENTS:";
+        private const string AttachmentsEndMarker = "-->";
+
+        private static string AppendAttachments(string description, List<FeedbackAttachmentDto>? attachments)
+        {
+            if (attachments == null || attachments.Count == 0) return description;
+            return $"{description}{AttachmentsMarker}{JsonSerializer.Serialize(attachments)}{AttachmentsEndMarker}";
+        }
+
+        private static (string CleanDescription, List<FeedbackAttachmentDto> Attachments) SplitAttachments(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return (string.Empty, new List<FeedbackAttachmentDto>());
+            int idx = raw.LastIndexOf(AttachmentsMarker, StringComparison.Ordinal);
+            if (idx < 0) return (raw, new List<FeedbackAttachmentDto>());
+
+            int jsonStart = idx + AttachmentsMarker.Length;
+            int endIdx = raw.IndexOf(AttachmentsEndMarker, jsonStart, StringComparison.Ordinal);
+            if (endIdx < 0) return (raw, new List<FeedbackAttachmentDto>());
+
+            string json = raw.Substring(jsonStart, endIdx - jsonStart);
+            try
+            {
+                var list = JsonSerializer.Deserialize<List<FeedbackAttachmentDto>>(json) ?? new List<FeedbackAttachmentDto>();
+                return (raw.Substring(0, idx).TrimEnd(), list);
+            }
+            catch
+            {
+                return (raw, new List<FeedbackAttachmentDto>());
             }
         }
 
@@ -501,6 +618,14 @@ namespace Aegis.API.Controllers
         public string? Comment { get; set; }
     }
 
+    public class FeedbackAttachmentDto
+    {
+        public string Url { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+        public string Kind { get; set; } = "file";
+        public long SizeBytes { get; set; }
+    }
+
     public class SubmitFeedbackRequest
     {
         public string Category { get; set; } = "FEATURE_REQUEST";
@@ -508,5 +633,6 @@ namespace Aegis.API.Controllers
         public string Description { get; set; } = string.Empty;
         public string? AuthorName { get; set; }
         public string? AuthorEmail { get; set; }
+        public List<FeedbackAttachmentDto>? Attachments { get; set; }
     }
 }
