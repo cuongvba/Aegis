@@ -82,7 +82,7 @@ flowchart LR
 
 ## 6️⃣ OFFICE-FREE STUDIO & AI OFFICE CO-PILOT (`/office-studio`)
 
-- **Địa chỉ**: **Office Studio** ngay trên thanh menu chính (`/office-studio`).
+- **Địa chỉ**: **Office Studio** ngay trên thanh menu chính (`/office-studio`) — xem phân tích kiến trúc & ví dụ thực hành chi tiết tại [`AEGIS_OFFICE_FREE_STUDIO_GUIDE.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_OFFICE_FREE_STUDIO_GUIDE.md).
 - **Không cần cài Microsoft Office**:
   1. **Mở & Sửa Word (`.docx`), PDF, Excel (`.xlsx`/`.xls`/`.csv`)**: Tự động bóc tách cấu trúc tiêu đề, bảng biểu, bảng điểm; riêng **PDF** hiển thị song song bản gốc bên trái và vùng chỉnh sửa bên phải.
   2. **Tạo mới & Xuất ngược**: Bấm **Word Mới** hoặc **Excel Mới** để soạn ngay trên web, sau đó bấm **Tải `.DOCX`**, **Tải `.XLSX`** hoặc **In / Lưu PDF**.
