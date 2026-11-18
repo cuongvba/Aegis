@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Aegis.Application.Interfaces;
+using Aegis.Application.Models.AI;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -17,10 +18,14 @@ namespace Aegis.Infrastructure.Services
     public class OfficeDocumentWorkspaceService : IOfficeDocumentWorkspaceService
     {
         private readonly ILogger<OfficeDocumentWorkspaceService> _logger;
+        private readonly IUniversalAiRouter? _aiRouter;
 
-        public OfficeDocumentWorkspaceService(ILogger<OfficeDocumentWorkspaceService> logger)
+        public OfficeDocumentWorkspaceService(
+            ILogger<OfficeDocumentWorkspaceService> logger,
+            IUniversalAiRouter? aiRouter = null)
         {
             _logger = logger;
+            _aiRouter = aiRouter;
         }
 
         public async Task<OfficeParsedDocumentDto> ParseDocumentAsync(
@@ -363,6 +368,137 @@ namespace Aegis.Infrastructure.Services
             using var outMs = new MemoryStream();
             workbook.Write(outMs, leaveOpen: true);
             return outMs.ToArray();
+        }
+
+        public async Task<OfficeAiAssistResponseDto> RunAiAssistAsync(
+            Guid tenantId,
+            OfficeAiAssistRequestDto request,
+            CancellationToken ct = default)
+        {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            string action = string.IsNullOrWhiteSpace(request.Action)
+                ? "POLISH_LESSON"
+                : request.Action.Trim().ToUpperInvariant();
+
+            string title = string.IsNullOrWhiteSpace(request.Title) ? "Tài liệu giáo dục" : request.Title.Trim();
+            string sourceText = BuildSourceContext(request);
+            if (string.IsNullOrWhiteSpace(sourceText))
+                sourceText = title;
+
+            string instruction = action switch
+            {
+                "POLISH_LESSON" => "Hãy chuẩn hóa và nâng cấp nội dung sau thành một Giáo án / Tài liệu giảng dạy mạch lạc theo chuẩn Markdown (# Tiêu đề, ## Mục tiêu, ## Khởi động, ## Hoạt động Khám phá, ## Tổng kết & Dặn dò, bảng biểu nếu phù hợp).",
+                "SUMMARIZE" => "Hãy tóm tắt nội dung sau thành các ý chính cô đọng (bullet points) và bảng thuật ngữ / khái niệm trọng tâm bằng Markdown.",
+                "GENERATE_QUIZ" => "Từ nội dung sau, hãy biên soạn 5 câu hỏi trắc nghiệm 4 lựa chọn (A, B, C, D) kèm đáp án đúng và giải thích ngắn gọn bằng Markdown.",
+                "ANALYZE_SHEET" => "Hãy phân tích bảng dữ liệu / bảng điểm sau: tính toán nhận xét xu hướng, điểm nổi bật, nhóm cần hỗ trợ thêm và đề xuất hành động sư phạm cụ thể bằng Markdown.",
+                "TRANSLATE_BILINGUAL" => "Hãy chuyển nội dung sau thành tài liệu Song ngữ Việt – Anh rõ ràng, giữ nguyên cấu trúc tiêu đề, danh sách và bảng biểu.",
+                _ => string.IsNullOrWhiteSpace(request.CustomInstruction)
+                    ? "Hãy cải thiện nội dung sau cho rõ ràng, khoa học và dễ hiểu hơn bằng Markdown."
+                    : request.CustomInstruction.Trim()
+            };
+
+            if (_aiRouter != null)
+            {
+                try
+                {
+                    string truncated = sourceText.Length > 8000 ? sourceText.Substring(0, 8000) : sourceText;
+                    var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                    {
+                        TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
+                        SystemPrompt = "You are Aegis Office AI Co-Pilot — an expert educator, curriculum designer, and data analyst. Always respond in clean, well-structured Markdown ready to paste or export to .docx.",
+                        Prompt = $"Tiêu đề: {title}\nYêu cầu: {instruction}\n\n--- NỘI DUNG GỐC ---\n{truncated}"
+                    });
+
+                    if (aiRes.Success && !string.IsNullOrWhiteSpace(aiRes.Content))
+                    {
+                        return new OfficeAiAssistResponseDto
+                        {
+                            Success = true,
+                            UsedAi = true,
+                            Action = action,
+                            ResultMarkdown = aiRes.Content.Trim(),
+                            Message = "AI đã hoàn thành xử lý tài liệu."
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[OfficeAi] AI router fallback to deterministic assistant | Action={Action}", action);
+                }
+            }
+
+            string fallback = BuildDeterministicAiFallback(action, title, request);
+            return new OfficeAiAssistResponseDto
+            {
+                Success = true,
+                UsedAi = false,
+                Action = action,
+                ResultMarkdown = fallback,
+                Message = "Đã tạo bản gợi ý cấu trúc chuẩn (Offline Assistant)."
+            };
+        }
+
+        private static string BuildSourceContext(OfficeAiAssistRequestDto request)
+        {
+            if (request.Sheets != null && request.Sheets.Count > 0)
+            {
+                var sb = new StringBuilder();
+                foreach (var s in request.Sheets)
+                {
+                    sb.AppendLine($"### Sheet: {s.Name}");
+                    foreach (var row in s.Rows.Take(80))
+                        sb.AppendLine($"| {string.Join(" | ", row)} |");
+                }
+                return sb.ToString();
+            }
+            return request.MarkdownContent ?? string.Empty;
+        }
+
+        private static string BuildDeterministicAiFallback(string action, string title, OfficeAiAssistRequestDto request)
+        {
+            if (action == "ANALYZE_SHEET" && request.Sheets != null && request.Sheets.Count > 0)
+            {
+                var sheet = request.Sheets[0];
+                int dataRows = Math.Max(0, sheet.Rows.Count - 1);
+                var nums = new List<double>();
+                foreach (var row in sheet.Rows.Skip(1))
+                {
+                    foreach (var cell in row)
+                    {
+                        if (double.TryParse(cell?.Replace(',', '.'), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double v))
+                            nums.Add(v);
+                    }
+                }
+                string stats = nums.Count > 0
+                    ? $"- Số giá trị số: **{nums.Count}** | Trung bình: **{nums.Average():F2}** | Cao nhất: **{nums.Max():F2}** | Thấp nhất: **{nums.Min():F2}**"
+                    : "- Chưa phát hiện cột điểm số định lượng.";
+
+                return $"# Phân Tích Bảng Dữ Liệu: {title}\n\n" +
+                       $"- Tên trang tính: **{sheet.Name}**\n" +
+                       $"- Tổng số bản ghi dữ liệu: **{dataRows}**\n" +
+                       $"{stats}\n\n" +
+                       "## Đề xuất hành động\n- Khen ngợi nhóm học sinh đạt kết quả cao.\n- Tổ chức ôn tập cá nhân hóa cho nhóm dưới mức trung bình.";
+            }
+
+            if (action == "GENERATE_QUIZ")
+            {
+                return $"# Bộ Câu Hỏi Trắc Nghiệm: {title}\n\n" +
+                       "**Câu 1:** Ý chính quan trọng nhất của bài học \"{title}\" là gì?\n" +
+                       "- A. Ghi nhớ máy móc\n- B. Hiểu bản chất và vận dụng thực tế\n- C. Bỏ qua thực hành\n- D. Không cần ôn tập\n" +
+                       "**Đáp án:** B\n\n" +
+                       "**Câu 2:** Sau khi học xong \"{title}\", học sinh cần thực hành điều gì?\n" +
+                       "- A. Chia sẻ và vận dụng vào bài tập\n- B. Đóng vở lại ngay\n- C. Không cần kiểm tra\n- D. Chỉ đọc lướt\n" +
+                       "**Đáp án:** A";
+            }
+
+            string excerpt = (request.MarkdownContent ?? string.Empty).Trim();
+            if (excerpt.Length > 600) excerpt = excerpt.Substring(0, 600) + "...";
+
+            return $"# {title} (Chuẩn Hóa Sư Phạm)\n\n" +
+                   "## 1. Mục tiêu bài học\n- Giúp học sinh nắm vững trọng tâm kiến thức và thực hành ngay tại lớp.\n\n" +
+                   "## 2. Nội dung cốt lõi\n" +
+                   (string.IsNullOrWhiteSpace(excerpt) ? "- Nhập nội dung bài giảng tại đây." : excerpt) +
+                   "\n\n## 3. Hoạt động tương tác & Tổng kết\n- Thảo luận nhóm 5 phút và kiểm tra nhanh bằng câu hỏi trắc nghiệm.";
         }
     }
 }

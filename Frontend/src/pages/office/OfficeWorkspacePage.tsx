@@ -17,6 +17,7 @@ import {
 } from '@/services/officeWorkspace.service';
 import { RichDocEditorPane } from '@/components/office/RichDocEditorPane';
 import { SpreadsheetGridEditor } from '@/components/office/SpreadsheetGridEditor';
+import { OfficeAiCopilotBar } from '@/components/office/OfficeAiCopilotBar';
 
 export const OfficeWorkspacePage: React.FC = () => {
   const navigate = useNavigate();
@@ -203,6 +204,16 @@ export const OfficeWorkspacePage: React.FC = () => {
             {docKind}
           </span>
         </div>
+
+        <OfficeAiCopilotBar
+          docKind={docKind}
+          title={title}
+          markdownContent={markdown}
+          sheets={sheets}
+          onReplaceMarkdown={(next) => setMarkdown(next)}
+          onAppendMarkdown={(add) => setMarkdown((prev) => (prev ? `${prev}\n\n${add}` : add))}
+          onKidsCreated={() => navigate('/kids')}
+        />
 
         {error && (
           <div className="rounded-2xl bg-rose-950/50 border border-rose-500/40 p-3 text-xs font-semibold text-rose-200 flex items-center gap-2">

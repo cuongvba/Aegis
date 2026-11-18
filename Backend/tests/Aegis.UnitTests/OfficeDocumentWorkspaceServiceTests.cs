@@ -65,5 +65,43 @@ namespace Aegis.UnitTests
             Assert.Equal("Minh Anh", parsed.Sheets[0].Rows[1][0]);
             Assert.Equal("10", parsed.Sheets[0].Rows[1][1]);
         }
+
+        [Fact]
+        public async Task RunAiAssistAsync_AnalyzesSheetAndGeneratesQuiz()
+        {
+            var svc = new OfficeDocumentWorkspaceService(NullLogger<OfficeDocumentWorkspaceService>.Instance);
+
+            var sheetRes = await svc.RunAiAssistAsync(System.Guid.NewGuid(), new OfficeAiAssistRequestDto
+            {
+                Action = "ANALYZE_SHEET",
+                Title = "Bang Diem Lop 3A",
+                Sheets = new List<OfficeSheetDto>
+                {
+                    new()
+                    {
+                        Name = "Lop 3A",
+                        Rows = new List<List<string>>
+                        {
+                            new() { "Ho ten", "Diem" },
+                            new() { "An", "10" },
+                            new() { "Binh", "8" }
+                        }
+                    }
+                }
+            });
+
+            Assert.True(sheetRes.Success);
+            Assert.Contains("9.00", sheetRes.ResultMarkdown);
+
+            var quizRes = await svc.RunAiAssistAsync(System.Guid.NewGuid(), new OfficeAiAssistRequestDto
+            {
+                Action = "GENERATE_QUIZ",
+                Title = "Thanh Giong",
+                MarkdownContent = "Thanh Giong cuoi ngua sat danh giac An."
+            });
+
+            Assert.True(quizRes.Success);
+            Assert.Contains("Câu 1", quizRes.ResultMarkdown);
+        }
     }
 }

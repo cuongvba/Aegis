@@ -80,10 +80,27 @@ flowchart LR
 
 ---
 
+## 6️⃣ OFFICE-FREE STUDIO & AI OFFICE CO-PILOT (`/office-studio`)
+
+- **Địa chỉ**: **Office Studio** ngay trên thanh menu chính (`/office-studio`).
+- **Không cần cài Microsoft Office**:
+  1. **Mở & Sửa Word (`.docx`), PDF, Excel (`.xlsx`/`.xls`/`.csv`)**: Tự động bóc tách cấu trúc tiêu đề, bảng biểu, bảng điểm; riêng **PDF** hiển thị song song bản gốc bên trái và vùng chỉnh sửa bên phải.
+  2. **Tạo mới & Xuất ngược**: Bấm **Word Mới** hoặc **Excel Mới** để soạn ngay trên web, sau đó bấm **Tải `.DOCX`**, **Tải `.XLSX`** hoặc **In / Lưu PDF**.
+  3. **AI Office Co-Pilot 1 chạm**:
+     - **✨ Chuẩn hóa Giáo án**: Biến văn bản thô thành giáo án chuẩn sư phạm.
+     - **📝 Sinh 5 Câu Trắc nghiệm**: Tự động tạo câu hỏi A/B/C/D kèm đáp án từ tài liệu/PDF.
+     - **📌 Tóm tắt / 🌐 Song ngữ Việt–Anh**: Rút gọn ý chính hoặc dịch song ngữ giữ nguyên bảng biểu.
+     - **📊 Phân tích Bảng điểm (Excel)**: Tự động thống kê điểm trung bình, cao nhất/thấp nhất và gợi ý bồi dưỡng.
+     - **🌈 Tạo bài Kids World**: Chuyển thẳng tài liệu đang soạn thành bài học tương tác trên `/kids`.
+
+---
+
 ## 📋 BẢNG TRA CỨU NHANH 1 CHẠM
 
 | Mục tiêu của bạn | Truy cập nhanh |
 |---|---|
+| Đọc/Sửa Word, Excel, PDF không cần MS Office + AI Co-Pilot | [`/office-studio`](https://daotao.dehoc.vn/office-studio) |
+| Thế Giới Tuổi Thơ 5 Vương quốc & AI Huyền tích | [`/kids`](https://daotao.dehoc.vn/kids) |
 | Soạn & nạp đề Word/PDF/Excel trong 10 giây | [`/creator/studio`](https://daotao.dehoc.vn/creator/studio) |
 | Trình chiếu đồ thị biến đổi 60fps & Nạp bài toán thành Visual | [`/visual-lab`](https://daotao.dehoc.vn/visual-lab) |
 | Quản lý kho câu hỏi, lọc Cây Phả Hệ & Ma trận | [`/admin/questions`](https://daotao.dehoc.vn/admin/questions) |

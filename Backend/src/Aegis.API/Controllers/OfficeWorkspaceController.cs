@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Aegis.Application.DTOs;
 using Aegis.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,10 +15,17 @@ namespace Aegis.API.Controllers
     public class OfficeWorkspaceController : ControllerBase
     {
         private readonly IOfficeDocumentWorkspaceService _workspace;
+        private readonly IKidsCurriculumService _kidsService;
+        private readonly ITenantContext _tenant;
 
-        public OfficeWorkspaceController(IOfficeDocumentWorkspaceService workspace)
+        public OfficeWorkspaceController(
+            IOfficeDocumentWorkspaceService workspace,
+            IKidsCurriculumService kidsService,
+            ITenantContext tenant)
         {
             _workspace = workspace;
+            _kidsService = kidsService;
+            _tenant = tenant;
         }
 
         [HttpPost("parse")]
@@ -62,6 +70,44 @@ namespace Aegis.API.Controllers
             byte[] bytes = _workspace.ExportXlsx(request);
             string safeName = SanitizeFileName(request.Title, "aegis-workbook") + ".xlsx";
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", safeName);
+        }
+
+        [HttpPost("ai-assist")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RunAiAssist([FromBody] OfficeAiAssistRequestDto request, CancellationToken ct)
+        {
+            if (request == null)
+                return BadRequest(new { error = "Request body is required." });
+
+            var result = await _workspace.RunAiAssistAsync(_tenant.CurrentTenantId, request, ct);
+            return Ok(result);
+        }
+
+        [HttpPost("send-to-kids")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendToKids([FromBody] OfficeSendToKidsRequestDto request, CancellationToken ct)
+        {
+            if (request == null || (string.IsNullOrWhiteSpace(request.Title) && string.IsNullOrWhiteSpace(request.MarkdownContent)))
+                return BadRequest(new { error = "Vui lòng nhập tiêu đề hoặc nội dung tài liệu." });
+
+            string excerpt = (request.MarkdownContent ?? string.Empty).Trim();
+            if (excerpt.Length > 450) excerpt = excerpt.Substring(0, 450);
+            string topic = string.IsNullOrWhiteSpace(excerpt)
+                ? request.Title.Trim()
+                : $"{request.Title.Trim()} ({excerpt})";
+            if (topic.Length > 200) topic = request.Title.Trim();
+
+            var res = await _kidsService.BuildCurriculumWithAiAsync(_tenant.CurrentTenantId, new AiBuildKidsCurriculumRequestDto
+            {
+                TopicTitle = topic,
+                IslandId = string.IsNullOrWhiteSpace(request.IslandId) ? "heritage" : request.IslandId,
+                AgeBand = string.IsNullOrWhiteSpace(request.AgeBand) ? "6-8" : request.AgeBand,
+                RegionCode = string.IsNullOrWhiteSpace(request.RegionCode) ? "VN" : request.RegionCode,
+                LanguageCode = "vi",
+                ItemCount = request.ItemCount > 0 ? request.ItemCount : 4
+            }, ct);
+
+            return Ok(res);
         }
 
         private static string SanitizeFileName(string? raw, string fallback)

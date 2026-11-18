@@ -26,6 +26,14 @@ function triggerBlobDownload(blob: Blob, filename: string): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export interface OfficeAiAssistResponse {
+  success: boolean;
+  usedAi: boolean;
+  action: string;
+  resultMarkdown: string;
+  message: string;
+}
+
 export const officeWorkspaceService = {
   async parseFile(file: File): Promise<OfficeParsedDocument> {
     const form = new FormData();
@@ -52,5 +60,26 @@ export const officeWorkspaceService = {
       { responseType: 'blob' }
     );
     triggerBlobDownload(res.data as Blob, `${(title || 'aegis-workbook').trim()}.xlsx`);
+  },
+
+  async runAiAssist(payload: {
+    action: string;
+    title: string;
+    markdownContent: string;
+    sheets?: OfficeSheet[];
+    customInstruction?: string;
+  }): Promise<OfficeAiAssistResponse> {
+    const res = await api.post<OfficeAiAssistResponse>('/api/office-workspace/ai-assist', payload);
+    return res.data;
+  },
+
+  async sendToKids(payload: {
+    title: string;
+    markdownContent: string;
+    islandId?: string;
+    ageBand?: string;
+  }) {
+    const res = await api.post('/api/office-workspace/send-to-kids', payload);
+    return res.data;
   },
 };
