@@ -38,12 +38,13 @@ flowchart LR
    - Bấm nút **`Nạp Đề / Bài Toán Bất Kỳ`**.
    - **Dán trực tiếp** đề bài (hỗ trợ **`Ctrl+V` thẳng công thức từ Microsoft Word / MathType / ảnh chụp** — tự động đổi sang LaTeX và xem trước ngay) **hoặc tải lên tệp `.docx`/`.pdf`**.
    - Hệ thống tự dựng đồ thị biến đổi theo thời gian $f(x,t)$, quỹ đạo tham số $(x(t), y(t))$, họ đường cong tham số $m$, hoặc hình khối không gian **3D xoay 360°**.
-2. **Điều khiển Thời gian Thực 60fps + Âm thanh Phụ họa & Thuyết minh**:
+2. **Điều khiển Thời gian Thực 60fps + Âm thanh Phụ họa & Thuyết minh Neural TTS**:
    - Bấm **`Chạy t` (Play)** / **`Tạm dừng`** / kéo thanh trượt **`t`** để dừng đúng khoảnh khắc mấu chốt (ví dụ vật ném xiên đạt đỉnh $v_y = 0$, hay đỉnh sóng cơ dịch chuyển).
-   - Công thức **KaTeX biến đổi từng pha** bên dưới tự động chuyển cảnh đồng bộ kèm **âm thanh chuông tinh thể 0ms**. Bật thêm nút **`Thuyết minh`** để hệ thống tự đọc giải thích từng pha bằng tiếng Việt.
-3. **Chiếu Bảng & Giao Khám Phá Cho Cả Lớp**:
-   - Bấm **`Chiếu bảng`** để phóng to toàn màn hình trên máy chiếu.
-   - Bấm **`Chia sẻ Link lớp`** để gửi đường dẫn bài giảng động cho học sinh tự kéo thanh trượt và trả lời **Nhiệm vụ Khám phá Chủ động**.
+   - Công thức **KaTeX biến đổi từng pha** bên dưới tự động chuyển cảnh đồng bộ kèm **âm thanh chuông tinh thể 0ms**. Bật thêm nút **`Thuyết minh`** để hệ thống tự đọc giải thích từng pha bằng **giọng đọc Neural tiếng Việt tự nhiên**.
+3. **Chiếu Bảng Khổ Rộng, Chụp Ảnh PNG & Kết nối Office Studio**:
+   - Bấm **`Chiếu bảng`** để mở rộng đồ thị (`fullWidth`) sắc nét trên máy chiếu, hoặc bấm **`📸 PNG`** ngay trên góc đồ thị để tải ảnh chất lượng cao.
+   - Bấm **`Chia sẻ Link lớp`** gửi cho học sinh, hoặc bấm **`📄 Mở Office Studio`** để chuyển thẳng bài giảng cùng toàn bộ công thức KaTeX sang trang soạn thảo A4.
+   - Kho bài giảng mẫu đa dạng: Sóng cơ, Ném xiên, Hàm bậc ba & Đạo hàm, Họ Parabol tham số $m$, **Đường tròn Lượng giác $(\cos t, \sin t)$**, **Dao động điều hòa**, **Hình chóp & Hình trụ 3D xoay 360°** (hỗ trợ tìm kiếm nhanh).
 
 ---
 
@@ -84,8 +85,8 @@ flowchart LR
 
 - **Địa chỉ**: **Office Studio** ngay trên thanh menu chính (`/office-studio`) — xem phân tích kiến trúc & ví dụ thực hành chi tiết tại [`AEGIS_OFFICE_FREE_STUDIO_GUIDE.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_OFFICE_FREE_STUDIO_GUIDE.md).
 - **Không cần cài Microsoft Office**:
-  1. **Mở & Sửa Word (`.docx`), PDF, Excel (`.xlsx`/`.xls`/`.csv`)**: Tự động bóc tách cấu trúc tiêu đề, bảng biểu, bảng điểm; riêng **PDF** hiển thị song song bản gốc bên trái và vùng chỉnh sửa bên phải.
-  2. **Tạo mới & Xuất ngược**: Bấm **Word Mới** hoặc **Excel Mới** để soạn ngay trên web, sau đó bấm **Tải `.DOCX`**, **Tải `.XLSX`** hoặc **In / Lưu PDF**.
+  1. **Mở & Sửa Word (`.docx`), PDF, Excel (`.xlsx`/`.xls`/`.csv`)**: Tự động giải mã công thức Toán OMML/MathType/PDF, giữ nguyên kích thước thật hình ảnh minh họa; riêng **PDF** hiển thị song song bản gốc bên trái và vùng chỉnh sửa bên phải.
+  2. **Soạn thảo chuẩn Google Docs & Phân trang A4**: Chọn **Google Docs** (sửa trực quan), **Song song LaTeX** (KaTeX + `KaTeX Studio`), hoặc **Phân trang A4** (`Trang i / N`, căn lề, giãn dòng, **2 Cột Đề thi**, `Ngắt trang`), tự động lưu liên tục, rồi bấm **Tải `.DOCX`**, **Tải `.XLSX`** hoặc **In / Lưu PDF**.
   3. **AI Office Co-Pilot 1 chạm**:
      - **✨ Chuẩn hóa Giáo án**: Biến văn bản thô thành giáo án chuẩn sư phạm.
      - **📝 Sinh 5 Câu Trắc nghiệm**: Tự động tạo câu hỏi A/B/C/D kèm đáp án từ tài liệu/PDF.
