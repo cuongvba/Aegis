@@ -45,12 +45,34 @@ export interface KidsActivity {
   options: KidsChoiceOption[];
 }
 
+export interface KidsStageProp {
+  emoji: string;
+  labelVi: string;
+  labelEn: string;
+  colorHex: string;
+}
+
+export interface KidsStageTheme {
+  stageCode: string;
+  titleVi: string;
+  titleEn: string;
+  environment: string;
+  particleMode: 'sky' | 'ocean' | 'fairy' | 'meadow';
+  sfxType: 'pop' | 'splash' | 'unwrap' | 'bounce';
+  backgroundGradient: string;
+  badgeEmoji: string;
+  isSystemDefault: boolean;
+  preferredIslands: string[];
+  props: KidsStageProp[];
+}
+
 export interface KidsLessonPlan {
   lessonId: string;
   islandId: string;
   ageBand: string;
   atomCount: number;
   activityCount: number;
+  stageTheme?: KidsStageTheme;
   atoms: KidsConceptAtom[];
   activities: KidsActivity[];
 }
@@ -96,14 +118,26 @@ export const kidsCurriculumService = {
   async generateDailyAdventure(
     islandId: string,
     ageBand: string = 'all',
-    atomCount: number = 3
+    atomCount: number = 3,
+    preferredStageCode?: string
   ): Promise<KidsLessonPlan> {
     const res = await api.post<KidsLessonPlan>('/api/kids/daily-adventure', {
       islandId,
       ageBand,
       atomCount,
+      preferredStageCode: preferredStageCode || undefined,
       weakAtomCodes: getWeakAtomCodes(),
     });
+    return res.data;
+  },
+
+  async getStageThemes(): Promise<KidsStageTheme[]> {
+    const res = await api.get<KidsStageTheme[]>('/api/kids/stages');
+    return res.data;
+  },
+
+  async saveStageTheme(stage: KidsStageTheme): Promise<KidsStageTheme> {
+    const res = await api.post<KidsStageTheme>('/api/kids/stages', stage);
     return res.data;
   },
 

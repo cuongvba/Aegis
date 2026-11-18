@@ -23,5 +23,14 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             AiBuildKidsCurriculumRequestDto request,
             CancellationToken ct = default);
+
+        Task<List<KidsStageThemeDto>> GetStageThemesAsync(
+            Guid tenantId,
+            CancellationToken ct = default);
+
+        Task<KidsStageThemeDto> SaveStageThemeAsync(
+            Guid tenantId,
+            KidsStageThemeDto stage,
+            CancellationToken ct = default);
     }
 }

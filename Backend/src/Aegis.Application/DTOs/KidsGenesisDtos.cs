@@ -53,10 +53,37 @@ namespace Aegis.Application.DTOs
 
     public class GenerateKidsAdventureRequestDto
     {
-        public string IslandId { get; set; } = "english";
+        public string IslandId { get; set; } = "music";
         public string? AgeBand { get; set; }
         public int AtomCount { get; set; } = 3;
+        public string? PreferredStageCode { get; set; }
         public List<string>? WeakAtomCodes { get; set; }
+    }
+
+    public class KidsStagePropDto
+    {
+        public string Emoji { get; set; } = "🎈";
+        public string LabelVi { get; set; } = string.Empty;
+        public string LabelEn { get; set; } = string.Empty;
+        public string ColorHex { get; set; } = "#f43f5e";
+    }
+
+    public class KidsStageThemeDto
+    {
+        public string StageCode { get; set; } = "SKY_BALLOONS";
+        public string TitleVi { get; set; } = string.Empty;
+        public string TitleEn { get; set; } = string.Empty;
+        /// <summary>"SKY" | "OCEAN" | "FAIRYTALE" | "MEADOW" | "SPACE"</summary>
+        public string Environment { get; set; } = "SKY";
+        /// <summary>"sky" | "ocean" | "fairy" | "meadow"</summary>
+        public string ParticleMode { get; set; } = "sky";
+        /// <summary>"pop" | "splash" | "unwrap" | "bounce"</summary>
+        public string SfxType { get; set; } = "pop";
+        public string BackgroundGradient { get; set; } = "from-sky-400 via-cyan-300 to-indigo-400";
+        public string BadgeEmoji { get; set; } = "☁️";
+        public bool IsSystemDefault { get; set; } = true;
+        public List<string> PreferredIslands { get; set; } = new();
+        public List<KidsStagePropDto> Props { get; set; } = new();
     }
 
     public class KidsLessonPlanDto
@@ -66,6 +93,7 @@ namespace Aegis.Application.DTOs
         public string AgeBand { get; set; } = string.Empty;
         public int AtomCount { get; set; }
         public int ActivityCount { get; set; }
+        public KidsStageThemeDto? StageTheme { get; set; }
         public List<KidsConceptAtomDto> Atoms { get; set; } = new();
         public List<KidsActivityDto> Activities { get; set; } = new();
     }

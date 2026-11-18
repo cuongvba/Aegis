@@ -18,7 +18,9 @@ namespace Aegis.Infrastructure.Services
     public class KidsCurriculumService : IKidsCurriculumService
     {
         private const string KidsAtomCoordinateType = "KIDS_CONCEPT_ATOM";
+        private const string KidsStageCoordinateType = "KIDS_STAGE_THEME";
         private const string EmbeddedResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_concept_atoms.json";
+        private const string EmbeddedStagesResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_stages.json";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
@@ -27,6 +29,7 @@ namespace Aegis.Infrastructure.Services
         };
 
         private static readonly Lazy<List<KidsConceptAtomDto>> DefaultAtomsCache = new(LoadEmbeddedAtoms);
+        private static readonly Lazy<List<KidsStageThemeDto>> DefaultStagesCache = new(LoadEmbeddedStages);
 
         private readonly AegisDbContext _db;
         private readonly ILogger<KidsCurriculumService> _logger;
@@ -114,10 +117,11 @@ namespace Aegis.Infrastructure.Services
                 .ToList();
 
             var activities = SynthesizeActivities(selected, allIslandAtoms);
+            var stageTheme = await PickDynamicStageAsync(tenantId, island, request?.PreferredStageCode, ct);
 
             _logger.LogInformation(
-                "[KidsGenesis] Generated adventure | TenantId={TenantId} Island={Island} Atoms={Atoms} Activities={Activities}",
-                tenantId, island, selected.Count, activities.Count);
+                "[KidsGenesis] Generated adventure | TenantId={TenantId} Island={Island} Stage={Stage} Atoms={Atoms} Activities={Activities}",
+                tenantId, island, stageTheme.StageCode, selected.Count, activities.Count);
 
             return new KidsLessonPlanDto
             {
@@ -126,9 +130,100 @@ namespace Aegis.Infrastructure.Services
                 AgeBand = ageBand,
                 AtomCount = selected.Count,
                 ActivityCount = activities.Count,
+                StageTheme = stageTheme,
                 Atoms = selected,
                 Activities = activities
             };
+        }
+
+        public async Task<List<KidsStageThemeDto>> GetStageThemesAsync(Guid tenantId, CancellationToken ct = default)
+        {
+            var stages = DefaultStagesCache.Value.ToList();
+            var custom = await _db.TenantCoordinatePresets
+                .AsNoTracking()
+                .Where(p => p.CoordinateType == KidsStageCoordinateType &&
+                            (p.TenantId == tenantId || p.TenantId == Guid.Empty))
+                .OrderBy(p => p.CreatedAt)
+                .ToListAsync(ct);
+
+            foreach (var preset in custom)
+            {
+                if (string.IsNullOrWhiteSpace(preset.SynonymsJson)) continue;
+                try
+                {
+                    var st = JsonSerializer.Deserialize<KidsStageThemeDto>(preset.SynonymsJson, JsonOpts);
+                    if (st == null || string.IsNullOrWhiteSpace(st.StageCode)) continue;
+                    st.IsSystemDefault = false;
+                    int idx = stages.FindIndex(x => string.Equals(x.StageCode, st.StageCode, StringComparison.OrdinalIgnoreCase));
+                    if (idx >= 0) stages[idx] = st;
+                    else stages.Add(st);
+                }
+                catch { }
+            }
+
+            return stages;
+        }
+
+        public async Task<KidsStageThemeDto> SaveStageThemeAsync(Guid tenantId, KidsStageThemeDto stage, CancellationToken ct = default)
+        {
+            if (stage == null) throw new ArgumentNullException(nameof(stage));
+            string code = string.IsNullOrWhiteSpace(stage.StageCode)
+                ? $"STAGE_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
+                : stage.StageCode.Trim().ToUpperInvariant();
+
+            stage.StageCode = code;
+            stage.IsSystemDefault = false;
+            if (stage.Props == null || stage.Props.Count == 0)
+            {
+                stage.Props = new List<KidsStagePropDto>
+                {
+                    new() { Emoji = stage.BadgeEmoji, LabelVi = stage.TitleVi, LabelEn = stage.TitleEn, ColorHex = "#f59e0b" }
+                };
+            }
+
+            string json = JsonSerializer.Serialize(stage, JsonOpts);
+            var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == tenantId && p.CoordinateType == KidsStageCoordinateType && p.PresetCode == code,
+                ct);
+
+            if (existing != null)
+            {
+                existing.PresetLabel = stage.TitleVi;
+                existing.SynonymsJson = json;
+            }
+            else
+            {
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = tenantId,
+                    DomainCode = "KIDS_WORLD",
+                    CoordinateType = KidsStageCoordinateType,
+                    PresetCode = code,
+                    PresetLabel = stage.TitleVi,
+                    SynonymsJson = json
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return stage;
+        }
+
+        private async Task<KidsStageThemeDto> PickDynamicStageAsync(
+            Guid tenantId,
+            string island,
+            string? preferredStageCode,
+            CancellationToken ct)
+        {
+            var all = await GetStageThemesAsync(tenantId, ct);
+            if (!string.IsNullOrWhiteSpace(preferredStageCode))
+            {
+                var exact = all.FirstOrDefault(s => string.Equals(s.StageCode, preferredStageCode.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (exact != null) return exact;
+            }
+
+            var matching = all.Where(s => s.PreferredIslands.Any(i => string.Equals(i, island, StringComparison.OrdinalIgnoreCase))).ToList();
+            var pool = matching.Count > 0 ? matching : all;
+            return pool.Count > 0 ? pool[Random.Shared.Next(pool.Count)] : new KidsStageThemeDto();
         }
 
         public async Task<AiBuildKidsCurriculumResponseDto> BuildCurriculumWithAiAsync(
@@ -411,6 +506,15 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             if (stream == null) return new List<KidsConceptAtomDto>();
             using var reader = new StreamReader(stream);
             return JsonSerializer.Deserialize<List<KidsConceptAtomDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsConceptAtomDto>();
+        }
+
+        private static List<KidsStageThemeDto> LoadEmbeddedStages()
+        {
+            var assembly = typeof(KidsStageThemeDto).Assembly;
+            using Stream? stream = assembly.GetManifestResourceStream(EmbeddedStagesResourceName);
+            if (stream == null) return new List<KidsStageThemeDto>();
+            using var reader = new StreamReader(stream);
+            return JsonSerializer.Deserialize<List<KidsStageThemeDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsStageThemeDto>();
         }
 
         private static KidsConceptAtomDto CloneAtom(KidsConceptAtomDto src) => new()

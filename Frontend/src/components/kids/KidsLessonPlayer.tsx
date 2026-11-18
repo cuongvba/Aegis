@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Volume2, Mic, ArrowRight, Sparkles, Star, Trophy, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { KidsLessonPlan, recordAtomOutcome } from '@/services/kidsCurriculum.service';
+import { KidsSurpriseStage } from './KidsSurpriseStage';
 import { speakKidText, stopKidSpeech } from './kidsSpeech';
 
 interface KidsLessonPlayerProps {
@@ -17,6 +18,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
   onEarnStars,
   onExit,
 }) => {
+  const [inSurpriseStage, setInSurpriseStage] = useState(Boolean(plan.stageTheme && plan.atoms.length > 0));
   const [stepIndex, setStepIndex] = useState(0);
   const [tappedCount, setTappedCount] = useState<number[]>([]);
   const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -24,17 +26,33 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
 
   const isVi = lang === 'vi';
-  const activity = plan.activities[stepIndex];
-  const total = plan.activities.length;
+  // Filter out EXPOSE_CARD when Play-First Surprise Stage already revealed all atoms interactively
+  const playableActivities = plan.stageTheme
+    ? plan.activities.filter((a) => a.activityType !== 'EXPOSE_CARD')
+    : plan.activities;
+  const activity = playableActivities[stepIndex];
+  const total = playableActivities.length;
 
   useEffect(() => {
-    if (!activity || isCompleted) return;
+    if (inSurpriseStage || !activity || isCompleted) return;
     setTappedCount([]);
     setFeedback(null);
     const speech = isVi ? activity.speechTextVi : activity.speechTextEn;
     speakKidText(speech, isVi ? 'vi' : 'en');
     return () => stopKidSpeech();
-  }, [stepIndex, isCompleted, isVi]);
+  }, [inSurpriseStage, stepIndex, isCompleted, isVi]);
+
+  if (inSurpriseStage && plan.stageTheme && plan.atoms.length > 0) {
+    return (
+      <KidsSurpriseStage
+        stageTheme={plan.stageTheme}
+        atoms={plan.atoms}
+        lang={lang}
+        onEarnStar={() => { setEarnedStars((s) => s + 1); onEarnStars(1); }}
+        onFinishDiscovery={() => setInSurpriseStage(false)}
+      />
+    );
+  }
 
   if (isCompleted || !activity) {
     return (

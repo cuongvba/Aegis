@@ -47,5 +47,24 @@ namespace Aegis.API.Controllers
             var result = await _kidsService.BuildCurriculumWithAiAsync(_tenant.CurrentTenantId, request);
             return Ok(result);
         }
+
+        [HttpGet("stages")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetStageThemes()
+        {
+            var stages = await _kidsService.GetStageThemesAsync(_tenant.CurrentTenantId);
+            return Ok(stages);
+        }
+
+        [HttpPost("stages")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveStageTheme([FromBody] KidsStageThemeDto stage)
+        {
+            if (stage == null || string.IsNullOrWhiteSpace(stage.TitleVi))
+                return BadRequest(new { error = "Vui lòng nhập tên sân khấu." });
+
+            var saved = await _kidsService.SaveStageThemeAsync(_tenant.CurrentTenantId, stage);
+            return Ok(saved);
+        }
     }
 }

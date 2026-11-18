@@ -73,3 +73,20 @@ export function playKidMelody(preset: 'twinkle' | 'happy' = 'twinkle'): () => vo
 
   return () => timers.forEach((id) => window.clearTimeout(id));
 }
+
+export function playStageSfx(type: 'pop' | 'splash' | 'unwrap' | 'bounce' = 'pop') {
+  if (type === 'pop') {
+    playXylophoneNote(587.33, 0.08, 'sine', 0.3);
+    window.setTimeout(() => playXylophoneNote(880.0, 0.14, 'triangle', 0.25), 55);
+  } else if (type === 'unwrap') {
+    playXylophoneNote(523.25, 0.12, 'triangle', 0.22);
+    window.setTimeout(() => playXylophoneNote(659.25, 0.12, 'triangle', 0.22), 70);
+    window.setTimeout(() => playXylophoneNote(783.99, 0.2, 'sine', 0.24), 140);
+  } else if (type === 'splash') {
+    playXylophoneNote(392.0, 0.12, 'sine', 0.22);
+    window.setTimeout(() => playXylophoneNote(523.25, 0.18, 'sine', 0.2), 65);
+  } else {
+    playXylophoneNote(329.63, 0.12, 'triangle', 0.25);
+    window.setTimeout(() => playXylophoneNote(493.88, 0.18, 'triangle', 0.25), 80);
+  }
+}

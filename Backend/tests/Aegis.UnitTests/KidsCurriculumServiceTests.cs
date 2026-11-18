@@ -80,5 +80,39 @@ namespace Aegis.UnitTests
             Assert.Contains(atomsA, a => a.SecondaryText.Contains("Khủng long"));
             Assert.DoesNotContain(atomsB, a => a.SecondaryText.Contains("Khủng long"));
         }
+
+        [Fact]
+        public async Task SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages()
+        {
+            await using var db = CreateInMemoryDb(nameof(SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages));
+            var tenantId = Guid.NewGuid();
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var saved = await service.SaveStageThemeAsync(tenantId, new KidsStageThemeDto
+            {
+                StageCode = "SPACE_CANDY",
+                TitleVi = "Vũ Trụ Kẹo Ngọt",
+                TitleEn = "Space Candy",
+                Environment = "SPACE",
+                ParticleMode = "fairy",
+                SfxType = "unwrap",
+                BadgeEmoji = "🪐",
+                PreferredIslands = new List<string> { "fairytale" },
+                Props = new List<KidsStagePropDto>
+                {
+                    new() { Emoji = "🪐", LabelVi = "Hành Tinh Kẹo", LabelEn = "Candy Planet", ColorHex = "#a855f7" }
+                }
+            });
+
+            var plan = await service.GenerateDailyAdventureAsync(tenantId, new GenerateKidsAdventureRequestDto
+            {
+                IslandId = "fairytale",
+                PreferredStageCode = saved.StageCode
+            });
+
+            Assert.NotNull(plan.StageTheme);
+            Assert.Equal("SPACE_CANDY", plan.StageTheme!.StageCode);
+            Assert.Single(plan.StageTheme.Props);
+        }
     }
 }

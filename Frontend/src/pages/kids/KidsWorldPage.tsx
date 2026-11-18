@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock } from 'lucide-react';
+import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette } from 'lucide-react';
 import { kidsCurriculumService, KidsLessonPlan } from '@/services/kidsCurriculum.service';
 import { useLearnerI18n } from '@/lib/i18n';
 import { KidsMagicalBackdrop } from '@/components/kids/KidsMagicalBackdrop';
@@ -8,6 +8,7 @@ import { KidsLessonPlayer } from '@/components/kids/KidsLessonPlayer';
 import { KidsAiBuilderModal } from '@/components/kids/KidsAiBuilderModal';
 import { KidsParentGateModal } from '@/components/kids/KidsParentGateModal';
 import { KidsTheaterModal } from '@/components/kids/KidsTheaterModal';
+import { KidsStageManagerModal } from '@/components/kids/KidsStageManagerModal';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
 import { speakKidText } from '@/components/kids/kidsSpeech';
 
@@ -83,6 +84,7 @@ export const KidsWorldPage: React.FC = () => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isTheaterOpen, setIsTheaterOpen] = useState(false);
+  const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [isGateOpen, setIsGateOpen] = useState(false);
 
   const pet = getPetStage(stars, isVi);
@@ -95,11 +97,11 @@ export const KidsWorldPage: React.FC = () => {
     });
   };
 
-  const launchKingdom = async (kingdomId: string, band: string = ageBand) => {
+  const launchKingdom = async (kingdomId: string, band: string = ageBand, stageCode?: string) => {
     setLoadingId(kingdomId);
     playKidMelody(kingdomId === 'music' ? 'twinkle' : 'happy');
     try {
-      const plan = await kidsCurriculumService.generateDailyAdventure(kingdomId, band, 3);
+      const plan = await kidsCurriculumService.generateDailyAdventure(kingdomId, band, 3, stageCode);
       setActivePlan(plan);
     } finally {
       setLoadingId(null);
@@ -108,7 +110,7 @@ export const KidsWorldPage: React.FC = () => {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-sky-200 via-amber-100/70 to-rose-100 text-slate-900">
-      <KidsMagicalBackdrop />
+      <KidsMagicalBackdrop particleMode={activePlan?.stageTheme?.particleMode || 'sky'} />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-4 sm:py-6 space-y-6">
         {/* Top Bar riêng của Kids World */}
@@ -135,6 +137,13 @@ export const KidsWorldPage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-2xl bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-2 text-xs font-black transition"
             >
               <Film size={14} /> {isVi ? 'Rạp Phim & Đàn' : 'Theater'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsStageModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-3 py-2 text-xs font-black transition"
+            >
+              <Palette size={14} /> {isVi ? 'Sân Khấu (DB)' : 'Stages'}
             </button>
             <button
               type="button"
@@ -268,6 +277,12 @@ export const KidsWorldPage: React.FC = () => {
       </div>
 
       <KidsTheaterModal isOpen={isTheaterOpen} onClose={() => setIsTheaterOpen(false)} lang={lang} />
+      <KidsStageManagerModal
+        isOpen={isStageModalOpen}
+        onClose={() => setIsStageModalOpen(false)}
+        onSelectStageToPlay={(st) => launchKingdom(st.preferredIslands?.[0] || 'fairytale', ageBand, st.stageCode)}
+        lang={lang}
+      />
       <KidsAiBuilderModal
         isOpen={isAiOpen}
         onClose={() => setIsAiOpen(false)}

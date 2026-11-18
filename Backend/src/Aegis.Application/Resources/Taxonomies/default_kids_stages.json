@@ -1,0 +1,78 @@
+[
+  {
+    "stageCode": "SKY_BALLOONS",
+    "titleVi": "Bầu Trời Bóng Bay Sắc Màu",
+    "titleEn": "Rainbow Sky Balloons",
+    "environment": "SKY",
+    "particleMode": "sky",
+    "sfxType": "pop",
+    "backgroundGradient": "from-sky-400 via-cyan-300 to-indigo-400",
+    "badgeEmoji": "☁️",
+    "preferredIslands": ["music", "toys"],
+    "props": [
+      { "emoji": "🎈", "labelVi": "Bóng Đỏ Rực", "labelEn": "Red Balloon", "colorHex": "#f43f5e" },
+      { "emoji": "🎈", "labelVi": "Bóng Vàng Nắng", "labelEn": "Sunny Balloon", "colorHex": "#f59e0b" },
+      { "emoji": "🎈", "labelVi": "Bóng Xanh Biển", "labelEn": "Ocean Balloon", "colorHex": "#0ea5e9" },
+      { "emoji": "🎈", "labelVi": "Bóng Hồng Phấn", "labelEn": "Pink Balloon", "colorHex": "#ec4899" },
+      { "emoji": "🎈", "labelVi": "Bóng Tím Mộng Mơ", "labelEn": "Purple Balloon", "colorHex": "#8b5cf6" },
+      { "emoji": "🎈", "labelVi": "Bóng Xanh Lá", "labelEn": "Green Balloon", "colorHex": "#10b981" }
+    ]
+  },
+  {
+    "stageCode": "OCEAN_TREASURE",
+    "titleVi": "Đại Dương Đáy Biển Kỳ Thú",
+    "titleEn": "Deep Ocean Adventure",
+    "environment": "OCEAN",
+    "particleMode": "ocean",
+    "sfxType": "splash",
+    "backgroundGradient": "from-cyan-500 via-teal-500 to-blue-700",
+    "badgeEmoji": "🌊",
+    "preferredIslands": ["animals", "music"],
+    "props": [
+      { "emoji": "🐚", "labelVi": "Vỏ Sò Ngọc Trai", "labelEn": "Pearl Shell", "colorHex": "#f472b6" },
+      { "emoji": "🐠", "labelVi": "Cá Cam Rực Rỡ", "labelEn": "Clownfish", "colorHex": "#fb923c" },
+      { "emoji": "🐙", "labelVi": "Bạch Tuộc Tím", "labelEn": "Purple Octopus", "colorHex": "#a855f7" },
+      { "emoji": "🐬", "labelVi": "Cá Heo Xanh", "labelEn": "Blue Dolphin", "colorHex": "#38bdf8" },
+      { "emoji": "🦀", "labelVi": "Chú Cua Đỏ", "labelEn": "Red Crab", "colorHex": "#ef4444" },
+      { "emoji": "🐳", "labelVi": "Cá Voi Khổng Lồ", "labelEn": "Giant Whale", "colorHex": "#2563eb" }
+    ]
+  },
+  {
+    "stageCode": "FAIRY_CANDY",
+    "titleVi": "Khu Rừng Cổ Tích & Kẹo Ngọt",
+    "titleEn": "Fairy Candy Wonderland",
+    "environment": "FAIRYTALE",
+    "particleMode": "fairy",
+    "sfxType": "unwrap",
+    "backgroundGradient": "from-fuchsia-500 via-purple-600 to-indigo-700",
+    "badgeEmoji": "🧚",
+    "preferredIslands": ["fairytale", "toys"],
+    "props": [
+      { "emoji": "🍬", "labelVi": "Kẹo Dâu Ngọt", "labelEn": "Berry Candy", "colorHex": "#ec4899" },
+      { "emoji": "🍭", "labelVi": "Kẹo Mút Cầu Vồng", "labelEn": "Rainbow Lollipop", "colorHex": "#f59e0b" },
+      { "emoji": "🧁", "labelVi": "Bánh Kem Tiên", "labelEn": "Fairy Cupcake", "colorHex": "#a855f7" },
+      { "emoji": "🦄", "labelVi": "Kỳ Lân Nhỏ", "labelEn": "Baby Unicorn", "colorHex": "#c084fc" },
+      { "emoji": "🍄", "labelVi": "Nấm Đỏ Thần Kỳ", "labelEn": "Magic Mushroom", "colorHex": "#ef4444" },
+      { "emoji": "✨", "labelVi": "Ngôi Sao Phép Thuật", "labelEn": "Magic Star", "colorHex": "#facc15" }
+    ]
+  },
+  {
+    "stageCode": "SAVANNA_ANIMALS",
+    "titleVi": "Thảo Nguyên Muôn Thú Vui Nhộn",
+    "titleEn": "Sunny Animal Meadow",
+    "environment": "MEADOW",
+    "particleMode": "meadow",
+    "sfxType": "bounce",
+    "backgroundGradient": "from-emerald-400 via-lime-400 to-amber-300",
+    "badgeEmoji": "🌿",
+    "preferredIslands": ["animals", "fairytale"],
+    "props": [
+      { "emoji": "🦁", "labelVi": "Sư Tử Vàng", "labelEn": "Golden Lion", "colorHex": "#f59e0b" },
+      { "emoji": "🐘", "labelVi": "Voi Con Xanh", "labelEn": "Little Elephant", "colorHex": "#60a5fa" },
+      { "emoji": "🦒", "labelVi": "Hươu Cao Cổ", "labelEn": "Tall Giraffe", "colorHex": "#fbbf24" },
+      { "emoji": "🐼", "labelVi": "Gấu Trúc Dễ Thương", "labelEn": "Cute Panda", "colorHex": "#34d399" },
+      { "emoji": "🦊", "labelVi": "Cáo Nhỏ Thông Minh", "labelEn": "Clever Fox", "colorHex": "#fb7185" },
+      { "emoji": "🦋", "labelVi": "Bướm Vườn Hoa", "labelEn": "Garden Butterfly", "colorHex": "#a78bfa" }
+    ]
+  }
+]
