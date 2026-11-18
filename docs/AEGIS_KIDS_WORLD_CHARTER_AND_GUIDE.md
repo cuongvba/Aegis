@@ -58,9 +58,10 @@ flowchart TB
 #### Bước 1: Mở Thế Giới Tuổi Thơ
 - Bấm **Kids World** ngay trên thanh menu chính ở đầu trang (Desktop) hoặc thanh dưới cùng (Mobile), hoặc bấm **🌈 Kids World** từ Zen Studio / Practice, hoặc truy cập trực tiếp `/kids`.
 
-#### Bước 2: Phiêu lưu 4 Vương Quốc & Rạp Phim
-- **Chọn Vương Quốc**: **🎵 Lời Ca Tiếng Hát**, **🦁 Thế Giới Muôn Thú**, **🧸 Thế Giới Đồ Chơi**, **🧚 Thế Giới Thần Tiên**.
-- **Chơi Play-First**: Khi sân khấu hiện ra (lúc trên bầu trời bóng bay, lúc dưới đáy biển, lúc trong rừng kẹo cổ tích), bé **chạm tự do vào từng quả bóng / viên kẹo / bạn thú** để nghe âm thanh vui tai và mở ra bài học giấu bên trong.
+#### Bước 2: Phiêu lưu 5 Vương Quốc, Chọn Giọng Đọc & Rạp Phim
+- **Chọn Vương Quốc**: **🐉 Huyền Tích & Anh Hùng Dân Tộc** (ưu tiên bản sắc quốc gia theo `RegionCode`), **🎵 Lời Ca Tiếng Hát**, **🦁 Thế Giới Muôn Thú**, **🧸 Thế Giới Đồ Chơi**, **🧚 Thế Giới Thần Tiên**.
+- **Chọn Ngôn ngữ & Giọng Đọc AI**: Chọn ngôn ngữ toàn cầu (`🌐`) và giọng đọc yêu thích ngay trên thanh đầu trang (`🎙️ Cô Hoài Mỹ`, `🎙️ Chú Nam Minh`, `🎙️ Ana`, ...). Hệ thống tự động tách bạch: môn học ngôn ngữ phát âm theo ngôn ngữ cần học, còn các môn kiến thức/huyền tích phát âm 100% theo ngôn ngữ bé đang chọn.
+- **Chơi Play-First**: Khi sân khấu hiện ra (lúc trên bầu trời bóng bay, lúc dưới đáy biển, lúc ở Đất Tổ Lạc Hồng với Trống đồng – Tre ngà – Bánh chưng, lúc trong rừng kẹo cổ tích), bé **chạm tự do vào từng vật phẩm** để nghe âm thanh vui tai và mở ra bài học giấu bên trong.
 - **Tương tác & Rèn luyện**: Chạm từng đồ vật để đếm (`1, 2, 3...`), bấm đọc to cùng Cú Mèo AstroOwl, chọn đáp án Kho Báu để tích **Sao Trí Tuệ (`⭐`)** nuôi thú cưng tiến hóa (`🥚 -> 🐣 -> 🐉 -> 🦉`).
 - **Rạp Phim & Đàn Cầu Vồng**: Bấm **🎬 Rạp Phim & Đàn** để xem truyện hoạt họa tự chạy hoặc tự gõ 8 nốt nhạc Đồ–Rê–Mi–Pha–Son–La–Si–Đố.
 - **Ví dụ thực tế (Bé 4 tuổi)**: Mẹ mở `/kids`, chọn lứa tuổi `3–5`, bấm vào **🦁 Thế Giới Muôn Thú**. Bé chạm quả bóng/con vật trên màn hình để nghe tiếng và biết thêm *"Chú Voi Con Bản Đôn"*, tích đủ 5 sao để nở trứng thành **🐣 Gà Con Thông Thái**. Khi cần trả máy lại cho mẹ, bấm **🔒 Phụ huynh** và giải nhanh phép tính nhỏ (`6 + 7 = ?`).
@@ -101,11 +102,13 @@ flowchart TB
 - Thêm sân khấu mới tại [default_kids_stages.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_stages.json) (`Environment`: `SKY`, `OCEAN`, `FAIRYTALE`, `MEADOW`; `ParticleMode`: `sky`, `ocean`, `fairy`, `meadow`; `SfxType`: `pop`, `splash`, `unwrap`, `bounce`).
 - Thêm Concept Atoms tại [default_kids_concept_atoms.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_concept_atoms.json).
 
-#### 2. Mở rộng Động từ Database & Tích hợp Đa Khách Thuê (Multi-Tenant APIs)
+#### 2. Mở rộng Động từ Database, AI Skills & Hệ Sinh Thái Giọng Đọc (Multi-Tenant APIs)
 - `GET /api/kids/locales` & `POST /api/kids/locales`: Hệ thống đăng ký ngôn ngữ & văn hóa mở theo chuẩn **BCP-47 không giới hạn** ([default_kids_locales.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_locales.json)), hỗ trợ tự động đảo chiều **LTR/RTL**, giọng đọc bản xứ và chọn **Âm giai Văn hóa** (*Western Major*, *Ngũ cung Á Đông*, *Japanese Hirajoshi*) — bất kỳ quốc gia/vùng miền nào cũng có thể thêm ngôn ngữ mới vào DB mà không cần sửa mã nguồn.
+- `GET /api/kids/ai-skills` & `POST /api/kids/ai-skills`: Hệ thống **AI Skill & Prompt Registry** nạp động từ [default_kids_ai_skills.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_ai_skills.json) và DB (`KIDS_AI_SKILL`), nổi bật là **`KIDS_HERITAGE_MYTHOLOGIST`** bảo đảm AI tạo bài học lịch sử/thần thoại chuẩn xác, tôn kính anh hùng dân tộc và neo đức tính cao đẹp theo từng lứa tuổi (`3-5`, `6-8`, `9-11`).
+- `GET /api/kids/voices` & `POST /api/kids/tts`: Động cơ Giọng đọc Đa tầng ([KidsVoiceService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/KidsVoiceService.cs)) kế thừa hệ sinh thái TTS hiện đại: **Tier 1** OpenAI-compatible / Kokoro-FastAPI / Piper (`AEGIS_TTS_ENDPOINT`), **Tier 2** Edge Neural TTS WebSocket, **Tier 3** Zero-key Multilingual Google TTS (`audio/mpeg` + SHA-256 RAM cache), và **Tier 4** Smart Browser `SpeechSynthesisVoice` Picker fallback.
 - `GET /api/kids/stages?includePending=false` & `POST /api/kids/stages`: Đọc/Lưu sân khấu theo `TenantId` trong bảng `TenantCoordinatePresets` (`CoordinateType = "KIDS_STAGE_THEME"`).
-- `POST /api/kids/daily-adventure`: Tổng hợp bài học + bốc sân khấu động + ưu tiên `weakAtomCodes` theo trí nhớ FSRS.
-- `POST /api/kids/ai-synthesize-bundle`: Gọi `UniversalAiRouter` sinh bản nháp giáo án + sân khấu hoàn chỉnh.
+- `POST /api/kids/daily-adventure`: Tổng hợp bài học + bốc sân khấu động (ưu tiên `RegionCode` cho `heritage`) + ưu tiên `weakAtomCodes` theo trí nhớ FSRS + tách bạch ngôn ngữ môn học (`SPEAK_ECHO`).
+- `POST /api/kids/ai-synthesize-bundle` & `POST /api/kids/ai-build-curriculum`: Tự động chọn `KidsAiSkill` phù hợp với vương quốc và gọi `UniversalAiRouter` sinh trọn bộ giáo án + sân khấu hoàn chỉnh.
 - `POST /api/kids/creator/submit-bundle`, `POST /api/kids/contributions/{code}/moderate`, `POST /api/kids/contributions/{code}/gratitude`: Chu trình đóng góp $\rightarrow$ kiểm duyệt $\rightarrow$ tri ân.
 
 > **Ví dụ thực tế (Quản trị Trường Quốc tế Song ngữ)**:
@@ -126,12 +129,14 @@ flowchart TB
 
 | Thành phần | Chức năng | Liên kết mã nguồn |
 | :--- | :--- | :--- |
-| **Trang Độc lập `/kids`** | Không gian 4 Vương quốc, Rạp phim & Studio | [KidsWorldPage.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/kids/KidsWorldPage.tsx) |
-| **Play-First Surprise Stage** | Sân khấu chạm bóng bay/kẹo/muôn thú mở tri thức | [KidsSurpriseStage.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsSurpriseStage.tsx) |
-| **Trình Chơi Đa Giác Quan** | 4 pha chơi, đếm vật thể, nói & tặng sao tri ân | [KidsLessonPlayer.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsLessonPlayer.tsx) |
-| **Xưởng Sáng Tạo + AI Co-Pilot** | Giáo viên & Youth Creator dựng sân khấu, thu âm | [YouthCreatorStudioModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/YouthCreatorStudioModal.tsx) |
+| **Trang Độc lập `/kids`** | Không gian 5 Vương quốc (gồm Huyền Tích), Chọn giọng & Studio | [KidsWorldPage.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/kids/KidsWorldPage.tsx) |
+| **Play-First Surprise Stage** | Sân khấu chạm bóng bay/kẹo/muôn thú/di sản mở tri thức | [KidsSurpriseStage.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsSurpriseStage.tsx) |
+| **Trình Chơi Đa Giác Quan** | 4 pha chơi, đếm vật thể, nói theo ngôn ngữ chọn & tặng sao | [KidsLessonPlayer.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsLessonPlayer.tsx) |
+| **Động cơ Giọng đọc Đa tầng** | Neural TTS Backend (Kokoro/Piper/Edge/Google) + Smart Browser Fallback | [KidsVoiceService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/KidsVoiceService.cs), [kidsSpeech.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/kidsSpeech.ts) |
+| **AI Skill Huyền Tích & Giáo Án** | Kho AI Skill DB/JSON (`KIDS_HERITAGE_MYTHOLOGIST`) & Skill Spec | [default_kids_ai_skills.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_ai_skills.json), [SKILL.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/.agents/skills/kids-heritage-lesson-architect/SKILL.md) |
+| **Xưởng Sáng Tạo + AI Builder** | Giáo viên & Youth Creator dựng sân khấu, AI tạo bài & thu âm | [YouthCreatorStudioModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/YouthCreatorStudioModal.tsx), [KidsAiBuilderModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsAiBuilderModal.tsx) |
 | **Rạp Phim & Nhạc Cụ Web Audio** | Giai điệu thiếu nhi, đàn Xylophone 8 nốt, SFX 0ms | [KidsTheaterModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsTheaterModal.tsx), [kidsMusicEngine.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/kidsMusicEngine.ts) |
 | **Cổng Duyệt & Khóa Phụ Huynh** | Kiểm duyệt an toàn 2 lớp & Parent Gate | [KidsReviewModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsReviewModal.tsx), [KidsParentGateModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/KidsParentGateModal.tsx) |
 | **Điểm Vào Toàn Hệ Thống** | Menu Header, Mobile Nav & Zen Studio | [NavMenu.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/widgets/app-header/NavMenu.tsx), [CreatorZenStudioPage.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/creator/studio/CreatorZenStudioPage.tsx) |
 | **Backend Genesis & Stages** | Service, Controller, DTOs & Embedded Registries | [KidsCurriculumService.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/KidsCurriculumService.cs), [KidsWorldController.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/KidsWorldController.cs), [default_kids_stages.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_stages.json) |
-| **Unit Tests Khoanh Vùng** | 6 test cases kiểm chứng toàn bộ luồng Kids World | [KidsCurriculumServiceTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/KidsCurriculumServiceTests.cs) |
+| **Unit Tests Khoanh Vùng** | 11 test cases kiểm chứng toàn bộ luồng Kids World, Heritage, AI Skill & Voice | [KidsCurriculumServiceTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/KidsCurriculumServiceTests.cs) |
