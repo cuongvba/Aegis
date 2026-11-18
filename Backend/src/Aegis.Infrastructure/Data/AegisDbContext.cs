@@ -661,6 +661,19 @@ namespace Aegis.Infrastructure.Data
             {
                 entity.ToTable("platform_wishlist_feedbacks");
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.AuthorName).HasColumnName("author_name");
+                entity.Property(e => e.AuthorEmail).HasColumnName("author_email");
+                entity.Property(e => e.Category).HasColumnName("category");
+                entity.Property(e => e.Title).HasColumnName("title");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.UpvotesCount).HasColumnName("upvotes_count");
+                entity.Property(e => e.Status).HasColumnName("status");
+                entity.Property(e => e.AdminResponse).HasColumnName("admin_response");
+                entity.Property(e => e.UpvotedUserIdsJson).HasColumnName("upvoted_user_ids_json");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
                 entity.HasIndex(e => e.Category);
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => e.UpvotesCount);
