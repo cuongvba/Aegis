@@ -55,5 +55,14 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             AiBuildKidsCurriculumRequestDto request,
             CancellationToken ct = default);
+
+        Task<List<KidsLocaleProfileDto>> GetLocaleProfilesAsync(
+            Guid tenantId,
+            CancellationToken ct = default);
+
+        Task<KidsLocaleProfileDto> SaveLocaleProfileAsync(
+            Guid tenantId,
+            KidsLocaleProfileDto profile,
+            CancellationToken ct = default);
     }
 }

@@ -47,6 +47,34 @@ export const XYLOPHONE_NOTES = [
   { label: 'Đố', freq: 523.25, color: 'from-purple-400 to-purple-500' },
 ];
 
+export const CULTURAL_SCALES: Record<string, { name: string; notes: Array<{ label: string; freq: number; color: string }> }> = {
+  western_major: {
+    name: 'Western Major (Do–Re–Mi)',
+    notes: XYLOPHONE_NOTES,
+  },
+  eastern_pentatonic: {
+    name: 'Ngũ Cung Á Đông (Hò–Xự–Xang–Xê–Cống)',
+    notes: [
+      { label: 'Hò', freq: 261.63, color: 'from-rose-400 to-rose-500' },
+      { label: 'Xự', freq: 293.66, color: 'from-orange-400 to-orange-500' },
+      { label: 'Xang', freq: 329.63, color: 'from-amber-400 to-amber-500' },
+      { label: 'Xê', freq: 392.00, color: 'from-emerald-400 to-emerald-500' },
+      { label: 'Cống', freq: 440.00, color: 'from-cyan-400 to-cyan-500' },
+      { label: 'Líu', freq: 523.25, color: 'from-indigo-400 to-indigo-500' },
+    ],
+  },
+  japanese_hirajoshi: {
+    name: 'Japanese Hirajoshi (桜)',
+    notes: [
+      { label: 'Ni', freq: 293.66, color: 'from-pink-400 to-rose-500' },
+      { label: 'Ho', freq: 329.63, color: 'from-fuchsia-400 to-purple-500' },
+      { label: 'He', freq: 349.23, color: 'from-amber-400 to-orange-500' },
+      { label: 'To', freq: 440.00, color: 'from-cyan-400 to-sky-500' },
+      { label: 'I', freq: 466.16, color: 'from-indigo-400 to-indigo-600' },
+    ],
+  },
+};
+
 const MELODY_PRESETS: Record<string, Array<[number, number]>> = {
   twinkle: [
     [261.63, 0.32], [261.63, 0.32], [392.00, 0.32], [392.00, 0.32],

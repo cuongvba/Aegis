@@ -105,5 +105,24 @@ namespace Aegis.API.Controllers
             var draft = await _kidsService.AiSynthesizeCreatorBundleAsync(_tenant.CurrentTenantId, request);
             return Ok(draft);
         }
+
+        [HttpGet("locales")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetLocaleProfiles()
+        {
+            var locales = await _kidsService.GetLocaleProfilesAsync(_tenant.CurrentTenantId);
+            return Ok(locales);
+        }
+
+        [HttpPost("locales")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveLocaleProfile([FromBody] KidsLocaleProfileDto profile)
+        {
+            if (profile == null || string.IsNullOrWhiteSpace(profile.LocaleCode) || string.IsNullOrWhiteSpace(profile.NativeName))
+                return BadRequest(new { error = "Vui lòng nhập LocaleCode (VD: th-TH) và tên ngôn ngữ." });
+
+            var saved = await _kidsService.SaveLocaleProfileAsync(_tenant.CurrentTenantId, profile);
+            return Ok(saved);
+        }
     }
 }

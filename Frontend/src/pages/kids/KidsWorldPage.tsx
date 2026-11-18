@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette, Feather, ShieldCheck } from 'lucide-react';
-import { kidsCurriculumService, KidsLessonPlan } from '@/services/kidsCurriculum.service';
+import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette, Feather, ShieldCheck, Globe } from 'lucide-react';
+import { kidsCurriculumService, KidsLessonPlan, KidsLocaleProfile } from '@/services/kidsCurriculum.service';
 import { useLearnerI18n } from '@/lib/i18n';
 import { KidsMagicalBackdrop } from '@/components/kids/KidsMagicalBackdrop';
 import { KidsLessonPlayer } from '@/components/kids/KidsLessonPlayer';
@@ -11,6 +11,7 @@ import { KidsTheaterModal } from '@/components/kids/KidsTheaterModal';
 import { KidsStageManagerModal } from '@/components/kids/KidsStageManagerModal';
 import { YouthCreatorStudioModal } from '@/components/kids/YouthCreatorStudioModal';
 import { KidsReviewModal } from '@/components/kids/KidsReviewModal';
+import { KidsGlobalLocaleModal } from '@/components/kids/KidsGlobalLocaleModal';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
 import { speakKidText } from '@/components/kids/kidsSpeech';
 
@@ -89,7 +90,17 @@ export const KidsWorldPage: React.FC = () => {
   const [isStageModalOpen, setIsStageModalOpen] = useState(false);
   const [isYouthCreatorOpen, setIsYouthCreatorOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isLocaleModalOpen, setIsLocaleModalOpen] = useState(false);
+  const [locales, setLocales] = useState<KidsLocaleProfile[]>([]);
+  const [activeLocaleCode, setActiveLocaleCode] = useState<string>(() => localStorage.getItem('aegis-kids-locale') || 'vi-VN');
   const [isGateOpen, setIsGateOpen] = useState(false);
+
+  useEffect(() => {
+    kidsCurriculumService.getLocaleProfiles().then(setLocales).catch(() => {});
+  }, []);
+
+  const activeLocale = locales.find((l) => l.localeCode === activeLocaleCode) || locales[0];
+  const speechLang = activeLocale?.speechTag || lang;
 
   const pet = getPetStage(stars, isVi);
 
@@ -113,7 +124,7 @@ export const KidsWorldPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-sky-200 via-amber-100/70 to-rose-100 text-slate-900">
+    <div dir={activeLocale?.direction || 'ltr'} className="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-sky-200 via-amber-100/70 to-rose-100 text-slate-900">
       <KidsMagicalBackdrop particleMode={activePlan?.stageTheme?.particleMode || 'sky'} />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-4 sm:py-6 space-y-6">
@@ -170,14 +181,15 @@ export const KidsWorldPage: React.FC = () => {
             >
               <Wand2 size={14} /> {isVi ? 'AI Tạo Bài' : 'AI Builder'}
             </button>
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as 'vi' | 'en')}
-              className="rounded-2xl border-2 border-slate-200 bg-white px-2 py-1.5 text-xs font-black"
+            <button
+              type="button"
+              onClick={() => setIsLocaleModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-800 hover:border-cyan-400 transition"
+              title="Global Languages & Cultural Registry"
             >
-              <option value="vi">VI</option>
-              <option value="en">EN</option>
-            </select>
+              <Globe size={13} className="text-cyan-600" />
+              <span>{activeLocale ? `${activeLocale.flagEmoji} ${activeLocale.nativeName}` : lang.toUpperCase()}</span>
+            </button>
             <button
               type="button"
               onClick={() => setIsGateOpen(true)}
@@ -294,7 +306,24 @@ export const KidsWorldPage: React.FC = () => {
         )}
       </div>
 
-      <KidsTheaterModal isOpen={isTheaterOpen} onClose={() => setIsTheaterOpen(false)} lang={lang} />
+      <KidsTheaterModal
+        isOpen={isTheaterOpen}
+        onClose={() => setIsTheaterOpen(false)}
+        lang={speechLang}
+        culturalScaleId={activeLocale?.culturalScaleId || 'western_major'}
+      />
+      <KidsGlobalLocaleModal
+        isOpen={isLocaleModalOpen}
+        onClose={() => setIsLocaleModalOpen(false)}
+        locales={locales}
+        activeLocaleCode={activeLocaleCode}
+        onSelectLocale={(loc) => {
+          setActiveLocaleCode(loc.localeCode);
+          localStorage.setItem('aegis-kids-locale', loc.localeCode);
+          setLang(loc.langCode as any);
+        }}
+        onAddedLocale={(loc) => setLocales((prev) => [...prev, loc])}
+      />
       <KidsStageManagerModal
         isOpen={isStageModalOpen}
         onClose={() => setIsStageModalOpen(false)}

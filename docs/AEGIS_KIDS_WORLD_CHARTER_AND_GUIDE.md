@@ -102,6 +102,7 @@ flowchart TB
 - Thêm Concept Atoms tại [default_kids_concept_atoms.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_concept_atoms.json).
 
 #### 2. Mở rộng Động từ Database & Tích hợp Đa Khách Thuê (Multi-Tenant APIs)
+- `GET /api/kids/locales` & `POST /api/kids/locales`: Hệ thống đăng ký ngôn ngữ & văn hóa mở theo chuẩn **BCP-47 không giới hạn** ([default_kids_locales.json](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Resources/Taxonomies/default_kids_locales.json)), hỗ trợ tự động đảo chiều **LTR/RTL**, giọng đọc bản xứ và chọn **Âm giai Văn hóa** (*Western Major*, *Ngũ cung Á Đông*, *Japanese Hirajoshi*) — bất kỳ quốc gia/vùng miền nào cũng có thể thêm ngôn ngữ mới vào DB mà không cần sửa mã nguồn.
 - `GET /api/kids/stages?includePending=false` & `POST /api/kids/stages`: Đọc/Lưu sân khấu theo `TenantId` trong bảng `TenantCoordinatePresets` (`CoordinateType = "KIDS_STAGE_THEME"`).
 - `POST /api/kids/daily-adventure`: Tổng hợp bài học + bốc sân khấu động + ưu tiên `weakAtomCodes` theo trí nhớ FSRS.
 - `POST /api/kids/ai-synthesize-bundle`: Gọi `UniversalAiRouter` sinh bản nháp giáo án + sân khấu hoàn chỉnh.

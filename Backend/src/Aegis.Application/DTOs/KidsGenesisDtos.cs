@@ -2,6 +2,28 @@ using System.Collections.Generic;
 
 namespace Aegis.Application.DTOs
 {
+    public class LocalizedAtomContentDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Phonetic { get; set; }
+        public string? SampleSentence { get; set; }
+        public string? FunFact { get; set; }
+    }
+
+    public class KidsLocaleProfileDto
+    {
+        public string LocaleCode { get; set; } = "en-US";
+        public string LangCode { get; set; } = "en";
+        public string NativeName { get; set; } = "English";
+        public string FlagEmoji { get; set; } = "🌍";
+        /// <summary>"ltr" | "rtl"</summary>
+        public string Direction { get; set; } = "ltr";
+        public string SpeechTag { get; set; } = "en-US";
+        public string CulturalScaleId { get; set; } = "western_major";
+        public string RegionCode { get; set; } = "GLOBAL";
+        public bool IsSystemDefault { get; set; } = true;
+    }
+
     public class KidsConceptAtomDto
     {
         public string AtomCode { get; set; } = string.Empty;
@@ -27,6 +49,9 @@ namespace Aegis.Application.DTOs
         public string Status { get; set; } = "APPROVED";
         public int GratitudeCount { get; set; }
         public bool IsCommunityContribution { get; set; }
+        public string RegionCode { get; set; } = "GLOBAL";
+        public string? FrameworkCode { get; set; }
+        public Dictionary<string, LocalizedAtomContentDto>? Localized { get; set; }
     }
 
     public class KidsChoiceOptionDto
@@ -99,6 +124,7 @@ namespace Aegis.Application.DTOs
         public string? BackdropImageUrl { get; set; }
         public string Status { get; set; } = "APPROVED";
         public int GratitudeCount { get; set; }
+        public string RegionCode { get; set; } = "GLOBAL";
     }
 
     public class SubmitKidsCreatorBundleDto

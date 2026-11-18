@@ -1,0 +1,101 @@
+[
+  {
+    "localeCode": "vi-VN",
+    "langCode": "vi",
+    "nativeName": "Tiếng Việt",
+    "flagEmoji": "🇻🇳",
+    "direction": "ltr",
+    "speechTag": "vi-VN",
+    "culturalScaleId": "eastern_pentatonic",
+    "regionCode": "VN",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "en-US",
+    "langCode": "en",
+    "nativeName": "English (Global)",
+    "flagEmoji": "🇺🇸",
+    "direction": "ltr",
+    "speechTag": "en-US",
+    "culturalScaleId": "western_major",
+    "regionCode": "GLOBAL",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "ja-JP",
+    "langCode": "ja",
+    "nativeName": "日本語",
+    "flagEmoji": "🇯🇵",
+    "direction": "ltr",
+    "speechTag": "ja-JP",
+    "culturalScaleId": "japanese_hirajoshi",
+    "regionCode": "JP",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "ko-KR",
+    "langCode": "ko",
+    "nativeName": "한국어",
+    "flagEmoji": "🇰🇷",
+    "direction": "ltr",
+    "speechTag": "ko-KR",
+    "culturalScaleId": "eastern_pentatonic",
+    "regionCode": "KR",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "zh-CN",
+    "langCode": "zh",
+    "nativeName": "中文 (简体)",
+    "flagEmoji": "🇨🇳",
+    "direction": "ltr",
+    "speechTag": "zh-CN",
+    "culturalScaleId": "eastern_pentatonic",
+    "regionCode": "CN",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "fr-FR",
+    "langCode": "fr",
+    "nativeName": "Français",
+    "flagEmoji": "🇫🇷",
+    "direction": "ltr",
+    "speechTag": "fr-FR",
+    "culturalScaleId": "western_major",
+    "regionCode": "EU",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "es-ES",
+    "langCode": "es",
+    "nativeName": "Español",
+    "flagEmoji": "🇪🇸",
+    "direction": "ltr",
+    "speechTag": "es-ES",
+    "culturalScaleId": "western_major",
+    "regionCode": "LATAM",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "ar-SA",
+    "langCode": "ar",
+    "nativeName": "العربية",
+    "flagEmoji": "🇸🇦",
+    "direction": "rtl",
+    "speechTag": "ar-SA",
+    "culturalScaleId": "western_major",
+    "regionCode": "MENA",
+    "isSystemDefault": true
+  },
+  {
+    "localeCode": "hi-IN",
+    "langCode": "hi",
+    "nativeName": "हिन्दी",
+    "flagEmoji": "🇮🇳",
+    "direction": "ltr",
+    "speechTag": "hi-IN",
+    "culturalScaleId": "eastern_pentatonic",
+    "regionCode": "IN",
+    "isSystemDefault": true
+  }
+]

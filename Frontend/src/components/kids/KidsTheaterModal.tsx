@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { X, Play, Pause, Music, Film, Sparkles } from 'lucide-react';
-import { playKidMelody, playXylophoneNote, XYLOPHONE_NOTES } from './kidsMusicEngine';
+import { playKidMelody, playXylophoneNote, CULTURAL_SCALES, XYLOPHONE_NOTES } from './kidsMusicEngine';
 import { speakKidText, stopKidSpeech } from './kidsSpeech';
 
 interface KidsTheaterModalProps {
   isOpen: boolean;
   onClose: () => void;
   lang: string;
+  culturalScaleId?: string;
 }
 
 const STORIES = [
@@ -45,11 +46,16 @@ const STORIES = [
   },
 ];
 
-export const KidsTheaterModal: React.FC<KidsTheaterModalProps> = ({ isOpen, onClose, lang }) => {
+export const KidsTheaterModal: React.FC<KidsTheaterModalProps> = ({ isOpen, onClose, lang, culturalScaleId = 'western_major' }) => {
   const [selectedId, setSelectedId] = useState('twinkle');
   const [sceneIdx, setSceneIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [customVideoUrl, setCustomVideoUrl] = useState('');
+  const [activeScaleId, setActiveScaleId] = useState(culturalScaleId);
+
+  useEffect(() => {
+    setActiveScaleId(culturalScaleId);
+  }, [culturalScaleId]);
 
   const isVi = lang === 'vi';
   const story = STORIES.find((s) => s.id === selectedId) || STORIES[0];
@@ -169,11 +175,22 @@ export const KidsTheaterModal: React.FC<KidsTheaterModalProps> = ({ isOpen, onCl
         </div>
 
         <div className="space-y-2">
-          <div className="text-xs font-black text-amber-300 flex items-center gap-1.5">
-            <Music size={14} /> {isVi ? 'Đàn Cầu Vồng (Bé chạm phím để chơi nhạc!)' : 'Rainbow Xylophone (Tap to play!)'}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs font-black text-amber-300 flex items-center gap-1.5">
+              <Music size={14} /> {isVi ? 'Đàn Cầu Vồng Đa Âm Giai' : 'Cultural Rainbow Xylophone'}
+            </div>
+            <select
+              value={activeScaleId}
+              onChange={(e) => setActiveScaleId(e.target.value)}
+              className="rounded-xl bg-slate-900 border border-amber-300/40 px-2.5 py-1 text-[11px] font-bold text-amber-200"
+            >
+              {Object.entries(CULTURAL_SCALES).map(([id, sc]) => (
+                <option key={id} value={id}>{sc.name}</option>
+              ))}
+            </select>
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
-            {XYLOPHONE_NOTES.map((note) => (
+          <div className="grid grid-cols-3 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+            {(CULTURAL_SCALES[activeScaleId]?.notes || XYLOPHONE_NOTES).map((note) => (
               <button
                 key={note.label}
                 type="button"

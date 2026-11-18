@@ -1,5 +1,17 @@
 import api from './api';
 
+export interface KidsLocaleProfile {
+  localeCode: string;
+  langCode: string;
+  nativeName: string;
+  flagEmoji: string;
+  direction: 'ltr' | 'rtl';
+  speechTag: string;
+  culturalScaleId: string;
+  regionCode: string;
+  isSystemDefault: boolean;
+}
+
 export interface KidsConceptAtom {
   atomCode: string;
   islandId: string;
@@ -196,6 +208,16 @@ export const kidsCurriculumService = {
       customStage?: KidsStageTheme;
       atoms: Partial<KidsConceptAtom>[];
     }>('/api/kids/ai-synthesize-bundle', { topicTitle, islandId, ageBand, itemCount });
+    return res.data;
+  },
+
+  async getLocaleProfiles(): Promise<KidsLocaleProfile[]> {
+    const res = await api.get<KidsLocaleProfile[]>('/api/kids/locales');
+    return res.data;
+  },
+
+  async saveLocaleProfile(profile: KidsLocaleProfile): Promise<KidsLocaleProfile> {
+    const res = await api.post<KidsLocaleProfile>('/api/kids/locales', profile);
     return res.data;
   },
 };

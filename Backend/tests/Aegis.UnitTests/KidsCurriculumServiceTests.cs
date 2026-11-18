@@ -152,6 +152,32 @@ namespace Aegis.UnitTests
         }
 
         [Fact]
+        public async Task LocaleProfiles_SupportsUnboundedDynamicRegistrationFromDb()
+        {
+            await using var db = CreateInMemoryDb(nameof(LocaleProfiles_SupportsUnboundedDynamicRegistrationFromDb));
+            var tenantId = Guid.NewGuid();
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var defaults = await service.GetLocaleProfilesAsync(tenantId);
+            Assert.Contains(defaults, l => l.LocaleCode == "ar-SA" && l.Direction == "rtl");
+
+            await service.SaveLocaleProfileAsync(tenantId, new KidsLocaleProfileDto
+            {
+                LocaleCode = "th-TH",
+                LangCode = "th",
+                NativeName = "ภาษาไทย",
+                FlagEmoji = "🇹🇭",
+                Direction = "ltr",
+                SpeechTag = "th-TH",
+                CulturalScaleId = "eastern_pentatonic",
+                RegionCode = "TH"
+            });
+
+            var updated = await service.GetLocaleProfilesAsync(tenantId);
+            Assert.Contains(updated, l => l.LocaleCode == "th-TH" && l.NativeName == "ภาษาไทย" && !l.IsSystemDefault);
+        }
+
+        [Fact]
         public async Task SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages()
         {
             await using var db = CreateInMemoryDb(nameof(SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages));

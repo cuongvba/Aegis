@@ -22,7 +22,7 @@ export function cleanTextForSpeech(raw: string): string {
     .trim();
 }
 
-export function speakKidText(rawText: string, lang: string = 'vi'): void {
+export function speakKidText(rawText: string, langOrBcp47: string = 'vi'): void {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   const text = cleanTextForSpeech(rawText);
   if (!text) return;
@@ -30,7 +30,8 @@ export function speakKidText(rawText: string, lang: string = 'vi'): void {
   try {
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = LANG_VOICE_MAP[lang] || 'en-US';
+    // Support unbounded BCP-47 tags directly from DB (e.g., "th-TH", "de-DE", "ar-SA")
+    utter.lang = langOrBcp47.includes('-') ? langOrBcp47 : (LANG_VOICE_MAP[langOrBcp47] || langOrBcp47 || 'en-US');
     utter.rate = 0.96;
     utter.pitch = 1.12;
     window.speechSynthesis.speak(utter);

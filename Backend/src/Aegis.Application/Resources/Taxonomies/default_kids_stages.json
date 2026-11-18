@@ -74,5 +74,59 @@
       { "emoji": "🦊", "labelVi": "Cáo Nhỏ Thông Minh", "labelEn": "Clever Fox", "colorHex": "#fb7185" },
       { "emoji": "🦋", "labelVi": "Bướm Vườn Hoa", "labelEn": "Garden Butterfly", "colorHex": "#a78bfa" }
     ]
+  },
+  {
+    "stageCode": "VN_MID_AUTUMN",
+    "titleVi": "Đêm Rằm Trung Thu Việt Nam",
+    "titleEn": "Vietnamese Mid-Autumn Lantern Night",
+    "regionCode": "VN",
+    "environment": "FAIRYTALE",
+    "particleMode": "fairy",
+    "sfxType": "unwrap",
+    "backgroundGradient": "from-amber-500 via-orange-600 to-rose-700",
+    "badgeEmoji": "🏮",
+    "preferredIslands": ["music", "fairytale"],
+    "props": [
+      { "emoji": "🏮", "labelVi": "Đèn Ông Sao", "labelEn": "Star Lantern", "colorHex": "#f43f5e" },
+      { "emoji": "🌕", "labelVi": "Trăng Rằm Sáng", "labelEn": "Full Moon", "colorHex": "#facc15" },
+      { "emoji": "🥮", "labelVi": "Bánh Trung Thu", "labelEn": "Mooncake", "colorHex": "#f59e0b" },
+      { "emoji": "🐉", "labelVi": "Múa Lân Sư Rồng", "labelEn": "Lion Dance", "colorHex": "#ef4444" }
+    ]
+  },
+  {
+    "stageCode": "JP_SAKURA_MATSURI",
+    "titleVi": "Lễ Hội Hoa Anh Đào Nhật Bản",
+    "titleEn": "Japanese Sakura Spring Festival",
+    "regionCode": "JP",
+    "environment": "MEADOW",
+    "particleMode": "meadow",
+    "sfxType": "bounce",
+    "backgroundGradient": "from-pink-300 via-rose-400 to-fuchsia-500",
+    "badgeEmoji": "🌸",
+    "preferredIslands": ["animals", "fairytale"],
+    "props": [
+      { "emoji": "🌸", "labelVi": "Hoa Anh Đào", "labelEn": "Sakura Blossom", "colorHex": "#f472b6" },
+      { "emoji": "🎏", "labelVi": "Cờ Cá Chép", "labelEn": "Koinobori", "colorHex": "#38bdf8" },
+      { "emoji": "🍙", "labelVi": "Cơm Nắm Onigiri", "labelEn": "Onigiri", "colorHex": "#10b981" },
+      { "emoji": "🗻", "labelVi": "Núi Phú Sĩ", "labelEn": "Mount Fuji", "colorHex": "#6366f1" }
+    ]
+  },
+  {
+    "stageCode": "MENA_DESERT_NIGHTS",
+    "titleVi": "Đêm Sao Nghìn Lẻ Một Đêm",
+    "titleEn": "Arabian Starry Desert Nights",
+    "regionCode": "MENA",
+    "environment": "SKY",
+    "particleMode": "fairy",
+    "sfxType": "unwrap",
+    "backgroundGradient": "from-indigo-700 via-purple-800 to-amber-600",
+    "badgeEmoji": "🪔",
+    "preferredIslands": ["fairytale", "music"],
+    "props": [
+      { "emoji": "🪔", "labelVi": "Đèn Thần Ước Mơ", "labelEn": "Magic Lamp", "colorHex": "#f59e0b" },
+      { "emoji": "🐪", "labelVi": "Lạc Đà Sa Mạc", "labelEn": "Desert Camel", "colorHex": "#fb923c" },
+      { "emoji": "🌙", "labelVi": "Trăng Khuyết Bạc", "labelEn": "Crescent Moon", "colorHex": "#facc15" },
+      { "emoji": "🕌", "labelVi": "Cung Điện Sao", "labelEn": "Star Palace", "colorHex": "#a855f7" }
+    ]
   }
 ]

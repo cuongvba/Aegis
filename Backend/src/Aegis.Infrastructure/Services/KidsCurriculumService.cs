@@ -19,8 +19,10 @@ namespace Aegis.Infrastructure.Services
     {
         private const string KidsAtomCoordinateType = "KIDS_CONCEPT_ATOM";
         private const string KidsStageCoordinateType = "KIDS_STAGE_THEME";
+        private const string KidsLocaleCoordinateType = "KIDS_LOCALE_PROFILE";
         private const string EmbeddedResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_concept_atoms.json";
         private const string EmbeddedStagesResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_stages.json";
+        private const string EmbeddedLocalesResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_locales.json";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
@@ -30,6 +32,7 @@ namespace Aegis.Infrastructure.Services
 
         private static readonly Lazy<List<KidsConceptAtomDto>> DefaultAtomsCache = new(LoadEmbeddedAtoms);
         private static readonly Lazy<List<KidsStageThemeDto>> DefaultStagesCache = new(LoadEmbeddedStages);
+        private static readonly Lazy<List<KidsLocaleProfileDto>> DefaultLocalesCache = new(LoadEmbeddedLocales);
 
         private readonly AegisDbContext _db;
         private readonly ILogger<KidsCurriculumService> _logger;
@@ -753,6 +756,76 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             return JsonSerializer.Deserialize<List<KidsConceptAtomDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsConceptAtomDto>();
         }
 
+        public async Task<List<KidsLocaleProfileDto>> GetLocaleProfilesAsync(Guid tenantId, CancellationToken ct = default)
+        {
+            var locales = DefaultLocalesCache.Value.ToList();
+            var custom = await _db.TenantCoordinatePresets
+                .AsNoTracking()
+                .Where(p => p.CoordinateType == KidsLocaleCoordinateType &&
+                            (p.TenantId == tenantId || p.TenantId == Guid.Empty))
+                .OrderBy(p => p.CreatedAt)
+                .ToListAsync(ct);
+
+            foreach (var preset in custom)
+            {
+                if (string.IsNullOrWhiteSpace(preset.SynonymsJson)) continue;
+                try
+                {
+                    var loc = JsonSerializer.Deserialize<KidsLocaleProfileDto>(preset.SynonymsJson, JsonOpts);
+                    if (loc == null || string.IsNullOrWhiteSpace(loc.LocaleCode)) continue;
+                    loc.IsSystemDefault = false;
+                    int idx = locales.FindIndex(x => string.Equals(x.LocaleCode, loc.LocaleCode, StringComparison.OrdinalIgnoreCase));
+                    if (idx >= 0) locales[idx] = loc;
+                    else locales.Add(loc);
+                }
+                catch { }
+            }
+
+            return locales;
+        }
+
+        public async Task<KidsLocaleProfileDto> SaveLocaleProfileAsync(Guid tenantId, KidsLocaleProfileDto profile, CancellationToken ct = default)
+        {
+            if (profile == null || string.IsNullOrWhiteSpace(profile.LocaleCode))
+                throw new ArgumentException("LocaleCode is required.");
+
+            profile.LocaleCode = profile.LocaleCode.Trim();
+            profile.LangCode = string.IsNullOrWhiteSpace(profile.LangCode)
+                ? profile.LocaleCode.Split('-')[0].ToLowerInvariant()
+                : profile.LangCode.Trim().ToLowerInvariant();
+            profile.SpeechTag = string.IsNullOrWhiteSpace(profile.SpeechTag) ? profile.LocaleCode : profile.SpeechTag.Trim();
+            profile.Direction = string.Equals(profile.Direction, "rtl", StringComparison.OrdinalIgnoreCase) ? "rtl" : "ltr";
+            profile.IsSystemDefault = false;
+
+            string code = profile.LocaleCode.ToUpperInvariant();
+            string json = JsonSerializer.Serialize(profile, JsonOpts);
+
+            var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == tenantId && p.CoordinateType == KidsLocaleCoordinateType && p.PresetCode == code,
+                ct);
+
+            if (existing != null)
+            {
+                existing.PresetLabel = profile.NativeName;
+                existing.SynonymsJson = json;
+            }
+            else
+            {
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = tenantId,
+                    DomainCode = "KIDS_WORLD",
+                    CoordinateType = KidsLocaleCoordinateType,
+                    PresetCode = code,
+                    PresetLabel = profile.NativeName,
+                    SynonymsJson = json
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return profile;
+        }
+
         private static List<KidsStageThemeDto> LoadEmbeddedStages()
         {
             var assembly = typeof(KidsStageThemeDto).Assembly;
@@ -760,6 +833,15 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             if (stream == null) return new List<KidsStageThemeDto>();
             using var reader = new StreamReader(stream);
             return JsonSerializer.Deserialize<List<KidsStageThemeDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsStageThemeDto>();
+        }
+
+        private static List<KidsLocaleProfileDto> LoadEmbeddedLocales()
+        {
+            var assembly = typeof(KidsLocaleProfileDto).Assembly;
+            using Stream? stream = assembly.GetManifestResourceStream(EmbeddedLocalesResourceName);
+            if (stream == null) return new List<KidsLocaleProfileDto>();
+            using var reader = new StreamReader(stream);
+            return JsonSerializer.Deserialize<List<KidsLocaleProfileDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsLocaleProfileDto>();
         }
 
         private static KidsConceptAtomDto CloneAtom(KidsConceptAtomDto src) => new()
