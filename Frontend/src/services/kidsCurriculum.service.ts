@@ -108,14 +108,28 @@ export interface AiBuildKidsCurriculumRequest {
   islandId: string;
   ageBand: string;
   itemCount: number;
+  regionCode?: string;
+  languageCode?: string;
+  skillCode?: string;
 }
 
 export interface AiBuildKidsCurriculumResponse {
   success: boolean;
   usedAi: boolean;
   islandId: string;
+  skillCodeUsed?: string;
   atoms: KidsConceptAtom[];
   message: string;
+}
+
+export interface KidsAiSkill {
+  skillCode: string;
+  titleVi: string;
+  titleEn: string;
+  descriptionVi: string;
+  descriptionEn: string;
+  targetIslands: string[];
+  isSystemDefault: boolean;
 }
 
 const FSRS_WEAK_KEY = 'aegis-kids-weak-atoms';
@@ -204,12 +218,26 @@ export const kidsCurriculumService = {
     return res.data;
   },
 
-  async aiSynthesizeBundle(topicTitle: string, islandId: string, ageBand: string, itemCount = 3) {
+  async aiSynthesizeBundle(
+    topicTitle: string,
+    islandId: string,
+    ageBand: string,
+    itemCount = 3,
+    regionCode?: string,
+    languageCode?: string
+  ) {
     const res = await api.post<{
       creatorDream?: string;
       customStage?: KidsStageTheme;
       atoms: Partial<KidsConceptAtom>[];
-    }>('/api/kids/ai-synthesize-bundle', { topicTitle, islandId, ageBand, itemCount });
+    }>('/api/kids/ai-synthesize-bundle', { topicTitle, islandId, ageBand, itemCount, regionCode, languageCode });
+    return res.data;
+  },
+
+  async getAiSkills(islandId?: string): Promise<KidsAiSkill[]> {
+    const res = await api.get<KidsAiSkill[]>('/api/kids/ai-skills', {
+      params: islandId ? { islandId } : undefined,
+    });
     return res.data;
   },
 

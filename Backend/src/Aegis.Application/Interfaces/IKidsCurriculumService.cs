@@ -64,5 +64,15 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             KidsLocaleProfileDto profile,
             CancellationToken ct = default);
+
+        Task<List<KidsAiSkillDto>> GetAiSkillsAsync(
+            Guid tenantId,
+            string? islandId = null,
+            CancellationToken ct = default);
+
+        Task<KidsAiSkillDto> SaveAiSkillAsync(
+            Guid tenantId,
+            KidsAiSkillDto skill,
+            CancellationToken ct = default);
     }
 }

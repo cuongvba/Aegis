@@ -124,5 +124,24 @@ namespace Aegis.API.Controllers
             var saved = await _kidsService.SaveLocaleProfileAsync(_tenant.CurrentTenantId, profile);
             return Ok(saved);
         }
+
+        [HttpGet("ai-skills")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAiSkills([FromQuery] string? islandId = null)
+        {
+            var skills = await _kidsService.GetAiSkillsAsync(_tenant.CurrentTenantId, islandId);
+            return Ok(skills);
+        }
+
+        [HttpPost("ai-skills")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveAiSkill([FromBody] KidsAiSkillDto skill)
+        {
+            if (skill == null || string.IsNullOrWhiteSpace(skill.SkillCode))
+                return BadRequest(new { error = "SkillCode is required." });
+
+            var saved = await _kidsService.SaveAiSkillAsync(_tenant.CurrentTenantId, skill);
+            return Ok(saved);
+        }
     }
 }

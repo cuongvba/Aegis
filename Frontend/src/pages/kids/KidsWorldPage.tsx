@@ -347,6 +347,8 @@ export const KidsWorldPage: React.FC = () => {
         onClose={() => setIsAiOpen(false)}
         onBuiltAndPlay={(isl, band) => { setAgeBand(band); launchKingdom(isl, band); }}
         lang={lang}
+        regionCode={activeLocale?.regionCode}
+        languageCode={activeLocale?.langCode}
       />
       <KidsParentGateModal
         isOpen={isGateOpen}

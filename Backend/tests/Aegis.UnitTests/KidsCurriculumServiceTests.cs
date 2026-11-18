@@ -229,5 +229,55 @@ namespace Aegis.UnitTests
             Assert.Equal("SPACE_CANDY", plan.StageTheme!.StageCode);
             Assert.Single(plan.StageTheme.Props);
         }
+
+        [Fact]
+        public async Task HeritageAiSkill_LoadsAndBuildsRegionGroundedCurriculum()
+        {
+            await using var db = CreateInMemoryDb(nameof(HeritageAiSkill_LoadsAndBuildsRegionGroundedCurriculum));
+            var tenantId = Guid.NewGuid();
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var skills = await service.GetAiSkillsAsync(tenantId, "heritage");
+            var heritageSkill = Assert.Single(skills, s => s.SkillCode == "KIDS_HERITAGE_MYTHOLOGIST");
+            Assert.NotEmpty(heritageSkill.PedagogicalRules);
+            Assert.Contains("{{regionCode}}", heritageSkill.CurriculumPromptTemplate);
+
+            var res = await service.BuildCurriculumWithAiAsync(tenantId, new AiBuildKidsCurriculumRequestDto
+            {
+                TopicTitle = "Hai Bà Trưng",
+                IslandId = "heritage",
+                AgeBand = "6-8",
+                ItemCount = 3,
+                RegionCode = "VN",
+                LanguageCode = "vi"
+            });
+
+            Assert.True(res.Success);
+            Assert.Equal("KIDS_HERITAGE_MYTHOLOGIST", res.SkillCodeUsed);
+            Assert.Equal(3, res.Atoms.Count);
+            Assert.All(res.Atoms, a => Assert.Equal("VN", a.RegionCode));
+        }
+
+        [Fact]
+        public async Task HeritageAiSynthesizeBundle_CreatesHeritageStageAndAtoms()
+        {
+            await using var db = CreateInMemoryDb(nameof(HeritageAiSynthesizeBundle_CreatesHeritageStageAndAtoms));
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var draft = await service.AiSynthesizeCreatorBundleAsync(Guid.NewGuid(), new AiBuildKidsCurriculumRequestDto
+            {
+                TopicTitle = "Trần Hưng Đạo",
+                IslandId = "heritage",
+                AgeBand = "6-8",
+                ItemCount = 3,
+                RegionCode = "VN",
+                LanguageCode = "vi"
+            });
+
+            Assert.NotNull(draft.CustomStage);
+            Assert.Equal("HERITAGE", draft.CustomStage!.Environment);
+            Assert.Equal("VN", draft.CustomStage.RegionCode);
+            Assert.Equal(3, draft.Atoms.Count);
+        }
     }
 }

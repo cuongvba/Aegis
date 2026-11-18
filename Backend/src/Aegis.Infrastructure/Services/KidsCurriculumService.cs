@@ -20,9 +20,11 @@ namespace Aegis.Infrastructure.Services
         private const string KidsAtomCoordinateType = "KIDS_CONCEPT_ATOM";
         private const string KidsStageCoordinateType = "KIDS_STAGE_THEME";
         private const string KidsLocaleCoordinateType = "KIDS_LOCALE_PROFILE";
+        private const string KidsAiSkillCoordinateType = "KIDS_AI_SKILL";
         private const string EmbeddedResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_concept_atoms.json";
         private const string EmbeddedStagesResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_stages.json";
         private const string EmbeddedLocalesResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_locales.json";
+        private const string EmbeddedAiSkillsResourceName = "Aegis.Application.Resources.Taxonomies.default_kids_ai_skills.json";
 
         private static readonly JsonSerializerOptions JsonOpts = new()
         {
@@ -33,6 +35,7 @@ namespace Aegis.Infrastructure.Services
         private static readonly Lazy<List<KidsConceptAtomDto>> DefaultAtomsCache = new(LoadEmbeddedAtoms);
         private static readonly Lazy<List<KidsStageThemeDto>> DefaultStagesCache = new(LoadEmbeddedStages);
         private static readonly Lazy<List<KidsLocaleProfileDto>> DefaultLocalesCache = new(LoadEmbeddedLocales);
+        private static readonly Lazy<List<KidsAiSkillDto>> DefaultAiSkillsCache = new(LoadEmbeddedAiSkills);
 
         private readonly AegisDbContext _db;
         private readonly ILogger<KidsCurriculumService> _logger;
@@ -329,35 +332,23 @@ namespace Aegis.Infrastructure.Services
             string topic = request.TopicTitle.Trim();
             string island = string.IsNullOrWhiteSpace(request.IslandId) ? "fairytale" : request.IslandId.Trim().ToLowerInvariant();
             string ageBand = string.IsNullOrWhiteSpace(request.AgeBand) ? "3-5" : request.AgeBand.Trim();
+            string regionCode = string.IsNullOrWhiteSpace(request.RegionCode) ? "VN" : request.RegionCode.Trim().ToUpperInvariant();
+            string languageCode = string.IsNullOrWhiteSpace(request.LanguageCode) ? "vi" : request.LanguageCode.Trim().ToLowerInvariant();
             int count = Math.Clamp(request.ItemCount, 2, 6);
+
+            var skill = await ResolveAiSkillAsync(tenantId, island, request.SkillCode, ct);
 
             if (_aiRouter != null)
             {
                 try
                 {
-                    string prompt = $@"Design a magical preschool/primary interactive stage and {count} learning atoms for topic: '{topic}', age '{ageBand}', island '{island}'.
-Return ONLY valid JSON (no markdown) with schema:
-{{
-  ""creatorDream"": ""short warm pedagogical wish in Vietnamese"",
-  ""customStage"": {{
-    ""titleVi"": ""Vietnamese stage title"",
-    ""titleEn"": ""English stage title"",
-    ""environment"": ""SKY|OCEAN|FAIRYTALE|MEADOW"",
-    ""particleMode"": ""sky|ocean|fairy|meadow"",
-    ""sfxType"": ""pop|splash|unwrap|bounce"",
-    ""backgroundGradient"": ""from-fuchsia-500 via-purple-600 to-indigo-700"",
-    ""badgeEmoji"": ""1 emoji"",
-    ""props"": [{{ ""emoji"": ""1 emoji"", ""labelVi"": ""short label"", ""labelEn"": ""short label"", ""colorHex"": ""#ec4899"" }}]
-  }},
-  ""atoms"": [
-    {{ ""emoji"": ""1 emoji"", ""primaryText"": ""English"", ""secondaryText"": ""Vietnamese"", ""phonetic"": ""optional"", ""sampleSentenceVi"": ""warm story sentence"", ""sampleSentenceEn"": ""warm English sentence"", ""funFactVi"": ""kid fun fact"", ""funFactEn"": ""kid fun fact EN"" }}
-  ]
-}}";
+                    string prompt = RenderSkillPrompt(skill.BundlePromptTemplate, skill, topic, island, ageBand, regionCode, languageCode, count);
+                    string systemPrompt = RenderSkillPrompt(skill.SystemPersona, skill, topic, island, ageBand, regionCode, languageCode, count);
 
                     var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
                     {
                         TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
-                        SystemPrompt = "You are a world-class Montessori & Early-Childhood Curriculum Architect. Output strictly valid JSON.",
+                        SystemPrompt = systemPrompt,
                         Prompt = prompt
                     });
 
@@ -371,10 +362,15 @@ Return ONLY valid JSON (no markdown) with schema:
                                 aiRes.Content.Substring(start, end - start + 1), JsonOpts);
                             if (parsed != null && parsed.Atoms.Count > 0)
                             {
+                                if (parsed.CustomStage != null)
+                                    parsed.CustomStage.RegionCode = string.IsNullOrWhiteSpace(parsed.CustomStage.RegionCode) ? regionCode : parsed.CustomStage.RegionCode;
+
                                 foreach (var a in parsed.Atoms)
                                 {
                                     a.IslandId = island;
                                     a.AgeBand = ageBand;
+                                    a.RegionCode = string.IsNullOrWhiteSpace(a.RegionCode) ? regionCode : a.RegionCode;
+                                    a.IsAiGenerated = true;
                                 }
                                 return parsed;
                             }
@@ -383,31 +379,37 @@ Return ONLY valid JSON (no markdown) with schema:
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "[KidsCreator] AI synthesize bundle fallback | Topic={Topic}", topic);
+                    _logger.LogWarning(ex, "[KidsCreator] AI synthesize bundle fallback | Topic={Topic} Skill={Skill}", topic, skill.SkillCode);
                 }
             }
 
             // Smart deterministic fallback so teachers always get an instant ready-to-edit draft
-            var fallbackAtoms = BuildDeterministicFallbackAtoms(topic, island, ageBand, count);
+            bool isHeritage = string.Equals(island, "heritage", StringComparison.OrdinalIgnoreCase);
+            var fallbackAtoms = BuildDeterministicFallbackAtoms(topic, island, ageBand, count, regionCode);
             return new SubmitKidsCreatorBundleDto
             {
-                CreatorDream = $"Chúc các bé khám phá chủ đề \"{topic}\" thật vui và đầy ắp tiếng cười!",
+                CreatorDream = isHeritage
+                    ? $"Chúc các bé thêm yêu lịch sử, tự hào về truyền thống \"{topic}\" và nuôi dưỡng lòng dũng cảm, hiếu thảo!"
+                    : $"Chúc các bé khám phá chủ đề \"{topic}\" thật vui và đầy ắp tiếng cười!",
                 CustomStage = new KidsStageThemeDto
                 {
-                    TitleVi = $"Thế Giới {topic}",
-                    TitleEn = $"{topic} Wonderland",
-                    Environment = "FAIRYTALE",
+                    TitleVi = isHeritage ? $"Huyền Tích {topic}" : $"Thế Giới {topic}",
+                    TitleEn = isHeritage ? $"{topic} Heritage Legend" : $"{topic} Wonderland",
+                    Environment = isHeritage ? "HERITAGE" : "FAIRYTALE",
                     ParticleMode = "fairy",
                     SfxType = "unwrap",
-                    BackgroundGradient = "from-fuchsia-500 via-purple-600 to-indigo-700",
-                    BadgeEmoji = "✨",
+                    BackgroundGradient = isHeritage
+                        ? "from-red-600 via-amber-500 to-yellow-500"
+                        : "from-fuchsia-500 via-purple-600 to-indigo-700",
+                    BadgeEmoji = isHeritage ? "🐉" : "✨",
+                    RegionCode = regionCode,
                     PreferredIslands = new List<string> { island },
                     Props = fallbackAtoms.Select((a, idx) => new KidsStagePropDto
                     {
                         Emoji = a.Emoji,
-                        LabelVi = $"{topic} #{idx + 1}",
-                        LabelEn = $"{topic} #{idx + 1}",
-                        ColorHex = idx % 2 == 0 ? "#ec4899" : "#f59e0b"
+                        LabelVi = a.SecondaryText,
+                        LabelEn = a.PrimaryText,
+                        ColorHex = idx % 2 == 0 ? "#f59e0b" : "#ec4899"
                     }).ToList()
                 },
                 Atoms = fallbackAtoms
@@ -493,8 +495,11 @@ Return ONLY valid JSON (no markdown) with schema:
             string topic = request.TopicTitle.Trim();
             string island = string.IsNullOrWhiteSpace(request.IslandId) ? "explore" : request.IslandId.Trim().ToLowerInvariant();
             string ageBand = string.IsNullOrWhiteSpace(request.AgeBand) ? "6-8" : request.AgeBand.Trim();
+            string regionCode = string.IsNullOrWhiteSpace(request.RegionCode) ? "VN" : request.RegionCode.Trim().ToUpperInvariant();
+            string languageCode = string.IsNullOrWhiteSpace(request.LanguageCode) ? "vi" : request.LanguageCode.Trim().ToLowerInvariant();
             int count = Math.Clamp(request.ItemCount, 2, 6);
 
+            var skill = await ResolveAiSkillAsync(tenantId, island, request.SkillCode, ct);
             List<KidsConceptAtomDto>? generatedAtoms = null;
             bool usedAi = false;
 
@@ -502,15 +507,13 @@ Return ONLY valid JSON (no markdown) with schema:
             {
                 try
                 {
-                    string prompt = $@"Generate exactly {count} atomic kids learning concepts for topic '{topic}', age '{ageBand}', island '{island}'.
-Return ONLY a JSON array (no markdown fences) where each object has:
-atomCode (UPPER_SNAKE_CASE), emoji (1 emoji), primaryText (short English label/expression), secondaryText (short Vietnamese meaning),
-phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampleSentenceVi, funFactEn, funFactVi.";
+                    string prompt = RenderSkillPrompt(skill.CurriculumPromptTemplate, skill, topic, island, ageBand, regionCode, languageCode, count);
+                    string systemPrompt = RenderSkillPrompt(skill.SystemPersona, skill, topic, island, ageBand, regionCode, languageCode, count);
 
                     var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
                     {
                         TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
-                        SystemPrompt = "You are an expert early-childhood Montessori & Glenn Doman curriculum designer. Output strictly valid JSON array.",
+                        SystemPrompt = systemPrompt,
                         Prompt = prompt
                     });
 
@@ -527,13 +530,13 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "[KidsGenesis] AI router fallback to deterministic template builder | Topic={Topic}", topic);
+                    _logger.LogWarning(ex, "[KidsGenesis] AI router fallback to deterministic template builder | Topic={Topic} Skill={Skill}", topic, skill.SkillCode);
                 }
             }
 
             if (generatedAtoms == null || generatedAtoms.Count == 0)
             {
-                generatedAtoms = BuildDeterministicFallbackAtoms(topic, island, ageBand, count);
+                generatedAtoms = BuildDeterministicFallbackAtoms(topic, island, ageBand, count, regionCode);
             }
 
             int order = 100;
@@ -541,6 +544,7 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             {
                 atom.IslandId = island;
                 atom.AgeBand = ageBand;
+                atom.RegionCode = string.IsNullOrWhiteSpace(atom.RegionCode) ? regionCode : atom.RegionCode.Trim().ToUpperInvariant();
                 atom.Order = order++;
                 atom.IsAiGenerated = usedAi;
                 if (string.IsNullOrWhiteSpace(atom.AtomCode))
@@ -579,10 +583,11 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
                 Success = true,
                 UsedAi = usedAi,
                 IslandId = island,
+                SkillCodeUsed = skill.SkillCode,
                 Atoms = generatedAtoms,
                 Message = usedAi
-                    ? $"AI đã tự động biên soạn {generatedAtoms.Count} hạt nhân tri thức cho chủ đề \"{topic}\"."
-                    : $"Đã khởi tạo {generatedAtoms.Count} hạt nhân tri thức mẫu cho chủ đề \"{topic}\"."
+                    ? $"AI ({skill.TitleVi}) đã tự động biên soạn {generatedAtoms.Count} hạt nhân tri thức cho chủ đề \"{topic}\"."
+                    : $"Đã khởi tạo {generatedAtoms.Count} hạt nhân tri thức mẫu ({skill.TitleVi}) cho chủ đề \"{topic}\"."
             };
         }
 
@@ -725,25 +730,66 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             return activities;
         }
 
-        private static List<KidsConceptAtomDto> BuildDeterministicFallbackAtoms(string topic, string island, string ageBand, int count)
+        private static List<KidsConceptAtomDto> BuildDeterministicFallbackAtoms(
+            string topic,
+            string island,
+            string ageBand,
+            int count,
+            string regionCode = "GLOBAL")
         {
-            var emojis = new[] { "🌟", "🦊", "🎨", "🧩", "🚀", "🌻" };
+            bool isHeritage = string.Equals(island, "heritage", StringComparison.OrdinalIgnoreCase);
+            var emojis = isHeritage
+                ? new[] { "🐉", "🥁", "🎋", "🪷", "🛡️", "📜" }
+                : new[] { "🌟", "🦊", "🎨", "🧩", "🚀", "🌻" };
+            var heritageAngles = new[]
+            {
+                ("Origin & Roots", "Cội nguồn & Huyền tích", "Every great nation begins with unity and love for our homeland!", "Mọi dân tộc hùng cường đều bắt đầu từ cội nguồn đoàn kết và tình yêu quê hương!"),
+                ("Heroic Courage", "Chí lớn & Lòng dũng cảm", "Courage turns small steps into legendary deeds that protect peace!", "Lòng dũng cảm biến những bước chân nhỏ bé thành kỳ tích giữ gìn bình yên!"),
+                ("Gratitude & Filial Piety", "Lòng biết ơn & Hiếu thảo", "Remembering ancestors and parents makes our heart shine brightest!", "Uống nước nhớ nguồn, hiếu thảo với ông bà cha mẹ là báu vật sáng ngời nhất!"),
+                ("Wisdom & Creativity", "Trí tuệ & Sáng tạo", "Wisdom and learning empower future generations to build a proud homeland!", "Trí tuệ và tinh thần hiếu học giúp thế hệ trẻ dựng xây non sông gấm vóc!"),
+                ("Cultural Symbol", "Biểu tượng Văn hóa", "Traditional symbols carry thousands of years of our ancestors' stories!", "Mỗi biểu tượng truyền thống đều lưu giữ câu chuyện ngàn năm của cha ông!"),
+                ("Pride & Future", "Tự hào & Tiếp bước", "Proud of our roots, ready to shine and contribute to the world!", "Tự hào dòng giống anh hùng, sẵn sàng vươn xa rạng danh Tổ quốc!")
+            };
+
             var list = new List<KidsConceptAtomDto>();
             for (int i = 0; i < count; i++)
             {
-                list.Add(new KidsConceptAtomDto
+                if (isHeritage)
                 {
-                    AtomCode = $"KIDS_{island.ToUpperInvariant()}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{i + 1}",
-                    IslandId = island,
-                    AgeBand = ageBand,
-                    Emoji = emojis[i % emojis.Length],
-                    PrimaryText = $"{topic} #{i + 1}",
-                    SecondaryText = $"{topic} - Bài {i + 1}",
-                    SampleSentenceEn = $"Let's explore {topic} step {i + 1} together!",
-                    SampleSentenceVi = $"Cùng khám phá chủ đề {topic} bước {i + 1} nhé!",
-                    FunFactEn = $"Curiosity makes your brain stronger every day!",
-                    FunFactVi = $"Sự tò mò giúp trí não của bé thông minh hơn mỗi ngày!"
-                });
+                    var angle = heritageAngles[i % heritageAngles.Length];
+                    list.Add(new KidsConceptAtomDto
+                    {
+                        AtomCode = $"HER_{regionCode}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{i + 1}",
+                        IslandId = island,
+                        AgeBand = ageBand,
+                        RegionCode = regionCode,
+                        Emoji = emojis[i % emojis.Length],
+                        PrimaryText = $"{topic}: {angle.Item1}",
+                        SecondaryText = $"{topic} — {angle.Item2}",
+                        Phonetic = $"Di sản {regionCode}",
+                        SampleSentenceEn = $"Discover {topic} ({angle.Item1}) to feel proud of your heritage!",
+                        SampleSentenceVi = $"Cùng khám phá {topic} ({angle.Item2}) để thêm yêu lịch sử và truyền thống dân tộc!",
+                        FunFactEn = angle.Item3,
+                        FunFactVi = angle.Item4
+                    });
+                }
+                else
+                {
+                    list.Add(new KidsConceptAtomDto
+                    {
+                        AtomCode = $"KIDS_{island.ToUpperInvariant()}_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}_{i + 1}",
+                        IslandId = island,
+                        AgeBand = ageBand,
+                        RegionCode = regionCode,
+                        Emoji = emojis[i % emojis.Length],
+                        PrimaryText = $"{topic} #{i + 1}",
+                        SecondaryText = $"{topic} - Bài {i + 1}",
+                        SampleSentenceEn = $"Let's explore {topic} step {i + 1} together!",
+                        SampleSentenceVi = $"Cùng khám phá chủ đề {topic} bước {i + 1} nhé!",
+                        FunFactEn = "Curiosity makes your brain stronger every day!",
+                        FunFactVi = "Sự tò mò giúp trí não của bé thông minh hơn mỗi ngày!"
+                    });
+                }
             }
             return list;
         }
@@ -850,6 +896,155 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             if (stream == null) return new List<KidsLocaleProfileDto>();
             using var reader = new StreamReader(stream);
             return JsonSerializer.Deserialize<List<KidsLocaleProfileDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsLocaleProfileDto>();
+        }
+
+        public async Task<List<KidsAiSkillDto>> GetAiSkillsAsync(
+            Guid tenantId,
+            string? islandId = null,
+            CancellationToken ct = default)
+        {
+            var skills = new Dictionary<string, KidsAiSkillDto>(StringComparer.OrdinalIgnoreCase);
+            foreach (var s in DefaultAiSkillsCache.Value)
+                skills[s.SkillCode] = s;
+
+            var custom = await _db.TenantCoordinatePresets
+                .AsNoTracking()
+                .Where(p => p.CoordinateType == KidsAiSkillCoordinateType &&
+                            (p.TenantId == tenantId || p.TenantId == Guid.Empty))
+                .ToListAsync(ct);
+
+            foreach (var preset in custom)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(preset.SynonymsJson)) continue;
+                    var skill = JsonSerializer.Deserialize<KidsAiSkillDto>(preset.SynonymsJson, JsonOpts);
+                    if (skill != null && !string.IsNullOrWhiteSpace(skill.SkillCode))
+                    {
+                        skill.IsSystemDefault = false;
+                        skills[skill.SkillCode] = skill;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[KidsAiSkill] Invalid custom skill JSON | Code={Code}", preset.PresetCode);
+                }
+            }
+
+            var result = skills.Values.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(islandId))
+            {
+                string norm = islandId.Trim().ToLowerInvariant();
+                result = result.Where(s =>
+                    s.TargetIslands.Any(i => string.Equals(i, norm, StringComparison.OrdinalIgnoreCase) || i == "*"));
+            }
+
+            return result
+                .OrderByDescending(s => !s.TargetIslands.Contains("*"))
+                .ThenBy(s => s.SkillCode)
+                .ToList();
+        }
+
+        public async Task<KidsAiSkillDto> SaveAiSkillAsync(
+            Guid tenantId,
+            KidsAiSkillDto skill,
+            CancellationToken ct = default)
+        {
+            if (skill == null) throw new ArgumentNullException(nameof(skill));
+            string code = string.IsNullOrWhiteSpace(skill.SkillCode)
+                ? $"KIDS_SKILL_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
+                : skill.SkillCode.Trim().ToUpperInvariant();
+
+            skill.SkillCode = code;
+            skill.IsSystemDefault = false;
+
+            string json = JsonSerializer.Serialize(skill, JsonOpts);
+            var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == tenantId && p.CoordinateType == KidsAiSkillCoordinateType && p.PresetCode == code,
+                ct);
+
+            if (existing != null)
+            {
+                existing.PresetLabel = string.IsNullOrWhiteSpace(skill.TitleVi) ? code : skill.TitleVi;
+                existing.SynonymsJson = json;
+            }
+            else
+            {
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = tenantId,
+                    DomainCode = "KIDS_WORLD",
+                    CoordinateType = KidsAiSkillCoordinateType,
+                    PresetCode = code,
+                    PresetLabel = string.IsNullOrWhiteSpace(skill.TitleVi) ? code : skill.TitleVi,
+                    SynonymsJson = json
+                });
+            }
+
+            await _db.SaveChangesAsync(ct);
+            return skill;
+        }
+
+        private async Task<KidsAiSkillDto> ResolveAiSkillAsync(
+            Guid tenantId,
+            string islandId,
+            string? explicitSkillCode,
+            CancellationToken ct)
+        {
+            var skills = await GetAiSkillsAsync(tenantId, null, ct);
+            if (!string.IsNullOrWhiteSpace(explicitSkillCode))
+            {
+                var exact = skills.FirstOrDefault(s =>
+                    string.Equals(s.SkillCode, explicitSkillCode.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (exact != null) return exact;
+            }
+
+            var islandMatch = skills.FirstOrDefault(s =>
+                s.TargetIslands.Any(i => string.Equals(i, islandId, StringComparison.OrdinalIgnoreCase)));
+            if (islandMatch != null) return islandMatch;
+
+            return skills.FirstOrDefault(s => s.TargetIslands.Contains("*"))
+                   ?? skills.FirstOrDefault()
+                   ?? new KidsAiSkillDto
+                   {
+                       SkillCode = "KIDS_EARLY_CHILDHOOD_DEFAULT",
+                       SystemPersona = "You are a world-class Montessori & Early-Childhood Curriculum Architect.",
+                       CurriculumPromptTemplate = "Generate {{count}} learning concepts for '{{topic}}' (age '{{ageBand}}', island '{{island}}'). Return ONLY JSON array.",
+                       BundlePromptTemplate = "Design a stage and {{count}} atoms for '{{topic}}' (age '{{ageBand}}', island '{{island}}'). Return ONLY JSON object."
+                   };
+        }
+
+        private static string RenderSkillPrompt(
+            string template,
+            KidsAiSkillDto skill,
+            string topic,
+            string island,
+            string ageBand,
+            string regionCode,
+            string languageCode,
+            int count)
+        {
+            string rules = skill.PedagogicalRules != null && skill.PedagogicalRules.Count > 0
+                ? string.Join("\n", skill.PedagogicalRules)
+                : string.Empty;
+
+            return (template ?? string.Empty)
+                .Replace("{{pedagogicalRules}}", rules)
+                .Replace("{{topic}}", topic)
+                .Replace("{{island}}", island)
+                .Replace("{{ageBand}}", ageBand)
+                .Replace("{{regionCode}}", regionCode)
+                .Replace("{{languageCode}}", languageCode)
+                .Replace("{{count}}", count.ToString());
+        }
+
+        private static List<KidsAiSkillDto> LoadEmbeddedAiSkills()
+        {
+            var assembly = typeof(KidsAiSkillDto).Assembly;
+            using Stream? stream = assembly.GetManifestResourceStream(EmbeddedAiSkillsResourceName);
+            if (stream == null) return new List<KidsAiSkillDto>();
+            using var reader = new StreamReader(stream);
+            return JsonSerializer.Deserialize<List<KidsAiSkillDto>>(reader.ReadToEnd(), JsonOpts) ?? new List<KidsAiSkillDto>();
         }
 
         private static KidsConceptAtomDto CloneAtom(KidsConceptAtomDto src) => new()

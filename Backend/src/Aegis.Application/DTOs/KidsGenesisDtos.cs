@@ -164,6 +164,9 @@ namespace Aegis.Application.DTOs
         public string IslandId { get; set; } = "explore";
         public string AgeBand { get; set; } = "6-8";
         public int ItemCount { get; set; } = 4;
+        public string? RegionCode { get; set; }
+        public string? LanguageCode { get; set; }
+        public string? SkillCode { get; set; }
     }
 
     public class AiBuildKidsCurriculumResponseDto
@@ -171,7 +174,23 @@ namespace Aegis.Application.DTOs
         public bool Success { get; set; }
         public bool UsedAi { get; set; }
         public string IslandId { get; set; } = string.Empty;
+        public string? SkillCodeUsed { get; set; }
         public List<KidsConceptAtomDto> Atoms { get; set; } = new();
         public string Message { get; set; } = string.Empty;
+    }
+
+    public class KidsAiSkillDto
+    {
+        public string SkillCode { get; set; } = string.Empty;
+        public string TitleVi { get; set; } = string.Empty;
+        public string TitleEn { get; set; } = string.Empty;
+        public string DescriptionVi { get; set; } = string.Empty;
+        public string DescriptionEn { get; set; } = string.Empty;
+        public List<string> TargetIslands { get; set; } = new() { "*" };
+        public bool IsSystemDefault { get; set; } = true;
+        public string SystemPersona { get; set; } = string.Empty;
+        public List<string> PedagogicalRules { get; set; } = new();
+        public string CurriculumPromptTemplate { get; set; } = string.Empty;
+        public string BundlePromptTemplate { get; set; } = string.Empty;
     }
 }
