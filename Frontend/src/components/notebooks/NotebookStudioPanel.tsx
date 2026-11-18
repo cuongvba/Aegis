@@ -10,10 +10,12 @@ import {
   Loader2,
   Sparkles,
   ExternalLink,
+  Video,
 } from 'lucide-react';
 import { notebookService, type NotebookStudioArtifactDto } from '@/services/notebook.service';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import { NotebookPodcastPlayer } from './NotebookPodcastPlayer';
+import { NotebookVideoOverviewPlayer } from './NotebookVideoOverviewPlayer';
 
 interface NotebookStudioPanelProps {
   notebookId: string;
@@ -22,6 +24,7 @@ interface NotebookStudioPanelProps {
 
 const STUDIO_TOOLS = [
   { id: 'AUDIO_PODCAST', label: 'Podcast 2 MC', icon: Headphones, color: 'from-fuchsia-600 to-indigo-600' },
+  { id: 'VIDEO_OVERVIEW', label: 'Video Tổng quan', icon: Video, color: 'from-rose-600 to-amber-500' },
   { id: 'MIND_MAP', label: 'Sơ đồ Tư duy', icon: GitBranch, color: 'from-cyan-600 to-sky-600' },
   { id: 'STUDY_GUIDE', label: 'Cẩm nang Ôn tập', icon: BookOpen, color: 'from-emerald-600 to-teal-600' },
   { id: 'BRIEFING', label: 'Tóm tắt Điều hành', icon: FileText, color: 'from-amber-600 to-orange-600' },
@@ -132,6 +135,14 @@ export const NotebookStudioPanel: React.FC<NotebookStudioPanelProps> = ({
             <NotebookPodcastPlayer
               title={artifact.title}
               turns={artifact.podcastTurns}
+              language={language}
+            />
+          )}
+
+          {artifact.artifactType === 'VIDEO_OVERVIEW' && artifact.videoSlides?.length > 0 && (
+            <NotebookVideoOverviewPlayer
+              title={artifact.title}
+              slides={artifact.videoSlides}
               language={language}
             />
           )}

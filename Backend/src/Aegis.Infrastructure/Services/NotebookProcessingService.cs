@@ -1337,6 +1337,9 @@ YÊU CẦU ĐỐI THOẠI:
             if (artifactType == "AUDIO_PODCAST")
                 return await BuildPodcastArtifactAsync(notebook, groundedContext, request.FocusPrompt, isVi, tenantId, ct);
 
+            if (artifactType == "VIDEO_OVERVIEW")
+                return await BuildVideoOverviewArtifactAsync(notebook, groundedContext, request.FocusPrompt, isVi, tenantId, ct);
+
             return await BuildMarkdownStudioArtifactAsync(notebook, artifactType, groundedContext, request.FocusPrompt, isVi, tenantId, ct);
         }
 
@@ -1505,6 +1508,147 @@ Return ONLY a JSON array (no markdown fences) where each item has:
                 Title = $"{artifactType}: {notebook.Title}",
                 UsedAi = usedAi,
                 ContentMarkdown = aiContent
+            };
+        }
+
+        private async Task<NotebookStudioArtifactDto> BuildVideoOverviewArtifactAsync(
+            Notebook notebook,
+            string groundedContext,
+            string? focusPrompt,
+            bool isVi,
+            Guid tenantId,
+            CancellationToken ct)
+        {
+            string voiceId = isVi ? "vi-VN-HoaiMyNeural" : "en-US-JennyNeural";
+            var palette = new[] { "#0ea5e9", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899" };
+            List<NotebookVideoSlideDto>? slides = null;
+            bool usedAi = false;
+
+            if (_aiRouter != null)
+            {
+                try
+                {
+                    string prompt = $@"Create a 5-slide narrated Video Overview script summarizing the Notebook sources below.
+Language: {(isVi ? "Vietnamese" : "English")}.
+{(string.IsNullOrWhiteSpace(focusPrompt) ? "" : $"Focus angle: {focusPrompt}")}
+Return ONLY a JSON array (no markdown fences) where each slide object has:
+{{ ""title"": ""short slide title"", ""visualEmoji"": ""1 emoji"", ""bulletPoints"": [""point 1"", ""point 2"", ""point 3""], ""highlightQuote"": ""1 memorable takeaway or [Nguồn X] citation"", ""narrationText"": ""natural 2-3 sentence voiceover script"", ""durationSeconds"": 8 }}
+
+--- SOURCES ---
+{groundedContext}";
+
+                    var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                    {
+                        TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
+                        SystemPrompt = "You are an expert Video Explainer Director for AegisNotebook. Output strictly valid JSON array.",
+                        Prompt = prompt
+                    });
+
+                    if (aiRes.Success && !string.IsNullOrWhiteSpace(aiRes.Content))
+                    {
+                        int s = aiRes.Content.IndexOf('[');
+                        int e = aiRes.Content.LastIndexOf(']');
+                        if (s >= 0 && e > s)
+                        {
+                            var parsed = JsonSerializer.Deserialize<List<NotebookVideoSlideDto>>(
+                                aiRes.Content.Substring(s, e - s + 1),
+                                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (parsed != null && parsed.Count > 0)
+                            {
+                                slides = parsed;
+                                usedAi = true;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[NotebookStudio] Video Overview AI fallback | NotebookId={Id}", notebook.Id);
+                }
+            }
+
+            if (slides == null || slides.Count == 0)
+            {
+                var chapters = notebook.Chapters.OrderBy(c => c.OrderIndex).Take(3).ToList();
+                slides = new List<NotebookVideoSlideDto>
+                {
+                    new()
+                    {
+                        Title = notebook.Title,
+                        VisualEmoji = "🎬",
+                        BulletPoints = new List<string>
+                        {
+                            isVi ? $"Tổng hợp từ {notebook.Sources.Count} nguồn tài liệu" : $"Synthesized from {notebook.Sources.Count} sources",
+                            isVi ? "Phân cấp thẩm quyền & Kiểm tra xung đột" : "Authority-weighted & conflict-checked"
+                        },
+                        HighlightQuote = isVi ? "Tổng quan Tri thức Sống AegisNotebook" : "AegisNotebook Living Knowledge Overview",
+                        NarrationText = isVi
+                            ? $"Chào mừng bạn đến với Video Tổng quan về {notebook.Title}. Nội dung được tổng hợp chính xác từ {notebook.Sources.Count} nguồn tài liệu."
+                            : $"Welcome to the Video Overview of {notebook.Title}, synthesized across {notebook.Sources.Count} grounded sources."
+                    }
+                };
+
+                foreach (var ch in chapters)
+                {
+                    string summary = string.IsNullOrWhiteSpace(ch.Summary) ? ch.Title : ch.Summary;
+                    if (summary.Length > 160) summary = summary.Substring(0, 160) + "...";
+                    List<string>? keyPoints = null;
+                    if (!string.IsNullOrWhiteSpace(ch.KeyPointsJson))
+                    {
+                        try { keyPoints = JsonSerializer.Deserialize<List<string>>(ch.KeyPointsJson); } catch { }
+                    }
+                    slides.Add(new NotebookVideoSlideDto
+                    {
+                        Title = ch.Title,
+                        VisualEmoji = "📌",
+                        BulletPoints = keyPoints != null && keyPoints.Count > 0
+                            ? keyPoints.Take(3).ToList()
+                            : new List<string> { summary },
+                        HighlightQuote = ch.Title,
+                        NarrationText = isVi ? $"Phần {ch.Title}: {summary}" : $"Section {ch.Title}: {summary}"
+                    });
+                }
+
+                slides.Add(new NotebookVideoSlideDto
+                {
+                    Title = isVi ? "Kết luận & Kiểm định Năng lực" : "Takeaways & Mastery Check",
+                    VisualEmoji = "🏆",
+                    BulletPoints = new List<string>
+                    {
+                        isVi ? "Chuyển sang tab Đề Thi Tự Động để luyện Bloom 5–6" : "Switch to Exam Studio for Bloom 5–6 scenarios",
+                        isVi ? "Xuất bản trực tiếp sang Office Studio (.docx)" : "Export directly to Office Studio (.docx)"
+                    },
+                    HighlightQuote = isVi ? "Học sâu – Hiểu bản chất – Vận dụng thực tế" : "Deep Understanding & Mastery",
+                    NarrationText = isVi
+                        ? "Bạn có thể chuyển sang tab Đề Thi Tự Động hoặc xuất toàn bộ kịch bản sang Office Studio để giảng dạy ngay!"
+                        : "Jump to the Exam Studio tab or export this script to Office Studio for immediate teaching!"
+                });
+            }
+
+            var md = new StringBuilder();
+            md.AppendLine($"# 🎬 Video Tổng Quan: {notebook.Title}");
+            md.AppendLine();
+            for (int i = 0; i < slides.Count; i++)
+            {
+                slides[i].SlideNumber = i + 1;
+                slides[i].VoiceId = voiceId;
+                slides[i].AccentColor = palette[i % palette.Length];
+                if (slides[i].DurationSeconds <= 0) slides[i].DurationSeconds = 8;
+
+                md.AppendLine($"## Slide {slides[i].SlideNumber}: {slides[i].VisualEmoji} {slides[i].Title}");
+                foreach (var bp in slides[i].BulletPoints) md.AppendLine($"- {bp}");
+                if (!string.IsNullOrWhiteSpace(slides[i].HighlightQuote)) md.AppendLine($"> {slides[i].HighlightQuote}");
+                md.AppendLine($"*Lời bình:* {slides[i].NarrationText}");
+                md.AppendLine();
+            }
+
+            return new NotebookStudioArtifactDto
+            {
+                ArtifactType = "VIDEO_OVERVIEW",
+                Title = $"Video: {notebook.Title}",
+                UsedAi = usedAi,
+                ContentMarkdown = md.ToString().Trim(),
+                VideoSlides = slides
             };
         }
     }

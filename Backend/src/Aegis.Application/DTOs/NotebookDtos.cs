@@ -161,6 +161,19 @@ namespace Aegis.Application.DTOs
         public string Text { get; set; } = string.Empty;
     }
 
+    public class NotebookVideoSlideDto
+    {
+        public int SlideNumber { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public List<string> BulletPoints { get; set; } = new();
+        public string HighlightQuote { get; set; } = string.Empty;
+        public string VisualEmoji { get; set; } = "📘";
+        public string AccentColor { get; set; } = "#0ea5e9";
+        public string NarrationText { get; set; } = string.Empty;
+        public string VoiceId { get; set; } = "vi-VN-HoaiMyNeural";
+        public int DurationSeconds { get; set; } = 8;
+    }
+
     public class NotebookStudioArtifactDto
     {
         public string ArtifactType { get; set; } = string.Empty;
@@ -168,5 +181,6 @@ namespace Aegis.Application.DTOs
         public bool UsedAi { get; set; }
         public string ContentMarkdown { get; set; } = string.Empty;
         public List<NotebookPodcastTurnDto> PodcastTurns { get; set; } = new();
+        public List<NotebookVideoSlideDto> VideoSlides { get; set; } = new();
     }
 }

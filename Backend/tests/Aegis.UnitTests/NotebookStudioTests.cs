@@ -81,6 +81,16 @@ namespace Aegis.UnitTests
 
             Assert.Equal("STUDY_GUIDE", guide.ArtifactType);
             Assert.Contains("Trận địa cọc ngầm Ngô Quyền", guide.ContentMarkdown);
+
+            var video = await service.GenerateStudioArtifactAsync(nbId, tenantId, new NotebookStudioGenerateRequestDto
+            {
+                ArtifactType = "VIDEO_OVERVIEW",
+                Language = "vi"
+            });
+
+            Assert.Equal("VIDEO_OVERVIEW", video.ArtifactType);
+            Assert.True(video.VideoSlides.Count >= 3);
+            Assert.All(video.VideoSlides, s => Assert.False(string.IsNullOrWhiteSpace(s.NarrationText)));
         }
     }
 }

@@ -127,12 +127,25 @@ export interface NotebookPodcastTurnDto {
   text: string;
 }
 
+export interface NotebookVideoSlideDto {
+  slideNumber: number;
+  title: string;
+  bulletPoints: string[];
+  highlightQuote: string;
+  visualEmoji: string;
+  accentColor: string;
+  narrationText: string;
+  voiceId: string;
+  durationSeconds: number;
+}
+
 export interface NotebookStudioArtifactDto {
   artifactType: string;
   title: string;
   usedAi: boolean;
   contentMarkdown: string;
   podcastTurns: NotebookPodcastTurnDto[];
+  videoSlides: NotebookVideoSlideDto[];
 }
 
 export const notebookService = {
