@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Sigma,
   Eye,
@@ -27,6 +27,16 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({ value, onC
   const [fontFamily, setFontFamily] = useState("'Inter', system-ui, sans-serif");
   const [fontSizePx, setFontSizePx] = useState(15);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const prevLenRef = useRef(0);
+
+  useEffect(() => {
+    // When a rich math/image document is loaded from file, auto-open Song song LaTeX + A4 preview
+    const jumped = Math.abs((value?.length || 0) - prevLenRef.current) > 120;
+    prevLenRef.current = value?.length || 0;
+    if (jumped && /(\$[^$\n]+\$|data:image\/)/i.test(value)) {
+      setMode('split');
+    }
+  }, [value]);
 
   const stats = useMemo(() => {
     const words = value.trim() ? value.trim().split(/\s+/).length : 0;

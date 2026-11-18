@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Aegis.Application.Interfaces;
 using Aegis.Application.Models.AI;
+using Aegis.Infrastructure.Services.Docx;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -19,13 +22,16 @@ namespace Aegis.Infrastructure.Services
     {
         private readonly ILogger<OfficeDocumentWorkspaceService> _logger;
         private readonly IUniversalAiRouter? _aiRouter;
+        private readonly IPdfToMarkdownTranspilerService? _pdfTranspiler;
 
         public OfficeDocumentWorkspaceService(
             ILogger<OfficeDocumentWorkspaceService> logger,
-            IUniversalAiRouter? aiRouter = null)
+            IUniversalAiRouter? aiRouter = null,
+            IPdfToMarkdownTranspilerService? pdfTranspiler = null)
         {
             _logger = logger;
             _aiRouter = aiRouter;
+            _pdfTranspiler = pdfTranspiler;
         }
 
         public async Task<OfficeParsedDocumentDto> ParseDocumentAsync(
@@ -55,48 +61,45 @@ namespace Aegis.Infrastructure.Services
         private OfficeParsedDocumentDto ParseDocx(MemoryStream ms, string fileName, string title)
         {
             var sb = new StringBuilder();
-            using var doc = new XWPFDocument(ms);
+            var warnings = new List<string>();
 
-            foreach (var elem in doc.BodyElements)
+            try
             {
-                if (elem is XWPFParagraph p)
+                ms.Position = 0;
+                using var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true);
+                var relsMap = DocxRelationshipReader.LoadRelationships(archive);
+                var mediaDict = DocxRelationshipReader.LoadMediaFiles(archive);
+
+                var documentEntry = archive.GetEntry("word/document.xml");
+                if (documentEntry != null)
                 {
-                    string text = (p.Text ?? string.Empty).Trim();
-                    if (string.IsNullOrWhiteSpace(text)) continue;
-
-                    string style = (p.Style ?? string.Empty).ToLowerInvariant();
-                    if (style.Contains("heading1") || style == "1" || style.Contains("title"))
-                        sb.AppendLine($"# {text}");
-                    else if (style.Contains("heading2") || style == "2")
-                        sb.AppendLine($"## {text}");
-                    else if (style.Contains("heading3") || style == "3")
-                        sb.AppendLine($"### {text}");
-                    else if (p.GetNumID() != null)
-                        sb.AppendLine($"- {text}");
-                    else
-                        sb.AppendLine(text);
-
-                    sb.AppendLine();
-                }
-                else if (elem is XWPFTable tbl)
-                {
-                    var rows = tbl.Rows;
-                    if (rows == null || rows.Count == 0) continue;
-
-                    for (int r = 0; r < rows.Count; r++)
+                    using var entryStream = documentEntry.Open();
+                    var xdoc = XDocument.Load(entryStream);
+                    var tokens = DocxParserService.ExtractParagraphTokens(xdoc, relsMap, mediaDict);
+                    foreach (var token in tokens)
                     {
-                        var cells = rows[r].GetTableCells()
-                            .Select(c => (c.GetText() ?? string.Empty).Replace("\r", " ").Replace("\n", " ").Replace("|", "\\|").Trim())
-                            .ToList();
-                        if (cells.Count == 0) continue;
-
-                        sb.AppendLine($"| {string.Join(" | ", cells)} |");
-                        if (r == 0)
+                        if (!string.IsNullOrWhiteSpace(token))
                         {
-                            sb.AppendLine($"| {string.Join(" | ", cells.Select(_ => "---"))} |");
+                            sb.AppendLine(token.Trim());
+                            sb.AppendLine();
                         }
                     }
-                    sb.AppendLine();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[OfficeWorkspace] Rich DOCX extraction fallback to NPOI | File={File}", fileName);
+                warnings.Add("Một số đối tượng nhúng phức tạp được đọc ở chế độ tương thích.");
+                ms.Position = 0;
+                using var doc = new XWPFDocument(ms);
+                foreach (var p in doc.Paragraphs)
+                {
+                    string text = (p.Text ?? string.Empty).Trim();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        sb.AppendLine(text);
+                        sb.AppendLine();
+                    }
                 }
             }
 
@@ -106,13 +109,14 @@ namespace Aegis.Infrastructure.Services
                 DocumentKind = "DOCX",
                 Title = title,
                 MarkdownContent = sb.ToString().Trim(),
-                PageCount = 1
+                PageCount = 1,
+                Warnings = warnings
             };
         }
 
         private OfficeParsedDocumentDto ParsePdf(MemoryStream ms, string fileName, string title)
         {
-            var sb = new StringBuilder();
+            var pageTexts = new List<string>();
             var warnings = new List<string>();
             int pageCount = 0;
 
@@ -121,15 +125,16 @@ namespace Aegis.Infrastructure.Services
                 pageCount = pdf.NumberOfPages;
                 foreach (var page in pdf.GetPages())
                 {
-                    sb.AppendLine($"<!-- Trang {page.Number} -->");
                     string text = (page.Text ?? string.Empty).Trim();
-                    if (!string.IsNullOrWhiteSpace(text))
-                        sb.AppendLine(text);
-                    sb.AppendLine();
+                    pageTexts.Add(text);
                 }
             }
 
-            string content = sb.ToString().Trim();
+            string rawJoined = string.Join("\n\n", pageTexts.Where(t => !string.IsNullOrWhiteSpace(t)));
+            string content = _pdfTranspiler != null && !string.IsNullOrWhiteSpace(rawJoined)
+                ? _pdfTranspiler.TranspileToMarkdown(rawJoined, pageTexts)
+                : string.Join("\n\n", pageTexts.Select((t, idx) => $"<!-- Trang {idx + 1} -->\n{t}")).Trim();
+
             if (string.IsNullOrWhiteSpace(content))
             {
                 warnings.Add("PDF này có thể là bản scan dạng ảnh; bạn vẫn có thể xem trực tiếp ở khung bên trái và ghi chú ở khung bên phải.");
