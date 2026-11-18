@@ -246,6 +246,7 @@ export const YouthCreatorStudioModal: React.FC<YouthCreatorStudioModalProps> = (
                 <option value="animals">🦁 Muôn Thú</option>
                 <option value="toys">🧸 Đồ Chơi</option>
                 <option value="fairytale">🧚 Thần Tiên</option>
+                <option value="heritage">🐉 Huyền Tích</option>
               </select>
               <select value={ageBand} onChange={(e) => setAgeBand(e.target.value)} className="rounded-xl bg-slate-900 border border-slate-700 px-2 py-1.5 text-white">
                 <option value="3-5">3–5 tuổi</option>

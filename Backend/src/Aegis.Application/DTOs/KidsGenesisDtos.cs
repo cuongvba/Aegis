@@ -91,6 +91,7 @@ namespace Aegis.Application.DTOs
         public string? AgeBand { get; set; }
         public int AtomCount { get; set; } = 3;
         public string? PreferredStageCode { get; set; }
+        public string? RegionCode { get; set; }
         public List<string>? WeakAtomCodes { get; set; }
     }
 

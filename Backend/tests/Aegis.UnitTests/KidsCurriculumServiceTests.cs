@@ -178,6 +178,25 @@ namespace Aegis.UnitTests
         }
 
         [Fact]
+        public async Task HeritageKingdom_PrioritizesNationalHeroesAndLacHongStage()
+        {
+            await using var db = CreateInMemoryDb(nameof(HeritageKingdom_PrioritizesNationalHeroesAndLacHongStage));
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var plan = await service.GenerateDailyAdventureAsync(Guid.NewGuid(), new GenerateKidsAdventureRequestDto
+            {
+                IslandId = "heritage",
+                RegionCode = "VN",
+                AtomCount = 3
+            });
+
+            Assert.NotNull(plan.StageTheme);
+            Assert.Equal("VN_LAC_HONG_HERITAGE", plan.StageTheme!.StageCode);
+            Assert.Equal(3, plan.Atoms.Count);
+            Assert.All(plan.Atoms, a => Assert.Equal("VN", a.RegionCode));
+        }
+
+        [Fact]
         public async Task SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages()
         {
             await using var db = CreateInMemoryDb(nameof(SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages));

@@ -115,16 +115,18 @@ namespace Aegis.Infrastructure.Services
             if (allIslandAtoms.Count == 0)
                 allIslandAtoms = await GetConceptAtomsAsync(tenantId, "all", "all", false, ct);
 
-            // FSRS-driven priority: 1) Weak/due atoms first, 2) Next atoms in order
+            // FSRS-driven + Region-first priority: 1) Weak/due atoms, 2) Matching RegionCode (e.g. VN heritage), 3) Order
+            string? normRegion = string.IsNullOrWhiteSpace(request?.RegionCode) ? null : request.RegionCode.Trim().ToUpperInvariant();
             var selected = allIslandAtoms
                 .OrderByDescending(a => weakSet.Contains(a.AtomCode))
+                .ThenByDescending(a => normRegion != null && string.Equals(a.RegionCode, normRegion, StringComparison.OrdinalIgnoreCase))
                 .ThenBy(a => a.Order)
                 .ThenBy(_ => Random.Shared.Next())
                 .Take(atomCount)
                 .ToList();
 
             var activities = SynthesizeActivities(selected, allIslandAtoms);
-            var stageTheme = await PickDynamicStageAsync(tenantId, island, request?.PreferredStageCode, ct);
+            var stageTheme = await PickDynamicStageAsync(tenantId, island, request?.PreferredStageCode, normRegion, ct);
 
             _logger.LogInformation(
                 "[KidsGenesis] Generated adventure | TenantId={TenantId} Island={Island} Stage={Stage} Atoms={Atoms} Activities={Activities}",
@@ -460,6 +462,7 @@ Return ONLY valid JSON (no markdown) with schema:
             Guid tenantId,
             string island,
             string? preferredStageCode,
+            string? regionCode,
             CancellationToken ct)
         {
             var all = await GetStageThemesAsync(tenantId, false, ct);
@@ -470,6 +473,11 @@ Return ONLY valid JSON (no markdown) with schema:
             }
 
             var matching = all.Where(s => s.PreferredIslands.Any(i => string.Equals(i, island, StringComparison.OrdinalIgnoreCase))).ToList();
+            if (!string.IsNullOrWhiteSpace(regionCode))
+            {
+                var regional = matching.Where(s => string.Equals(s.RegionCode, regionCode, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (regional.Count > 0) return regional[Random.Shared.Next(regional.Count)];
+            }
             var pool = matching.Count > 0 ? matching : all;
             return pool.Count > 0 ? pool[Random.Shared.Next(pool.Count)] : new KidsStageThemeDto();
         }
@@ -859,7 +867,18 @@ phonetic (optional IPA), numericValue (integer or null), sampleSentenceEn, sampl
             SampleSentenceVi = src.SampleSentenceVi,
             FunFactEn = src.FunFactEn,
             FunFactVi = src.FunFactVi,
-            IsAiGenerated = src.IsAiGenerated
+            IsAiGenerated = src.IsAiGenerated,
+            RegionCode = src.RegionCode,
+            FrameworkCode = src.FrameworkCode,
+            Status = src.Status,
+            AuthorName = src.AuthorName,
+            AuthorClass = src.AuthorClass,
+            CreatorDream = src.CreatorDream,
+            ImageUrl = src.ImageUrl,
+            VoiceAudioUrl = src.VoiceAudioUrl,
+            GratitudeCount = src.GratitudeCount,
+            IsCommunityContribution = src.IsCommunityContribution,
+            Localized = src.Localized
         };
     }
 }

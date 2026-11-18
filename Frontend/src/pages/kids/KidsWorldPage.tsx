@@ -67,6 +67,16 @@ const KINGDOMS: KingdomDef[] = [
     gradient: 'from-fuchsia-400 via-purple-500 to-indigo-600',
     border: 'border-purple-200',
   },
+  {
+    id: 'heritage',
+    emoji: '🐉',
+    titleVi: 'Huyền Tích & Anh Hùng Dân Tộc',
+    titleEn: 'National Heritage & Heroes',
+    descVi: 'Con Rồng Cháu Tiên, Thánh Gióng, Bánh Chưng & tinh hoa cội nguồn!',
+    descEn: 'Legends, national heroes & timeless cultural pride of every homeland!',
+    gradient: 'from-red-500 via-amber-500 to-yellow-500',
+    border: 'border-amber-200',
+  },
 ];
 
 function getPetStage(stars: number, isVi: boolean) {
@@ -116,7 +126,7 @@ export const KidsWorldPage: React.FC = () => {
     setLoadingId(kingdomId);
     playKidMelody(kingdomId === 'music' ? 'twinkle' : 'happy');
     try {
-      const plan = await kidsCurriculumService.generateDailyAdventure(kingdomId, band, 3, stageCode);
+      const plan = await kidsCurriculumService.generateDailyAdventure(kingdomId, band, 3, stageCode, activeLocale?.regionCode);
       setActivePlan(plan);
     } finally {
       setLoadingId(null);

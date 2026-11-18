@@ -128,5 +128,25 @@
       { "emoji": "🌙", "labelVi": "Trăng Khuyết Bạc", "labelEn": "Crescent Moon", "colorHex": "#facc15" },
       { "emoji": "🕌", "labelVi": "Cung Điện Sao", "labelEn": "Star Palace", "colorHex": "#a855f7" }
     ]
+  },
+  {
+    "stageCode": "VN_LAC_HONG_HERITAGE",
+    "titleVi": "Đất Tổ Lạc Hồng & Huyền Tích Anh Hùng",
+    "titleEn": "Lac Hong Heritage & National Heroes",
+    "regionCode": "VN",
+    "environment": "HERITAGE",
+    "particleMode": "fairy",
+    "sfxType": "unwrap",
+    "backgroundGradient": "from-red-600 via-amber-500 to-yellow-500",
+    "badgeEmoji": "🐉",
+    "preferredIslands": ["heritage"],
+    "props": [
+      { "emoji": "🥁", "labelVi": "Trống Đồng Lạc Hồng", "labelEn": "Bronze Drum", "colorHex": "#f59e0b" },
+      { "emoji": "🎋", "labelVi": "Tre Ngà Thánh Gióng", "labelEn": "Ivory Bamboo", "colorHex": "#10b981" },
+      { "emoji": "🟩", "labelVi": "Bánh Chưng Đất Tổ", "labelEn": "Chung Cake", "colorHex": "#16a34a" },
+      { "emoji": "🍊", "labelVi": "Quả Cam Chí Lớn", "labelEn": "Courage Orange", "colorHex": "#ea580c" },
+      { "emoji": "🥚", "labelVi": "Bọc Trăm Trứng", "labelEn": "Hundred Eggs", "colorHex": "#eab308" },
+      { "emoji": "🪷", "labelVi": "Sen Hồng Quê Hương", "labelEn": "Pink Lotus", "colorHex": "#ec4899" }
+    ]
   }
 ]

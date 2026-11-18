@@ -145,13 +145,15 @@ export const kidsCurriculumService = {
     islandId: string,
     ageBand: string = 'all',
     atomCount: number = 3,
-    preferredStageCode?: string
+    preferredStageCode?: string,
+    regionCode?: string
   ): Promise<KidsLessonPlan> {
     const res = await api.post<KidsLessonPlan>('/api/kids/daily-adventure', {
       islandId,
       ageBand,
       atomCount,
       preferredStageCode: preferredStageCode || undefined,
+      regionCode: regionCode || undefined,
       weakAtomCodes: getWeakAtomCodes(),
     });
     return res.data;
