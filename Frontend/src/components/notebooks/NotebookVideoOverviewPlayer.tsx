@@ -113,7 +113,7 @@ export const NotebookVideoOverviewPlayer: React.FC<Props> = ({ title, slides, la
           className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 disabled:opacity-50 px-2.5 py-1 text-[11px] font-semibold text-white transition"
         >
           <Download className="w-3.5 h-3.5" />
-          {exporting ? 'Đang ghép giọng đọc .webm...' : 'Tải Video Có Tiếng (.webm)'}
+          {exporting ? 'Đang xuất video có tiếng...' : 'Tải Video (.mp4 / .webm)'}
         </button>
       </div>
 

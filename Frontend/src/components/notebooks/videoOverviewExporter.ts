@@ -158,7 +158,8 @@ export async function exportAudioMuxedWebm(
   language: string,
   onSlideChange: (idx: number) => void,
   onProgress: (p: number) => void,
-): Promise<void> {
+  preferredFormat: 'mp4' | 'webm' = 'mp4',
+): Promise<'mp4' | 'webm'> {
   const locale = language === 'en' ? 'en-US' : 'vi-VN';
   const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   const audioCtx = new AudioCtx();
@@ -171,17 +172,24 @@ export async function exportAudioMuxedWebm(
     ...audioDest.stream.getAudioTracks(),
   ]);
 
-  const preferredMimes = [
+  const mp4Mimes = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1,mp4a.40.2',
+    'video/mp4',
+  ];
+  const webmMimes = [
     'video/webm;codecs=vp9,opus',
     'video/webm;codecs=vp8,opus',
     'video/webm',
   ];
-  const mimeType = preferredMimes.find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const candidateMimes = preferredFormat === 'mp4' ? [...mp4Mimes, ...webmMimes] : webmMimes;
+  const mimeType = candidateMimes.find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+  const actualExt: 'mp4' | 'webm' = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
   const recorder = new MediaRecorder(combined, { mimeType });
   const chunks: BlobPart[] = [];
   recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
   const done = new Promise<Blob>((resolve) => {
-    recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+    recorder.onstop = () => resolve(new Blob(chunks, { type: actualExt === 'mp4' ? 'video/mp4' : 'video/webm' }));
   });
 
   // Pre-fetch Neural TTS buffers in parallel for smooth zero-gap muxing
@@ -222,7 +230,8 @@ export async function exportAudioMuxedWebm(
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_overview.webm`;
+  a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_overview.${actualExt}`;
   a.click();
   URL.revokeObjectURL(url);
+  return actualExt;
 }
