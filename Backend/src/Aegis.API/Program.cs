@@ -262,6 +262,7 @@ builder.Services.AddHttpClient("LtiAgsClient");
 builder.Services.AddHostedService<ExamTimerService>();
 builder.Services.AddSingleton<Aegis.Application.Interfaces.IAegisBackgroundTaskQueue, Aegis.Infrastructure.Services.AegisBackgroundTaskQueue>();
 builder.Services.AddHostedService<Aegis.Infrastructure.Services.AegisBackgroundTaskWorker>();
+builder.Services.AddScoped<Aegis.Application.Interfaces.IVosMusicService, Aegis.Infrastructure.Services.VosMusicService>();
 
 // [Enterprise Omni-Channel Payment Sovereignty & OCP Gateway Strategies]
 builder.Services.AddHttpClient<Aegis.Infrastructure.Payments.PayOSGatewayService>();

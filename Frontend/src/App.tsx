@@ -56,6 +56,7 @@ const ArenaRoomPage = lazyRetry(() => import('@/pages/arena/ArenaRoomPage').then
 const ArenaStudioPage = lazyRetry(() => import('@/pages/arena/ArenaStudioPage').then(m => ({ default: m.ArenaStudioPage })));
 const TeamDashboard = lazyRetry(() => import('@/pages/team-leader/TeamDashboard').then(m => ({ default: m.TeamDashboard })));
 const UniversalSymposiumPage = lazyRetry(() => import('@/pages/symposium/UniversalSymposiumPage').then(m => ({ default: m.UniversalSymposiumPage })));
+const VosSonicStudioPage = lazyRetry(() => import('@/pages/music/VosSonicStudioPage'));
 const CreatorZenStudioPage = lazyRetry(() => import('@/pages/creator/studio/CreatorZenStudioPage'));
 const ZenTopicsPage = lazyRetry(() => import('@/pages/creator/topics/ZenTopicsPage'));
 const ZenQuestionsPage = lazyRetry(() => import('@/pages/creator/questions/ZenQuestionsPage'));
@@ -113,6 +114,7 @@ export default function App() {
                 <Route path="arena" element={<ArenaHubPage />} />
                 <Route path="visual-lab" element={<VisualLearningLabPage />} />
                 <Route path="symposium" element={<UniversalSymposiumPage />} />
+                <Route path="music-studio" element={<VosSonicStudioPage />} />
               </Route>
 
               {/* [P1 Security] Admin Nested Routes — chỉ Admin mới vào được */}
