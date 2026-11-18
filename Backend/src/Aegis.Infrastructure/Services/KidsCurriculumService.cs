@@ -313,6 +313,102 @@ namespace Aegis.Infrastructure.Services
             return updatedCount;
         }
 
+        public async Task<SubmitKidsCreatorBundleDto> AiSynthesizeCreatorBundleAsync(
+            Guid tenantId,
+            AiBuildKidsCurriculumRequestDto request,
+            CancellationToken ct = default)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.TopicTitle))
+                throw new ArgumentException("TopicTitle is required.");
+
+            string topic = request.TopicTitle.Trim();
+            string island = string.IsNullOrWhiteSpace(request.IslandId) ? "fairytale" : request.IslandId.Trim().ToLowerInvariant();
+            string ageBand = string.IsNullOrWhiteSpace(request.AgeBand) ? "3-5" : request.AgeBand.Trim();
+            int count = Math.Clamp(request.ItemCount, 2, 6);
+
+            if (_aiRouter != null)
+            {
+                try
+                {
+                    string prompt = $@"Design a magical preschool/primary interactive stage and {count} learning atoms for topic: '{topic}', age '{ageBand}', island '{island}'.
+Return ONLY valid JSON (no markdown) with schema:
+{{
+  ""creatorDream"": ""short warm pedagogical wish in Vietnamese"",
+  ""customStage"": {{
+    ""titleVi"": ""Vietnamese stage title"",
+    ""titleEn"": ""English stage title"",
+    ""environment"": ""SKY|OCEAN|FAIRYTALE|MEADOW"",
+    ""particleMode"": ""sky|ocean|fairy|meadow"",
+    ""sfxType"": ""pop|splash|unwrap|bounce"",
+    ""backgroundGradient"": ""from-fuchsia-500 via-purple-600 to-indigo-700"",
+    ""badgeEmoji"": ""1 emoji"",
+    ""props"": [{{ ""emoji"": ""1 emoji"", ""labelVi"": ""short label"", ""labelEn"": ""short label"", ""colorHex"": ""#ec4899"" }}]
+  }},
+  ""atoms"": [
+    {{ ""emoji"": ""1 emoji"", ""primaryText"": ""English"", ""secondaryText"": ""Vietnamese"", ""phonetic"": ""optional"", ""sampleSentenceVi"": ""warm story sentence"", ""sampleSentenceEn"": ""warm English sentence"", ""funFactVi"": ""kid fun fact"", ""funFactEn"": ""kid fun fact EN"" }}
+  ]
+}}";
+
+                    var aiRes = await _aiRouter.ExecuteAsync(new AiExecutionRequest
+                    {
+                        TenantId = tenantId == Guid.Empty ? null : tenantId.ToString(),
+                        SystemPrompt = "You are a world-class Montessori & Early-Childhood Curriculum Architect. Output strictly valid JSON.",
+                        Prompt = prompt
+                    });
+
+                    if (aiRes.Success && !string.IsNullOrWhiteSpace(aiRes.Content))
+                    {
+                        int start = aiRes.Content.IndexOf('{');
+                        int end = aiRes.Content.LastIndexOf('}');
+                        if (start >= 0 && end > start)
+                        {
+                            var parsed = JsonSerializer.Deserialize<SubmitKidsCreatorBundleDto>(
+                                aiRes.Content.Substring(start, end - start + 1), JsonOpts);
+                            if (parsed != null && parsed.Atoms.Count > 0)
+                            {
+                                foreach (var a in parsed.Atoms)
+                                {
+                                    a.IslandId = island;
+                                    a.AgeBand = ageBand;
+                                }
+                                return parsed;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[KidsCreator] AI synthesize bundle fallback | Topic={Topic}", topic);
+                }
+            }
+
+            // Smart deterministic fallback so teachers always get an instant ready-to-edit draft
+            var fallbackAtoms = BuildDeterministicFallbackAtoms(topic, island, ageBand, count);
+            return new SubmitKidsCreatorBundleDto
+            {
+                CreatorDream = $"Chúc các bé khám phá chủ đề \"{topic}\" thật vui và đầy ắp tiếng cười!",
+                CustomStage = new KidsStageThemeDto
+                {
+                    TitleVi = $"Thế Giới {topic}",
+                    TitleEn = $"{topic} Wonderland",
+                    Environment = "FAIRYTALE",
+                    ParticleMode = "fairy",
+                    SfxType = "unwrap",
+                    BackgroundGradient = "from-fuchsia-500 via-purple-600 to-indigo-700",
+                    BadgeEmoji = "✨",
+                    PreferredIslands = new List<string> { island },
+                    Props = fallbackAtoms.Select((a, idx) => new KidsStagePropDto
+                    {
+                        Emoji = a.Emoji,
+                        LabelVi = $"{topic} #{idx + 1}",
+                        LabelEn = $"{topic} #{idx + 1}",
+                        ColorHex = idx % 2 == 0 ? "#ec4899" : "#f59e0b"
+                    }).ToList()
+                },
+                Atoms = fallbackAtoms
+            };
+        }
+
         public async Task<KidsStageThemeDto> SaveStageThemeAsync(Guid tenantId, KidsStageThemeDto stage, CancellationToken ct = default)
         {
             if (stage == null) throw new ArgumentNullException(nameof(stage));

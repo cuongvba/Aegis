@@ -121,6 +121,13 @@ export const CreatorZenStudioPage: React.FC = () => {
               <Database size={14} />
               <span>{t('modeSwitcher.savedBank', 'Đề Đã Lưu')}</span>
             </button>
+            <a
+              href="/kids"
+              className="flex-1 min-w-[120px] py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-gradient-to-r from-rose-500 to-amber-500 text-white hover:brightness-110 shadow-md shadow-rose-500/25"
+            >
+              <span>🌈</span>
+              <span>Kids Studio</span>
+            </a>
           </div>
         )}
 

@@ -94,5 +94,16 @@ namespace Aegis.API.Controllers
             int count = await _kidsService.GiveGratitudeAsync(_tenant.CurrentTenantId, code);
             return Ok(new { gratitudeCount = count });
         }
+
+        [HttpPost("ai-synthesize-bundle")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AiSynthesizeBundle([FromBody] AiBuildKidsCurriculumRequestDto request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.TopicTitle))
+                return BadRequest(new { error = "Vui lòng nhập chủ đề giáo án." });
+
+            var draft = await _kidsService.AiSynthesizeCreatorBundleAsync(_tenant.CurrentTenantId, request);
+            return Ok(draft);
+        }
     }
 }

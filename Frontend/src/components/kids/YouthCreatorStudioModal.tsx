@@ -40,6 +40,8 @@ export const YouthCreatorStudioModal: React.FC<YouthCreatorStudioModalProps> = (
 
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAiDrafting, setIsAiDrafting] = useState(false);
+  const [aiIdea, setAiIdea] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [doneMsg, setDoneMsg] = useState<string | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -47,6 +49,33 @@ export const YouthCreatorStudioModal: React.FC<YouthCreatorStudioModalProps> = (
   const isVi = lang === 'vi';
 
   if (!isOpen) return null;
+
+  const handleAiDraft = async () => {
+    if (!aiIdea.trim()) return;
+    setIsAiDrafting(true);
+    try {
+      const draft = await kidsCurriculumService.aiSynthesizeBundle(aiIdea.trim(), islandId, ageBand, 3);
+      if (draft.creatorDream) setCreatorDream(draft.creatorDream);
+      if (draft.customStage) {
+        setStageTitle(draft.customStage.titleVi || '');
+        if (draft.customStage.props?.length) {
+          setStageProps(draft.customStage.props.map((p) => p.emoji).join(','));
+        }
+        const matchedEnv = ENV_PRESETS.findIndex((p) => p.pMode === draft.customStage?.particleMode);
+        if (matchedEnv >= 0) setEnvIdx(matchedEnv);
+      }
+      const first = draft.atoms?.[0];
+      if (first) {
+        setEmoji(first.emoji || '🌟');
+        setPrimaryText(first.primaryText || '');
+        setSecondaryText(first.secondaryText || '');
+        setStoryText(first.sampleSentenceVi || '');
+        setFunFact(first.funFactVi || '');
+      }
+    } finally {
+      setIsAiDrafting(false);
+    }
+  };
 
   const handleUploadFile = async (file: File, target: 'backdrop' | 'image' | 'voice') => {
     setIsUploading(true);
@@ -155,12 +184,30 @@ export const YouthCreatorStudioModal: React.FC<YouthCreatorStudioModalProps> = (
           </div>
           <div>
             <h3 className="text-base font-black text-white">
-              {isVi ? 'Xưởng Sáng Tạo Thế Giới Tuổi Thơ (Dành Cho Anh/Chị Lớp Trên)' : 'Youth Storyteller & Stage Creator Studio'}
+              {isVi ? 'Xưởng Sáng Tạo Giáo Án & Thế Giới Tuổi Thơ (Giáo Viên & Tác Giả Trẻ)' : 'Kids World Creator Studio (Teachers & Youth)'}
             </h3>
             <p className="text-xs text-slate-400">
-              {isVi ? 'Chia sẻ ước mơ, tự dựng sân khấu, vẽ tranh & thu âm câu chuyện cho các em nhỏ' : 'Share your world, custom stage, drawings & voice stories with younger kids'}
+              {isVi ? 'AI Co-Pilot hỗ trợ cô giáo Mầm non/Tiểu học & tác giả trẻ dựng sân khấu, tranh vẽ & thu âm câu chuyện' : 'AI Co-Pilot helps teachers & youth creators build stages, stories & voice narrations'}
             </p>
           </div>
+        </div>
+
+        <div className="rounded-2xl bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border border-indigo-500/40 p-3 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+          <input
+            value={aiIdea}
+            onChange={(e) => setAiIdea(e.target.value)}
+            placeholder={isVi ? '✨ Nhập ý tưởng giáo án (VD: 4 mùa Xuân Hạ Thu Đông)...' : '✨ Enter lesson idea for AI Co-Pilot...'}
+            className="flex-1 rounded-xl bg-slate-950/90 border border-indigo-500/40 px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-400"
+          />
+          <button
+            type="button"
+            disabled={isAiDrafting || !aiIdea.trim()}
+            onClick={handleAiDraft}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 px-4 py-2 text-xs font-black text-white shadow-md disabled:opacity-50"
+          >
+            {isAiDrafting ? <Loader2 size={14} className="animate-spin" /> : '✨'}
+            {isAiDrafting ? (isVi ? 'AI đang dựng...' : 'Drafting...') : (isVi ? 'AI Dựng Sân Khấu & Giáo Án' : 'AI Draft Stage & Story')}
+          </button>
         </div>
 
         {doneMsg && (

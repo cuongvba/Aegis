@@ -50,5 +50,10 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             string presetCode,
             CancellationToken ct = default);
+
+        Task<SubmitKidsCreatorBundleDto> AiSynthesizeCreatorBundleAsync(
+            Guid tenantId,
+            AiBuildKidsCurriculumRequestDto request,
+            CancellationToken ct = default);
     }
 }

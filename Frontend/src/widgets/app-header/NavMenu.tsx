@@ -24,6 +24,7 @@ export function useNavItems(): NavItem[] {
   return [
     { name: t('nav.dashboard', 'Tổng quan'), path: '/dashboard',   icon: <BookOpen className="w-4 h-4 text-cyan-400" aria-hidden="true" /> },
     { name: t('nav.practice', 'Luyện thi'),  path: '/practice',    icon: <Gamepad2 className="w-4 h-4 text-indigo-400" aria-hidden="true" /> },
+    { name: t('nav.kidsWorld', 'Kids World'), path: '/kids',       icon: <Sparkles className="w-4 h-4 text-rose-400" aria-hidden="true" /> },
     { name: t('nav.arena', 'Đấu trường'),    path: '/arena',       icon: <Zap      className="w-4 h-4 text-amber-400" aria-hidden="true" /> },
     { name: t('nav.visualLab', 'Phòng Lab 60fps'), path: '/visual-lab', icon: <Sparkles className="w-4 h-4 text-sky-400" aria-hidden="true" /> },
     { name: t('nav.leaderboard', 'Bảng vàng'), path: '/leaderboard', icon: <Trophy   className="w-4 h-4 text-yellow-400" aria-hidden="true" /> },

@@ -133,6 +133,25 @@ namespace Aegis.UnitTests
         }
 
         [Fact]
+        public async Task AiSynthesizeCreatorBundleAsync_ProducesStageAndAtomsDraft()
+        {
+            await using var db = CreateInMemoryDb(nameof(AiSynthesizeCreatorBundleAsync_ProducesStageAndAtomsDraft));
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var draft = await service.AiSynthesizeCreatorBundleAsync(Guid.NewGuid(), new AiBuildKidsCurriculumRequestDto
+            {
+                TopicTitle = "Bốn Mùa Yêu Thương",
+                IslandId = "fairytale",
+                AgeBand = "3-5",
+                ItemCount = 3
+            });
+
+            Assert.NotNull(draft.CustomStage);
+            Assert.Equal(3, draft.Atoms.Count);
+            Assert.False(string.IsNullOrWhiteSpace(draft.CreatorDream));
+        }
+
+        [Fact]
         public async Task SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages()
         {
             await using var db = CreateInMemoryDb(nameof(SaveAndPickStageThemeAsync_SupportsDbDrivenDynamicStages));

@@ -189,4 +189,13 @@ export const kidsCurriculumService = {
     const res = await api.post<AiBuildKidsCurriculumResponse>('/api/kids/ai-build-curriculum', req);
     return res.data;
   },
+
+  async aiSynthesizeBundle(topicTitle: string, islandId: string, ageBand: string, itemCount = 3) {
+    const res = await api.post<{
+      creatorDream?: string;
+      customStage?: KidsStageTheme;
+      atoms: Partial<KidsConceptAtom>[];
+    }>('/api/kids/ai-synthesize-bundle', { topicTitle, islandId, ageBand, itemCount });
+    return res.data;
+  },
 };
