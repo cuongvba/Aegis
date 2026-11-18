@@ -4,6 +4,7 @@ import { MathRenderer } from '@/components/common/MathRenderer';
 import type { DynamicVisualSpec } from './visual-types';
 import { FunctionPlotCanvas } from './FunctionPlotCanvas';
 import { Geometry3dCanvas } from './Geometry3dCanvas';
+import { PhysicsCollisionCanvas } from './PhysicsCollisionCanvas';
 import { visualAudioEngine } from './visualAudioEngine';
 
 interface DynamicVisualWidgetProps {
@@ -164,6 +165,7 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({
           <FunctionPlotCanvas spec={spec} paramValues={effectiveParams} timeValue={timeValue} />
         )}
         {spec.type === 'geometry_3d' && <Geometry3dCanvas spec={spec} />}
+        {spec.type === 'physics_collision' && <PhysicsCollisionCanvas spec={spec} />}
         {spec.type === 'geogebra_embed' && (
           <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
             <iframe

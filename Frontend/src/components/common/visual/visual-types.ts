@@ -1,4 +1,4 @@
-export type VisualType = 'function_plot' | 'geometry_3d' | 'geometry_2d' | 'geogebra_embed';
+export type VisualType = 'function_plot' | 'geometry_3d' | 'geometry_2d' | 'physics_collision' | 'geogebra_embed';
 
 export interface VisualParameter {
   name: string;
@@ -54,6 +54,21 @@ export interface DynamicVisualSpec {
   baseRadius?: number;
   showLabels?: boolean;
   wireframeOnly?: boolean;
+  autoRotate?: boolean;
+  showProjection?: boolean;
+  crossSection?: {
+    enabled?: boolean;
+    heightRatio?: number; // -1..1 normalized vertical slice
+    tiltX?: number;       // -0.6..0.6 plane tilt
+  };
+  // 2D Physics Collision spec
+  physicsConfig?: {
+    m1: number;
+    m2: number;
+    v1: number;
+    v2: number;
+    restitution: number; // 0 = inelastic, 1 = elastic
+  };
   // 2D Geometry spec
   figure2d?: 'triangle_altitude' | 'circle_tangent' | 'quadrilateral';
   // GeoGebra embed
