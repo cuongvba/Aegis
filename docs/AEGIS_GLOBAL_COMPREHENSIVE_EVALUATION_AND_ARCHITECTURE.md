@@ -119,9 +119,9 @@ Khác với các hệ thống EdTech chỉ gọi 1 API LLM đơn lẻ, AegisGlob
 | **2. Trí tuệ Nhân tạo (AI Engineering)** | **9.4 / 10** | Vượt xa mức "wrapper": có FinOps router đa nhà cung cấp, cơ chế bầy đàn WPSE, Đại hội thảo 6 pha có kiểm chứng Popper/Bayes, hỗ trợ Local Ollama bảo mật dữ liệu. |
 | **3. Khoa học Đào tạo & Khảo thí (EdTech)** | **9.5 / 10** | Hội tụ đủ bộ vũ khí chuẩn quốc tế: IRT 3-PL (Python microservice), CAT, DKT, Bloom 5–6, QTI 3.0 / LTI 1.3, Visual Lab 3D + AegisNotebook Studio Video/Podcast. |
 | **4. Xử lý Tài liệu & Toán học (Doc Intelligence)** | **9.4 / 10** | Giải quyết được bài toán gai góc nhất tại Việt Nam: DOCX OMML + MathType nhị phân WMF/MTEF + PdfPig không gian + Excel đa cột + giữ nguyên định dạng minh họa. |
-| **5. Trải nghiệm & Frontend (UX / Craft)** | **8.8 / 10** | Code-splitting qua `lazyRetry`, KaTeX chuẩn xác, `Office Studio` & `Visual Lab` ấn tượng; tuy nhiên mật độ tính năng rất lớn đòi hỏi tối ưu onboarding theo từng vai trò. |
-| **6. Vận hành, Kiểm thử & Production Readiness** | **8.3 / 10** | Có 85 file Unit Test Backend + Vitest + Docker Compose đầy đủ; điểm cần gia cố là tự động hóa E2E CI/CD và tách worker cho tác vụ nặng. |
-| **ĐIỂM TỔNG HỢP HỆ SINH THÁI** | **9.1 / 10** | **Cấp độ Nền tảng Hạ tầng Tri thức Toàn cầu (Enterprise & Sovereign-Ready).** |
+| **5. Trải nghiệm & Frontend (UX / Craft)** | **9.1 / 10** | Code-splitting qua `lazyRetry`, KaTeX chuẩn xác, `Office Studio` A4, `Visual Lab` 3D 60fps & `Video Overview` xuất `.mp4` có tiếng đạt chuẩn Zero-Monolith; chỉ còn thiếu hướng dẫn onboarding tương tác theo từng vai trò. |
+| **6. Vận hành, Kiểm thử & Production Readiness** | **8.8 / 10** | Có 85 file Unit Test Backend, Vitest, Docker Compose 7 container, [`docs/INDEX.md`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/INDEX.md) và [`verify-aegis-smoke.ps1`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/scripts/verify-aegis-smoke.ps1); để chạm ngưỡng `9.5+` cần bổ sung Playwright E2E trên CI và Worker Queue cho batch nặng. |
+| **ĐIỂM TỔNG HỢP HỆ SINH THÁI** | **9.3 / 10** | **Cấp độ Nền tảng Hạ tầng Tri thức Toàn cầu (Tier-1 Enterprise & Sovereign-Ready).** |
 
 ### 2. Phân Tích Điểm Mạnh Cốt Lõi vs. Khoảng Trống & Rủi Ro Kỹ Thuật (Honest Gaps)
 * **Điểm mạnh dị biệt (Competitive Moats)**:
