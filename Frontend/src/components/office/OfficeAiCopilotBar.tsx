@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Sparkles, Loader2, Check, PlusCircle, X, Wand2 } from 'lucide-react';
+import { Sparkles, Loader2, Check, PlusCircle, X, Wand2, Eye, Code2 } from 'lucide-react';
 import { officeWorkspaceService, type OfficeSheet } from '@/services/officeWorkspace.service';
+import { MathRenderer } from '@/components/common/MathRenderer';
 
 interface OfficeAiCopilotBarProps {
   docKind: 'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN';
@@ -24,6 +25,7 @@ export const OfficeAiCopilotBar: React.FC<OfficeAiCopilotBarProps> = ({
   const [customPrompt, setCustomPrompt] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const [aiPreview, setAiPreview] = useState<string | null>(null);
+  const [rawPreviewMode, setRawPreviewMode] = useState(false);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const runAction = async (action: string) => {
@@ -121,7 +123,15 @@ export const OfficeAiCopilotBar: React.FC<OfficeAiCopilotBarProps> = ({
         <div className="rounded-xl bg-slate-950 border border-indigo-500/40 p-3 space-y-2.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-black text-indigo-300">Kết quả gợi ý từ AI Co-Pilot:</span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setRawPreviewMode((v) => !v)}
+                className="inline-flex items-center gap-1 rounded-lg bg-slate-800 hover:bg-slate-700 px-2.5 py-1 text-xs font-bold text-amber-300"
+              >
+                {rawPreviewMode ? <Eye size={13} /> : <Code2 size={13} />}
+                {rawPreviewMode ? 'Xem Công thức' : 'Xem Mã nguồn'}
+              </button>
               {docKind !== 'XLSX' && (
                 <>
                   <button
@@ -149,9 +159,15 @@ export const OfficeAiCopilotBar: React.FC<OfficeAiCopilotBarProps> = ({
               </button>
             </div>
           </div>
-          <pre className="whitespace-pre-wrap text-xs text-slate-200 font-mono max-h-60 overflow-y-auto bg-slate-900/70 rounded-lg p-3">
-            {aiPreview}
-          </pre>
+          {rawPreviewMode ? (
+            <pre className="whitespace-pre-wrap text-xs text-slate-200 font-mono max-h-60 overflow-y-auto bg-slate-900/70 rounded-lg p-3">
+              {aiPreview}
+            </pre>
+          ) : (
+            <div className="rounded-lg bg-white text-slate-900 p-4 max-h-72 overflow-y-auto text-sm leading-relaxed">
+              <MathRenderer content={aiPreview} />
+            </div>
+          )}
         </div>
       )}
     </div>
