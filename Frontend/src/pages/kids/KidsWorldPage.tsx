@@ -13,7 +13,13 @@ import { YouthCreatorStudioModal } from '@/components/kids/YouthCreatorStudioMod
 import { KidsReviewModal } from '@/components/kids/KidsReviewModal';
 import { KidsGlobalLocaleModal } from '@/components/kids/KidsGlobalLocaleModal';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
-import { speakKidText } from '@/components/kids/kidsSpeech';
+import {
+  speakKidText,
+  fetchKidsVoices,
+  getSelectedKidVoiceId,
+  setSelectedKidVoiceId,
+  KidsVoiceProfile,
+} from '@/components/kids/kidsSpeech';
 
 interface KingdomDef {
   id: string;
@@ -103,6 +109,8 @@ export const KidsWorldPage: React.FC = () => {
   const [isLocaleModalOpen, setIsLocaleModalOpen] = useState(false);
   const [locales, setLocales] = useState<KidsLocaleProfile[]>([]);
   const [activeLocaleCode, setActiveLocaleCode] = useState<string>(() => localStorage.getItem('aegis-kids-locale') || 'vi-VN');
+  const [voices, setVoices] = useState<KidsVoiceProfile[]>([]);
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => getSelectedKidVoiceId());
   const [isGateOpen, setIsGateOpen] = useState(false);
 
   useEffect(() => {
@@ -111,6 +119,10 @@ export const KidsWorldPage: React.FC = () => {
 
   const activeLocale = locales.find((l) => l.localeCode === activeLocaleCode) || locales[0];
   const speechLang = activeLocale?.speechTag || lang;
+
+  useEffect(() => {
+    fetchKidsVoices(speechLang).then(setVoices).catch(() => {});
+  }, [speechLang]);
 
   const pet = getPetStage(stars, isVi);
 
@@ -191,6 +203,27 @@ export const KidsWorldPage: React.FC = () => {
             >
               <Wand2 size={14} /> {isVi ? 'AI Tạo Bài' : 'AI Builder'}
             </button>
+            {voices.length > 0 && (
+              <select
+                value={selectedVoiceId}
+                onChange={(e) => {
+                  const vid = e.target.value;
+                  setSelectedVoiceId(vid);
+                  setSelectedKidVoiceId(vid);
+                  speakKidText(isVi ? 'Xin chào bé yêu! Mình cùng khám phá nhé!' : 'Hello little explorer!', speechLang, vid);
+                }}
+                aria-label="Kids Voice"
+                className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-black text-indigo-800 hover:border-indigo-400 focus:outline-none max-w-[175px]"
+                title={isVi ? 'Chọn giọng đọc AI' : 'Select AI Voice'}
+              >
+                <option value="">🎙️ {isVi ? 'Giọng mặc định' : 'Auto Voice'}</option>
+                {voices.map((v) => (
+                  <option key={v.voiceId} value={v.voiceId}>
+                    🎙️ {v.displayName}
+                  </option>
+                ))}
+              </select>
+            )}
             <button
               type="button"
               onClick={() => setIsLocaleModalOpen(true)}
@@ -213,7 +246,7 @@ export const KidsWorldPage: React.FC = () => {
         {activePlan ? (
           <KidsLessonPlayer
             plan={activePlan}
-            lang={lang}
+            lang={speechLang}
             onEarnStars={earnStars}
             onExit={() => setActivePlan(null)}
           />
@@ -224,7 +257,7 @@ export const KidsWorldPage: React.FC = () => {
               <div className="flex items-center gap-4">
                 <button
                   type="button"
-                  onClick={() => speakKidText(t('kidsMascotGreeting'), lang)}
+                  onClick={() => speakKidText(t('kidsMascotGreeting'), speechLang)}
                   className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/95 shadow-lg flex items-center justify-center text-5xl sm:text-6xl hover:scale-105 active:scale-95 transition shrink-0"
                 >
                   🦉
@@ -240,7 +273,7 @@ export const KidsWorldPage: React.FC = () => {
                     {t('kidsMascotGreeting')}
                     <button
                       type="button"
-                      onClick={() => speakKidText(t('kidsMascotGreeting'), lang)}
+                      onClick={() => speakKidText(t('kidsMascotGreeting'), speechLang)}
                       className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-black text-indigo-700"
                     >
                       <Volume2 size={14} /> {t('kidsListen')}
@@ -285,7 +318,7 @@ export const KidsWorldPage: React.FC = () => {
                   type="button"
                   disabled={Boolean(loadingId)}
                   onClick={() => {
-                    speakKidText(isVi ? k.titleVi : k.titleEn, lang);
+                    speakKidText(isVi ? k.titleVi : k.titleEn, speechLang);
                     launchKingdom(k.id);
                   }}
                   className={`group relative overflow-hidden rounded-[2.2rem] bg-gradient-to-br ${k.gradient} p-6 sm:p-7 text-left text-white shadow-xl border-4 ${k.border} hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] transition-all min-h-[176px] flex flex-col justify-between`}

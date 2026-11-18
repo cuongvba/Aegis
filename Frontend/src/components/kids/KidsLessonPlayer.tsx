@@ -26,7 +26,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const [thanked, setThanked] = useState(false);
 
-  const isVi = lang === 'vi';
+  const isVi = lang.toLowerCase().startsWith('vi');
   // Filter out EXPOSE_CARD when Play-First Surprise Stage already revealed all atoms interactively
   const playableActivities = plan.stageTheme
     ? plan.activities.filter((a) => a.activityType !== 'EXPOSE_CARD')
@@ -39,9 +39,9 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
     setTappedCount([]);
     setFeedback(null);
     const speech = isVi ? activity.speechTextVi : activity.speechTextEn;
-    speakKidText(speech, isVi ? 'vi' : 'en');
+    speakKidText(speech, lang);
     return () => stopKidSpeech();
-  }, [inSurpriseStage, stepIndex, isCompleted, isVi]);
+  }, [inSurpriseStage, stepIndex, isCompleted, isVi, lang]);
 
   if (inSurpriseStage && plan.stageTheme && plan.atoms.length > 0) {
     return (
@@ -124,7 +124,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
     recordAtomOutcome(activity.atomCode, true);
     confetti({ particleCount: 40, spread: 55, origin: { y: 0.7 } });
     setFeedback({ ok: true, msg });
-    speakKidText(msg, isVi ? 'vi' : 'en');
+    speakKidText(msg, lang);
   };
 
   const handleOptionPick = (isCorrect: boolean) => {
@@ -135,7 +135,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
       recordAtomOutcome(activity.atomCode, false);
       const retryMsg = isVi ? 'Gần đúng rồi! Bé thử chọn lại nhé!' : 'Almost! Try another one!';
       setFeedback({ ok: false, msg: retryMsg });
-      speakKidText(retryMsg, isVi ? 'vi' : 'en');
+      speakKidText(retryMsg, lang);
     }
   };
 
@@ -168,7 +168,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => speakKidText(isVi ? activity.speechTextVi : activity.speechTextEn, isVi ? 'vi' : 'en')}
+          onClick={() => speakKidText(isVi ? activity.speechTextVi : activity.speechTextEn, lang)}
           className="inline-flex items-center gap-1.5 rounded-2xl bg-indigo-600 text-white px-3.5 py-2 text-xs font-black shadow-sm hover:bg-indigo-500"
         >
           <Volume2 size={15} /> {isVi ? 'Nghe lại' : 'Listen'}
@@ -219,7 +219,7 @@ export const KidsLessonPlayer: React.FC<KidsLessonPlayerProps> = ({
                     if (!active) {
                       const next = [...tappedCount, idx];
                       setTappedCount(next);
-                      speakKidText(String(next.length), isVi ? 'vi' : 'en');
+                      speakKidText(String(next.length), lang);
                     }
                   }}
                   className={`w-16 h-16 sm:w-20 sm:h-20 rounded-3xl text-4xl sm:text-5xl flex items-center justify-center border-4 transition-all ${

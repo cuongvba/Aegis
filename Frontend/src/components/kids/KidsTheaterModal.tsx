@@ -57,14 +57,14 @@ export const KidsTheaterModal: React.FC<KidsTheaterModalProps> = ({ isOpen, onCl
     setActiveScaleId(culturalScaleId);
   }, [culturalScaleId]);
 
-  const isVi = lang === 'vi';
+  const isVi = lang.toLowerCase().startsWith('vi');
   const story = STORIES.find((s) => s.id === selectedId) || STORIES[0];
   const scene = story.scenes[sceneIdx] || story.scenes[0];
 
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
     const text = isVi ? scene.vi : scene.en;
-    speakKidText(text, isVi ? 'vi' : 'en');
+    speakKidText(text, lang);
     const stopMelody = playKidMelody(selectedId === 'twinkle' ? 'twinkle' : 'happy');
     const timer = window.setTimeout(() => {
       if (sceneIdx + 1 < story.scenes.length) {

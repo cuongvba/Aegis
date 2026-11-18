@@ -659,6 +659,14 @@ namespace Aegis.Infrastructure.Services
                 }
                 else
                 {
+                    bool isLanguageSubject = string.Equals(atom.IslandId, "english", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(atom.IslandId, "language", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(atom.IslandId, "phonics", StringComparison.OrdinalIgnoreCase);
+
+                    string speakTargetVi = isLanguageSubject || string.IsNullOrWhiteSpace(atom.SecondaryText)
+                        ? atom.PrimaryText
+                        : atom.SecondaryText;
+
                     activities.Add(new KidsActivityDto
                     {
                         ActivityId = $"ACT_{seq++}_{atom.AtomCode}_SPEAK",
@@ -666,15 +674,17 @@ namespace Aegis.Infrastructure.Services
                         ActivityType = "SPEAK_ECHO",
                         TitleVi = "Bé nói to cùng AstroOwl",
                         TitleEn = "Say It Out Loud!",
-                        PromptVi = $"Bé hãy đọc to: \"{atom.PrimaryText}\" ({atom.SecondaryText})",
+                        PromptVi = isLanguageSubject
+                            ? $"Bé hãy phát âm từ: \"{atom.PrimaryText}\" ({atom.SecondaryText})"
+                            : $"Bé hãy đọc to: \"{speakTargetVi}\"!",
                         PromptEn = $"Say out loud: \"{atom.PrimaryText}\"!",
-                        SpeechTextVi = $"Bé hãy đọc to theo bạn Cú nhé: {atom.PrimaryText}",
+                        SpeechTextVi = $"Bé hãy đọc to theo bạn Cú nhé: {speakTargetVi}",
                         SpeechTextEn = $"Repeat after me: {atom.PrimaryText}",
                         Emoji = atom.Emoji,
                         PrimaryText = atom.PrimaryText,
                         SecondaryText = atom.SecondaryText,
                         Phonetic = atom.Phonetic,
-                        TargetSpeakText = atom.PrimaryText
+                        TargetSpeakText = speakTargetVi
                     });
                 }
             }

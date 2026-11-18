@@ -279,5 +279,32 @@ namespace Aegis.UnitTests
             Assert.Equal("VN", draft.CustomStage.RegionCode);
             Assert.Equal(3, draft.Atoms.Count);
         }
+
+        [Fact]
+        public async Task HeritageSpeakEcho_UsesNativeSecondaryText_AndVoiceCatalogSupportsMultiVoice()
+        {
+            await using var db = CreateInMemoryDb(nameof(HeritageSpeakEcho_UsesNativeSecondaryText_AndVoiceCatalogSupportsMultiVoice));
+            var service = new KidsCurriculumService(db, NullLogger<KidsCurriculumService>.Instance);
+
+            var plan = await service.GenerateDailyAdventureAsync(Guid.NewGuid(), new GenerateKidsAdventureRequestDto
+            {
+                IslandId = "heritage",
+                RegionCode = "VN",
+                AtomCount = 3
+            });
+
+            var speakActivities = plan.Activities.Where(a => a.ActivityType == "SPEAK_ECHO").ToList();
+            Assert.NotEmpty(speakActivities);
+            Assert.All(speakActivities, act =>
+            {
+                Assert.Equal(act.SecondaryText, act.TargetSpeakText);
+                Assert.Contains(act.SecondaryText, act.SpeechTextVi);
+            });
+
+            var voiceService = new KidsVoiceService(NullLogger<KidsVoiceService>.Instance);
+            var viVoices = voiceService.GetVoices("vi-VN");
+            Assert.Contains(viVoices, v => v.VoiceId == "vi-VN-HoaiMyNeural");
+            Assert.Contains(viVoices, v => v.VoiceId == "vi-VN-NamMinhNeural");
+        }
     }
 }

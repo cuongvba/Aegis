@@ -22,7 +22,7 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
 }) => {
   const [openedIndices, setOpenedIndices] = useState<number[]>([]);
   const [revealedIdx, setRevealedIdx] = useState<number | null>(null);
-  const isVi = lang === 'vi';
+  const isVi = lang.toLowerCase().startsWith('vi');
 
   const propsPool = stageTheme.props && stageTheme.props.length > 0
     ? stageTheme.props
@@ -44,9 +44,9 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
       ? `${prop.labelVi}! ${atom.secondaryText}. ${atom.sampleSentenceVi}`
       : `${prop.labelEn}! ${atom.primaryText}. ${atom.sampleSentenceEn}`;
     if (atom.voiceAudioUrl) {
-      new Audio(atom.voiceAudioUrl).play().catch(() => speakKidText(speakMsg, isVi ? 'vi' : 'en'));
+      new Audio(atom.voiceAudioUrl).play().catch(() => speakKidText(speakMsg, lang));
     } else {
-      speakKidText(speakMsg, isVi ? 'vi' : 'en');
+      speakKidText(speakMsg, lang);
     }
   };
 
@@ -129,7 +129,7 @@ export const KidsSurpriseStage: React.FC<KidsSurpriseStageProps> = ({
           </div>
           <button
             type="button"
-            onClick={() => speakKidText(isVi ? `${activeAtom.secondaryText}. ${activeAtom.sampleSentenceVi}` : `${activeAtom.primaryText}. ${activeAtom.sampleSentenceEn}`, isVi ? 'vi' : 'en')}
+            onClick={() => speakKidText(isVi ? `${activeAtom.secondaryText}. ${activeAtom.sampleSentenceVi}` : `${activeAtom.primaryText}. ${activeAtom.sampleSentenceEn}`, lang)}
             className="rounded-2xl bg-indigo-600 text-white px-4 py-2.5 text-xs font-black inline-flex items-center gap-1.5 shadow-md hover:bg-indigo-500 shrink-0"
           >
             <Volume2 size={15} /> {isVi ? 'Nghe lại' : 'Listen'}

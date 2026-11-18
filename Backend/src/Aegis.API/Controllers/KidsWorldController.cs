@@ -11,11 +11,16 @@ namespace Aegis.API.Controllers
     public class KidsWorldController : ControllerBase
     {
         private readonly IKidsCurriculumService _kidsService;
+        private readonly IKidsVoiceService _voiceService;
         private readonly ITenantContext _tenant;
 
-        public KidsWorldController(IKidsCurriculumService kidsService, ITenantContext tenant)
+        public KidsWorldController(
+            IKidsCurriculumService kidsService,
+            IKidsVoiceService voiceService,
+            ITenantContext tenant)
         {
             _kidsService = kidsService;
+            _voiceService = voiceService;
             _tenant = tenant;
         }
 
@@ -142,6 +147,27 @@ namespace Aegis.API.Controllers
 
             var saved = await _kidsService.SaveAiSkillAsync(_tenant.CurrentTenantId, skill);
             return Ok(saved);
+        }
+
+        [HttpGet("voices")]
+        [AllowAnonymous]
+        public IActionResult GetVoices([FromQuery] string? locale = null)
+        {
+            return Ok(_voiceService.GetVoices(locale));
+        }
+
+        [HttpPost("tts")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SynthesizeSpeech([FromBody] KidsTtsRequestDto request, CancellationToken ct)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Text))
+                return BadRequest(new { error = "Text is required." });
+
+            byte[]? audio = await _voiceService.SynthesizeSpeechAsync(request, ct);
+            if (audio == null || audio.Length == 0)
+                return NoContent();
+
+            return File(audio, "audio/mpeg");
         }
     }
 }
