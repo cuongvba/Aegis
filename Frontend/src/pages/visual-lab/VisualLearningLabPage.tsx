@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass, Wand2 } from 'lucide-react';
+import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass, Wand2, Search, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DynamicVisualWidget } from '@/components/common/visual/DynamicVisualWidget';
 import { InteractiveVisualStudioModal } from '@/components/common/visual/InteractiveVisualStudioModal';
 import type { DynamicVisualSpec } from '@/components/common/visual/visual-types';
@@ -29,21 +30,24 @@ function tryParseUrlSpec(): InteractiveVisualLesson | null {
 }
 
 export default function VisualLearningLabPage() {
+  const navigate = useNavigate();
   const sharedLesson = useMemo(() => tryParseUrlSpec(), []);
   const [lessons, setLessons] = useState<InteractiveVisualLesson[]>(() =>
     sharedLesson ? [sharedLesson, ...VISUAL_LESSON_PRESETS] : VISUAL_LESSON_PRESETS
   );
   const [selectedId, setSelectedId] = useState<string>(lessons[0].id);
   const [subjectFilter, setSubjectFilter] = useState<'ALL' | 'TOAN' | 'VAT_LY' | 'HINH_HOC_3D'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const [studioOpen, setStudioOpen] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
   const [copiedType, setCopiedType] = useState<'link' | 'embed' | null>(null);
 
-  const visibleLessons = useMemo(
-    () => (subjectFilter === 'ALL' ? lessons : lessons.filter((l) => l.subject === subjectFilter)),
-    [lessons, subjectFilter]
-  );
+  const visibleLessons = useMemo(() => {
+    const bySubject = subjectFilter === 'ALL' ? lessons : lessons.filter((l) => l.subject === subjectFilter);
+    const q = searchQuery.trim().toLowerCase();
+    return q ? bySubject.filter((l) => l.title.toLowerCase().includes(q) || l.summary.toLowerCase().includes(q)) : bySubject;
+  }, [lessons, subjectFilter, searchQuery]);
 
   const activeLesson = useMemo(
     () => lessons.find((l) => l.id === selectedId) || lessons[0],
@@ -149,7 +153,17 @@ export default function VisualLearningLabPage() {
                 ))}
               </div>
 
-              <div className="space-y-2.5">
+              <div className="relative">
+                <Search className="h-3.5 w-3.5 text-slate-500 absolute left-3 top-2.5" />
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Tìm bài giảng Toán, Lý, 3D..."
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-8 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="space-y-2.5 max-h-[62vh] overflow-y-auto pr-1">
                 {visibleLessons.map((lesson) => {
                   const active = lesson.id === activeLesson.id;
                   return (
@@ -201,10 +215,21 @@ export default function VisualLearningLabPage() {
                     {copiedType === 'embed' ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Sparkles className="h-3.5 w-3.5" />}
                     {copiedType === 'embed' ? 'Đã chép Mã' : 'Chép mã nhúng'}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const md = `# ${activeLesson.title}\n\n${activeLesson.summary}\n\n## Nhiệm vụ khám phá\n- ${activeLesson.discoveryPrompt}\n\n${(activeLesson.spec.morphSteps || []).map((s) => `$$${s.latex}$$\n\n> ${s.note || ''}`).join('\n\n')}`;
+                      localStorage.setItem('aegis-office-studio-draft-v1', JSON.stringify({ docKind: 'DOCX', title: activeLesson.title, markdown: md, sheets: [] }));
+                      navigate('/office-studio');
+                    }}
+                    className="inline-flex items-center gap-1 rounded-xl border border-sky-500/40 bg-sky-950/40 hover:bg-sky-900/40 px-3 py-1.5 text-xs font-bold text-sky-200"
+                  >
+                    <FileText className="h-3.5 w-3.5" /> Mở Office Studio
+                  </button>
                 </div>
               </div>
 
-              <DynamicVisualWidget spec={activeLesson.spec} className="max-w-2xl" />
+              <DynamicVisualWidget spec={activeLesson.spec} fullWidth />
 
               <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 flex items-start gap-3">
                 <BookOpen className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />

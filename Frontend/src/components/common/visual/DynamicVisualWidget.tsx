@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Sliders, Sparkles, Play, Pause, RotateCcw, Clock, Volume2, VolumeX, Mic } from 'lucide-react';
+import { Sliders, Sparkles, Play, Pause, RotateCcw, Clock, Volume2, VolumeX, Mic, Camera } from 'lucide-react';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import type { DynamicVisualSpec } from './visual-types';
 import { FunctionPlotCanvas } from './FunctionPlotCanvas';
@@ -9,9 +9,15 @@ import { visualAudioEngine } from './visualAudioEngine';
 interface DynamicVisualWidgetProps {
   spec: DynamicVisualSpec;
   className?: string;
+  fullWidth?: boolean;
 }
 
-export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, className = '' }) => {
+export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({
+  spec,
+  className = '',
+  fullWidth = false,
+}) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [paramValues, setParamValues] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     spec.parameters?.forEach((p) => {
@@ -112,8 +118,23 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
 
   useEffect(() => () => visualAudioEngine.stopAllVoice(), []);
 
+  const handleExportPng = () => {
+    const canvas = containerRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(spec.title || 'aegis-visual-lab').replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
+    a.click();
+  };
+
   return (
-    <div className={`my-4 p-4 rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl max-w-lg mx-auto ${className}`}>
+    <div
+      ref={containerRef}
+      className={`my-4 p-4 rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl ${
+        fullWidth ? 'w-full max-w-4xl' : 'max-w-lg'
+      } mx-auto ${className}`}
+    >
       <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-slate-800">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
@@ -123,9 +144,19 @@ export const DynamicVisualWidget: React.FC<DynamicVisualWidgetProps> = ({ spec, 
             {spec.title || 'Mô Hình Trực Quan Tương Tác (ADVS 60fps)'}
           </h4>
         </div>
-        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700 uppercase">
-          {spec.type === 'geometry_3d' ? '3D Geometry' : spec.type === 'geogebra_embed' ? 'GeoGebra' : hasTimeAxis ? '60fps Time-Morph' : 'Dynamic Graph'}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleExportPng}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold border border-slate-700 transition"
+            title="Lưu ảnh đồ thị PNG"
+          >
+            <Camera size={11} /> PNG
+          </button>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300 border border-slate-700 uppercase">
+            {spec.type === 'geometry_3d' ? '3D Geometry' : spec.type === 'geogebra_embed' ? 'GeoGebra' : hasTimeAxis ? '60fps Time-Morph' : 'Dynamic Graph'}
+          </span>
+        </div>
       </div>
 
       <div className="flex justify-center">

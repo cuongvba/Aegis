@@ -1,9 +1,11 @@
+import { speakKidText, stopKidSpeech } from '@/components/kids/kidsSpeech';
+
 /**
- * [ADVS 0ms Web Audio & Voice Narration Engine]
+ * [ADVS 0ms Web Audio & Neural Voice Narration Engine]
  * Tổng hợp âm thanh phụ họa không độ trễ (zero external assets) cho đồ thị biến đổi theo thời gian:
  * - Chime pha (Phase Transition Chime) khi t đi qua từng mốc biến đổi KaTeX
  * - Tương tác nút Play/Pause/Scrub
- * - Tùy chọn đọc thuyết minh tiếng Việt (speechSynthesis) theo từng bước biến đổi
+ * - Thuyết minh giọng đọc Neural tiếng Việt theo từng bước biến đổi
  */
 class VisualAudioEngine {
   private ctx: AudioContext | null = null;
@@ -51,18 +53,12 @@ class VisualAudioEngine {
   }
 
   public speakNote(text?: string, lang = 'vi-VN') {
-    if (!text || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = lang;
-    utter.rate = 1.02;
-    window.speechSynthesis.speak(utter);
+    if (!text) return;
+    speakKidText(text, lang);
   }
 
   public stopAllVoice() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopKidSpeech();
   }
 }
 

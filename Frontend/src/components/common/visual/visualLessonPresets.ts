@@ -122,4 +122,71 @@ export const VISUAL_LESSON_PRESETS: InteractiveVisualLesson[] = [
       caption: 'Kéo chuột trực tiếp trên khung hình để xoay mô hình 3D 360°',
     },
   },
+  {
+    id: 'unit_circle_trig',
+    subject: 'TOAN',
+    subjectLabel: 'Toán 11 · Lượng giác',
+    title: 'Đường tròn Lượng giác (cos t, sin t)',
+    summary: 'Quan sát điểm M(cos t, sin t) quay tròn theo góc lượng giác t và kiểm chứng sin²t + cos²t = 1.',
+    discoveryPrompt:
+      'Kéo góc t đến π/2 (≈ 1.57) và π (≈ 3.14) để thấy hoành độ cos(t) và tung độ sin(t) đổi dấu như thế nào.',
+    spec: {
+      type: 'function_plot',
+      title: 'Quỹ đạo Đường tròn Lượng giác R·(cos t, sin t)',
+      xRange: [-3, 3],
+      yRange: [-3, 3],
+      parametric: { xFn: 'R * cos(t)', yFn: 'R * sin(t)', showTrail: true },
+      parameters: [{ name: 'R', value: 2, min: 0.5, max: 2.5, step: 0.1 }],
+      timeConfig: { min: 0, max: 6.28, step: 0.03, speed: 1.0, loop: true, autoPlay: true, label: 'Góc t (rad)' },
+      morphSteps: [
+        { timeAt: 0, latex: 'M(\\cos t, \\sin t),\\quad \\sin^2 t + \\cos^2 t = 1', note: 'Góc t = 0: Điểm M nằm tại (R, 0) trên trục hoành' },
+        { timeAt: 1.57, latex: 't = \\frac{\\pi}{2} \\Rightarrow \\cos t = 0,\\ \\sin t = 1', note: 'Điểm M đạt đỉnh cao nhất trên trục tung' },
+        { timeAt: 3.14, latex: 't = \\pi \\Rightarrow \\cos t = -1,\\ \\sin t = 0', note: 'Điểm M đi hết nửa vòng tròn' },
+      ],
+      caption: 'Điều chỉnh bán kính R để thấy đường tròn phóng to/thu nhỏ theo thời gian thực',
+    },
+  },
+  {
+    id: 'harmonic_oscillator',
+    subject: 'VAT_LY',
+    subjectLabel: 'Vật Lý 12 · Dao động điều hòa',
+    title: 'Dao động điều hòa x(t) = A·cos(ωt)',
+    summary: 'Đối chiếu trực tiếp li độ x(t) (đỏ) và đạo hàm vận tốc v(t) (nét đứt vàng) theo tần số góc ω.',
+    discoveryPrompt:
+      'Tăng tần số góc ω từ 2.0 lên 4.0 để thấy chu kỳ T ngắn lại và vận tốc cực đại tăng gấp đôi.',
+    spec: {
+      type: 'function_plot',
+      title: 'Dao động điều hòa x(t) = A·cos(ωx)',
+      fn: 'A * cos(w * x)',
+      derivative: '-A * w * sin(w * x)',
+      xRange: [0, 6.28],
+      yRange: [-5, 5],
+      parameters: [
+        { name: 'A', value: 2, min: 0.5, max: 3, step: 0.1 },
+        { name: 'w', value: 2, min: 1, max: 4, step: 0.2 },
+      ],
+      morphSteps: [
+        { timeAt: 0, latex: 'x(t) = A\\cos(\\omega t),\\quad v(t) = -A\\omega\\sin(\\omega t)', note: 'Vận tốc sớm pha π/2 so với li độ' },
+      ],
+      caption: 'Đường đỏ: Li độ x(t) · Đường nét đứt vàng: Vận tốc v(t)',
+    },
+  },
+  {
+    id: 'cylinder_3d',
+    subject: 'HINH_HOC_3D',
+    subjectLabel: 'Toán 12 · Khối tròn xoay',
+    title: 'Hình trụ tròn xoay & Thể tích V = πR²h (3D)',
+    summary: 'Xoay khối trụ 360° để học sinh hình dung trực quan hai đáy tròn song song và đường sinh.',
+    discoveryPrompt:
+      'Kéo chuột xoay khối trụ từ góc nhìn nghiêng sang nhìn thẳng từ trên xuống để thấy thiết diện đáy.',
+    spec: {
+      type: 'geometry_3d',
+      title: 'Hình trụ tròn xoay (3D Tương tác)',
+      solid: 'cylinder',
+      height: 4,
+      baseRadius: 2.2,
+      showLabels: true,
+      caption: 'Kéo chuột trực tiếp để xoay khối trụ 360°',
+    },
+  },
 ];
