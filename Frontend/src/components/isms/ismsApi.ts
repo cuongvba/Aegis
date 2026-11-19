@@ -12,9 +12,13 @@ export interface IsmsControlItem {
 
 export interface IsmsAssetItem {
   id: string;
+  assetCode?: string;
   name: string;
   category: string;
   classification: string;
+  location?: string;
+  warrantyStatus?: string;
+  systemName?: string;
   owner: string;
   controlNote: string;
 }
@@ -69,6 +73,14 @@ export const ismsApi = {
   },
   async saveAsset(payload: Partial<IsmsAssetItem>) {
     const res = await api.post('/api/isms/assets', payload);
+    return res.data;
+  },
+  async importAssetsExcel(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await api.post('/api/isms/assets/import-excel', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
   async saveRisk(payload: Partial<IsmsRiskItem>) {

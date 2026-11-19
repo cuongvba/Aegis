@@ -20,9 +20,13 @@ namespace Aegis.API.Controllers
     public class IsmsAssetDto
     {
         public string Id { get; set; } = string.Empty;
+        public string AssetCode { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public string Category { get; set; } = "DATA"; // DATA, SYSTEM, PEOPLE, PHYSICAL
-        public string Classification { get; set; } = "INTERNAL"; // PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED
+        public string Category { get; set; } = "DATA"; // SYSTEM, SOFTWARE, PHYSICAL, DATA
+        public string Classification { get; set; } = "INTERNAL"; // PUBLIC, INTERNAL, CONFIDENTIAL, RESTRICTED, CAP_DO_1..5
+        public string Location { get; set; } = string.Empty;
+        public string WarrantyStatus { get; set; } = string.Empty;
+        public string SystemName { get; set; } = string.Empty;
         public string Owner { get; set; } = string.Empty;
         public string ControlNote { get; set; } = string.Empty;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
@@ -135,7 +139,17 @@ namespace Aegis.API.Controllers
                 .Where(k => ledgerRows.Any(r => r.SynonymsJson.Contains(k, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            var controls = IsmsGovernanceHelper.GetDefaultIso27001Controls(totpCount, dispatchCount, ledgerRows.Count, itKinds);
+            var assets = DeserializeList<IsmsAssetDto>(rows.Where(r => r.CoordinateType == AssetType));
+            var risks = DeserializeList<IsmsRiskDto>(rows.Where(r => r.CoordinateType == RiskType));
+            var incidents = DeserializeList<IsmsIncidentDto>(rows.Where(r => r.CoordinateType == IncidentType));
+
+            var controls = IsmsGovernanceHelper.GetDefaultIso27001Controls(
+                totpCount,
+                dispatchCount,
+                ledgerRows.Count,
+                itKinds,
+                hasAssets: assets.Count > 0,
+                hasPiiAssets: assets.Any(a => a.Category == "DATA" || a.Classification == "CONFIDENTIAL"));
             foreach (var r in rows.Where(x => x.CoordinateType == SoaType))
             {
                 var ov = JsonSerializer.Deserialize<IsmsSoaToggleDto>(r.SynonymsJson, JsonOpts);
@@ -147,10 +161,6 @@ namespace Aegis.API.Controllers
                     if (!string.IsNullOrWhiteSpace(ov.EvidenceSource)) match.EvidenceSource = ov.EvidenceSource;
                 }
             }
-
-            var assets = DeserializeList<IsmsAssetDto>(rows.Where(r => r.CoordinateType == AssetType));
-            var risks = DeserializeList<IsmsRiskDto>(rows.Where(r => r.CoordinateType == RiskType));
-            var incidents = DeserializeList<IsmsIncidentDto>(rows.Where(r => r.CoordinateType == IncidentType));
 
             double compliance = IsmsGovernanceHelper.ComputeCompliancePercent(controls);
             return Ok(new
@@ -177,6 +187,73 @@ namespace Aegis.API.Controllers
 
             await UpsertPresetAsync(AssetType, "ISMS_ASSET", dto.Id, dto.Name, dto, ct);
             return Ok(dto);
+        }
+
+        [HttpPost("assets/import-excel")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ImportAssetsExcel(Microsoft.AspNetCore.Http.IFormFile file, CancellationToken ct)
+        {
+            if (file == null || file.Length == 0) return BadRequest(new { error = "Vui lòng chọn file DanhMucTaiSanCNTT.xlsx." });
+
+            await using var ms = new System.IO.MemoryStream();
+            await file.CopyToAsync(ms, ct);
+            ms.Position = 0;
+            var parsed = ItAssetExcelParser.ParseDanhMucTaiSan(ms);
+            if (parsed.Count == 0) return BadRequest(new { error = "Không đọc được dữ liệu từ các sheet Mau01_DMHTTT / Mau02_TSPM / Mau 03_TSVL / Mau 04_TSTT." });
+
+            foreach (var p in parsed)
+            {
+                var dto = new IsmsAssetDto
+                {
+                    Id = p.Id,
+                    AssetCode = p.AssetCode,
+                    Name = p.Name,
+                    Category = p.Category,
+                    Classification = p.Classification,
+                    Location = p.Location,
+                    WarrantyStatus = p.WarrantyStatus,
+                    SystemName = p.SystemName,
+                    Owner = p.Owner,
+                    ControlNote = p.ControlNote,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                await UpsertPresetAsync(AssetType, "ISMS_ASSET", dto.Id, dto.Name, dto, ct);
+            }
+
+            int outOfWarranty = parsed.Count(p => p.Category == "PHYSICAL" && p.WarrantyStatus.Contains("Hết bảo hành", StringComparison.OrdinalIgnoreCase));
+            if (outOfWarranty > 0)
+            {
+                var (raw, residual, level, requiresRtp) = IsmsGovernanceHelper.ComputeRiskScore(4, 4, 0.4);
+                var autoRisk = new IsmsRiskDto
+                {
+                    Id = "risk-asset-warranty",
+                    Title = $"[Auto-Asset] {outOfWarranty} thiết bị vật lý hết bảo hành (A.7.13)",
+                    AssetName = "Danh mục Thiết bị Vật lý (Mẫu 03)",
+                    Likelihood = 4,
+                    Impact = 4,
+                    ControlEffectiveness = 0.4,
+                    RawScore = raw,
+                    ResidualScore = residual,
+                    RiskLevel = level,
+                    RequiresRtp = requiresRtp,
+                    TreatmentOwner = "Bộ phận QLVH CNTT",
+                    DueDate = DispatchWorkflowHelper.ComputeSmartDueDate("KHAN"),
+                    Status = "TREATING",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                await UpsertPresetAsync(RiskType, "ISMS_RISK", autoRisk.Id, autoRisk.Title, autoRisk, ct);
+                await SyncIsmsTaskToLedgerAsync("isms-rtp-warranty", $"[ISO 27001 A.7.13] Rà soát {outOfWarranty} thiết bị hết bảo hành", "Bộ phận QLVH CNTT", autoRisk.DueDate, "Lập kế hoạch bảo trì / thay thế thiết bị hết bảo hành", ct);
+            }
+
+            return Ok(new
+            {
+                importedCount = parsed.Count,
+                systemsCount = parsed.Count(p => p.Category == "SYSTEM"),
+                softwareCount = parsed.Count(p => p.Category == "SOFTWARE"),
+                physicalCount = parsed.Count(p => p.Category == "PHYSICAL"),
+                dataCount = parsed.Count(p => p.Category == "DATA"),
+                outOfWarrantyCount = outOfWarranty
+            });
         }
 
         [HttpPost("risks")]

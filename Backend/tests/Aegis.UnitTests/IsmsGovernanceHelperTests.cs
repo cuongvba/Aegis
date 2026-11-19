@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using Aegis.Infrastructure.Services;
+using NPOI.XSSF.UserModel;
 using Xunit;
 
 namespace Aegis.UnitTests
@@ -68,6 +70,40 @@ namespace Aegis.UnitTests
             Assert.Equal(30, gen.DurationMinutes);
             Assert.Equal(60.0, gen.FuelConsumed);
             Assert.True(gen.LowFuelAlert);
+        }
+
+        [Fact]
+        public void ParseDanhMucTaiSan_ParsesSystemPhysicalAndDataSheets()
+        {
+            using var wb = new XSSFWorkbook();
+            var s1 = wb.CreateSheet("Mau01_DMHTTT");
+            var h1 = s1.CreateRow(0);
+            h1.CreateCell(0).SetCellValue("Stt");
+            h1.CreateCell(1).SetCellValue("Tên hệ thống");
+            h1.CreateCell(2).SetCellValue("Cấp độ");
+            var r1 = s1.CreateRow(1);
+            r1.CreateCell(0).SetCellValue(1);
+            r1.CreateCell(1).SetCellValue("Hệ thống Quản lý văn bản");
+            r1.CreateCell(2).SetCellValue(2);
+
+            var s3 = wb.CreateSheet("Mau 03_TSVL");
+            var h3 = s3.CreateRow(0);
+            h3.CreateCell(0).SetCellValue("Stt");
+            var r3 = s3.CreateRow(1);
+            r3.CreateCell(0).SetCellValue(1);
+            r3.CreateCell(1).SetCellValue("BRCD140009");
+            r3.CreateCell(2).SetCellValue("Máy chủ Dell T620");
+            r3.CreateCell(3).SetCellValue("Phòng Máy chủ");
+            r3.CreateCell(5).SetCellValue("Hết bảo hành");
+
+            using var ms = new MemoryStream();
+            wb.Write(ms, leaveOpen: true);
+            ms.Position = 0;
+
+            var parsed = ItAssetExcelParser.ParseDanhMucTaiSan(ms);
+            Assert.Equal(2, parsed.Count);
+            Assert.Contains(parsed, a => a.Category == "SYSTEM" && a.Classification == "CAP_DO_2");
+            Assert.Contains(parsed, a => a.Category == "PHYSICAL" && a.AssetCode == "BRCD140009" && a.WarrantyStatus == "Hết bảo hành");
         }
     }
 }

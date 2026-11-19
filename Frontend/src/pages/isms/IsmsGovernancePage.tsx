@@ -10,7 +10,8 @@ type TabKey = 'SOA' | 'IT_OPS' | 'ASSETS' | 'RISKS' | 'INCIDENTS';
 export const IsmsGovernancePage: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<IsmsOverviewResponse | null>(null);
-  const [tab, setTab] = useState<TabKey>('SOA');
+  const [tab, setTab] = useState<TabKey>('ASSETS');
+  const [assetCat, setAssetCat] = useState('ALL');
   const [soaTheme, setSoaTheme] = useState('ALL');
   const [soaQuery, setSoaQuery] = useState('');
   const [totpCode, setTotpCode] = useState('');
@@ -127,11 +128,11 @@ export const IsmsGovernancePage: React.FC = () => {
 
         <div className="flex flex-wrap gap-2 text-xs">
           {([
-            ['SOA', 'Bảng SoA & Auto-Evidence (ISO 27001:2022)'],
-            ['IT_OPS', 'Vận hành Sổ IT (Auto-Cascade)'],
-            ['ASSETS', 'Sổ Tài sản Thông tin'],
-            ['RISKS', 'Đánh giá Rủi ro 5x5 & RTP'],
-            ['INCIDENTS', 'Sự cố & CAPA (AI Copilot)'],
+            ['ASSETS', `1. Tài sản CNTT Gốc (${data?.assets.length ?? 0})`],
+            ['SOA', '2. Bảng SoA 93 Controls (ISO 27001)'],
+            ['IT_OPS', '3. Vận hành Sổ IT (Auto-Cascade)'],
+            ['RISKS', '4. Đánh giá Rủi ro 5x5 & RTP'],
+            ['INCIDENTS', '5. Sự cố & CAPA (AI Copilot)'],
           ] as [TabKey, string][]).map(([k, label]) => (
             <button key={k} onClick={() => setTab(k)} className={`px-3.5 py-2 rounded-xl font-black ${tab === k ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>
               {label}
@@ -141,7 +142,7 @@ export const IsmsGovernancePage: React.FC = () => {
 
         <div className="rounded-2xl bg-slate-900 border border-slate-800 p-4 text-xs space-y-3">
           {tab === 'IT_OPS' && (
-            <ItAutomationPanel totpCode={totpCode} onSuccess={async (msg) => { setNotice(msg); await load(); }} />
+            <ItAutomationPanel totpCode={totpCode} assets={data?.assets || []} onSuccess={async (msg) => { setNotice(msg); await load(); }} />
           )}
           {tab === 'SOA' && (
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
@@ -181,8 +182,25 @@ export const IsmsGovernancePage: React.FC = () => {
 
           {tab === 'ASSETS' && (
             <>
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                <div className="flex flex-wrap gap-1.5">
+                  {[['ALL', 'Tất cả'], ['SYSTEM', 'Hệ thống (Mẫu 01)'], ['SOFTWARE', 'Phần mềm (Mẫu 02)'], ['PHYSICAL', 'Vật lý (Mẫu 03)'], ['DATA', 'Dữ liệu (Mẫu 04)']].map(([k, lbl]) => (
+                    <button key={k} onClick={() => setAssetCat(k)} className={`px-2.5 py-1 rounded-lg font-bold ${assetCat === k ? 'bg-sky-600 text-white' : 'bg-slate-950 text-slate-400'}`}>{lbl}</button>
+                  ))}
+                </div>
+                <label className="cursor-pointer rounded-xl bg-amber-600 hover:bg-amber-500 px-3 py-1.5 font-black text-white">
+                  Import DanhMucTaiSanCNTT.xlsx
+                  <input type="file" accept=".xlsx" className="hidden" onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const res = await ismsApi.importAssetsExcel(f);
+                    setNotice(`Đã nạp ${res.importedCount} TSCNTT (HTTT: ${res.systemsCount}, PM: ${res.softwareCount}, Vật lý: ${res.physicalCount}, Dữ liệu: ${res.dataCount}) • Cảnh báo hết BH: ${res.outOfWarrantyCount}`);
+                    await load();
+                  }} />
+                </label>
+              </div>
               <div className="flex flex-wrap gap-2">
-                <input value={assetName} onChange={(e) => setAssetName(e.target.value)} placeholder="Tên tài sản (VD: CSDL Hồ sơ Học viên, API Keys...)" className="flex-1 min-w-[220px] rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+                <input value={assetName} onChange={(e) => setAssetName(e.target.value)} placeholder="Tên tài sản (VD: Máy chủ Dell T620, CSDL Khách hàng...)" className="flex-1 min-w-[220px] rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
                 <select value={assetClass} onChange={(e) => setAssetClass(e.target.value)} className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-amber-300 font-bold">
                   <option value="PUBLIC">PUBLIC (Công khai)</option>
                   <option value="INTERNAL">INTERNAL (Nội bộ)</option>
@@ -191,9 +209,12 @@ export const IsmsGovernancePage: React.FC = () => {
                 </select>
                 <button onClick={() => void addAsset()} className="inline-flex items-center gap-1 rounded-xl bg-sky-600 px-4 py-2 font-black text-white"><Plus className="w-4 h-4" /> Thêm Tài sản</button>
               </div>
-              {data?.assets.map((a) => (
-                <div key={a.id} className="rounded-xl bg-slate-950/70 border border-slate-800 px-3 py-2 flex justify-between">
-                  <span className="font-bold text-white">{a.name}</span>
+              {data?.assets.filter((a) => assetCat === 'ALL' || a.category === assetCat).map((a) => (
+                <div key={a.id} className="rounded-xl bg-slate-950/70 border border-slate-800 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="font-bold text-white">{a.assetCode ? `[${a.assetCode}] ` : ''}{a.name}</div>
+                    <div className="text-[11px] text-slate-400">{a.category} {a.location ? `• ${a.location}` : ''} {a.warrantyStatus ? `• BH: ${a.warrantyStatus}` : ''} {a.owner ? `• ${a.owner}` : ''}</div>
+                  </div>
                   <span className="text-amber-300 font-black">{a.classification}</span>
                 </div>
               ))}

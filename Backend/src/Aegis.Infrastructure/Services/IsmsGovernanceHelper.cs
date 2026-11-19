@@ -52,7 +52,9 @@ namespace Aegis.Infrastructure.Services
             int totpEnabledCount,
             int dispatchCount,
             int ledgerCount,
-            IEnumerable<string>? itLedgerKinds = null)
+            IEnumerable<string>? itLedgerKinds = null,
+            bool hasAssets = false,
+            bool hasPiiAssets = false)
         {
             var kinds = new HashSet<string>(itLedgerKinds ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             bool hasPmc = kinds.Contains("PMC_SERVER_ROOM");
@@ -64,11 +66,14 @@ namespace Aegis.Infrastructure.Services
             var autoMap = new Dictionary<string, (string Status, bool Auto, string Evidence)>(StringComparer.OrdinalIgnoreCase)
             {
                 ["A.5.1"] = (dispatchCount > 0 ? "VERIFIED_AUTO" : "PLANNED", dispatchCount > 0, dispatchCount > 0 ? $"OfficialDispatch ({dispatchCount} hồ sơ)" : "Ban hành qua /dispatches"),
+                ["A.5.9"] = (hasAssets ? "VERIFIED_AUTO" : "PLANNED", hasAssets, hasAssets ? "Danh mục Tài sản CNTT (Mẫu 01-04)" : "Import DanhMucTaiSanCNTT.xlsx"),
+                ["A.5.12"] = (hasAssets ? "VERIFIED_AUTO" : "PLANNED", hasAssets, hasAssets ? "Phân loại Hệ thống & Tài sản TT" : "Import DanhMucTaiSanCNTT.xlsx"),
                 ["A.5.15"] = ("VERIFIED_AUTO", true, "CrudapAccessControlService (4-tier)"),
                 ["A.5.24"] = ("IN_PROGRESS", false, "Aegis ISMS Incident & CAPA"),
                 ["A.5.28"] = ("VERIFIED_AUTO", true, "SHA-256 Audit Evidence Seal"),
                 ["A.5.30"] = (hasMpd ? "VERIFIED_AUTO" : "PLANNED", hasMpd, hasMpd ? "Nhật ký Máy phát điện (MPĐ) /work-ledger" : "Tạo sổ MPD_GENERATOR tại /work-ledger"),
                 ["A.5.33"] = ("VERIFIED_AUTO", true, hasVault ? "Sổ Kho Chứng từ (Kho CT) + AuditHistory" : "PostgreSQL + Immutable AuditHistory"),
+                ["A.5.34"] = (hasPiiAssets ? "VERIFIED_AUTO" : "PLANNED", hasPiiAssets, hasPiiAssets ? "Kiểm soát Dữ liệu Cá nhân (Mẫu 04)" : "Khai báo Tài sản Thông tin Mẫu 04"),
                 ["A.6.3"] = ("VERIFIED_AUTO", true, "Aegis LMS & Security Awareness Quiz"),
                 ["A.6.7"] = (totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", totpEnabledCount > 0, "HTTPS + TOTP 2FA Step-Up"),
                 ["A.7.1"] = (hasPmc ? "VERIFIED_AUTO" : "PLANNED", hasPmc, hasPmc ? "Nhật ký Phòng Máy chủ (PMC-01)" : "Tạo sổ PMC_SERVER_ROOM tại /work-ledger"),

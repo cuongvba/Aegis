@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Server, Sparkles, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { ismsApi } from './ismsApi';
+import { ismsApi, type IsmsAssetItem } from './ismsApi';
 
 interface Props {
   totpCode: string;
+  assets: IsmsAssetItem[];
   onSuccess: (msg: string) => Promise<void>;
 }
 
-export const ItAutomationPanel: React.FC<Props> = ({ totpCode, onSuccess }) => {
+export const ItAutomationPanel: React.FC<Props> = ({ totpCode, assets, onSuccess }) => {
+  const physicalAssets = assets.filter((a) => a.category === 'PHYSICAL');
   const navigate = useNavigate();
   const [visitorName, setVisitorName] = useState('Nguyễn Văn An (IT)');
   const [purpose, setPurpose] = useState('Kiểm tra hệ thống Server & Firewall định kỳ');
@@ -82,7 +84,22 @@ export const ItAutomationPanel: React.FC<Props> = ({ totpCode, onSuccess }) => {
             Thực hiện bảo trì / bảo hành tại chỗ (Auto sinh Sổ BTBH01/02)
           </label>
           {isMaintenance && (
-            <input value={systemName} onChange={(e) => setSystemName(e.target.value)} placeholder="Tên hệ thống / Thiết bị bảo trì..." className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-1.5 text-white" />
+            <div className="space-y-1.5">
+              {physicalAssets.length > 0 && (
+                <select
+                  onChange={(e) => e.target.value && setSystemName(e.target.value)}
+                  className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-1.5 text-emerald-200"
+                >
+                  <option value="">-- Chọn thiết bị từ Danh mục TSCNTT ({physicalAssets.length}) --</option>
+                  {physicalAssets.map((a) => (
+                    <option key={a.id} value={`${a.assetCode ? `[${a.assetCode}] ` : ''}${a.name}`}>
+                      {a.assetCode ? `[${a.assetCode}] ` : ''}{a.name} {a.location ? `(${a.location})` : ''}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <input value={systemName} onChange={(e) => setSystemName(e.target.value)} placeholder="Tên hệ thống / Thiết bị bảo trì..." className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-1.5 text-white" />
+            </div>
           )}
         </div>
       </div>
