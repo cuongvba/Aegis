@@ -230,3 +230,37 @@ export function recordHeroAscension(badge: HeroBadgeRecord): HeroBadgeRecord[] {
   writeStore(HEROES_KEY, next);
   return next;
 }
+
+export async function syncDynamicCoursesFromServer(): Promise<DynamicKidsCourseGame[]> {
+  try {
+    const resp = await fetch('/api/kids/dynamic-courses');
+    if (!resp.ok) return getDynamicCourses();
+    const rawItems = (await resp.json()) as string[];
+    const remote = rawItems
+      .map((s) => { try { return JSON.parse(s) as DynamicKidsCourseGame; } catch { return null; } })
+      .filter((x): x is DynamicKidsCourseGame => Boolean(x && x.id && Array.isArray(x.episodes)));
+    if (remote.length === 0) return getDynamicCourses();
+
+    const local = getDynamicCourses();
+    const byId = new Map<string, DynamicKidsCourseGame>();
+    [...local, ...remote].forEach((c) => byId.set(c.id, c));
+    const merged = Array.from(byId.values());
+    writeStore(COURSES_KEY, merged);
+    return merged;
+  } catch {
+    return getDynamicCourses();
+  }
+}
+
+export async function pushDynamicCourseToServer(course: DynamicKidsCourseGame): Promise<boolean> {
+  try {
+    const resp = await fetch('/api/kids/dynamic-courses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(course),
+    });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}

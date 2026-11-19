@@ -74,5 +74,16 @@ namespace Aegis.Application.Interfaces
             Guid tenantId,
             KidsAiSkillDto skill,
             CancellationToken ct = default);
+
+        Task<List<string>> GetDynamicCoursesJsonAsync(
+            Guid tenantId,
+            CancellationToken ct = default);
+
+        Task SaveDynamicCourseJsonAsync(
+            Guid tenantId,
+            string courseId,
+            string title,
+            string courseJson,
+            CancellationToken ct = default);
     }
 }

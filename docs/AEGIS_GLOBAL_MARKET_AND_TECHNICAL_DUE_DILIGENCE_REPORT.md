@@ -92,4 +92,14 @@ flowchart TB
 
 ---
 
-> **Kết luận của Chuyên gia**: **AegisGlobal** đã vượt xa giai đoạn ý tưởng (MVP) để sở hữu **độ sâu kỹ thuật hiếm có** ở cả AI, Document Intelligence, ATTT và Sư phạm Đa giác quan. Thách thức lớn nhất hiện nay không còn là *"hệ thống có làm được không"* — mà là **đóng gói gọn gàng theo từng chân dung người dùng, đồng bộ đám mây cho phần sáng tạo mới, và chuẩn hóa bộ bằng chứng E2E/Load Test** để tự tin bước ra sân chơi toàn cầu.
+> **Kết luận của Chuyên gia**: **AegisGlobal** đã vượt xa giai đoạn ý tưởng (MVP) để sở hữu **độ sâu kỹ thuật hiếm có** ở cả AI, Document Intelligence, ATTT và Sư phạm Đa giác quan.
+
+---
+
+## V. CẬP NHẬT KIỂM CHỨNG KHẮC PHỤC TRIỆT ĐỂ (2026-11-19 — HARDENED RELEASE)
+
+Ngay sau vòng phản biện trên, hệ thống đã được nâng cấp đồng bộ để xử lý dứt điểm các rào cản kỹ thuật & vận hành:
+1. **Chống "Super-App Bloat"**: Bổ sung [`PersonaEntryPortals.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/landing/components/PersonaEntryPortals.tsx) trên [`LandingPage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/landing/LandingPage.tsx) phân tách rõ 3 cổng nhập môn (*Aegis Exam & AI Symposium*, *Aegis Office & 7z Vault*, *Aegis Kids Creative Factory*).
+2. **Cloud Sync cho Kids Dynamic Courses**: Bổ sung `GET/POST /api/kids/dynamic-courses` tại [`KidsWorldController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/KidsWorldController.cs) & [`KidsCurriculumService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/KidsCurriculumService.cs), đồng bộ hai chiều với [`kidsStudioRegistry.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/kids/kidsStudioRegistry.ts) (Offline-First khi mất mạng, tự đồng bộ PostgreSQL khi có mạng).
+3. **Bảo vệ Tải Heavy-IO (`qpdf`, `7z`, `ocr`)**: Kích hoạt chính sách Rate Limiting `"heavy-io"` (25 req/phút/IP) tại [`Program.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Program.cs#L409-L416) và gắn `[EnableRateLimiting("heavy-io")]` trên [`OfficeWorkspaceController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/OfficeWorkspaceController.cs).
+4. **Tự động hóa E2E & Stress Test**: Bổ sung [`verify-office-and-kids-e2e.ps1`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/scripts/verify-office-and-kids-e2e.ps1) và [`k6-aegis-stress.js`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/scripts/k6-aegis-stress.js) để kiểm chứng liên tục sau mỗi lần build Docker.

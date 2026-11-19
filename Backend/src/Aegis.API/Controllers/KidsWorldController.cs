@@ -170,5 +170,25 @@ namespace Aegis.API.Controllers
             Response.Headers["X-Aegis-Voice-Provider"] = result.Provider;
             return File(result.AudioBytes, "audio/mpeg");
         }
+
+        [HttpGet("dynamic-courses")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDynamicCourses(CancellationToken ct)
+        {
+            var items = await _kidsService.GetDynamicCoursesJsonAsync(_tenant.CurrentTenantId, ct);
+            return Ok(items);
+        }
+
+        [HttpPost("dynamic-courses")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SaveDynamicCourse([FromBody] System.Text.Json.JsonElement payload, CancellationToken ct)
+        {
+            string id = payload.TryGetProperty("id", out var idEl) ? (idEl.GetString() ?? string.Empty) : string.Empty;
+            string title = payload.TryGetProperty("title", out var tEl) ? (tEl.GetString() ?? "Dynamic Course") : "Dynamic Course";
+            if (string.IsNullOrWhiteSpace(id)) id = $"course-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+            await _kidsService.SaveDynamicCourseJsonAsync(_tenant.CurrentTenantId, id, title, payload.GetRawText(), ct);
+            return Ok(new { saved = true, id });
+        }
     }
 }

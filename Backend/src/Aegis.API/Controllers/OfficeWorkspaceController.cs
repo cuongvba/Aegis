@@ -8,11 +8,13 @@ using Aegis.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Aegis.API.Controllers
 {
     [ApiController]
     [Route("api/office-workspace")]
+    [EnableRateLimiting("heavy-io")]
     public class OfficeWorkspaceController : ControllerBase
     {
         private readonly IOfficeDocumentWorkspaceService _workspace;

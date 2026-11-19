@@ -405,6 +405,14 @@ builder.Services.AddRateLimiter(options =>
         opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         opt.QueueLimit = 2;
     });
+    // Heavy IO (OCR / qpdf / 7z archive): chống cạn kiệt CPU/RAM
+    options.AddFixedWindowLimiter("heavy-io", opt =>
+    {
+        opt.PermitLimit = 25;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 2;
+    });
     // Webhook: bảo vệ khỏi DDoS
     options.AddFixedWindowLimiter("WebhookLimiter", opt =>
     {

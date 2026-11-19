@@ -12,6 +12,7 @@
  */
 import { LandingHeader }     from './components/LandingHeader';
 import { HeroSection }       from './components/HeroSection';
+import { PersonaEntryPortals } from './components/PersonaEntryPortals';
 import { SocialProofSection } from './components/SocialProofSection';
 import { FeaturesSection }   from './components/FeaturesSection';
 import { CognitiveTriadSection } from './components/triad/CognitiveTriadSection';
@@ -31,6 +32,7 @@ export function LandingPage() {
       <LandingHeader />
       <main id="main-content">
         <HeroSection />
+        <PersonaEntryPortals />
         <SocialProofSection />
         <FeaturesSection />
         <CognitiveTriadSection />

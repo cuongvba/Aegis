@@ -25,6 +25,8 @@ import {
 import {
   getDynamicCourses,
   getHallOfHeroes,
+  pushDynamicCourseToServer,
+  syncDynamicCoursesFromServer,
   type DynamicKidsCourseGame,
 } from '@/components/kids/kidsStudioRegistry';
 
@@ -147,6 +149,10 @@ export const KidsWorldPage: React.FC = () => {
   const [activeProfile, setActiveProfile] = useState<KidProfile>(() => getActiveKidProfile());
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
   const lowSpec = isLowSpecDevice();
+
+  useEffect(() => {
+    syncDynamicCoursesFromServer().then(setDynamicCourses).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const onUp = () => setIsOnline(true);
@@ -429,8 +435,16 @@ export const KidsWorldPage: React.FC = () => {
             ageBand={(ageBand === '3-5' || ageBand === '6-8' || ageBand === '9-11' ? ageBand : activeProfile.ageBand) as KidAgeBand}
             lang={speechLang}
             onClose={() => setIsMakerOpen(false)}
-            onSaved={() => { setDynamicCourses(getDynamicCourses()); earnStars(2); }}
-            onPlayGameNow={(course) => { setDynamicCourses(getDynamicCourses()); setPlayingHeroGame(course); }}
+            onSaved={(course) => {
+              setDynamicCourses(getDynamicCourses());
+              earnStars(2);
+              if (isOnline) void pushDynamicCourseToServer(course);
+            }}
+            onPlayGameNow={(course) => {
+              setDynamicCourses(getDynamicCourses());
+              if (isOnline) void pushDynamicCourseToServer(course);
+              setPlayingHeroGame(course);
+            }}
           />
         </Suspense>
       )}

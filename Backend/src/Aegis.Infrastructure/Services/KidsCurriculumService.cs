@@ -1085,5 +1085,43 @@ namespace Aegis.Infrastructure.Services
             IsCommunityContribution = src.IsCommunityContribution,
             Localized = src.Localized
         };
+
+        public async Task<List<string>> GetDynamicCoursesJsonAsync(Guid tenantId, CancellationToken ct = default)
+        {
+            return await _db.TenantCoordinatePresets
+                .AsNoTracking()
+                .Where(p => (p.TenantId == tenantId || p.TenantId == Guid.Empty) && p.CoordinateType == "KIDS_DYNAMIC_COURSE")
+                .OrderByDescending(p => p.Id)
+                .Select(p => p.SynonymsJson)
+                .Where(j => !string.IsNullOrWhiteSpace(j))
+                .ToListAsync(ct);
+        }
+
+        public async Task SaveDynamicCourseJsonAsync(Guid tenantId, string courseId, string title, string courseJson, CancellationToken ct = default)
+        {
+            string code = courseId.Trim();
+            var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == tenantId && p.CoordinateType == "KIDS_DYNAMIC_COURSE" && p.PresetCode == code,
+                ct);
+            if (existing != null)
+            {
+                existing.PresetLabel = title;
+                existing.SynonymsJson = courseJson;
+            }
+            else
+            {
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = tenantId,
+                    DomainCode = "KIDS_WORLD",
+                    CoordinateType = "KIDS_DYNAMIC_COURSE",
+                    PresetCode = code,
+                    PresetLabel = string.IsNullOrWhiteSpace(title) ? code : title,
+                    SynonymsJson = courseJson,
+                    DisplayOrder = 1
+                });
+            }
+            await _db.SaveChangesAsync(ct);
+        }
     }
 }
