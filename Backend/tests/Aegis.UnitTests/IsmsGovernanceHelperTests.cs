@@ -119,5 +119,22 @@ namespace Aegis.UnitTests
             Assert.Contains("IT_MAINTENANCE", maintOut.TriggeredLedgers);
             Assert.Contains("IT_DEVICE_GATE", maintOut.TriggeredLedgers);
         }
+
+        [Fact]
+        public void ComputePasswordLifecycle_DetectsOkExpiringSoonAndExpired()
+        {
+            var now = new DateTimeOffset(2026, 11, 19, 9, 0, 0, TimeSpan.Zero);
+            var ok = AppVaultHelper.ComputePasswordLifecycle(now.AddDays(-10), 90, now);
+            Assert.Equal("OK", ok.ExpiryStatus);
+            Assert.Equal(80, ok.DaysRemaining);
+
+            var soon = AppVaultHelper.ComputePasswordLifecycle(now.AddDays(-85), 90, now);
+            Assert.Equal("EXPIRING_SOON", soon.ExpiryStatus);
+            Assert.Equal(5, soon.DaysRemaining);
+
+            var exp = AppVaultHelper.ComputePasswordLifecycle(now.AddDays(-95), 90, now);
+            Assert.Equal("EXPIRED", exp.ExpiryStatus);
+            Assert.True(exp.DaysRemaining < 0);
+        }
     }
 }

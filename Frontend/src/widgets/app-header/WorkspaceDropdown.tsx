@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Layers, ChevronDown, LayoutDashboard, Shield, Users, Sparkles, Atom,
-  FileText, Film, Music, FileCheck2, CalendarCheck2, ShieldCheck,
+  FileText, Film, Music, FileCheck2, CalendarCheck2, ShieldCheck, KeyRound,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -52,6 +52,7 @@ export function WorkspaceDropdown() {
     { title: 'Office Studio (OCR/PDF)', desc: 'Đọc/chuyển đổi Word, Excel, PDF', path: '/office-studio', icon: <FileText size={14} />, accent: 'bg-sky-500/15 text-sky-300' },
     { title: 'Phân Hệ Đội Nhóm', desc: 'Giao việc, thảo luận & tiến độ', path: '/team', icon: <Users size={14} />, accent: 'bg-emerald-500/15 text-emerald-300' },
     { title: 'ISMS ISO/IEC 27001:2022', desc: '93 Controls SoA, Rủi ro 5x5 & CAPA', path: '/isms', icon: <ShieldCheck size={14} />, accent: 'bg-emerald-500/20 text-emerald-300' },
+    { title: 'Danh Mục App & Két Mật Khẩu', desc: 'URI, Hạn đổi MK (AES-256 + 2FA)', path: '/app-vault', icon: <KeyRound size={14} />, accent: 'bg-amber-500/20 text-amber-300' },
   ];
 
   return (
