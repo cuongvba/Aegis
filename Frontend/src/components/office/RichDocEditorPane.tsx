@@ -9,12 +9,14 @@ import {
   FileSpreadsheet,
   Scissors,
   Columns3,
+  BookOpen,
 } from 'lucide-react';
 import { MathFormulaStudioModal } from '@/components/common/math-studio/MathFormulaStudioModal';
 import { DocumentOutlineSidebar } from './DocumentOutlineSidebar';
 import { FindReplaceBar } from './FindReplaceBar';
 import { VisualDocsCanvas } from './VisualDocsCanvas';
 import { PaginatedA4Viewer, type MarginPreset } from './PaginatedA4Viewer';
+import { DocumentOverviewAndReaderModal } from './DocumentOverviewAndReaderModal';
 
 interface RichDocEditorPaneProps {
   value: string;
@@ -29,6 +31,7 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({
 }) => {
   const [mode, setMode] = useState<'visual' | 'split' | 'preview'>('visual');
   const [isMathModalOpen, setIsMathModalOpen] = useState(false);
+  const [isReaderOpen, setIsReaderOpen] = useState(false);
   const [showFindReplace, setShowFindReplace] = useState(false);
   const [zoomPct, setZoomPct] = useState(100);
   const [fontFamily, setFontFamily] = useState("'Inter', system-ui, sans-serif");
@@ -126,6 +129,9 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({
             </button>
             <button type="button" onClick={() => setMode('preview')} className={`px-2.5 py-1 rounded-lg ${mode === 'preview' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
               <Eye size={13} className="inline mr-1" /> Phân trang A4
+            </button>
+            <button type="button" onClick={() => setIsReaderOpen(true)} className="px-2.5 py-1 rounded-lg bg-violet-600/20 text-violet-200 hover:bg-violet-600 hover:text-white transition">
+              <BookOpen size={13} className="inline mr-1" /> Đọc & Tổng quan
             </button>
           </div>
 
@@ -242,6 +248,12 @@ export const RichDocEditorPane: React.FC<RichDocEditorPaneProps> = ({
         isOpen={isMathModalOpen}
         onClose={() => setIsMathModalOpen(false)}
         onInsert={(formatted) => insertAtCursor(` ${formatted} `)}
+      />
+      <DocumentOverviewAndReaderModal
+        open={isReaderOpen}
+        onClose={() => setIsReaderOpen(false)}
+        title={documentTitle || 'Tài liệu Aegis Office'}
+        markdown={value}
       />
     </div>
   );
