@@ -141,8 +141,12 @@ flowchart LR
 ### 6. 7z Vault — Nén/Giải Nén `.7z` Mã Hóa & Đọc Trực Tiếp Tài Liệu Trong File Nén (`Archive7zModal.tsx` & `ArchiveSecurityService.cs`)
 * **Độ an toàn ATTT tối đa**:
   * Nén nhiều tệp thành `.7z` với mật khẩu **AES-256 + mã hóa luôn cả danh sách tên tệp (`-mhe=on`)**.
-  * Mở file `.7z`, `.zip`, `.tar`, `.gz` trực tiếp từ nút **Mở File** hoặc **Nén / Đọc .7z**: nhập mật khẩu mở khóa (nếu có), bấm **Đọc Trực Tiếp** để đưa thẳng tài liệu (`.docx`, `.pdf`, `.xlsx`, `.md`, ảnh...) vào Studio mà không cần giải nén rác ra máy tính cá nhân.
-  * **Hàng rào phòng thủ server**: Chặn **Zip-Slip** (`ValidateAndNormalizeEntryPath` + xác minh `safeRoot`), chặn **Zip-Bomb** (tối đa 60 tệp / 100 MB), chống Command Injection (`ArgumentList`), timeout 25s và xóa sạch thư mục tạm ngay sau khi xử lý.
+  * Mở file `.7z`, `.zip`, `.tar`, `.gz` trực tiếp từ nút **Mở File** hoặc **7z Vault**: nhập mật khẩu mở khóa (nếu có), bấm **Đọc Trực Tiếp** để đưa thẳng tài liệu (`.docx`, `.pdf`, `.xlsx`, `.md`, ảnh...) vào Studio mà không cần giải nén rác ra máy tính cá nhân.
+  * **Hàng rào phòng thủ server**: Chặn **Zip-Slip** (`ValidateAndNormalizeEntryPath` + xác minh `safeRoot`), chặn **Zip-Bomb** (tối đa 60 tệp / 100 MB), chống Command Injection (`ArgumentList`), timeout 25s, xóa sạch thư mục tạm ngay sau xử lý, và bảo vệ chống DoS bằng Rate Limiter `"heavy-io"` (25 req/phút/IP).
+
+### 7. Google Docs / Google Sheets & Google Drive Sync + DOCX Properties (`SaveExportModal.tsx` & `DocumentInspectorDrawer.tsx`)
+* **Command Bar 1 dòng & Inspector Cạnh Phải**: Thanh công cụ tinh gọn ([`OfficeTopCommandBar.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/OfficeTopCommandBar.tsx)) kèm nút quay về **Trang chính** và bảng **Stamp & Properties** ([`DocumentInspectorDrawer.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/DocumentInspectorDrawer.tsx)) cho phép đặt Tác giả, Công ty, Chủ đề, Từ khóa, Mức phân loại (ghi thật vào `CoreProperties` & `ExtendedProperties` của `.docx`) và xem trước lớp phủ Stamp/Watermark ngay trên tờ giấy.
+* **Lưu Đa Đích & Tương Thích Google**: Qua [`SaveExportModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/SaveExportModal.tsx) và [`googleDriveExporter.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/googleDriveExporter.ts), người dùng chọn lưu **Nguyên bản**, **Nén `.7z` AES-256**, hoặc **Lưu trực tiếp lên Google Drive** (tự động chuyển đổi sang **Google Docs** hoặc **Google Sheets** gốc qua Google Drive API v3 `scope: drive.file`, kèm xuất `.csv` UTF-8 BOM).
 
 ### Bảng Liên Kết Mã Nguồn Mở Rộng (19/11/2026)
 
