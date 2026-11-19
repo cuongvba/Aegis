@@ -43,5 +43,31 @@ namespace Aegis.UnitTests
             Assert.Equal(3, res.CapaChecklist.Count);
             Assert.Equal(64, IsmsGovernanceHelper.ComputeSha256Seal("audit-package").Length);
         }
+
+        [Fact]
+        public void BuildServerRoomVisitCascade_TriggersPmcDeviceGateAndMaintenance()
+        {
+            var cascade = ItLedgerAutomationHelper.BuildServerRoomVisitCascade(new ServerRoomVisitRequest
+            {
+                VisitorName = "Kỹ sư A",
+                Purpose = "Bảo trì Switch Core",
+                BringDevice = true,
+                DeviceNameAndSerial = "Laptop SN-001",
+                IsMaintenance = true,
+                SystemName = "Switch Core"
+            });
+
+            Assert.Equal(3, cascade.TriggeredLedgers.Count);
+            Assert.Contains("PMC_SERVER_ROOM", cascade.TriggeredLedgers);
+            Assert.Contains("IT_DEVICE_GATE", cascade.TriggeredLedgers);
+            Assert.Contains("IT_MAINTENANCE", cascade.TriggeredLedgers);
+            Assert.NotNull(cascade.DeviceGateCells);
+            Assert.NotNull(cascade.MaintenanceCells);
+
+            var gen = ItLedgerAutomationHelper.ComputeGeneratorMetrics(new TimeSpan(8, 30, 0), new TimeSpan(9, 0, 0), 85, 25);
+            Assert.Equal(30, gen.DurationMinutes);
+            Assert.Equal(60.0, gen.FuelConsumed);
+            Assert.True(gen.LowFuelAlert);
+        }
     }
 }

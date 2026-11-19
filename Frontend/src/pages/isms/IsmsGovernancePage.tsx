@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Home, ShieldCheck, Sparkles, Lock, CheckCircle2, Plus } from 'lucide-react';
 import { ismsApi, type IsmsOverviewResponse } from '@/components/isms/ismsApi';
 import { IsmsOverviewCards } from '@/components/isms/IsmsOverviewCards';
+import { ItAutomationPanel } from '@/components/isms/ItAutomationPanel';
 
-type TabKey = 'SOA' | 'ASSETS' | 'RISKS' | 'INCIDENTS';
+type TabKey = 'SOA' | 'IT_OPS' | 'ASSETS' | 'RISKS' | 'INCIDENTS';
 
 export const IsmsGovernancePage: React.FC = () => {
   const navigate = useNavigate();
@@ -127,6 +128,7 @@ export const IsmsGovernancePage: React.FC = () => {
         <div className="flex flex-wrap gap-2 text-xs">
           {([
             ['SOA', 'Bảng SoA & Auto-Evidence (ISO 27001:2022)'],
+            ['IT_OPS', 'Vận hành Sổ IT (Auto-Cascade)'],
             ['ASSETS', 'Sổ Tài sản Thông tin'],
             ['RISKS', 'Đánh giá Rủi ro 5x5 & RTP'],
             ['INCIDENTS', 'Sự cố & CAPA (AI Copilot)'],
@@ -138,6 +140,9 @@ export const IsmsGovernancePage: React.FC = () => {
         </div>
 
         <div className="rounded-2xl bg-slate-900 border border-slate-800 p-4 text-xs space-y-3">
+          {tab === 'IT_OPS' && (
+            <ItAutomationPanel totpCode={totpCode} onSuccess={async (msg) => { setNotice(msg); await load(); }} />
+          )}
           {tab === 'SOA' && (
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
               <div className="flex flex-wrap gap-1.5">

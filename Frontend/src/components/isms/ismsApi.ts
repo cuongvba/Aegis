@@ -103,4 +103,18 @@ export const ismsApi = {
     const res = await api.post('/api/isms/publish-policy');
     return res.data;
   },
+  async triggerServerRoomVisit(payload: {
+    visitorName: string;
+    purpose: string;
+    temperature: string;
+    humidity: string;
+    bringDevice: boolean;
+    deviceNameAndSerial?: string;
+    isMaintenance: boolean;
+    systemName?: string;
+    totpCode?: string;
+  }) {
+    const res = await api.post('/api/isms/it-events/server-room-visit', payload);
+    return res.data;
+  },
 };

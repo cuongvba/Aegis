@@ -1,0 +1,95 @@
+import React, { useState } from 'react';
+import { Server, Sparkles, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ismsApi } from './ismsApi';
+
+interface Props {
+  totpCode: string;
+  onSuccess: (msg: string) => Promise<void>;
+}
+
+export const ItAutomationPanel: React.FC<Props> = ({ totpCode, onSuccess }) => {
+  const navigate = useNavigate();
+  const [visitorName, setVisitorName] = useState('Nguyễn Văn An (IT)');
+  const [purpose, setPurpose] = useState('Kiểm tra hệ thống Server & Firewall định kỳ');
+  const [temperature, setTemperature] = useState('21°C');
+  const [humidity, setHumidity] = useState('50%');
+  const [bringDevice, setBringDevice] = useState(true);
+  const [deviceSerial, setDeviceSerial] = useState('Laptop Dell Latitude (SN: DL-2026-88)');
+  const [isMaintenance, setIsMaintenance] = useState(false);
+  const [systemName, setSystemName] = useState('Switch Core & UPS');
+  const [busy, setBusy] = useState(false);
+
+  const handleCheckIn = async () => {
+    setBusy(true);
+    try {
+      const res = await ismsApi.triggerServerRoomVisit({
+        visitorName,
+        purpose,
+        temperature,
+        humidity,
+        bringDevice,
+        deviceNameAndSerial: bringDevice ? deviceSerial : undefined,
+        isMaintenance,
+        systemName: isMaintenance ? systemName : undefined,
+        totpCode: totpCode.trim() || undefined,
+      });
+      await onSuccess(
+        `Đã tự động sinh nhật ký liên hoàn (${res.triggeredLedgers.join(' + ')}) • Mã niêm phong SHA-256: ${String(res.auditSeal).slice(0, 12)}...`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+        <div>
+          <div className="font-black text-sky-300 flex items-center gap-1.5">
+            <Server className="w-4 h-4" /> Check-in Phòng Máy Chủ (Tự động Sinh Nhật ký Liên hoàn 3 Sổ IT)
+          </div>
+          <p className="text-[11px] text-slate-400">
+            1 lần Check-in tự động ghi Sổ Phòng Máy chủ (PMC-01), tự động sinh Phiếu Mang Thiết bị (Mẫu 01/04) nếu có thiết bị, và tự động mở Sổ Bảo trì (BTBH) nếu có bảo dưỡng — đồng thời cập nhật bằng chứng ISO 27001 A.7.1, A.7.2, A.7.5, A.7.9, A.7.13.
+          </p>
+        </div>
+        <button onClick={() => navigate('/work-ledger')} className="inline-flex items-center gap-1 rounded-xl bg-indigo-600 px-3 py-1.5 font-bold text-white">
+          Xem Sổ IT tại /work-ledger <ArrowRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+        <input value={visitorName} onChange={(e) => setVisitorName(e.target.value)} placeholder="Họ tên cán bộ vào PMC..." className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+        <input value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="Mục đích vào phòng..." className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+        <input value={temperature} onChange={(e) => setTemperature(e.target.value)} placeholder="Nhiệt độ (21°C)" className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+        <input value={humidity} onChange={(e) => setHumidity(e.target.value)} placeholder="Độ ẩm (50%)" className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3 space-y-2">
+          <label className="flex items-center gap-2 font-bold text-amber-300 cursor-pointer">
+            <input type="checkbox" checked={bringDevice} onChange={(e) => setBringDevice(e.target.checked)} />
+            Có mang thiết bị / Laptop / USB vào phòng (Auto sinh Sổ Mẫu 01/04)
+          </label>
+          {bringDevice && (
+            <input value={deviceSerial} onChange={(e) => setDeviceSerial(e.target.value)} placeholder="Tên thiết bị & Số Serial..." className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-1.5 text-white" />
+          )}
+        </div>
+
+        <div className="rounded-xl bg-slate-950/70 border border-slate-800 p-3 space-y-2">
+          <label className="flex items-center gap-2 font-bold text-emerald-300 cursor-pointer">
+            <input type="checkbox" checked={isMaintenance} onChange={(e) => setIsMaintenance(e.target.checked)} />
+            Thực hiện bảo trì / bảo hành tại chỗ (Auto sinh Sổ BTBH01/02)
+          </label>
+          {isMaintenance && (
+            <input value={systemName} onChange={(e) => setSystemName(e.target.value)} placeholder="Tên hệ thống / Thiết bị bảo trì..." className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-1.5 text-white" />
+          )}
+        </div>
+      </div>
+
+      <button onClick={() => void handleCheckIn()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 px-5 py-2.5 font-black text-white disabled:opacity-50">
+        <Sparkles className="w-4 h-4" /> {busy ? 'Đang ghi sổ liên hoàn...' : 'Check-in Phòng Máy Chủ & Tự Động Sinh Nhật Ký Liên Hoàn'}
+      </button>
+    </div>
+  );
+};

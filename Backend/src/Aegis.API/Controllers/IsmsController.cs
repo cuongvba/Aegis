@@ -301,6 +301,110 @@ namespace Aegis.API.Controllers
             return Ok(new { dispatchId = id, dueDate = due, message = "Đã phát hành dự thảo Chính sách ATTT sang /dispatches & tạo đầu việc /work-ledger." });
         }
 
+        [HttpPost("it-events/server-room-visit")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerServerRoomVisit([FromBody] ServerRoomVisitRequest req, CancellationToken ct)
+        {
+            var totpError = await ValidateCallerTotpIfEnabledAsync(req?.TotpCode, ct);
+            if (totpError != null) return totpError;
+
+            var cascade = ItLedgerAutomationHelper.BuildServerRoomVisitCascade(req ?? new ServerRoomVisitRequest());
+
+            await AppendItLedgerRowAsync(
+                "it-pmc-server-room",
+                "PMC_SERVER_ROOM",
+                "IT: Nhật Ký Phòng Máy Chủ (PMC-01)",
+                new object[]
+                {
+                    new { key = "dueDate", label = "Ngày/Giờ kiểm tra", type = "text" },
+                    new { key = "assignee", label = "Cán bộ vào/kiểm tra", type = "text" },
+                    new { key = "task", label = "Mục đích / Nội dung", type = "text" },
+                    new { key = "temp", label = "Nhiệt độ / Độ ẩm", type = "text" },
+                    new { key = "status", label = "Trạng thái hệ thống", type = "status", options = new[] { "Bình thường", "Cảnh báo nhẹ", "Đang xử lý", "Hoàn thành" } }
+                },
+                cascade.PmcCells,
+                ct);
+
+            if (cascade.DeviceGateCells != null)
+            {
+                await AppendItLedgerRowAsync(
+                    "it-device-gate",
+                    "IT_DEVICE_GATE",
+                    "IT: Mang Thiết Bị Vào/Ra (Mẫu 01/04)",
+                    new object[]
+                    {
+                        new { key = "dueDate", label = "Ngày, giờ", type = "text" },
+                        new { key = "assignee", label = "Người yêu cầu & Đơn vị", type = "text" },
+                        new { key = "task", label = "Tên thiết bị & Serial", type = "text" },
+                        new { key = "reason", label = "Lý do mang vào/ra", type = "text" },
+                        new { key = "guard", label = "Xác nhận bảo vệ / IT", type = "text" },
+                        new { key = "status", label = "Trạng thái", type = "status", options = new[] { "Chờ duyệt", "Đã cho phép", "Đã thu hồi/trả", "Hoàn thành" } }
+                    },
+                    cascade.DeviceGateCells,
+                    ct);
+            }
+
+            if (cascade.MaintenanceCells != null)
+            {
+                await AppendItLedgerRowAsync(
+                    "it-maintenance",
+                    "IT_MAINTENANCE",
+                    "IT: Bảo Trì, Bảo Hành (BTBH01/02)",
+                    new object[]
+                    {
+                        new { key = "task", label = "Tên hệ thống / Thiết bị", type = "text" },
+                        new { key = "mode", label = "Hình thức & Phương thức", type = "text" },
+                        new { key = "dueDate", label = "Thời gian thực hiện", type = "date" },
+                        new { key = "assignee", label = "Người thực hiện", type = "text" },
+                        new { key = "status", label = "Kết quả", type = "status", options = new[] { "Đang thực hiện", "Chờ nghiệm thu", "Hoàn thành" } }
+                    },
+                    cascade.MaintenanceCells,
+                    ct);
+            }
+
+            return Ok(cascade);
+        }
+
+        private async Task AppendItLedgerRowAsync(
+            string ledgerId,
+            string kind,
+            string title,
+            object[] columns,
+            Dictionary<string, string> cells,
+            CancellationToken ct)
+        {
+            var existing = await FindPresetAsync("AEGIS_SMART_LEDGER", ledgerId, ct);
+            var rows = new List<object>();
+            if (existing != null)
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(existing.SynonymsJson);
+                    if (doc.RootElement.TryGetProperty("rows", out var existingRows) && existingRows.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var r in existingRows.EnumerateArray())
+                        {
+                            rows.Add(JsonSerializer.Deserialize<object>(r.GetRawText(), JsonOpts)!);
+                        }
+                    }
+                }
+                catch { /* start fresh if malformed */ }
+            }
+
+            rows.Insert(0, new { id = $"row-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", cells });
+            var payload = new
+            {
+                id = ledgerId,
+                kind,
+                title,
+                groupName = "Vận hành IT & ISO 27001",
+                columns,
+                rows,
+                updatedAt = DateTimeOffset.UtcNow.ToString("O")
+            };
+            await _ledger.SaveLedgerJsonAsync(_tenant.CurrentTenantId, ledgerId, title, JsonSerializer.Serialize(payload), ct);
+        }
+
         [HttpGet("audit-export")]
         [AllowAnonymous]
         public async Task<IActionResult> ExportAuditPackage(CancellationToken ct)
