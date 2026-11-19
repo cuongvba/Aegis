@@ -5,6 +5,7 @@
 ---
 
 ## 1. Kiến trúc Tổng thể & Đánh giá Hệ thống
+* **[AEGIS_GLOBAL_LAC_HONG_NORTH_STAR_CHARTER.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_GLOBAL_LAC_HONG_NORTH_STAR_CHARTER.md)** — **Hiến chương Kim chỉ nam Lạc Hồng**: Sứ mệnh Thay đổi Giáo dục, Quản trị Công việc & Văn minh Nhân loại (`2026-11-19`).
 * **[AEGIS_GLOBAL_MARKET_AND_TECHNICAL_DUE_DILIGENCE_REPORT.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_GLOBAL_MARKET_AND_TECHNICAL_DUE_DILIGENCE_REPORT.md)** — Báo cáo Phân tích Thị trường AI/IT, Đối chiếu Đối thủ Quốc tế, 6 Điểm Phản biện & Hardened Release (`2026-11-19`).
 * **[AEGIS_GREAT_EQUALIZER_STRATEGIC_CHARTER.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_GREAT_EQUALIZER_STRATEGIC_CHARTER.md)** — Hiến chương Chiến lược *"Một Lõi – Hai Thế giới"* (`Sovereign Vault` & `Impact Nano Node`) + [`docker-compose.impact-lite.yml`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docker-compose.impact-lite.yml).
 * **[AEGIS_GLOBAL_COMPREHENSIVE_EVALUATION_AND_ARCHITECTURE.md](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docs/AEGIS_GLOBAL_COMPREHENSIVE_EVALUATION_AND_ARCHITECTURE.md)** — Hồ sơ Khám phá, Đánh giá Toàn diện (IT · AI · EdTech) & Audit Trail chuẩn ALDS v1.0.
