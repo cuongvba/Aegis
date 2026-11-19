@@ -99,6 +99,7 @@ builder.Services.AddScoped<IKidsCurriculumService, Aegis.Infrastructure.Services
 builder.Services.AddSingleton<IKidsVoiceService, Aegis.Infrastructure.Services.KidsVoiceService>();
 builder.Services.AddScoped<IOfficeDocumentWorkspaceService, Aegis.Infrastructure.Services.OfficeDocumentWorkspaceService>();
 builder.Services.AddScoped<ISmartLedgerService, Aegis.Infrastructure.Services.SmartLedgerService>();
+builder.Services.AddSingleton<ICrudapAccessControlService, Aegis.Infrastructure.Security.CrudapAccessControlService>();
 builder.Services.AddScoped<IArchiveSecurityService, Aegis.Infrastructure.Services.ArchiveSecurityService>();
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();
 builder.Services.AddScoped<IDocxStateMachineClassifier, Aegis.Infrastructure.Services.Docx.DocxStateMachineClassifierService>();

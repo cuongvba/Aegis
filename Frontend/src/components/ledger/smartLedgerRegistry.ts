@@ -20,6 +20,17 @@ export interface LedgerRowItem {
   cells: Record<string, string>;
 }
 
+export interface ResourceAccessPolicy {
+  resourceType: string;
+  resourceId: string;
+  ownerUserId: string;
+  orgUnitId?: string;
+  visibility: number; // 0=Private, 1=AssignedOnly, 2=OrgUnit, 3=Tenant, 4=Public
+  memberPermissions: Record<string, string>;
+  lockedFields: string[];
+  isApprovedLocked: boolean;
+}
+
 export interface SmartLedgerDoc {
   id: string;
   kind: LedgerKind;
@@ -27,6 +38,7 @@ export interface SmartLedgerDoc {
   groupName: string;
   columns: LedgerColumnDef[];
   rows: LedgerRowItem[];
+  accessPolicy?: ResourceAccessPolicy;
   updatedAt: string;
 }
 

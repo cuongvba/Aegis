@@ -9,12 +9,14 @@ import {
   Home,
   Kanban,
   Plus,
+  ShieldCheck,
   Sparkles,
   Table2,
   Trash2,
 } from 'lucide-react';
 import { officeWorkspaceService } from '@/services/officeWorkspace.service';
 import { LedgerKanbanBoard } from '@/components/ledger/LedgerKanbanBoard';
+import { CrudapAccessModal } from '@/components/ledger/CrudapAccessModal';
 import { buildGoogleCalendarDeepLink, downloadIcsCalendarFile } from '@/components/ledger/googleCalendarSync';
 import {
   LEDGER_TEMPLATES,
@@ -35,6 +37,7 @@ export const SmartLedgerPage: React.FC = () => {
   const [newKind, setNewKind] = useState<LedgerKind>('WORK_KPI');
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [crudapOpen, setCrudapOpen] = useState(false);
 
   useEffect(() => {
     syncLedgersFromCloud().then((merged) => {
@@ -155,6 +158,9 @@ export const SmartLedgerPage: React.FC = () => {
             <button onClick={handleCloneNextPeriod} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 font-bold text-slate-200" title="Nhân bản danh sách cho tháng/tuần mới">
               <Copy className="w-3.5 h-3.5 text-amber-400" /> Kỳ Mới
             </button>
+            <button onClick={() => setCrudapOpen(true)} className="inline-flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-emerald-500/40 px-3 py-2 font-bold text-emerald-300" title="Phân quyền CRUDAP & Phê duyệt chốt sổ">
+              <ShieldCheck className="w-3.5 h-3.5" /> Phân quyền CRUDAP
+            </button>
             <button onClick={() => void runAiSummary()} disabled={aiLoading} className="inline-flex items-center gap-1 rounded-xl bg-violet-600 hover:bg-violet-500 px-3 py-2 font-black text-white">
               <Sparkles className="w-3.5 h-3.5" /> {aiLoading ? 'Đang phân tích...' : 'AI Tổng Hợp KPI'}
             </button>
@@ -268,6 +274,15 @@ export const SmartLedgerPage: React.FC = () => {
           </div>
         ) : null}
       </div>
+      {active && (
+        <CrudapAccessModal
+          open={crudapOpen}
+          resourceId={active.id}
+          policy={active.accessPolicy}
+          onSave={(policy) => updateActive({ ...active, accessPolicy: policy })}
+          onClose={() => setCrudapOpen(false)}
+        />
+      )}
     </div>
   );
 };
