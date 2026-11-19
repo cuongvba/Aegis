@@ -10,7 +10,9 @@ using Aegis.Application.Interfaces;
 using Aegis.Domain.Entities;
 using Aegis.Domain.Security;
 using Aegis.Infrastructure.Data;
+using Aegis.Infrastructure.Security;
 using Aegis.Infrastructure.Services;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -52,6 +54,25 @@ namespace Aegis.API.Controllers
         public string? ResultReport { get; set; }
         public int? QualityStars { get; set; }
         public string? Note { get; set; }
+        public string? TotpCode { get; set; }
+    }
+
+    public class DispatchTotpSetupRequestDto
+    {
+        public string? Email { get; set; }
+    }
+
+    public class DispatchTotpVerifyDto
+    {
+        public string Code { get; set; } = string.Empty;
+    }
+
+    internal class DispatchTotpRecord
+    {
+        public string EncryptedSecret { get; set; } = string.Empty;
+        public bool Enabled { get; set; }
+        public string AccountLabel { get; set; } = string.Empty;
+        public DateTimeOffset UpdatedAt { get; set; }
     }
 
     [ApiController]
@@ -59,6 +80,8 @@ namespace Aegis.API.Controllers
     public class OfficialDispatchController : ControllerBase
     {
         private const string DispatchCoordinateType = "AEGIS_OFFICIAL_DISPATCH";
+        private const string TotpCoordinateType = "AEGIS_WORKFLOW_TOTP";
+        private const string TotpMasterSecret = "Aegis-Dispatch-Workflow-TOTP-2026-Key";
         private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
         private readonly AegisDbContext _db;
@@ -122,10 +145,37 @@ namespace Aegis.API.Controllers
             {
                 dispatchNumber = dispatchNo,
                 urgency,
+                suggestedDueDate = DispatchWorkflowHelper.ComputeSmartDueDate(urgency),
                 title = string.IsNullOrWhiteSpace(parsed.Title) ? summary : parsed.Title,
                 contentMarkdown = parsed.MarkdownContent,
                 warnings = parsed.Warnings
             });
+        }
+
+        [HttpPost("{id}/autopilot")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Autopilot(string id, CancellationToken ct)
+        {
+            var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == _tenant.CurrentTenantId && p.CoordinateType == DispatchCoordinateType && p.PresetCode == id,
+                ct);
+            if (existing == null) return NotFound(new { error = "Không tìm thấy hồ sơ công văn." });
+
+            var dto = JsonSerializer.Deserialize<OfficialDispatchDto>(existing.SynonymsJson, JsonOpts);
+            if (dto == null) return BadRequest();
+
+            var suggestion = DispatchWorkflowHelper.BuildSmartAutopilot(
+                dto.Title,
+                dto.ContentMarkdown,
+                dto.Urgency,
+                dto.Status,
+                dto.ExecutiveDirective,
+                dto.LeadAssignee,
+                dto.DueDate,
+                dto.ProgressPercent,
+                dto.ResultReport);
+
+            return Ok(suggestion);
         }
 
         [HttpPost]
@@ -137,6 +187,7 @@ namespace Aegis.API.Controllers
 
             var caller = BuildCaller();
             if (string.IsNullOrWhiteSpace(dto.Id)) dto.Id = $"doc-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            if (string.IsNullOrWhiteSpace(dto.DueDate)) dto.DueDate = DispatchWorkflowHelper.ComputeSmartDueDate(dto.Urgency);
 
             var existing = await _db.TenantCoordinatePresets.FirstOrDefaultAsync(
                 p => p.TenantId == _tenant.CurrentTenantId && p.CoordinateType == DispatchCoordinateType && p.PresetCode == dto.Id,
@@ -189,25 +240,54 @@ namespace Aegis.API.Controllers
                 if (!check.Allowed) return StatusCode(403, new { error = check.DeniedReason });
             }
 
+            // Step-up Authenticator (TOTP RFC 6238) verification for workflow stage transition
+            string totpBadge = string.Empty;
+            var totpRow = await GetCallerTotpRowAsync(caller, ct);
+            if (totpRow != null)
+            {
+                var totpRecord = JsonSerializer.Deserialize<DispatchTotpRecord>(totpRow.SynonymsJson, JsonOpts);
+                if (totpRecord?.Enabled == true)
+                {
+                    string secret = ApiKeyEncryptionHelper.Decrypt(totpRecord.EncryptedSecret, TotpMasterSecret);
+                    if (string.IsNullOrWhiteSpace(req.TotpCode) || !TotpSecurityHelper.ValidateTotpCode(secret, req.TotpCode.Trim()))
+                    {
+                        return StatusCode(403, new
+                        {
+                            requiresTotp = true,
+                            error = "Công đoạn xử lý yêu cầu mã Authenticator (2FA) 6 chữ số hợp lệ."
+                        });
+                    }
+                    totpBadge = " [TOTP-2FA Verified]";
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(req.ExecutiveDirective)) dto.ExecutiveDirective = req.ExecutiveDirective.Trim();
             if (!string.IsNullOrWhiteSpace(req.LeadAssignee)) dto.LeadAssignee = req.LeadAssignee.Trim();
             if (!string.IsNullOrWhiteSpace(req.LeadAssigneeEmail)) dto.LeadAssigneeEmail = req.LeadAssigneeEmail.Trim();
             if (!string.IsNullOrWhiteSpace(req.DueDate)) dto.DueDate = req.DueDate.Trim();
+            else if (string.IsNullOrWhiteSpace(dto.DueDate)) dto.DueDate = DispatchWorkflowHelper.ComputeSmartDueDate(dto.Urgency);
             if (req.ProgressPercent.HasValue) dto.ProgressPercent = Math.Clamp(req.ProgressPercent.Value, 0, 100);
             if (!string.IsNullOrWhiteSpace(req.ResultReport)) dto.ResultReport = req.ResultReport.Trim();
 
             dto.Status = req.TargetStatus;
+            if (req.TargetStatus == "REPORTED_REVIEW" && !req.ProgressPercent.HasValue)
+            {
+                dto.ProgressPercent = 100;
+            }
             if (req.TargetStatus == "EVALUATED_LOCKED")
             {
                 dto.ProgressPercent = 100;
-                dto.QualityStars = Math.Clamp(req.QualityStars ?? 5, 1, 5);
+                dto.QualityStars = Math.Clamp(
+                    req.QualityStars ?? DispatchWorkflowHelper.RecommendQualityStars(dto.DueDate, DateTimeOffset.UtcNow, dto.ResultReport, dto.ProgressPercent),
+                    1,
+                    5);
                 var (sla, _, _, finalScore) = DispatchWorkflowHelper.ComputeCompletionScore(dto.DueDate, DateTimeOffset.UtcNow, dto.QualityStars, dto.Urgency);
                 dto.SlaScore = sla;
                 dto.FinalScore = finalScore;
                 dto.AccessPolicy.IsApprovedLocked = true;
             }
 
-            dto.AuditHistory.Add($"[{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm}] -> {dto.Status} ({req.Note ?? caller.Role})");
+            dto.AuditHistory.Add($"[{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm}] -> {dto.Status} ({req.Note ?? caller.Role}){totpBadge}");
             dto.UpdatedAt = DateTimeOffset.UtcNow;
             await SaveRowAsync(existing, dto, ct);
 
@@ -283,6 +363,104 @@ namespace Aegis.API.Controllers
                 });
             }
             await _db.SaveChangesAsync(ct);
+        }
+
+        [HttpGet("totp/status")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTotpStatus(CancellationToken ct)
+        {
+            var caller = BuildCaller();
+            string callerKey = ResolveCallerTotpKey(caller);
+            var row = await GetCallerTotpRowAsync(caller, ct);
+            bool enabled = false;
+            if (row != null)
+            {
+                var rec = JsonSerializer.Deserialize<DispatchTotpRecord>(row.SynonymsJson, JsonOpts);
+                enabled = rec?.Enabled ?? false;
+            }
+            return Ok(new { enabled, callerKey, issuer = "AegisGlobal" });
+        }
+
+        [HttpPost("totp/setup")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SetupTotp([FromBody] DispatchTotpSetupRequestDto? req, CancellationToken ct)
+        {
+            var caller = BuildCaller();
+            string callerKey = ResolveCallerTotpKey(caller);
+            string accountLabel = !string.IsNullOrWhiteSpace(req?.Email)
+                ? req.Email.Trim()
+                : (!string.IsNullOrWhiteSpace(caller.Email) ? caller.Email : callerKey);
+
+            var randomBytes = RandomNumberGenerator.GetBytes(20);
+            string base32Secret = TotpSecurityHelper.ToBase32String(randomBytes);
+            string otpAuthUri = TotpSecurityHelper.GenerateOtpAuthUri("AegisGlobal", accountLabel, base32Secret);
+
+            var record = new DispatchTotpRecord
+            {
+                EncryptedSecret = ApiKeyEncryptionHelper.Encrypt(base32Secret, TotpMasterSecret),
+                Enabled = false,
+                AccountLabel = accountLabel,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            var existing = await GetCallerTotpRowAsync(caller, ct);
+            string json = JsonSerializer.Serialize(record, JsonOpts);
+            if (existing != null)
+            {
+                existing.SynonymsJson = json;
+                existing.PresetLabel = accountLabel;
+            }
+            else
+            {
+                _db.TenantCoordinatePresets.Add(new TenantCoordinatePreset
+                {
+                    TenantId = _tenant.CurrentTenantId,
+                    DomainCode = "DISPATCH_TOTP",
+                    CoordinateType = TotpCoordinateType,
+                    PresetCode = callerKey,
+                    PresetLabel = accountLabel,
+                    SynonymsJson = json,
+                    DisplayOrder = 1
+                });
+            }
+            await _db.SaveChangesAsync(ct);
+
+            return Ok(new { secret = base32Secret, otpAuthUri, callerKey, accountLabel, enabled = false });
+        }
+
+        [HttpPost("totp/verify-enable")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyEnableTotp([FromBody] DispatchTotpVerifyDto req, CancellationToken ct)
+        {
+            var caller = BuildCaller();
+            var existing = await GetCallerTotpRowAsync(caller, ct);
+            if (existing == null) return BadRequest(new { error = "Chưa khởi tạo khóa Authenticator. Vui lòng tạo mã thiết lập trước." });
+
+            var rec = JsonSerializer.Deserialize<DispatchTotpRecord>(existing.SynonymsJson, JsonOpts);
+            if (rec == null) return BadRequest(new { error = "Dữ liệu Authenticator không hợp lệ." });
+
+            string secret = ApiKeyEncryptionHelper.Decrypt(rec.EncryptedSecret, TotpMasterSecret);
+            if (!TotpSecurityHelper.ValidateTotpCode(secret, req.Code?.Trim() ?? string.Empty))
+                return BadRequest(new { error = "Mã 6 chữ số không chính xác hoặc đã hết hạn. Vui lòng thử mã mới trên ứng dụng Authenticator." });
+
+            rec.Enabled = true;
+            rec.UpdatedAt = DateTimeOffset.UtcNow;
+            existing.SynonymsJson = JsonSerializer.Serialize(rec, JsonOpts);
+            await _db.SaveChangesAsync(ct);
+
+            return Ok(new { enabled = true, callerKey = ResolveCallerTotpKey(caller) });
+        }
+
+        private string ResolveCallerTotpKey(CallerSecurityContext caller)
+            => !string.IsNullOrWhiteSpace(caller.Email) ? caller.Email.ToLowerInvariant()
+                : (!string.IsNullOrWhiteSpace(caller.UserId) ? caller.UserId : $"tenant-{_tenant.CurrentTenantId}");
+
+        private Task<TenantCoordinatePreset?> GetCallerTotpRowAsync(CallerSecurityContext caller, CancellationToken ct)
+        {
+            string key = ResolveCallerTotpKey(caller);
+            return _db.TenantCoordinatePresets.FirstOrDefaultAsync(
+                p => p.TenantId == _tenant.CurrentTenantId && p.CoordinateType == TotpCoordinateType && p.PresetCode == key,
+                ct);
         }
 
         private CallerSecurityContext BuildCaller()

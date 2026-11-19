@@ -4,6 +4,20 @@ using System.Text.RegularExpressions;
 
 namespace Aegis.Infrastructure.Services
 {
+    public class DispatchAutopilotSuggestion
+    {
+        public string SuggestedDirective { get; set; } = string.Empty;
+        public string SuggestedLeadAssignee { get; set; } = string.Empty;
+        public string SuggestedDueDate { get; set; } = string.Empty;
+        public string SuggestedReportDraft { get; set; } = string.Empty;
+        public int SuggestedProgressPercent { get; set; }
+        public int RecommendedStars { get; set; }
+        public double PredictedSlaScore { get; set; }
+        public double PredictedFinalScore { get; set; }
+        public List<string> Checklist { get; set; } = new();
+        public string AutomationSummary { get; set; } = string.Empty;
+    }
+
     public static class DispatchWorkflowHelper
     {
         private static readonly Dictionary<string, HashSet<string>> AllowedTransitions = new(StringComparer.OrdinalIgnoreCase)
@@ -63,6 +77,88 @@ namespace Aegis.Infrastructure.Services
             if (summary.Length > 180) summary = summary.Substring(0, 180) + "...";
 
             return (dispatchNo, urgency, summary);
+        }
+
+        public static string ComputeSmartDueDate(string? urgency, DateTimeOffset? referenceNow = null)
+        {
+            var now = referenceNow ?? DateTimeOffset.UtcNow;
+            int days = string.Equals(urgency, "HOA_TOC", StringComparison.OrdinalIgnoreCase) ? 1
+                : string.Equals(urgency, "KHAN", StringComparison.OrdinalIgnoreCase) ? 3 : 7;
+
+            var target = now.AddDays(days);
+            while (target.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                target = target.AddDays(1);
+            return target.ToString("yyyy-MM-dd");
+        }
+
+        public static int RecommendQualityStars(string? dueDateStr, DateTimeOffset now, string? resultReport, int progressPercent)
+        {
+            bool hasRichReport = !string.IsNullOrWhiteSpace(resultReport) && resultReport.Trim().Length >= 25;
+            double lateDays = 0;
+            if (!string.IsNullOrWhiteSpace(dueDateStr) && DateTimeOffset.TryParse(dueDateStr, out var due))
+                lateDays = (now.Date - due.Date).TotalDays;
+
+            if (lateDays <= 0 && progressPercent >= 100 && hasRichReport) return 5;
+            if (lateDays <= 2 && progressPercent >= 80) return 4;
+            return 3;
+        }
+
+        public static DispatchAutopilotSuggestion BuildSmartAutopilot(
+            string title,
+            string contentMarkdown,
+            string urgency,
+            string currentStatus,
+            string? existingDirective,
+            string? existingAssignee,
+            string? dueDate,
+            int progressPercent,
+            string? resultReport,
+            DateTimeOffset? referenceNow = null)
+        {
+            var now = referenceNow ?? DateTimeOffset.UtcNow;
+            string corpus = $"{title} {contentMarkdown}";
+            string assignee = !string.IsNullOrWhiteSpace(existingAssignee) ? existingAssignee.Trim()
+                : Regex.IsMatch(corpus, @"cntt|chuyển đổi số|phần mềm|hệ thống|dữ liệu|\bAI\b|mạng", RegexOptions.IgnoreCase) ? "Phòng CNTT & Chuyển đổi số"
+                : Regex.IsMatch(corpus, @"tài chính|ngân sách|kế toán|dự toán|mua sắm|chi phí", RegexOptions.IgnoreCase) ? "Phòng Tài chính - Kế toán"
+                : Regex.IsMatch(corpus, @"đào tạo|khảo thí|giảng dạy|học tập|sinh viên|học sinh", RegexOptions.IgnoreCase) ? "Phòng Đào tạo - Khảo thí"
+                : Regex.IsMatch(corpus, @"nhân sự|tổ chức|hành chính|hội nghị|bổ nhiệm|khen thưởng", RegexOptions.IgnoreCase) ? "Phòng Tổ chức - Hành chính"
+                : "Văn phòng Ban Giám đốc";
+
+            string smartDue = !string.IsNullOrWhiteSpace(dueDate) ? dueDate.Trim() : ComputeSmartDueDate(urgency, now);
+            string directive = !string.IsNullOrWhiteSpace(existingDirective) ? existingDirective.Trim()
+                : string.Equals(urgency, "HOA_TOC", StringComparison.OrdinalIgnoreCase)
+                    ? $"[HỎA TỐC] Giao {assignee} khẩn trương xử lý ngay trong ngày, báo cáo kết quả trước {smartDue}."
+                : string.Equals(urgency, "KHAN", StringComparison.OrdinalIgnoreCase)
+                    ? $"[KHẨN] Giao {assignee} ưu tiên nghiên cứu, tham mưu phương án hoàn thành trước {smartDue}."
+                    : $"Giao {assignee} chủ trì triển khai thực hiện theo đúng quy định, hoàn thành trước {smartDue}.";
+
+            int nextProgress = currentStatus is "REPORTED_REVIEW" or "EVALUATED_LOCKED" ? 100
+                : Math.Max(progressPercent, currentStatus == "IN_PROGRESS" ? 100 : 50);
+
+            string reportDraft = !string.IsNullOrWhiteSpace(resultReport) ? resultReport.Trim()
+                : $"Đã tiếp nhận và triển khai công văn \"{title}\" theo chỉ đạo ({directive}). Kết quả: đã hoàn thành {nextProgress}% khối lượng công việc, đảm bảo đúng tiến độ và quy định hiện hành.";
+
+            int stars = RecommendQualityStars(smartDue, now, reportDraft, nextProgress);
+            var (sla, _, _, finalScore) = ComputeCompletionScore(smartDue, now, stars, urgency);
+
+            return new DispatchAutopilotSuggestion
+            {
+                SuggestedDirective = directive,
+                SuggestedLeadAssignee = assignee,
+                SuggestedDueDate = smartDue,
+                SuggestedReportDraft = reportDraft,
+                SuggestedProgressPercent = nextProgress,
+                RecommendedStars = stars,
+                PredictedSlaScore = sla,
+                PredictedFinalScore = finalScore,
+                Checklist = new List<string>
+                {
+                    $"1. Tiếp nhận & phân tích nội dung: {title}",
+                    $"2. Thực thi xử lý theo chỉ đạo ({assignee})",
+                    $"3. Tổng hợp báo cáo & trình nghiệm thu trước {smartDue}"
+                },
+                AutomationSummary = $"AI Auto-Pilot đã tính SLA ({smartDue}), đề xuất đầu mối ({assignee}) & dự báo KPI ({finalScore}/100)."
+            };
         }
     }
 }

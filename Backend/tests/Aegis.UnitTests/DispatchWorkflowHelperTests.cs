@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using Aegis.Infrastructure.Security;
 using Aegis.Infrastructure.Services;
 using Xunit;
 
@@ -39,6 +41,44 @@ namespace Aegis.UnitTests
             Assert.True(DispatchWorkflowHelper.CanTransition("RECEIVED_DRAFT", "SUBMITTED_TRIAGE"));
             Assert.True(DispatchWorkflowHelper.CanTransition("ASSIGNED", "IN_PROGRESS"));
             Assert.False(DispatchWorkflowHelper.CanTransition("EVALUATED_LOCKED", "IN_PROGRESS"));
+        }
+
+        [Fact]
+        public void TotpStepUp_EncryptDecryptAndValidateCode_WorksForWorkflowTransitions()
+        {
+            const string masterKey = "Aegis-Dispatch-Workflow-TOTP-2026-Key";
+            string secret = TotpSecurityHelper.ToBase32String(RandomNumberGenerator.GetBytes(20));
+            string encrypted = ApiKeyEncryptionHelper.Encrypt(secret, masterKey);
+            string decrypted = ApiKeyEncryptionHelper.Decrypt(encrypted, masterKey);
+
+            Assert.Equal(secret, decrypted);
+            string validCode = TotpSecurityHelper.GenerateTotpCode(decrypted);
+            Assert.True(TotpSecurityHelper.ValidateTotpCode(decrypted, validCode));
+            Assert.False(TotpSecurityHelper.ValidateTotpCode(decrypted, "000000") && validCode != "000000");
+        }
+
+        [Fact]
+        public void BuildSmartAutopilot_GeneratesDirectiveAssigneeSlaAndKpiPrediction()
+        {
+            var refNow = new DateTimeOffset(2026, 11, 19, 9, 0, 0, TimeSpan.Zero); // Thursday
+            var suggestion = DispatchWorkflowHelper.BuildSmartAutopilot(
+                "Triển khai hệ thống AI chuyển đổi số toàn ngành",
+                "Yêu cầu nâng cấp phần mềm và dữ liệu tập trung.",
+                "HOA_TOC",
+                "IN_PROGRESS",
+                null,
+                null,
+                null,
+                100,
+                null,
+                refNow);
+
+            Assert.Equal("Phòng CNTT & Chuyển đổi số", suggestion.SuggestedLeadAssignee);
+            Assert.Equal("2026-11-20", suggestion.SuggestedDueDate);
+            Assert.Contains("[HỎA TỐC]", suggestion.SuggestedDirective);
+            Assert.Equal(5, suggestion.RecommendedStars);
+            Assert.Equal(100, suggestion.PredictedFinalScore);
+            Assert.Equal(3, suggestion.Checklist.Count);
         }
     }
 }

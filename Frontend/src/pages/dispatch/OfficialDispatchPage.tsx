@@ -9,10 +9,13 @@ import {
   Home,
   Lock,
   Send,
+  ShieldCheck,
+  Sparkles,
   Upload,
   UserCheck,
 } from 'lucide-react';
 import { dispatchWorkflowApi, type OfficialDispatchItem } from '@/components/dispatch/dispatchWorkflowApi';
+import { DispatchTotpModal } from '@/components/dispatch/DispatchTotpModal';
 import { buildGoogleCalendarDeepLink } from '@/components/ledger/googleCalendarSync';
 
 const STATUS_BADGE: Record<string, string> = {
@@ -46,11 +49,17 @@ export const OfficialDispatchPage: React.FC = () => {
   const [progress, setProgress] = useState(50);
   const [reportText, setReportText] = useState('');
   const [stars, setStars] = useState(5);
+  const [totpEnabled, setTotpEnabled] = useState(false);
+  const [totpModalOpen, setTotpModalOpen] = useState(false);
+  const [totpCode, setTotpCode] = useState('');
+  const [totpError, setTotpError] = useState('');
+  const [autopilotNote, setAutopilotNote] = useState('');
 
   const loadList = async () => {
     try {
-      const data = await dispatchWorkflowApi.list();
+      const [data, totp] = await Promise.all([dispatchWorkflowApi.list(), dispatchWorkflowApi.getTotpStatus()]);
       setItems(data);
+      setTotpEnabled(totp.enabled);
       if (data.length > 0 && !activeId) setActiveId(data[0].id);
     } catch { /* ignore */ }
   };
@@ -77,6 +86,7 @@ export const OfficialDispatchPage: React.FC = () => {
       const ext = await dispatchWorkflowApi.ocrExtract(file);
       setDispatchNumber(ext.dispatchNumber);
       setUrgency(ext.urgency);
+      if (ext.suggestedDueDate) setDueDate(ext.suggestedDueDate);
       setTitle(ext.title);
       setContentMarkdown(ext.contentMarkdown);
     } finally {
@@ -108,6 +118,7 @@ export const OfficialDispatchPage: React.FC = () => {
   const runTransition = async (targetStatus: string) => {
     if (!active) return;
     setBusy(true);
+    setTotpError('');
     try {
       const updated = await dispatchWorkflowApi.transition(active.id, {
         targetStatus,
@@ -118,8 +129,30 @@ export const OfficialDispatchPage: React.FC = () => {
         progressPercent: progress,
         resultReport: reportText,
         qualityStars: stars,
+        totpCode: totpCode.trim() || undefined,
       });
       setItems((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+      setTotpCode('');
+    } catch (e: any) {
+      if (e?.response?.data?.requiresTotp) setTotpEnabled(true);
+      setTotpError(e?.response?.data?.error ?? 'Không thể chuyển công đoạn xử lý.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const runAutopilot = async () => {
+    if (!active) return;
+    setBusy(true);
+    try {
+      const s = await dispatchWorkflowApi.autopilot(active.id);
+      if (!directive.trim()) setDirective(s.suggestedDirective);
+      if (!assignee.trim()) setAssignee(s.suggestedLeadAssignee);
+      setDueDate(s.suggestedDueDate);
+      setProgress(s.suggestedProgressPercent);
+      if (!reportText.trim()) setReportText(s.suggestedReportDraft);
+      setStars(s.recommendedStars);
+      setAutopilotNote(s.automationSummary);
     } finally {
       setBusy(false);
     }
@@ -140,7 +173,10 @@ export const OfficialDispatchPage: React.FC = () => {
               <p className="text-[11px] text-slate-400">Nhập OCR $\rightarrow$ Trình xử lý $\rightarrow$ Lãnh đạo Bút phê $\rightarrow$ Phân công (/work-ledger) $\rightarrow$ Báo cáo $\rightarrow$ Chấm điểm</p>
             </div>
           </div>
-          <div className="flex gap-2 text-xs">
+          <div className="flex flex-wrap gap-2 text-xs">
+            <button onClick={() => setTotpModalOpen(true)} className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold border ${totpEnabled ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300' : 'bg-slate-800 border-slate-700 text-amber-300'}`}>
+              <ShieldCheck className="w-4 h-4" /> {totpEnabled ? 'Authenticator 2FA: Bật' : 'Cài Authenticator (2FA)'}
+            </button>
             <button onClick={() => navigate('/work-ledger')} className="px-3 py-2 rounded-xl bg-indigo-600 text-white font-bold">Mở Sổ Việc (/work-ledger)</button>
             <button onClick={() => navigate('/office-studio')} className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 font-bold">Office Studio</button>
           </div>
@@ -211,12 +247,47 @@ export const OfficialDispatchPage: React.FC = () => {
                     <div className="text-[11px] font-black text-sky-400">{active.dispatchNumber} • {active.urgency}</div>
                     <h2 className="text-base font-black text-white">{active.title}</h2>
                   </div>
-                  {active.status === 'EVALUATED_LOCKED' && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 font-black">
-                      <Lock className="w-4 h-4" /> Đã Chốt Điểm: {active.finalScore}/100 (SLA: {active.slaScore})
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {active.status !== 'EVALUATED_LOCKED' && (
+                      <button
+                        onClick={() => void runAutopilot()}
+                        disabled={busy}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black shadow-sm disabled:opacity-50"
+                      >
+                        <Sparkles className="w-4 h-4" /> AI Auto-Pilot 7 Pha
+                      </button>
+                    )}
+                    {active.status === 'EVALUATED_LOCKED' && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 font-black">
+                        <Lock className="w-4 h-4" /> Đã Chốt Điểm: {active.finalScore}/100 (SLA: {active.slaScore})
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {autopilotNote && (
+                  <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/40 px-3 py-2 text-indigo-200 font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-violet-400 shrink-0" />
+                    <span>{autopilotNote}</span>
+                  </div>
+                )}
+
+                {(totpEnabled || totpError) && (
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/30 px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-emerald-300 font-semibold">
+                      <ShieldCheck className="w-4 h-4 shrink-0" />
+                      <span>Xác thực công đoạn (Authenticator 2FA):</span>
+                    </div>
+                    <input
+                      value={totpCode}
+                      onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="Nhập mã 6 số..."
+                      maxLength={6}
+                      className="w-36 rounded-lg bg-slate-900 border border-emerald-500/40 px-2.5 py-1 text-center font-mono text-sm font-bold tracking-[0.25em] text-white focus:outline-none"
+                    />
+                  </div>
+                )}
+                {totpError && <div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-3 py-2 text-rose-300 font-semibold">{totpError}</div>}
 
                 {/* Step 2: Submit */}
                 {active.status === 'RECEIVED_DRAFT' && (
@@ -295,6 +366,12 @@ export const OfficialDispatchPage: React.FC = () => {
           </div>
         </div>
       </div>
+      <DispatchTotpModal
+        open={totpModalOpen}
+        enabled={totpEnabled}
+        onClose={() => setTotpModalOpen(false)}
+        onEnabled={() => setTotpEnabled(true)}
+      />
     </div>
   );
 };
