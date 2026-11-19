@@ -67,9 +67,9 @@ export const SmartLedgerPage: React.FC = () => {
       ...active,
       id: `ledger-${Date.now()}`,
       title: `${active.title} (Kỳ mới)`,
-      rows: active.rows.map((r, i) => ({
+      rows: (active.rows || []).map((r, i) => ({
         id: `row-${Date.now()}-${i}`,
-        cells: { ...r.cells, status: active.columns.find((c) => c.key === 'status')?.options?.[0] || '' },
+        cells: { ...(r.cells || {}), status: active.columns?.find((c) => c.key === 'status')?.options?.[0] || '' },
       })),
       updatedAt: new Date().toISOString(),
     };
@@ -129,8 +129,8 @@ export const SmartLedgerPage: React.FC = () => {
     navigate('/office-studio');
   };
 
-  const statusCol = active?.columns.find((c) => c.key === 'status');
-  const doneCount = active?.rows.filter((r) => /Hoàn thành|Có mặt/i.test(r.cells.status || '')).length || 0;
+  const statusCol = active?.columns?.find((c) => c.key === 'status');
+  const doneCount = active?.rows?.filter((r) => /Hoàn thành|Có mặt|Bình thường|Đạt chuẩn/i.test(r.cells?.status || '')).length || 0;
   const totalCount = active?.rows.length || 0;
   const donePct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 

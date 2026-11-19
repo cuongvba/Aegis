@@ -130,9 +130,12 @@ namespace Aegis.API.Controllers
 
             int totpCount = rows.Count(r => r.CoordinateType == TotpType && r.SynonymsJson.Contains("\"Enabled\":true", StringComparison.OrdinalIgnoreCase));
             int dispatchCount = rows.Count(r => r.CoordinateType == "AEGIS_OFFICIAL_DISPATCH");
-            int ledgerCount = rows.Count(r => r.CoordinateType == "AEGIS_SMART_LEDGER");
+            var ledgerRows = rows.Where(r => r.CoordinateType == "AEGIS_SMART_LEDGER").ToList();
+            var itKinds = new[] { "PMC_SERVER_ROOM", "MPD_GENERATOR", "IT_DEVICE_GATE", "IT_MAINTENANCE", "DOC_VAULT_LOG" }
+                .Where(k => ledgerRows.Any(r => r.SynonymsJson.Contains(k, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
 
-            var controls = IsmsGovernanceHelper.GetDefaultIso27001Controls(totpCount, dispatchCount, ledgerCount);
+            var controls = IsmsGovernanceHelper.GetDefaultIso27001Controls(totpCount, dispatchCount, ledgerRows.Count, itKinds);
             foreach (var r in rows.Where(x => x.CoordinateType == SoaType))
             {
                 var ov = JsonSerializer.Deserialize<IsmsSoaToggleDto>(r.SynonymsJson, JsonOpts);
@@ -369,18 +372,30 @@ namespace Aegis.API.Controllers
                 kind = "WORK_KPI",
                 title,
                 groupName = "ISMS ISO 27001:2022",
+                columns = new object[]
+                {
+                    new { key = "task", label = "Đầu việc / Nhiệm vụ", type = "text" },
+                    new { key = "assignee", label = "Người phụ trách", type = "text" },
+                    new { key = "dueDate", label = "Hạn chót", type = "date" },
+                    new { key = "status", label = "Trạng thái", type = "status", options = new[] { "Chờ làm", "Đang làm", "Chờ duyệt", "Hoàn thành" } },
+                    new { key = "progress", label = "Tiến độ (%)", type = "percent" }
+                },
                 rows = new[]
                 {
-                    new Dictionary<string, string>
+                    new
                     {
-                        ["id"] = "r1",
-                        ["task"] = note,
-                        ["assignee"] = string.IsNullOrWhiteSpace(owner) ? "CISO / Quản trị ATTT" : owner,
-                        ["dueDate"] = dueDate,
-                        ["status"] = "DOING",
-                        ["kpi"] = "100"
+                        id = "r1",
+                        cells = new Dictionary<string, string>
+                        {
+                            ["task"] = note,
+                            ["assignee"] = string.IsNullOrWhiteSpace(owner) ? "CISO / Quản trị ATTT" : owner,
+                            ["dueDate"] = dueDate,
+                            ["status"] = "Đang làm",
+                            ["progress"] = "25"
+                        }
                     }
-                }
+                },
+                updatedAt = DateTimeOffset.UtcNow.ToString("O")
             };
             await _ledger.SaveLedgerJsonAsync(_tenant.CurrentTenantId, ledgerId, title, JsonSerializer.Serialize(payload), ct);
         }

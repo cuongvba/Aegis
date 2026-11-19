@@ -4,7 +4,12 @@ export type LedgerKind =
   | 'TIMETABLE_MONTH'
   | 'GOOD_DEEDS'
   | 'GROUP_SURVEY'
-  | 'STUDY_HABIT';
+  | 'STUDY_HABIT'
+  | 'PMC_SERVER_ROOM'
+  | 'MPD_GENERATOR'
+  | 'IT_DEVICE_GATE'
+  | 'IT_MAINTENANCE'
+  | 'DOC_VAULT_LOG';
 
 export type LedgerColType = 'text' | 'email' | 'date' | 'status' | 'percent' | 'stars';
 
@@ -132,6 +137,80 @@ export const LEDGER_TEMPLATES: Record<LedgerKind, { label: string; emoji: string
       { task: 'Đọc 20 trang sách & luyện 15 phút tiếng Anh', dueDate: '2026-11-19', status: 'Hoàn thành', progress: '100', rating: '5' },
     ],
   },
+  PMC_SERVER_ROOM: {
+    label: 'IT: Nhật Ký Phòng Máy Chủ (PMC-01)',
+    emoji: '🖥️',
+    columns: [
+      { key: 'dueDate', label: 'Ngày/Giờ kiểm tra', type: 'text' },
+      { key: 'assignee', label: 'Cán bộ vào/kiểm tra', type: 'text' },
+      { key: 'task', label: 'Mục đích / Nội dung', type: 'text' },
+      { key: 'temp', label: 'Nhiệt độ / Độ ẩm', type: 'text' },
+      { key: 'status', label: 'Trạng thái hệ thống', type: 'status', options: ['Bình thường', 'Cảnh báo nhẹ', 'Đang xử lý', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { dueDate: '2026-11-19 08:30', assignee: 'Cán bộ IT trực', task: 'Kiểm tra Server, UPS, Điều hòa định kỳ sáng', temp: '21°C / 50%', status: 'Bình thường' },
+    ],
+  },
+  MPD_GENERATOR: {
+    label: 'IT: Nhật Ký Máy Phát Điện (MPĐ)',
+    emoji: '⚡',
+    columns: [
+      { key: 'dueDate', label: 'Ngày/Giờ vận hành', type: 'text' },
+      { key: 'task', label: 'Mục đích vận hành', type: 'text' },
+      { key: 'fuelBefore', label: 'Mức dầu trước (%)', type: 'text' },
+      { key: 'fuelAfter', label: 'Mức dầu sau (%)', type: 'text' },
+      { key: 'duration', label: 'Tổng phút & Thông số', type: 'text' },
+      { key: 'assignee', label: 'Người vận hành', type: 'text' },
+      { key: 'status', label: 'Trạng thái', type: 'status', options: ['Đạt chuẩn', 'Cần nạp dầu', 'Bảo trì', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { dueDate: '2026-11-19 08:30', task: 'Chạy thử không tải định kỳ hàng tuần', fuelBefore: '85%', fuelAfter: '82%', duration: '30 phút • 380V / 50Hz', assignee: 'Nguyễn Văn A', status: 'Đạt chuẩn' },
+    ],
+  },
+  IT_DEVICE_GATE: {
+    label: 'IT: Mang Thiết Bị Vào/Ra (Mẫu 01/04)',
+    emoji: '🔐',
+    columns: [
+      { key: 'dueDate', label: 'Ngày, giờ', type: 'text' },
+      { key: 'assignee', label: 'Người yêu cầu & Đơn vị', type: 'text' },
+      { key: 'task', label: 'Tên thiết bị & Serial', type: 'text' },
+      { key: 'reason', label: 'Lý do mang vào/ra', type: 'text' },
+      { key: 'guard', label: 'Xác nhận bảo vệ / IT', type: 'text' },
+      { key: 'status', label: 'Trạng thái', type: 'status', options: ['Chờ duyệt', 'Đã cho phép', 'Đã thu hồi/trả', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { dueDate: '2026-11-19 09:00', assignee: 'Phòng Tổng hợp', task: 'Laptop Dell Latitude (SN: DL-2026-88)', reason: 'Mang đi bảo hành / công tác', guard: 'Bảo vệ trực cổng', status: 'Đã cho phép' },
+    ],
+  },
+  IT_MAINTENANCE: {
+    label: 'IT: Bảo Trì, Bảo Hành (BTBH01/02)',
+    emoji: '🛠️',
+    columns: [
+      { key: 'task', label: 'Tên hệ thống / Thiết bị', type: 'text' },
+      { key: 'mode', label: 'Hình thức & Phương thức', type: 'text' },
+      { key: 'dueDate', label: 'Thời gian thực hiện', type: 'date' },
+      { key: 'assignee', label: 'Người thực hiện', type: 'text' },
+      { key: 'status', label: 'Kết quả', type: 'status', options: ['Đang thực hiện', 'Chờ nghiệm thu', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { task: 'Hệ thống Firewall & Switch Core', mode: 'Bảo trì định kỳ • Tại chỗ', dueDate: '2026-11-20', assignee: 'Tổ Kỹ thuật IT', status: 'Hoàn thành' },
+    ],
+  },
+  DOC_VAULT_LOG: {
+    label: 'IT/Kho: Nhật Ký Kho Chứng Từ (Kho CT)',
+    emoji: '🗄️',
+    columns: [
+      { key: 'dueDate', label: 'Ngày mượn / tra cứu', type: 'date' },
+      { key: 'task', label: 'Tên / Số hiệu chứng từ', type: 'text' },
+      { key: 'assignee', label: 'Người mượn & Phòng ban', type: 'text' },
+      { key: 'approver', label: 'Người duyệt', type: 'text' },
+      { key: 'returnDate', label: 'Ngày hẹn trả / Thực trả', type: 'text' },
+      { key: 'status', label: 'Tình trạng trả', type: 'status', options: ['Đang mượn', 'Quá hạn', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { dueDate: '2026-11-19', task: 'Chứng từ kế toán Tập 02', assignee: 'Nguyễn Thị F - Phòng KTNQ', approver: 'Trưởng phòng KTNQ', returnDate: '2026-11-20', status: 'Hoàn thành' },
+    ],
+  },
 };
 
 export function createLedgerFromTemplate(kind: LedgerKind, customTitle?: string): SmartLedgerDoc {
@@ -147,15 +226,24 @@ export function createLedgerFromTemplate(kind: LedgerKind, customTitle?: string)
   };
 }
 
+function normalizeLedger(raw: SmartLedgerDoc): SmartLedgerDoc {
+  const tpl = LEDGER_TEMPLATES[raw.kind] || LEDGER_TEMPLATES.WORK_KPI;
+  return {
+    ...raw,
+    columns: Array.isArray(raw.columns) && raw.columns.length > 0 ? raw.columns : tpl.columns,
+    rows: Array.isArray(raw.rows) ? raw.rows.map((r, i) => ({ id: r.id || `r-${i}`, cells: r.cells || {} })) : [],
+  };
+}
+
 export function getLocalLedgers(): SmartLedgerDoc[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as SmartLedgerDoc[];
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed.map(normalizeLedger);
     }
   } catch { /* ignore */ }
-  return [createLedgerFromTemplate('WORK_KPI'), createLedgerFromTemplate('ATTENDANCE'), createLedgerFromTemplate('GOOD_DEEDS')];
+  return [createLedgerFromTemplate('WORK_KPI'), createLedgerFromTemplate('PMC_SERVER_ROOM'), createLedgerFromTemplate('MPD_GENERATOR')];
 }
 
 export function saveLocalLedger(doc: SmartLedgerDoc): SmartLedgerDoc[] {
@@ -171,8 +259,8 @@ export async function syncLedgersFromCloud(): Promise<SmartLedgerDoc[]> {
     if (!res.ok) return getLocalLedgers();
     const rawList = (await res.json()) as string[];
     const remote = rawList
-      .map((s) => { try { return JSON.parse(s) as SmartLedgerDoc; } catch { return null; } })
-      .filter((x): x is SmartLedgerDoc => Boolean(x && x.id && Array.isArray(x.rows)));
+      .map((s) => { try { return normalizeLedger(JSON.parse(s) as SmartLedgerDoc); } catch { return null; } })
+      .filter((x): x is SmartLedgerDoc => Boolean(x && x.id));
     if (remote.length === 0) return getLocalLedgers();
 
     const byId = new Map<string, SmartLedgerDoc>();

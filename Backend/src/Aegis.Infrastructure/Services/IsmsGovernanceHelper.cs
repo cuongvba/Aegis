@@ -51,17 +51,33 @@ namespace Aegis.Infrastructure.Services
         public static List<IsmsControlCatalogItem> GetDefaultIso27001Controls(
             int totpEnabledCount,
             int dispatchCount,
-            int ledgerCount)
+            int ledgerCount,
+            IEnumerable<string>? itLedgerKinds = null)
         {
+            var kinds = new HashSet<string>(itLedgerKinds ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            bool hasPmc = kinds.Contains("PMC_SERVER_ROOM");
+            bool hasMpd = kinds.Contains("MPD_GENERATOR");
+            bool hasGate = kinds.Contains("IT_DEVICE_GATE");
+            bool hasMaint = kinds.Contains("IT_MAINTENANCE");
+            bool hasVault = kinds.Contains("DOC_VAULT_LOG");
+
             var autoMap = new Dictionary<string, (string Status, bool Auto, string Evidence)>(StringComparer.OrdinalIgnoreCase)
             {
                 ["A.5.1"] = (dispatchCount > 0 ? "VERIFIED_AUTO" : "PLANNED", dispatchCount > 0, dispatchCount > 0 ? $"OfficialDispatch ({dispatchCount} hồ sơ)" : "Ban hành qua /dispatches"),
                 ["A.5.15"] = ("VERIFIED_AUTO", true, "CrudapAccessControlService (4-tier)"),
                 ["A.5.24"] = ("IN_PROGRESS", false, "Aegis ISMS Incident & CAPA"),
                 ["A.5.28"] = ("VERIFIED_AUTO", true, "SHA-256 Audit Evidence Seal"),
-                ["A.5.33"] = ("VERIFIED_AUTO", true, "PostgreSQL + Immutable AuditHistory"),
+                ["A.5.30"] = (hasMpd ? "VERIFIED_AUTO" : "PLANNED", hasMpd, hasMpd ? "Nhật ký Máy phát điện (MPĐ) /work-ledger" : "Tạo sổ MPD_GENERATOR tại /work-ledger"),
+                ["A.5.33"] = ("VERIFIED_AUTO", true, hasVault ? "Sổ Kho Chứng từ (Kho CT) + AuditHistory" : "PostgreSQL + Immutable AuditHistory"),
                 ["A.6.3"] = ("VERIFIED_AUTO", true, "Aegis LMS & Security Awareness Quiz"),
                 ["A.6.7"] = (totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", totpEnabledCount > 0, "HTTPS + TOTP 2FA Step-Up"),
+                ["A.7.1"] = (hasPmc ? "VERIFIED_AUTO" : "PLANNED", hasPmc, hasPmc ? "Nhật ký Phòng Máy chủ (PMC-01)" : "Tạo sổ PMC_SERVER_ROOM tại /work-ledger"),
+                ["A.7.2"] = (hasPmc || hasGate ? "VERIFIED_AUTO" : "PLANNED", hasPmc || hasGate, hasPmc || hasGate ? "PMC-01 & Sổ Thiết bị Vào/Ra" : "Tạo sổ PMC / IT_DEVICE_GATE"),
+                ["A.7.5"] = (hasPmc ? "VERIFIED_AUTO" : "PLANNED", hasPmc, hasPmc ? "Giám sát nhiệt độ/độ ẩm PMC-01" : "Tạo sổ PMC_SERVER_ROOM tại /work-ledger"),
+                ["A.7.9"] = (hasGate ? "VERIFIED_AUTO" : "PLANNED", hasGate, hasGate ? "Sổ Mang Thiết bị Vào/Ra (Mẫu 01/04)" : "Tạo sổ IT_DEVICE_GATE tại /work-ledger"),
+                ["A.7.10"] = (hasGate ? "VERIFIED_AUTO" : "PLANNED", hasGate, hasGate ? "Kiểm soát thiết bị/media Vào/Ra" : "Tạo sổ IT_DEVICE_GATE tại /work-ledger"),
+                ["A.7.11"] = (hasMpd ? "VERIFIED_AUTO" : "PLANNED", hasMpd, hasMpd ? "Nhật ký Máy phát điện (MPĐ)" : "Tạo sổ MPD_GENERATOR tại /work-ledger"),
+                ["A.7.13"] = (hasMaint ? "VERIFIED_AUTO" : "PLANNED", hasMaint, hasMaint ? "Sổ Bảo trì, Bảo hành (BTBH01/02)" : "Tạo sổ IT_MAINTENANCE tại /work-ledger"),
                 ["A.8.2"] = ("VERIFIED_AUTO", true, "Scoped RBAC Privilege Ceiling"),
                 ["A.8.5"] = (totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", totpEnabledCount > 0, $"TotpSecurityHelper ({totpEnabledCount} khóa 2FA)"),
                 ["A.8.15"] = ("VERIFIED_AUTO", true, "AuditHistory + SHA-256 Seal"),
