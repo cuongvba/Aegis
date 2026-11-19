@@ -29,7 +29,19 @@ namespace Aegis.API.Controllers
         public string SystemName { get; set; } = string.Empty;
         public string Owner { get; set; } = string.Empty;
         public string ControlNote { get; set; } = string.Empty;
+        public List<string> LifecycleHistory { get; set; } = new();
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    }
+
+    public class AssetLifecycleEventRequestDto
+    {
+        public string EventType { get; set; } = "HANDOVER_INSTALL"; // HANDOVER_INSTALL, MAINTENANCE, GATE_OUT, DISPOSE
+        public string? NewLocation { get; set; }
+        public string? NewOwner { get; set; }
+        public string? PerformedBy { get; set; }
+        public string? Mode { get; set; } // Tại chỗ | Mang ra ngoài
+        public string? Note { get; set; }
+        public string? TotpCode { get; set; }
     }
 
     public class IsmsRiskDto
@@ -440,6 +452,121 @@ namespace Aegis.API.Controllers
             }
 
             return Ok(cascade);
+        }
+
+        [HttpPost("assets/{id}/lifecycle-event")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerAssetLifecycleEvent(string id, [FromBody] AssetLifecycleEventRequestDto req, CancellationToken ct)
+        {
+            var row = await FindPresetAsync(AssetType, id, ct);
+            if (row == null) return NotFound(new { error = "Không tìm thấy tài sản CNTT." });
+            var asset = JsonSerializer.Deserialize<IsmsAssetDto>(row.SynonymsJson, JsonOpts);
+            if (asset == null) return BadRequest();
+
+            var totpError = await ValidateCallerTotpIfEnabledAsync(req?.TotpCode, ct);
+            if (totpError != null) return totpError;
+
+            var cascade = ItLedgerAutomationHelper.BuildAssetLifecycleCascade(
+                asset.AssetCode,
+                asset.Name,
+                asset.Location,
+                req?.EventType ?? "HANDOVER_INSTALL",
+                req?.NewLocation,
+                req?.NewOwner,
+                req?.PerformedBy,
+                req?.Mode,
+                req?.Note);
+
+            if (!string.IsNullOrWhiteSpace(req?.NewLocation)) asset.Location = req.NewLocation.Trim();
+            if (!string.IsNullOrWhiteSpace(req?.NewOwner)) asset.Owner = req.NewOwner.Trim();
+            if (req?.EventType == "DISPOSE") asset.WarrantyStatus = "Đã thu hồi / Hủy an toàn (A.7.14)";
+            asset.LifecycleHistory.Insert(0, $"[{cascade.Timestamp}] {req?.EventType} → {string.Join(" + ", cascade.TriggeredLedgers)} ({req?.Note ?? req?.PerformedBy ?? "IT"})");
+            asset.UpdatedAt = DateTimeOffset.UtcNow;
+            row.SynonymsJson = JsonSerializer.Serialize(asset, JsonOpts);
+            await _db.SaveChangesAsync(ct);
+
+            if (cascade.TriggeredLedgers.Contains("IT_HANDOVER_INSTALL") && cascade.PmcCells.Count > 0)
+            {
+                await AppendItLedgerRowAsync(
+                    "it-handover-install",
+                    "IT_HANDOVER_INSTALL",
+                    "IT: Giao Nhận, Xuất Nhập & Lắp Đặt (Mẫu 02)",
+                    new object[]
+                    {
+                        new { key = "dueDate", label = "Ngày thực hiện", type = "date" },
+                        new { key = "task", label = "Nội dung & Tài sản", type = "text" },
+                        new { key = "assignee", label = "Đơn vị / Người nhận", type = "text" },
+                        new { key = "location", label = "Vị trí lắp đặt", type = "text" },
+                        new { key = "note", label = "Ghi chú / Người giao", type = "text" },
+                        new { key = "status", label = "Trạng thái", type = "status", options = new[] { "Chờ duyệt", "Hoàn thành" } }
+                    },
+                    cascade.PmcCells,
+                    ct);
+            }
+
+            if (cascade.MaintenanceCells != null)
+            {
+                await AppendItLedgerRowAsync(
+                    "it-maintenance",
+                    "IT_MAINTENANCE",
+                    "IT: Bảo Trì, Bảo Hành (BTBH01/02)",
+                    new object[]
+                    {
+                        new { key = "task", label = "Tên hệ thống / Thiết bị", type = "text" },
+                        new { key = "mode", label = "Hình thức & Phương thức", type = "text" },
+                        new { key = "dueDate", label = "Thời gian thực hiện", type = "date" },
+                        new { key = "assignee", label = "Người thực hiện", type = "text" },
+                        new { key = "status", label = "Kết quả", type = "status", options = new[] { "Đang thực hiện", "Chờ nghiệm thu", "Hoàn thành" } }
+                    },
+                    cascade.MaintenanceCells,
+                    ct);
+            }
+
+            if (cascade.DeviceGateCells != null)
+            {
+                await AppendItLedgerRowAsync(
+                    "it-device-gate",
+                    "IT_DEVICE_GATE",
+                    "IT: Mang Thiết Bị Vào/Ra (Mẫu 01/04)",
+                    new object[]
+                    {
+                        new { key = "dueDate", label = "Ngày, giờ", type = "text" },
+                        new { key = "assignee", label = "Người yêu cầu & Đơn vị", type = "text" },
+                        new { key = "task", label = "Tên thiết bị & Serial", type = "text" },
+                        new { key = "reason", label = "Lý do mang vào/ra", type = "text" },
+                        new { key = "guard", label = "Xác nhận bảo vệ / IT", type = "text" },
+                        new { key = "status", label = "Trạng thái", type = "status", options = new[] { "Chờ duyệt", "Đã cho phép", "Đã thu hồi/trả", "Hoàn thành" } }
+                    },
+                    cascade.DeviceGateCells,
+                    ct);
+            }
+
+            if (cascade.TriggeredLedgers.Contains("PMC_SERVER_ROOM"))
+            {
+                await AppendItLedgerRowAsync(
+                    "it-pmc-server-room",
+                    "PMC_SERVER_ROOM",
+                    "IT: Nhật Ký Phòng Máy Chủ (PMC-01)",
+                    new object[]
+                    {
+                        new { key = "dueDate", label = "Ngày/Giờ kiểm tra", type = "text" },
+                        new { key = "assignee", label = "Cán bộ vào/kiểm tra", type = "text" },
+                        new { key = "task", label = "Mục đích / Nội dung", type = "text" },
+                        new { key = "temp", label = "Nhiệt độ / Độ ẩm", type = "text" },
+                        new { key = "status", label = "Trạng thái hệ thống", type = "status", options = new[] { "Bình thường", "Cảnh báo nhẹ", "Đang xử lý", "Hoàn thành" } }
+                    },
+                    new Dictionary<string, string>
+                    {
+                        ["dueDate"] = cascade.Timestamp,
+                        ["assignee"] = req?.PerformedBy ?? "Cán bộ QLVH CNTT",
+                        ["task"] = $"[{cascade.CorrelationId}] {req?.EventType}: {asset.AssetCode} {asset.Name}",
+                        ["temp"] = "21°C / 50%",
+                        ["status"] = "Bình thường"
+                    },
+                    ct);
+            }
+
+            return Ok(new { asset, cascade });
         }
 
         private async Task AppendItLedgerRowAsync(

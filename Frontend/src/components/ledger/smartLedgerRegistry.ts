@@ -9,6 +9,7 @@ export type LedgerKind =
   | 'MPD_GENERATOR'
   | 'IT_DEVICE_GATE'
   | 'IT_MAINTENANCE'
+  | 'IT_HANDOVER_INSTALL'
   | 'DOC_VAULT_LOG';
 
 export type LedgerColType = 'text' | 'email' | 'date' | 'status' | 'percent' | 'stars';
@@ -194,6 +195,21 @@ export const LEDGER_TEMPLATES: Record<LedgerKind, { label: string; emoji: string
     ],
     sampleRows: [
       { task: 'Hệ thống Firewall & Switch Core', mode: 'Bảo trì định kỳ • Tại chỗ', dueDate: '2026-11-20', assignee: 'Tổ Kỹ thuật IT', status: 'Hoàn thành' },
+    ],
+  },
+  IT_HANDOVER_INSTALL: {
+    label: 'IT: Giao Nhận, Xuất Nhập & Lắp Đặt (Mẫu 02)',
+    emoji: '📦',
+    columns: [
+      { key: 'dueDate', label: 'Ngày thực hiện', type: 'date' },
+      { key: 'task', label: 'Nội dung & Tài sản', type: 'text' },
+      { key: 'assignee', label: 'Đơn vị / Người nhận', type: 'text' },
+      { key: 'location', label: 'Vị trí lắp đặt', type: 'text' },
+      { key: 'note', label: 'Ghi chú / Người giao', type: 'text' },
+      { key: 'status', label: 'Trạng thái', type: 'status', options: ['Chờ duyệt', 'Hoàn thành'] },
+    ],
+    sampleRows: [
+      { dueDate: '2026-11-19', task: '[Giao nhận & Lắp đặt] [BRCD140009] Máy chủ Dell T620', assignee: 'Bộ phận QLVH CNTT', location: 'Phòng Máy chủ', note: 'Nghiệm thu lắp đặt chuẩn', status: 'Hoàn thành' },
     ],
   },
   DOC_VAULT_LOG: {

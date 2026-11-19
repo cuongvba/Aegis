@@ -98,5 +98,102 @@ namespace Aegis.Infrastructure.Services
             bool lowFuel = fuelAfterPct < 30.0;
             return (minutes, consumed, lowFuel);
         }
+
+        public static ItAutomationResult BuildAssetLifecycleCascade(
+            string assetCode,
+            string assetName,
+            string currentLocation,
+            string eventType,
+            string? newLocation,
+            string? newOwner,
+            string? performedBy,
+            string? mode,
+            string? note,
+            DateTimeOffset? referenceNow = null)
+        {
+            var now = referenceNow ?? DateTimeOffset.UtcNow;
+            string ts = now.ToString("yyyy-MM-dd HH:mm");
+            string dateOnly = now.ToString("yyyy-MM-dd");
+            string corrId = $"ast-{now.ToUnixTimeMilliseconds()}";
+            string actor = string.IsNullOrWhiteSpace(performedBy) ? "Cán bộ QLVH CNTT" : performedBy.Trim();
+            string targetLoc = string.IsNullOrWhiteSpace(newLocation) ? currentLocation : newLocation.Trim();
+            string label = string.IsNullOrWhiteSpace(assetCode) ? assetName : $"[{assetCode}] {assetName}";
+            bool isServerRoom = targetLoc.Contains("Máy chủ", StringComparison.OrdinalIgnoreCase)
+                || currentLocation.Contains("Máy chủ", StringComparison.OrdinalIgnoreCase);
+
+            var res = new ItAutomationResult
+            {
+                CorrelationId = corrId,
+                Timestamp = ts,
+                TriggeredLedgers = new List<string>()
+            };
+
+            if (eventType == "HANDOVER_INSTALL" || eventType == "DISPOSE")
+            {
+                res.TriggeredLedgers.Add("IT_HANDOVER_INSTALL");
+                string actionTitle = eventType == "DISPOSE" ? $"[Thu hồi / Hủy A.7.14] {label}" : $"[Giao nhận & Lắp đặt] {label}";
+                res.PmcCells = new Dictionary<string, string>
+                {
+                    ["dueDate"] = dateOnly,
+                    ["task"] = actionTitle,
+                    ["assignee"] = string.IsNullOrWhiteSpace(newOwner) ? actor : newOwner.Trim(),
+                    ["location"] = targetLoc,
+                    ["note"] = string.IsNullOrWhiteSpace(note) ? $"Thực hiện bởi {actor}" : note.Trim(),
+                    ["status"] = "Hoàn thành"
+                };
+
+                if (eventType == "HANDOVER_INSTALL" && isServerRoom)
+                {
+                    res.TriggeredLedgers.Add("PMC_SERVER_ROOM");
+                }
+            }
+            else if (eventType == "MAINTENANCE")
+            {
+                res.TriggeredLedgers.Add("IT_MAINTENANCE");
+                string svcMode = string.IsNullOrWhiteSpace(mode) ? "Tại chỗ" : mode.Trim();
+                res.MaintenanceCells = new Dictionary<string, string>
+                {
+                    ["task"] = label,
+                    ["mode"] = $"Bảo trì / Bảo hành • {svcMode}",
+                    ["dueDate"] = dateOnly,
+                    ["assignee"] = actor,
+                    ["status"] = "Đang thực hiện"
+                };
+
+                if (svcMode.Contains("ngoài", StringComparison.OrdinalIgnoreCase))
+                {
+                    res.TriggeredLedgers.Add("IT_DEVICE_GATE");
+                    res.DeviceGateCells = new Dictionary<string, string>
+                    {
+                        ["dueDate"] = ts,
+                        ["assignee"] = actor,
+                        ["task"] = label,
+                        ["reason"] = $"Mang ra ngoài bảo hành/sửa chữa ({corrId})",
+                        ["guard"] = "Auto-Verified (ISMS)",
+                        ["status"] = "Đã cho phép"
+                    };
+                }
+                else if (isServerRoom)
+                {
+                    res.TriggeredLedgers.Add("PMC_SERVER_ROOM");
+                }
+            }
+            else
+            {
+                res.TriggeredLedgers.Add("IT_DEVICE_GATE");
+                res.DeviceGateCells = new Dictionary<string, string>
+                {
+                    ["dueDate"] = ts,
+                    ["assignee"] = actor,
+                    ["task"] = label,
+                    ["reason"] = string.IsNullOrWhiteSpace(note) ? $"Xuất/Nhập thiết bị ({corrId})" : note.Trim(),
+                    ["guard"] = "Auto-Verified (ISMS)",
+                    ["status"] = "Đã cho phép"
+                };
+            }
+
+            res.AuditSeal = IsmsGovernanceHelper.ComputeSha256Seal($"{corrId}|{assetCode}|{eventType}|{string.Join(",", res.TriggeredLedgers)}");
+            return res;
+        }
     }
 }

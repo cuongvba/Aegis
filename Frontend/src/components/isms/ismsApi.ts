@@ -21,6 +21,7 @@ export interface IsmsAssetItem {
   systemName?: string;
   owner: string;
   controlNote: string;
+  lifecycleHistory?: string[];
 }
 
 export interface IsmsRiskItem {
@@ -127,6 +128,21 @@ export const ismsApi = {
     totpCode?: string;
   }) {
     const res = await api.post('/api/isms/it-events/server-room-visit', payload);
+    return res.data;
+  },
+  async triggerAssetLifecycle(
+    assetId: string,
+    payload: {
+      eventType: 'HANDOVER_INSTALL' | 'MAINTENANCE' | 'GATE_OUT' | 'DISPOSE';
+      newLocation?: string;
+      newOwner?: string;
+      performedBy?: string;
+      mode?: string;
+      note?: string;
+      totpCode?: string;
+    },
+  ) {
+    const res = await api.post(`/api/isms/assets/${assetId}/lifecycle-event`, payload);
     return res.data;
   },
 };

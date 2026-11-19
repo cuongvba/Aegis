@@ -20,7 +20,31 @@ export const ItAutomationPanel: React.FC<Props> = ({ totpCode, assets, onSuccess
   const [deviceSerial, setDeviceSerial] = useState('Laptop Dell Latitude (SN: DL-2026-88)');
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [systemName, setSystemName] = useState('Switch Core & UPS');
+  const [selectedAssetId, setSelectedAssetId] = useState('');
+  const [eventType, setEventType] = useState<'HANDOVER_INSTALL' | 'MAINTENANCE' | 'GATE_OUT' | 'DISPOSE'>('MAINTENANCE');
+  const [svcMode, setSvcMode] = useState('Mang ra ngoài');
+  const [targetLoc, setTargetLoc] = useState('Phòng Máy chủ');
   const [busy, setBusy] = useState(false);
+
+  const handleLifecycle = async () => {
+    const id = selectedAssetId || physicalAssets[0]?.id;
+    if (!id) return;
+    setBusy(true);
+    try {
+      const res = await ismsApi.triggerAssetLifecycle(id, {
+        eventType,
+        newLocation: targetLoc,
+        mode: svcMode,
+        performedBy: visitorName,
+        totpCode: totpCode.trim() || undefined,
+      });
+      await onSuccess(
+        `Đã cập nhật Vòng đời Tài sản & tự động ghi sổ: ${res.cascade.triggeredLedgers.join(' + ')} (SHA-256: ${String(res.cascade.auditSeal).slice(0, 12)}...)`,
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleCheckIn = async () => {
     setBusy(true);
@@ -107,6 +131,31 @@ export const ItAutomationPanel: React.FC<Props> = ({ totpCode, assets, onSuccess
       <button onClick={() => void handleCheckIn()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-600 to-emerald-600 px-5 py-2.5 font-black text-white disabled:opacity-50">
         <Sparkles className="w-4 h-4" /> {busy ? 'Đang ghi sổ liên hoàn...' : 'Check-in Phòng Máy Chủ & Tự Động Sinh Nhật Ký Liên Hoàn'}
       </button>
+
+      {physicalAssets.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-slate-800 space-y-2.5">
+          <div className="font-black text-amber-300">Điều phối Vòng đời Tài sản Gốc → Tự động ghi Sổ Giao nhận / Bảo trì / Ra-Vào</div>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <select value={selectedAssetId || physicalAssets[0]?.id} onChange={(e) => setSelectedAssetId(e.target.value)} className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white">
+              {physicalAssets.map((a) => <option key={a.id} value={a.id}>{a.assetCode ? `[${a.assetCode}] ` : ''}{a.name}</option>)}
+            </select>
+            <select value={eventType} onChange={(e) => setEventType(e.target.value as any)} className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-amber-300 font-bold">
+              <option value="HANDOVER_INSTALL">Giao nhận & Lắp đặt (Mẫu 02)</option>
+              <option value="MAINTENANCE">Bảo trì / Bảo hành (BTBH01/02)</option>
+              <option value="GATE_OUT">Mang ra ngoài / Nhập kho (Mẫu 01/04)</option>
+              <option value="DISPOSE">Thu hồi / Hủy an toàn (A.7.14)</option>
+            </select>
+            <select value={svcMode} onChange={(e) => setSvcMode(e.target.value)} className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white">
+              <option value="Tại chỗ">Tại chỗ (Auto PMC nếu ở PMC)</option>
+              <option value="Mang ra ngoài">Mang ra ngoài (Auto Mẫu 01/04)</option>
+            </select>
+            <input value={targetLoc} onChange={(e) => setTargetLoc(e.target.value)} placeholder="Vị trí lắp đặt mới..." className="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-white" />
+          </div>
+          <button onClick={() => void handleLifecycle()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-500 px-4 py-2 font-black text-white disabled:opacity-50">
+            Thực Thi Vòng Đời Tài Sản & Đồng Bộ Sổ
+          </button>
+        </div>
+      )}
     </div>
   );
 };

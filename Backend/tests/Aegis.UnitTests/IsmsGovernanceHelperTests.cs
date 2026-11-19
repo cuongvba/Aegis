@@ -105,5 +105,19 @@ namespace Aegis.UnitTests
             Assert.Contains(parsed, a => a.Category == "SYSTEM" && a.Classification == "CAP_DO_2");
             Assert.Contains(parsed, a => a.Category == "PHYSICAL" && a.AssetCode == "BRCD140009" && a.WarrantyStatus == "Hết bảo hành");
         }
+
+        [Fact]
+        public void BuildAssetLifecycleCascade_ConnectsHandoverMaintenanceAndGateLedgers()
+        {
+            var handover = ItLedgerAutomationHelper.BuildAssetLifecycleCascade(
+                "BRCD140009", "Máy chủ Dell T620", "Kho", "HANDOVER_INSTALL", "Phòng Máy chủ", "Tổ IT", "Anh C", null, null);
+            Assert.Contains("IT_HANDOVER_INSTALL", handover.TriggeredLedgers);
+            Assert.Contains("PMC_SERVER_ROOM", handover.TriggeredLedgers);
+
+            var maintOut = ItLedgerAutomationHelper.BuildAssetLifecycleCascade(
+                "BRCD140009", "Máy chủ Dell T620", "Phòng Máy chủ", "MAINTENANCE", null, null, "Anh C", "Mang ra ngoài", null);
+            Assert.Contains("IT_MAINTENANCE", maintOut.TriggeredLedgers);
+            Assert.Contains("IT_DEVICE_GATE", maintOut.TriggeredLedgers);
+        }
     }
 }

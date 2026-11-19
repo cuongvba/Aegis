@@ -214,6 +214,9 @@ export const IsmsGovernancePage: React.FC = () => {
                   <div>
                     <div className="font-bold text-white">{a.assetCode ? `[${a.assetCode}] ` : ''}{a.name}</div>
                     <div className="text-[11px] text-slate-400">{a.category} {a.location ? `• ${a.location}` : ''} {a.warrantyStatus ? `• BH: ${a.warrantyStatus}` : ''} {a.owner ? `• ${a.owner}` : ''}</div>
+                    {a.lifecycleHistory && a.lifecycleHistory.length > 0 && (
+                      <div className="text-[10px] text-emerald-300 mt-0.5">Lịch sử gần nhất: {a.lifecycleHistory[0]}</div>
+                    )}
                   </div>
                   <span className="text-amber-300 font-black">{a.classification}</span>
                 </div>
