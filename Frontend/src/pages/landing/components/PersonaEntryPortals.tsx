@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileCheck2, Shield, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarCheck2, FileCheck2, Shield, Sparkles } from 'lucide-react';
 
 const PORTALS = [
   {
@@ -23,6 +23,16 @@ const PORTALS = [
     icon: FileCheck2,
   },
   {
+    id: 'ledger',
+    badge: 'Tập thể • KPI • Lịch Google',
+    title: 'Aegis Smart Work & Ledger OS',
+    desc: 'Sổ công việc Kanban/KPI cơ quan, điểm danh, thời khóa biểu, việc tốt, khảo sát tập thể & giao lịch Google Calendar.',
+    to: '/work-ledger',
+    cta: 'Mở Sổ Công Việc & Lịch',
+    accent: 'from-violet-500/20 to-fuchsia-500/10 border-violet-500/40 text-violet-300',
+    icon: CalendarCheck2,
+  },
+  {
     id: 'kids',
     badge: '3–11 tuổi • Offline-First',
     title: 'Aegis Kids Creative Factory',
@@ -38,10 +48,10 @@ export function PersonaEntryPortals() {
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
       <div className="text-center mb-6">
-        <span className="text-xs font-black uppercase tracking-widest text-sky-400">3 Cổng Sản Phẩm Chuyên Biệt</span>
+        <span className="text-xs font-black uppercase tracking-widest text-sky-400">4 Cổng Sản Phẩm Chuyên Biệt</span>
         <h2 className="mt-1 text-xl sm:text-2xl font-black text-white">Chọn Không Gian Phù Hợp Với Vai Trò Của Bạn</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {PORTALS.map((p) => {
           const Icon = p.icon;
           return (

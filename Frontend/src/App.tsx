@@ -41,6 +41,7 @@ const LandingPage = lazyRetry(() => import('@/pages/landing/LandingPage').then(m
 const PracticePage = lazyRetry(() => import('@/pages/practice/PracticePage').then(m => ({ default: m.PracticePage })));
 const KidsWorldPage = lazyRetry(() => import('@/pages/kids/KidsWorldPage').then(m => ({ default: m.KidsWorldPage })));
 const OfficeWorkspacePage = lazyRetry(() => import('@/pages/office/OfficeWorkspacePage').then(m => ({ default: m.OfficeWorkspacePage })));
+const SmartLedgerPage = lazyRetry(() => import('@/pages/ledger/SmartLedgerPage').then(m => ({ default: m.SmartLedgerPage })));
 const AttemptRoom = lazyRetry(() => import('@/pages/quiz/AttemptRoom').then(m => ({ default: m.AttemptRoom })));
 const AdaptiveExamRoom = lazyRetry(() => import('@/pages/quiz/AdaptiveExamRoom'));
 const SecureExamRoom = lazyRetry(() => import('@/pages/quiz/SecureExamRoom'));
@@ -162,6 +163,7 @@ export default function App() {
               <Route path="/practice" element={<PracticePage />} />
               <Route path="/kids" element={<KidsWorldPage />} />
               <Route path="/office-studio" element={<OfficeWorkspacePage />} />
+              <Route path="/work-ledger" element={<SmartLedgerPage />} />
               <Route path="/creator/studio" element={<ProtectedRoute><CreatorZenStudioPage /></ProtectedRoute>} />
               <Route path="/creator/topics" element={<ProtectedRoute><ZenTopicsPage /></ProtectedRoute>} />
               <Route path="/creator/questions" element={<ProtectedRoute><ZenQuestionsPage /></ProtectedRoute>} />
