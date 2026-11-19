@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -11,6 +11,7 @@ import {
   Loader2,
   AlertCircle,
   Images,
+  Scissors,
 } from 'lucide-react';
 import {
   officeWorkspaceService,
@@ -21,12 +22,17 @@ import { SpreadsheetGridEditor } from '@/components/office/SpreadsheetGridEditor
 import { OfficeAiCopilotBar } from '@/components/office/OfficeAiCopilotBar';
 import { ImageBatchMergerModal } from '@/components/office/ImageBatchMergerModal';
 
+const PdfToolboxModal = lazy(() =>
+  import('@/components/office/PdfToolboxModal').then((m) => ({ default: m.PdfToolboxModal })),
+);
+
 const DRAFT_STORAGE_KEY = 'aegis-office-studio-draft-v1';
 
 export const OfficeWorkspacePage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMergerOpen, setIsMergerOpen] = useState(false);
+  const [isPdfToolboxOpen, setIsPdfToolboxOpen] = useState(false);
 
   const [docKind, setDocKind] = useState<'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN'>(() => {
     try {
@@ -187,6 +193,14 @@ export const OfficeWorkspacePage: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={() => setIsPdfToolboxOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 px-3.5 py-2 text-xs font-black text-white shadow-md transition"
+              title="Nén dung lượng PDF scan, chèn/cắt/ghép và đổi vị trí trang PDF"
+            >
+              <Scissors size={14} /> Nén & Cắt/Ghép PDF
+            </button>
+            <button
+              type="button"
               onClick={handleCreateNewDoc}
               className="inline-flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 text-xs font-bold text-slate-200"
             >
@@ -316,6 +330,11 @@ export const OfficeWorkspacePage: React.FC = () => {
           setWarnings([]);
         }}
       />
+      {isPdfToolboxOpen && (
+        <Suspense fallback={null}>
+          <PdfToolboxModal open={isPdfToolboxOpen} onClose={() => setIsPdfToolboxOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };
