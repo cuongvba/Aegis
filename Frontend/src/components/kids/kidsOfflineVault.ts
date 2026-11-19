@@ -126,12 +126,11 @@ export function getOfflineFallbackLesson(kingdomId: string, ageBand: string): Ki
   if (map[kingdomId]) return map[kingdomId];
 
   return {
-    planTitleVi: `Khám phá Offline (${kingdomId.toUpperCase()})`,
-    planTitleEn: `Offline Discovery (${kingdomId.toUpperCase()})`,
+    lessonId: `offline-${kingdomId}-${ageBand}`,
     islandId: kingdomId,
     ageBand,
-    greetingVi: 'Mất mạng cũng không sao! Mình cùng học và sáng tạo offline nhé!',
-    greetingEn: 'Offline mode ready! Let us explore together!',
+    atomCount: 2,
+    activityCount: 2,
     atoms: [
       {
         atomCode: 'offline-star',
