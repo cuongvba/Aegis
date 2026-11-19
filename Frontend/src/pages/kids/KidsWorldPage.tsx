@@ -12,6 +12,7 @@ import { KidsStageManagerModal } from '@/components/kids/KidsStageManagerModal';
 import { YouthCreatorStudioModal } from '@/components/kids/YouthCreatorStudioModal';
 import { KidsReviewModal } from '@/components/kids/KidsReviewModal';
 import { KidsGlobalLocaleModal } from '@/components/kids/KidsGlobalLocaleModal';
+import { KidsHeaderBar } from '@/components/kids/KidsHeaderBar';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
 import {
   speakKidText,
@@ -162,118 +163,34 @@ export const KidsWorldPage: React.FC = () => {
       <KidsMagicalBackdrop particleMode={activePlan?.stageTheme?.particleMode || 'sky'} />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-4 sm:py-6 space-y-6">
-        {/* Top Bar riêng của Kids World */}
-        <header className="rounded-3xl bg-white/85 backdrop-blur-md border-4 border-white px-4 py-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🦉</span>
-            <div>
-              <div className="text-xs font-black uppercase tracking-wider text-orange-600">Aegis Global</div>
-              <h1 className="text-base sm:text-lg font-black text-slate-900">KIDS WONDERLAND</h1>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => playKidMelody('twinkle')}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-2 text-xs font-black transition"
-            >
-              <Music size={14} /> {isVi ? 'Nghe Nhạc' : 'Music'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsTheaterOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-2 text-xs font-black transition"
-            >
-              <Film size={14} /> {isVi ? 'Rạp Phim & Đàn' : 'Theater'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsStageModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-cyan-100 hover:bg-cyan-200 text-cyan-800 px-3 py-2 text-xs font-black transition"
-            >
-              <Palette size={14} /> {isVi ? 'Sân Khấu (DB)' : 'Stages'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsYouthCreatorOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-400 text-white px-3 py-2 text-xs font-black shadow-sm hover:brightness-105 transition"
-            >
-              <Feather size={14} /> {isVi ? 'Sáng Tác' : 'Create'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsReviewOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-3 py-2 text-xs font-black transition"
-            >
-              <ShieldCheck size={14} /> {isVi ? 'Duyệt Bài' : 'Review'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsAiOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl bg-slate-900 text-amber-300 px-3 py-2 text-xs font-black hover:bg-slate-800 transition"
-            >
-              <Wand2 size={14} /> {isVi ? 'AI Tạo Bài' : 'AI Builder'}
-            </button>
-            {voices.length > 0 && (
-              <div className="inline-flex items-center gap-1.5">
-                <select
-                  value={selectedVoiceId}
-                  onChange={(e) => {
-                    const vid = e.target.value;
-                    setSelectedVoiceId(vid);
-                    setSelectedKidVoiceId(vid);
-                    speakKidText(isVi ? 'Xin chào bé yêu! Mình cùng khám phá nhé!' : 'Hello little explorer!', speechLang, vid, voiceRate);
-                  }}
-                  aria-label="Kids Voice"
-                  className="rounded-2xl border-2 border-indigo-200 bg-indigo-50/70 px-2.5 py-1.5 text-xs font-black text-indigo-800 hover:border-indigo-400 focus:outline-none max-w-[165px]"
-                  title={isVi ? 'Chọn giọng đọc AI' : 'Select AI Voice'}
-                >
-                  <option value="">🎙️ {isVi ? 'Giọng mặc định' : 'Auto Voice'}</option>
-                  {voices.map((v) => (
-                    <option key={v.voiceId} value={v.voiceId}>
-                      🎙️ {v.displayName}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  value={voiceRate}
-                  onChange={(e) => {
-                    const r = Number(e.target.value) || 1.0;
-                    setVoiceRate(r);
-                    setSelectedKidVoiceRate(r);
-                    speakKidText(isVi ? 'Tốc độ đọc mới nè bé ơi!' : 'Here is my new reading speed!', speechLang, selectedVoiceId, r);
-                  }}
-                  aria-label="Voice Speed"
-                  className="rounded-2xl border-2 border-amber-200 bg-amber-50/80 px-2 py-1.5 text-xs font-black text-amber-800 hover:border-amber-400 focus:outline-none"
-                  title={isVi ? 'Tốc độ đọc' : 'Reading Speed'}
-                >
-                  <option value={0.75}>🐢 0.75x</option>
-                  <option value={0.9}>🐢 0.9x</option>
-                  <option value={1}>🦉 1.0x</option>
-                  <option value={1.15}>🚀 1.15x</option>
-                  <option value={1.3}>⚡ 1.3x</option>
-                </select>
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={() => setIsLocaleModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-2xl border-2 border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-800 hover:border-cyan-400 transition"
-              title="Global Languages & Cultural Registry"
-            >
-              <Globe size={13} className="text-cyan-600" />
-              <span>{activeLocale ? `${activeLocale.flagEmoji} ${activeLocale.nativeName}` : lang.toUpperCase()}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsGateOpen(true)}
-              className="inline-flex items-center gap-1 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-2 text-xs font-black transition"
-            >
-              <Lock size={13} /> {isVi ? 'Phụ huynh' : 'Parent'}
-            </button>
-          </div>
-        </header>
+        <KidsHeaderBar
+          isVi={isVi}
+          lang={lang}
+          activeLocale={activeLocale}
+          voices={voices}
+          selectedVoiceId={selectedVoiceId}
+          voiceRate={voiceRate}
+          onGoHome={() => navigate('/')}
+          onGoOffice={() => navigate('/office-studio')}
+          onPlayMusic={() => playKidMelody('twinkle')}
+          onOpenTheater={() => setIsTheaterOpen(true)}
+          onOpenYouthCreator={() => setIsYouthCreatorOpen(true)}
+          onOpenStages={() => setIsStageModalOpen(true)}
+          onOpenReview={() => setIsReviewOpen(true)}
+          onOpenAiBuilder={() => setIsAiOpen(true)}
+          onOpenLocaleModal={() => setIsLocaleModalOpen(true)}
+          onOpenParentGate={() => setIsGateOpen(true)}
+          onSelectVoice={(vid) => {
+            setSelectedVoiceId(vid);
+            setSelectedKidVoiceId(vid);
+            speakKidText(isVi ? 'Xin chào bé yêu! Mình cùng khám phá nhé!' : 'Hello little explorer!', speechLang, vid, voiceRate);
+          }}
+          onSelectRate={(r) => {
+            setVoiceRate(r);
+            setSelectedKidVoiceRate(r);
+            speakKidText(isVi ? 'Tốc độ đọc mới nè bé ơi!' : 'Here is my new reading speed!', speechLang, selectedVoiceId, r);
+          }}
+        />
 
         {activePlan ? (
           <KidsLessonPlayer

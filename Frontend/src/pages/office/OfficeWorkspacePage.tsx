@@ -166,6 +166,7 @@ export const OfficeWorkspacePage: React.FC = () => {
           onOpenPdfPro={() => setIsPdfToolboxOpen(true)}
           onOpenArchive={() => { setPendingArchiveFile(null); setIsArchiveOpen(true); }}
           onOpenSaveModal={() => setIsSaveModalOpen(true)}
+          onGoHome={() => navigate('/')}
           onGoKids={() => navigate('/kids')}
         />
 

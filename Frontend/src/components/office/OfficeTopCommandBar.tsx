@@ -5,6 +5,7 @@ import {
   FileArchive,
   FileSpreadsheet,
   FileText,
+  Home,
   Images,
   Lock,
   Plus,
@@ -34,6 +35,7 @@ interface Props {
   onOpenPdfPro: () => void;
   onOpenArchive: () => void;
   onOpenSaveModal: () => void;
+  onGoHome: () => void;
   onGoKids: () => void;
 }
 
@@ -55,13 +57,23 @@ export const OfficeTopCommandBar: React.FC<Props> = ({
   onOpenPdfPro,
   onOpenArchive,
   onOpenSaveModal,
+  onGoHome,
   onGoKids,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="rounded-2xl bg-slate-900/95 border border-slate-800 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xl backdrop-blur-md print:hidden">
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <button
+          type="button"
+          onClick={onGoHome}
+          className="inline-flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-2 text-xs font-bold text-slate-200 transition shrink-0"
+          title="Quay về Trang chính"
+        >
+          <Home className="w-4 h-4 text-sky-400" />
+          <span className="hidden sm:inline">Trang chính</span>
+        </button>
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-md shrink-0">
           {docKind === 'XLSX' ? <FileSpreadsheet className="w-5 h-5 text-white" /> : <FileText className="w-5 h-5 text-white" />}
         </div>
@@ -113,8 +125,20 @@ export const OfficeTopCommandBar: React.FC<Props> = ({
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" /> Bảng tính Excel mới
               </button>
               <div className="my-1 border-t border-slate-800" />
+              <button onClick={() => { onOpenMerger(); setMenuOpen(false); }} className="w-full md:hidden px-3 py-2 text-left hover:bg-slate-800 text-slate-200 font-semibold flex items-center gap-2">
+                <Images className="w-3.5 h-3.5 text-violet-400" /> Ghép Nhiều Ảnh
+              </button>
+              <button onClick={() => { onOpenPdfPro(); setMenuOpen(false); }} className="w-full md:hidden px-3 py-2 text-left hover:bg-slate-800 text-slate-200 font-semibold flex items-center gap-2">
+                <Scissors className="w-3.5 h-3.5 text-emerald-400" /> PDF Studio Pro
+              </button>
+              <button onClick={() => { onOpenArchive(); setMenuOpen(false); }} className="w-full md:hidden px-3 py-2 text-left hover:bg-slate-800 text-slate-200 font-semibold flex items-center gap-2">
+                <FileArchive className="w-3.5 h-3.5 text-amber-400" /> 7z Vault
+              </button>
               <button onClick={() => { onGoKids(); setMenuOpen(false); }} className="w-full px-3 py-2 text-left hover:bg-slate-800 text-amber-300 font-semibold flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" /> Mở Kids World
+              </button>
+              <button onClick={() => { onGoHome(); setMenuOpen(false); }} className="w-full px-3 py-2 text-left hover:bg-slate-800 text-sky-300 font-semibold flex items-center gap-2">
+                <Home className="w-3.5 h-3.5" /> Quay về Trang chính
               </button>
             </div>
           )}
