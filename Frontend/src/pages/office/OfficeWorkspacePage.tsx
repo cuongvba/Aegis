@@ -10,6 +10,7 @@ import {
   Plus,
   Loader2,
   AlertCircle,
+  Images,
 } from 'lucide-react';
 import {
   officeWorkspaceService,
@@ -18,12 +19,14 @@ import {
 import { RichDocEditorPane } from '@/components/office/RichDocEditorPane';
 import { SpreadsheetGridEditor } from '@/components/office/SpreadsheetGridEditor';
 import { OfficeAiCopilotBar } from '@/components/office/OfficeAiCopilotBar';
+import { ImageBatchMergerModal } from '@/components/office/ImageBatchMergerModal';
 
 const DRAFT_STORAGE_KEY = 'aegis-office-studio-draft-v1';
 
 export const OfficeWorkspacePage: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isMergerOpen, setIsMergerOpen] = useState(false);
 
   const [docKind, setDocKind] = useState<'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN'>(() => {
     try {
@@ -176,6 +179,14 @@ export const OfficeWorkspacePage: React.FC = () => {
             </button>
             <button
               type="button"
+              onClick={() => setIsMergerOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-95 px-3.5 py-2 text-xs font-black text-white shadow-md transition"
+              title="Ghép nhiều ảnh tải từ Facebook/Zalo thành 1 file Word/PDF/Markdown duy nhất"
+            >
+              <Images size={14} /> Ghép Nhiều Ảnh
+            </button>
+            <button
+              type="button"
               onClick={handleCreateNewDoc}
               className="inline-flex items-center gap-1 rounded-xl bg-slate-800 hover:bg-slate-700 px-3 py-2 text-xs font-bold text-slate-200"
             >
@@ -294,6 +305,17 @@ export const OfficeWorkspacePage: React.FC = () => {
           <RichDocEditorPane value={markdown} onChange={setMarkdown} documentTitle={title} />
         )}
       </div>
+      <ImageBatchMergerModal
+        open={isMergerOpen}
+        onClose={() => setIsMergerOpen(false)}
+        onApplyToStudio={(nextTitle, nextMd) => {
+          setDocKind('DOCX');
+          setPdfPreviewUrl(null);
+          setTitle(nextTitle);
+          setMarkdown(nextMd);
+          setWarnings([]);
+        }}
+      />
     </div>
   );
 };

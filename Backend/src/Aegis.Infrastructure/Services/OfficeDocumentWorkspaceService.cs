@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -13,8 +14,10 @@ using Aegis.Infrastructure.Services.Docx;
 using Aegis.Infrastructure.Services.Pdf;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
+using NPOI.Util;
 using NPOI.XSSF.UserModel;
 using NPOI.XWPF.UserModel;
+using SkiaSharp;
 using UglyToad.PdfPig;
 
 namespace Aegis.Infrastructure.Services
@@ -419,6 +422,15 @@ namespace Aegis.Infrastructure.Services
                     continue;
                 }
 
+                // Embedded Markdown Base64 Image: ![alt](data:image/...;base64,...)
+                var imgMatch = Regex.Match(line, @"^!\[[^\]]*\]\(data:image/(png|jpe?g|webp);base64,([A-Za-z0-9+/=]+)\)$", RegexOptions.IgnoreCase);
+                if (imgMatch.Success)
+                {
+                    TryAddPictureToDocx(doc, imgMatch.Groups[1].Value, imgMatch.Groups[2].Value);
+                    i++;
+                    continue;
+                }
+
                 var para = doc.CreateParagraph();
 
                 if (line.StartsWith("### "))
@@ -457,6 +469,44 @@ namespace Aegis.Infrastructure.Services
             using var outMs = new MemoryStream();
             doc.Write(outMs);
             return outMs.ToArray();
+        }
+
+        private static void TryAddPictureToDocx(XWPFDocument doc, string format, string base64)
+        {
+            try
+            {
+                byte[] imgBytes = Convert.FromBase64String(base64);
+                int pxW = 800, pxH = 1100;
+                using (var bmp = SKBitmap.Decode(imgBytes))
+                {
+                    if (bmp != null && bmp.Width > 0 && bmp.Height > 0)
+                    {
+                        pxW = bmp.Width;
+                        pxH = bmp.Height;
+                    }
+                }
+
+                double maxPtW = 460.0;
+                double maxPtH = 640.0;
+                double scale = Math.Min(maxPtW / pxW, maxPtH / pxH);
+                if (scale > 1.0 && pxW < 460) scale = 1.0;
+
+                int widthEmu = Units.ToEMU(pxW * scale);
+                int heightEmu = Units.ToEMU(pxH * scale);
+                var picType = format.StartsWith("jp", StringComparison.OrdinalIgnoreCase)
+                    ? NPOI.XWPF.UserModel.PictureType.JPEG
+                    : NPOI.XWPF.UserModel.PictureType.PNG;
+
+                var imgPara = doc.CreateParagraph();
+                imgPara.Alignment = ParagraphAlignment.CENTER;
+                var imgRun = imgPara.CreateRun();
+                using var imgStream = new MemoryStream(imgBytes);
+                imgRun.AddPicture(imgStream, (int)picType, $"page.{format}", widthEmu, heightEmu);
+            }
+            catch
+            {
+                // Ignore malformed base64 image
+            }
         }
 
         private static void AppendFormattedRuns(XWPFParagraph para, string text, int fontSize)
