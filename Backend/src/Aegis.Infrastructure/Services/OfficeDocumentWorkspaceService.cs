@@ -30,6 +30,7 @@ namespace Aegis.Infrastructure.Services
         private readonly IPdfMathSymbolGlyphNormalizer? _mathGlyphNormalizer;
         private readonly IPdfVisionFallbackService? _visionFallback;
         private readonly IVietnameseTextCorrectionService? _vnCorrector;
+        private readonly IImageOcrService? _imageOcr;
 
         public OfficeDocumentWorkspaceService(
             ILogger<OfficeDocumentWorkspaceService> logger,
@@ -37,7 +38,8 @@ namespace Aegis.Infrastructure.Services
             IPdfToMarkdownTranspilerService? pdfTranspiler = null,
             IPdfMathSymbolGlyphNormalizer? mathGlyphNormalizer = null,
             IPdfVisionFallbackService? visionFallback = null,
-            IVietnameseTextCorrectionService? vnCorrector = null)
+            IVietnameseTextCorrectionService? vnCorrector = null,
+            IImageOcrService? imageOcr = null)
         {
             _logger = logger;
             _aiRouter = aiRouter;
@@ -45,6 +47,7 @@ namespace Aegis.Infrastructure.Services
             _mathGlyphNormalizer = mathGlyphNormalizer;
             _visionFallback = visionFallback;
             _vnCorrector = vnCorrector;
+            _imageOcr = imageOcr;
         }
 
         public async Task<OfficeParsedDocumentDto> ParseDocumentAsync(
@@ -65,7 +68,7 @@ namespace Aegis.Infrastructure.Services
             {
                 ".docx" => ParseDocx(ms, safeName, baseTitle),
                 ".pdf" => ParsePdf(ms, safeName, baseTitle),
-                ".png" or ".jpg" or ".jpeg" or ".webp" => ParseImageToMarkdown(ms, safeName, baseTitle, ext),
+                ".png" or ".jpg" or ".jpeg" or ".webp" => await ParseImageToMarkdownAsync(ms, safeName, baseTitle, ext, ct),
                 ".xlsx" or ".xls" => ParseSpreadsheet(ms, safeName, baseTitle),
                 ".md" or ".txt" or ".csv" => await ParsePlainOrMarkdownAsync(ms, safeName, baseTitle, ext, ct),
                 _ => throw new NotSupportedException($"Định dạng '{ext}' chưa được hỗ trợ. Vui lòng chọn .docx, .pdf, .png, .jpg, .xlsx, .xls, .md hoặc .txt.")
@@ -199,7 +202,12 @@ namespace Aegis.Infrastructure.Services
             };
         }
 
-        private OfficeParsedDocumentDto ParseImageToMarkdown(MemoryStream ms, string fileName, string title, string ext)
+        private async Task<OfficeParsedDocumentDto> ParseImageToMarkdownAsync(
+            MemoryStream ms,
+            string fileName,
+            string title,
+            string ext,
+            CancellationToken ct)
         {
             byte[] bytes = ms.ToArray();
             string mime = ext switch
@@ -209,27 +217,49 @@ namespace Aegis.Infrastructure.Services
                 _ => "image/png"
             };
 
-            var ocrLines = _visionFallback?.ReconstructPageFromScannedImage(bytes, mime, 1) ?? new List<string>();
-            string extracted = ocrLines.Count > 0
-                ? NormalizeExtractedPdfText(string.Join("\n\n", ocrLines))
-                : string.Empty;
+            string extracted = string.Empty;
+            string ocrProvider = "none";
+            if (_imageOcr != null)
+            {
+                var ocrRes = await _imageOcr.RecognizeDocumentAsync(bytes, mime, ct);
+                if (ocrRes.Success)
+                {
+                    extracted = NormalizeExtractedPdfText(ocrRes.MarkdownText);
+                    ocrProvider = ocrRes.Provider;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(extracted) && _visionFallback != null)
+            {
+                var ocrLines = _visionFallback.ReconstructPageFromScannedImage(bytes, mime, 1);
+                if (ocrLines.Count > 0)
+                    extracted = NormalizeExtractedPdfText(string.Join("\n\n", ocrLines));
+            }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"# {title}");
-            sb.AppendLine();
-            sb.AppendLine($"![{fileName}](data:{mime};base64,{Convert.ToBase64String(bytes)})");
             if (!string.IsNullOrWhiteSpace(extracted))
             {
-                sb.AppendLine();
-                sb.AppendLine("---");
-                sb.AppendLine();
                 sb.AppendLine(extracted);
+            }
+            else
+            {
+                sb.AppendLine($"# {title}");
+                sb.AppendLine();
+                sb.AppendLine($"![{fileName}](data:{mime};base64,{Convert.ToBase64String(bytes)})");
             }
 
             var warnings = new List<string>();
-            if (string.IsNullOrWhiteSpace(extracted))
+            if (ocrProvider == "tesseract-local")
             {
-                warnings.Add("Đã chèn ảnh vào trình soạn thảo Markdown; cấu hình Vision AI Key để tự động OCR chữ & công thức từ ảnh.");
+                warnings.Add("Đã nhận diện văn bản Unicode từ ảnh bằng Tesseract 5 LSTM (Offline).");
+            }
+            else if (ocrProvider == "vision-ai")
+            {
+                warnings.Add("Đã nhận diện văn bản Unicode & công thức Toán từ ảnh bằng Multimodal Vision AI.");
+            }
+            else if (string.IsNullOrWhiteSpace(extracted))
+            {
+                warnings.Add("Đã chèn ảnh vào trình soạn thảo Markdown (chưa trích xuất được chữ từ ảnh).");
             }
 
             return new OfficeParsedDocumentDto

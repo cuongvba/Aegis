@@ -19,6 +19,7 @@ export const ImageBatchMergerModal: React.FC<Props> = ({ open, onClose, onApplyT
   const [docTitle, setDocTitle] = useState('Tài liệu Tổng hợp từ Ảnh');
   const [items, setItems] = useState<BatchImageItem[]>([]);
   const [onePerPage, setOnePerPage] = useState(true);
+  const [ocrToText, setOcrToText] = useState(false);
   const [outputFmt, setOutputFmt] = useState<'DOCX' | 'MD' | 'PDF_PRINT' | 'XLSX'>('DOCX');
   const [busy, setBusy] = useState(false);
 
@@ -48,34 +49,55 @@ export const ImageBatchMergerModal: React.FC<Props> = ({ open, onClose, onApplyT
   };
 
   const handleMergeAndExport = async (downloadImmediately: boolean) => {
-    if (items.length === 0) return;
-    const md = buildMergedDocumentMarkdown(docTitle, items, onePerPage);
-    onApplyToStudio(docTitle, md);
-
-    if (downloadImmediately) {
-      if (outputFmt === 'DOCX') {
-        await officeWorkspaceService.downloadDocx(docTitle, md);
-      } else if (outputFmt === 'MD') {
-        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${docTitle.replace(/[^a-z0-9_\-\u00C0-\u024F\u1E00-\u1EFF]/gi, '_')}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else if (outputFmt === 'XLSX') {
-        await officeWorkspaceService.downloadXlsx(docTitle, [{
-          name: 'Danh sách Trang Ảnh',
-          rows: [
-            ['STT', 'Tên ảnh gốc', 'Kích thước (px)', 'Gợi ý trang'],
-            ...items.map((it, i) => [String(i + 1), it.name, `${it.width}x${it.height}`, String(it.pageHint ?? i + 1)]),
-          ],
-        }]);
-      } else if (outputFmt === 'PDF_PRINT') {
-        window.setTimeout(() => window.print(), 250);
+    if (items.length === 0 || busy) return;
+    setBusy(true);
+    try {
+      let md = '';
+      if (ocrToText) {
+        const parts: string[] = [`# ${docTitle || 'Tài liệu OCR từ Ảnh'}`, ''];
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i];
+          if (it.file) {
+            const parsed = await officeWorkspaceService.parseFile(it.file);
+            parts.push(`<!-- Trang ${i + 1}: ${it.name} -->`, parsed.markdownContent);
+          } else {
+            parts.push(`![Trang ${i + 1}](${it.dataUrl})`);
+          }
+          if (onePerPage && i < items.length - 1) parts.push('', '---page---', '');
+        }
+        md = parts.join('\n\n').trim();
+      } else {
+        md = buildMergedDocumentMarkdown(docTitle, items, onePerPage);
       }
+      onApplyToStudio(docTitle, md);
+
+      if (downloadImmediately) {
+        if (outputFmt === 'DOCX') {
+          await officeWorkspaceService.downloadDocx(docTitle, md);
+        } else if (outputFmt === 'MD') {
+          const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${docTitle.replace(/[^a-z0-9_\-\u00C0-\u024F\u1E00-\u1EFF]/gi, '_')}.md`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } else if (outputFmt === 'XLSX') {
+          await officeWorkspaceService.downloadXlsx(docTitle, [{
+            name: 'Danh sách Trang Ảnh',
+            rows: [
+              ['STT', 'Tên ảnh gốc', 'Kích thước (px)', 'Gợi ý trang'],
+              ...items.map((it, i) => [String(i + 1), it.name, `${it.width}x${it.height}`, String(it.pageHint ?? i + 1)]),
+            ],
+          }]);
+        } else if (outputFmt === 'PDF_PRINT') {
+          window.setTimeout(() => window.print(), 250);
+        }
+      }
+      onClose();
+    } finally {
+      setBusy(false);
     }
-    onClose();
   };
 
   return (
@@ -150,7 +172,11 @@ export const ImageBatchMergerModal: React.FC<Props> = ({ open, onClose, onApplyT
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <label className="inline-flex items-center gap-1.5 text-slate-300 cursor-pointer">
               <input type="checkbox" checked={onePerPage} onChange={(e) => setOnePerPage(e.target.checked)} />
-              Mỗi ảnh 1 trang A4 riêng
+              Mỗi ảnh 1 trang A4
+            </label>
+            <label className="inline-flex items-center gap-1.5 text-amber-300 font-semibold cursor-pointer" title="Dùng Vision AI + Tesseract 5 LSTM trích xuất chữ Unicode & Công thức Toán từ ảnh">
+              <input type="checkbox" checked={ocrToText} onChange={(e) => setOcrToText(e.target.checked)} />
+              🔍 OCR Thành Văn Bản (Unicode + Toán)
             </label>
             <select value={outputFmt} onChange={(e) => setOutputFmt(e.target.value as typeof outputFmt)} className="rounded-lg bg-slate-900 border border-slate-700 px-2.5 py-1.5 text-xs font-bold text-white">
               <option value="DOCX">Xuất Word (.DOCX)</option>

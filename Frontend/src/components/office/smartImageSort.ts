@@ -1,5 +1,6 @@
 export interface BatchImageItem {
   id: string;
+  file?: File;
   name: string;
   dataUrl: string;
   width: number;
@@ -57,6 +58,7 @@ export function readImageFile(file: File): Promise<BatchImageItem> {
       img.onload = () => {
         resolve({
           id: `${file.name}_${file.lastModified}_${Math.random().toString(36).slice(2, 7)}`,
+          file,
           name: file.name,
           dataUrl,
           width: img.naturalWidth || 800,
