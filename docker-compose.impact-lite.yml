@@ -1,0 +1,107 @@
+# ==============================================================================
+# AEGIS GLOBAL — IMPACT LITE / NANO NODE (The Great Equalizer Edition)
+# ==============================================================================
+# Thiết kế tối ưu cho trường học vùng sâu, vùng xa & PC cũ (2-4 GB RAM, LAN-First).
+# Mặc định chỉ chạy 3 container cốt lõi (~750MB - 900MB RAM):
+#   docker compose -f docker-compose.impact-lite.yml up -d
+#
+# Bật thêm Giọng nói Offline CPU (Piper TTS):
+#   docker compose -f docker-compose.impact-lite.yml --profile offline-tts up -d
+#
+# Bật thêm Chấm thi Thích ứng IRT/CAT:
+#   docker compose -f docker-compose.impact-lite.yml --profile adaptive-irt up -d
+# ==============================================================================
+
+name: aegis-nano
+
+services:
+  # 1. DATABASE TINH GỌN (PostgreSQL 17 Alpine — Tuned cho RAM thấp)
+  postgres:
+    container_name: aegis-nano-postgres
+    image: postgres:17-alpine
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c work_mem=4MB
+      -c maintenance_work_mem=32MB
+      -c max_connections=40
+      -c synchronous_commit=off
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-aegisquiz}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-AegisNano2026!}
+    volumes:
+      - nano_pgdata:/var/lib/postgresql/data
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-aegisquiz}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # 2. BACKEND SIÊU NHẸ (.NET 10 — GC Hard Limit 384MB, Zero Keycloak/Redis Overhead)
+  backend:
+    container_name: aegis-nano-backend
+    image: aegis-backend:latest
+    build: ./Backend
+    ports:
+      - "${BACKEND_PORT:-5080}:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-aegisquiz};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-AegisNano2026!}
+      - Jwt__Secret=${JWT_SECRET:-AegisNanoLocalLanSigningKey2026Minimum32Bytes!}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AEGIS_IMPACT_MODE=lite
+      - DOTNET_GCHeapHardLimit=0x18000000
+      - DOTNET_TieredCompilation=1
+      - AEGIS_TTS_ENDPOINT=${AEGIS_TTS_ENDPOINT:-http://piper-tts:8000/v1/audio/speech}
+      - IrtService__BaseUrl=${IRT_BASE_URL:-http://irt-service:8001}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 512m
+    restart: unless-stopped
+
+  # 3. FRONTEND LAN PORTAL (Nginx Alpine — <64MB RAM, phục vụ toàn bộ SPA + Visual Lab + Office)
+  frontend:
+    container_name: aegis-nano-frontend
+    image: aegis-frontend:latest
+    build:
+      context: ./Frontend
+      args:
+        VITE_API_URL: ""
+        VITE_AUTH_HUB_URL: http://localhost:3000
+    ports:
+      - "${IMPACT_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    mem_limit: 64m
+    restart: unless-stopped
+
+  # 4. [OPTIONAL PROFILE: offline-tts] GIỌNG ĐỌC OFFLINE CPU (Piper / OpenAI-Compatible)
+  piper-tts:
+    container_name: aegis-nano-tts
+    image: ${AEGIS_PIPER_IMAGE:-ghcr.io/matatonic/openedai-speech:latest}
+    profiles: ["offline-tts"]
+    environment:
+      - TTS_HOME=/app/voices
+    volumes:
+      - nano_voices:/app/voices
+    mem_limit: 512m
+    restart: unless-stopped
+
+  # 5. [OPTIONAL PROFILE: adaptive-irt] KHẢO THÍ THÍCH ỨNG IRT/CAT
+  irt-service:
+    container_name: aegis-nano-irt
+    image: aegis-irt-service:latest
+    build: ./irt-service
+    profiles: ["adaptive-irt"]
+    environment:
+      - LOG_LEVEL=warning
+    mem_limit: 256m
+    restart: unless-stopped
+
+volumes:
+  nano_pgdata:
+  nano_voices:
