@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { FolderPlus, Mic, Play, Plus, Save, Sparkles, Square, Trash2, X } from 'lucide-react';
+import { Copy, FolderPlus, Mic, Play, Plus, Save, Sparkles, Square, Trash2, Wand2, X } from 'lucide-react';
 import { KidsDynamicStageCanvas } from './KidsDynamicStageCanvas';
 import { KidsAssetDrawer } from './KidsAssetDrawer';
 import {
@@ -8,8 +8,9 @@ import {
   type AmbientEffectType,
   type CharAnimationType,
   type DynamicDomainCode,
-  type DynamicEpisodeScene,
+  type DynamicEpisode,
   type DynamicKidsCourseGame,
+  type DynamicStageScene,
   type StageEntityItem,
   type StudioAssetItem,
 } from './kidsStudioRegistry';
@@ -25,33 +26,43 @@ interface Props {
   onPlayGameNow?: (course: DynamicKidsCourseGame) => void;
 }
 
-const DEFAULT_EPISODE = (idx: number): DynamicEpisodeScene => ({
-  id: `ep-${Date.now()}-${idx}`,
-  episodeTitle: `Tập ${idx}: Khởi Đầu Mới`,
+const makeScene = (idx: number): DynamicStageScene => ({
+  id: `sc-${Date.now()}-${idx}`,
+  sceneTitle: `Cảnh ${idx}`,
   backdropGradient: 'from-sky-400 via-cyan-300 to-indigo-500',
   ambientEffect: 'clouds',
-  narration: 'Chào mừng Hero! Hãy chạm vào nhân vật để di chuyển vị trí trên sân khấu.',
+  narration: 'Chạm vào nhân vật hoặc phụ cảnh rồi bấm lên sân khấu để đổi vị trí.',
   entities: [
-    { id: `lead-${idx}`, role: 'LEAD', name: 'Nhân Vật Chính', emoji: '🦉', x: 40, y: 62, animation: 'bounce', speech: 'Xin chào các bạn!' },
-    { id: `prop-${idx}`, role: 'PROP', name: 'Cây Cổ Thụ', emoji: '🌳', x: 18, y: 58, animation: 'idle' },
+    { id: `lead-${Date.now()}`, role: 'LEAD', name: 'Nhân Vật Chính', emoji: '🦉', x: 42, y: 62, animation: 'bounce', speech: 'Xin chào!' },
+    { id: `prop-${Date.now()}`, role: 'PROP', name: 'Cây Xanh', emoji: '🌳', x: 18, y: 58, animation: 'idle' },
   ],
+});
+
+const makeEpisode = (idx: number): DynamicEpisode => ({
+  id: `ep-${Date.now()}-${idx}`,
+  episodeTitle: `Tập ${idx}: Khởi Đầu Mới`,
+  scenes: [makeScene(1)],
   challengeQuestion: 'Đâu là hành động đẹp trong tập này?',
   challengeOptions: ['Giúp đỡ bạn bè & học điều mới', 'Bỏ cuộc giữa chừng'],
   challengeCorrectIndex: 0,
 });
 
-export const KidsMakerStudioModal: React.FC<Props> = ({
-  open,
-  ageBand,
-  onClose,
-  onSaved,
-  onPlayGameNow,
-}) => {
+const RANDOM_PROPS = [
+  { name: 'Cây Xanh', emoji: '🌳' },
+  { name: 'Hoa Xinh', emoji: '🌸' },
+  { name: 'Bướm Bay', emoji: '🦋' },
+  { name: 'Ngôi Nhà', emoji: '🏡' },
+  { name: 'Núi Đồi', emoji: '⛰️' },
+  { name: 'Nấm Rừng', emoji: '🍄' },
+];
+
+export const KidsMakerStudioModal: React.FC<Props> = ({ open, ageBand, onClose, onSaved, onPlayGameNow }) => {
   const [domainCode, setDomainCode] = useState<DynamicDomainCode>('LANGUAGE');
   const [title, setTitle] = useState('Khóa Học & Game Phiêu Lưu Mới');
   const [heroBadgeTitle, setHeroBadgeTitle] = useState('Anh Hùng Tri Thức');
-  const [episodes, setEpisodes] = useState<DynamicEpisodeScene[]>([DEFAULT_EPISODE(1)]);
+  const [episodes, setEpisodes] = useState<DynamicEpisode[]>([makeEpisode(1)]);
   const [epIdx, setEpIdx] = useState(0);
+  const [scIdx, setScIdx] = useState(0);
   const [selectedEntId, setSelectedEntId] = useState<string | null>(null);
   const [assetDrawerOpen, setAssetDrawerOpen] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -61,38 +72,71 @@ export const KidsMakerStudioModal: React.FC<Props> = ({
   if (!open) return null;
 
   const ep = episodes[epIdx] || episodes[0];
-  const selectedEnt = ep.entities.find((e) => e.id === selectedEntId) || null;
+  const sc = ep.scenes[scIdx] || ep.scenes[0];
+  const selectedEnt = sc.entities.find((e) => e.id === selectedEntId) || null;
 
-  const patchEpisode = (patch: Partial<DynamicEpisodeScene>) => {
+  const patchEpisode = (patch: Partial<DynamicEpisode>) =>
     setEpisodes((prev) => prev.map((item, i) => (i === epIdx ? { ...item, ...patch } : item)));
+
+  const patchScene = (patch: Partial<DynamicStageScene>) =>
+    patchEpisode({ scenes: ep.scenes.map((item, i) => (i === scIdx ? { ...item, ...patch } : item)) });
+
+  const patchEntity = (id: string, patch: Partial<StageEntityItem>) =>
+    patchScene({ entities: sc.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
+
+  const deleteEpisode = (idx: number) => {
+    if (episodes.length <= 1) return;
+    setEpisodes((p) => p.filter((_, i) => i !== idx));
+    setEpIdx(Math.max(0, idx - 1));
+    setScIdx(0);
+    setSelectedEntId(null);
   };
 
-  const patchEntity = (id: string, patch: Partial<StageEntityItem>) => {
-    patchEpisode({ entities: ep.entities.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
+  const deleteScene = (idx: number) => {
+    if (ep.scenes.length <= 1) return;
+    patchEpisode({ scenes: ep.scenes.filter((_, i) => i !== idx) });
+    setScIdx(Math.max(0, idx - 1));
+    setSelectedEntId(null);
+  };
+
+  const duplicateSelectedEntity = () => {
+    if (!selectedEnt) return;
+    const clone: StageEntityItem = {
+      ...selectedEnt,
+      id: `clone-${Date.now()}`,
+      name: `${selectedEnt.name} (Bản sao)`,
+      x: Math.min(90, selectedEnt.x + 12),
+      y: Math.min(85, selectedEnt.y + 8),
+    };
+    patchScene({ entities: [...sc.entities, clone] });
+    setSelectedEntId(clone.id);
+  };
+
+  const scatterRandomProps = () => {
+    const generated: StageEntityItem[] = Array.from({ length: 4 }).map((_, i) => {
+      const pick = RANDOM_PROPS[Math.floor(Math.random() * RANDOM_PROPS.length)];
+      return {
+        id: `rnd-prop-${Date.now()}-${i}`,
+        role: 'PROP',
+        name: pick.name,
+        emoji: pick.emoji,
+        x: Math.round(12 + Math.random() * 76),
+        y: Math.round(45 + Math.random() * 38),
+        animation: 'idle',
+      };
+    });
+    patchScene({ entities: [...sc.entities, ...generated] });
   };
 
   const handleApplyAsset = (asset: StudioAssetItem) => {
-    if (asset.kind === 'BACKDROP') {
-      patchEpisode({ backdropImageUrl: asset.dataUrl, backdropGradient: asset.gradient || ep.backdropGradient, backdropVideoUrl: undefined });
-    } else if (asset.kind === 'VIDEO') {
-      patchEpisode({ backdropVideoUrl: asset.dataUrl });
-    } else if (asset.kind === 'MUSIC') {
-      patchEpisode({ musicAssetId: asset.id });
-    } else if (asset.kind === 'AUDIO') {
-      patchEpisode({ audioDataUrl: asset.dataUrl });
-    } else {
-      const role: StageEntityItem['role'] = asset.kind === 'PROP' ? 'PROP' : ep.entities.some((e) => e.role === 'LEAD') ? 'SUPPORT' : 'LEAD';
-      const created: StageEntityItem = {
-        id: `ent-${Date.now()}`,
-        role,
-        name: asset.name,
-        emoji: asset.emoji || '🌟',
-        imageUrl: asset.dataUrl,
-        x: 55,
-        y: 55,
-        animation: role === 'PROP' ? 'idle' : 'bounce',
-      };
-      patchEpisode({ entities: [...ep.entities, created] });
+    if (asset.kind === 'BACKDROP') patchScene({ backdropImageUrl: asset.dataUrl, backdropGradient: asset.gradient || sc.backdropGradient, backdropVideoUrl: undefined });
+    else if (asset.kind === 'VIDEO') patchScene({ backdropVideoUrl: asset.dataUrl });
+    else if (asset.kind === 'MUSIC') patchScene({ musicAssetId: asset.id });
+    else if (asset.kind === 'AUDIO') patchScene({ audioDataUrl: asset.dataUrl });
+    else {
+      const role: StageEntityItem['role'] = asset.kind === 'PROP' ? 'PROP' : sc.entities.some((e) => e.role === 'LEAD') ? 'SUPPORT' : 'LEAD';
+      const created: StageEntityItem = { id: `ent-${Date.now()}`, role, name: asset.name, emoji: asset.emoji || '🌟', imageUrl: asset.dataUrl, x: 55, y: 55, animation: role === 'PROP' ? 'idle' : 'bounce' };
+      patchScene({ entities: [...sc.entities, created] });
       setSelectedEntId(created.id);
     }
   };
@@ -107,7 +151,7 @@ export const KidsMakerStudioModal: React.FC<Props> = ({
       rec.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
         const reader = new FileReader();
-        reader.onload = () => patchEpisode({ audioDataUrl: String(reader.result || '') });
+        reader.onload = () => patchScene({ audioDataUrl: String(reader.result || '') });
         reader.readAsDataURL(new Blob(chunksRef.current, { type: 'audio/webm' }));
       };
       recorderRef.current = rec;
@@ -116,7 +160,7 @@ export const KidsMakerStudioModal: React.FC<Props> = ({
     } catch { /* ignore */ }
   };
 
-  const buildCourseObj = (): DynamicKidsCourseGame => ({
+  const buildCourse = (): DynamicKidsCourseGame => ({
     id: `course-${Date.now()}`,
     domainCode,
     title: title.trim() || 'Game Sáng Tạo Mới',
@@ -129,110 +173,101 @@ export const KidsMakerStudioModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-sm">
-      <div className="w-full max-w-5xl max-h-[93vh] flex flex-col rounded-3xl border-4 border-amber-300 bg-white text-slate-900 shadow-2xl overflow-hidden">
+      <div className="w-full max-w-5xl max-h-[94vh] flex flex-col rounded-3xl border-4 border-amber-300 bg-white text-slate-900 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5" />
-            <h2 className="text-sm sm:text-base font-black">Kids Dynamic Stage & Game Studio (Đa Tập • Đa Lớp • Hóa Thân Hero)</h2>
-          </div>
+          <div className="flex items-center gap-2"><Sparkles className="w-5 h-5" /><h2 className="text-sm sm:text-base font-black">Kids Dynamic Stage & Game Studio (Tập $\rightarrow$ Nhiều Cảnh $\rightarrow$ Hero)</h2></div>
           <button onClick={onClose} className="p-1.5 rounded-xl bg-white/20"><X className="w-5 h-5" /></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
-          {/* Dynamic Course Header */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2.5 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
-            <select value={domainCode} onChange={(e) => setDomainCode(e.target.value as DynamicDomainCode)} className="sm:col-span-3 rounded-xl border-2 border-slate-200 px-2.5 py-2 font-black bg-slate-50">
+            <select value={domainCode} onChange={(e) => setDomainCode(e.target.value as DynamicDomainCode)} className="sm:col-span-3 rounded-xl border-2 border-slate-200 px-2.5 py-1.5 font-black bg-slate-50">
               {DYNAMIC_DOMAINS.map((d) => <option key={d.code} value={d.code}>{d.emoji} {d.labelVi}</option>)}
             </select>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Tên khóa học / game..." className="sm:col-span-5 rounded-xl border-2 border-amber-200 px-3 py-2 font-black" />
-            <input value={heroBadgeTitle} onChange={(e) => setHeroBadgeTitle(e.target.value)} placeholder="Danh hiệu Hero khi phá đảo..." className="sm:col-span-4 rounded-xl border-2 border-indigo-200 px-3 py-2 font-bold text-indigo-800" />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="sm:col-span-5 rounded-xl border-2 border-amber-200 px-3 py-1.5 font-black" placeholder="Tên khóa học / game..." />
+            <input value={heroBadgeTitle} onChange={(e) => setHeroBadgeTitle(e.target.value)} className="sm:col-span-4 rounded-xl border-2 border-indigo-200 px-3 py-1.5 font-bold text-indigo-800" placeholder="Danh hiệu Hero..." />
           </div>
 
-          {/* Episode Tabs */}
+          {/* Episodes Bar (Add / Delete) */}
           <div className="flex flex-wrap items-center gap-1.5">
             {episodes.map((item, idx) => (
-              <button key={item.id} onClick={() => { setEpIdx(idx); setSelectedEntId(null); }} className={`px-3 py-1.5 rounded-xl font-black transition ${idx === epIdx ? 'bg-indigo-600 text-white shadow' : 'bg-slate-100 text-slate-700'}`}>
-                🎬 Tập {idx + 1}
-              </button>
+              <div key={item.id} className="inline-flex items-center rounded-xl overflow-hidden border border-indigo-200">
+                <button onClick={() => { setEpIdx(idx); setScIdx(0); setSelectedEntId(null); }} className={`px-3 py-1 font-black ${idx === epIdx ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700'}`}>🎬 Tập {idx + 1}</button>
+                {episodes.length > 1 && <button onClick={() => deleteEpisode(idx)} className="px-1.5 py-1 bg-rose-100 text-rose-600 hover:bg-rose-200" title="Xóa tập"><Trash2 className="w-3 h-3" /></button>}
+              </div>
             ))}
-            <button onClick={() => { setEpisodes((p) => [...p, DEFAULT_EPISODE(p.length + 1)]); setEpIdx(episodes.length); }} className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 font-black">
-              <Plus className="w-3.5 h-3.5" /> Thêm Tập
-            </button>
-            <button onClick={() => setAssetDrawerOpen(true)} className="ml-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-white font-black shadow">
-              <FolderPlus className="w-4 h-4" /> Kho Tài Nguyên (Cảnh / Nhân vật / Video / Music / Audio)
-            </button>
+            <button onClick={() => { setEpisodes((p) => [...p, makeEpisode(p.length + 1)]); setEpIdx(episodes.length); setScIdx(0); }} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-100 text-emerald-800 font-black"><Plus className="w-3.5 h-3.5" /> Thêm Tập</button>
+            <button onClick={() => setAssetDrawerOpen(true)} className="ml-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500 text-white font-black shadow"><FolderPlus className="w-3.5 h-3.5" /> Kho Tài Nguyên</button>
           </div>
 
-          {/* 6-Layer Stage + Entity Inspector */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <div className="lg:col-span-7 space-y-2">
-              <KidsDynamicStageCanvas
-                scene={ep}
-                editable
-                selectedEntityId={selectedEntId}
-                onSelectEntity={setSelectedEntId}
-                onMoveEntity={(id, x, y) => patchEntity(id, { x, y })}
-              />
-              <div className="text-[11px] text-slate-500 font-semibold">Mẹo: Bấm chọn nhân vật/phụ cảnh trên sân khấu rồi bấm vào vị trí mới để đặt tọa độ.</div>
-            </div>
+          {/* Scenes inside Episode Bar (Add / Delete / Auto-Scatter Props) */}
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 rounded-xl p-1.5">
+            {ep.scenes.map((item, idx) => (
+              <div key={item.id} className="inline-flex items-center rounded-lg overflow-hidden border border-slate-300">
+                <button onClick={() => { setScIdx(idx); setSelectedEntId(null); }} className={`px-2.5 py-1 font-bold ${idx === scIdx ? 'bg-sky-600 text-white' : 'bg-white text-slate-700'}`}>🖼️ Cảnh {idx + 1}</button>
+                {ep.scenes.length > 1 && <button onClick={() => deleteScene(idx)} className="px-1.5 py-1 bg-rose-50 text-rose-600" title="Xóa cảnh"><Trash2 className="w-3 h-3" /></button>}
+              </div>
+            ))}
+            <button onClick={() => { patchEpisode({ scenes: [...ep.scenes, makeScene(ep.scenes.length + 1)] }); setScIdx(ep.scenes.length); }} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 font-black"><Plus className="w-3 h-3" /> Thêm Cảnh</button>
+            <button onClick={scatterRandomProps} className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 font-black"><Wand2 className="w-3 h-3" /> Rải Phụ Cảnh Ngẫu Nhiên</button>
+          </div>
 
-            <div className="lg:col-span-5 rounded-2xl border-2 border-slate-200 bg-slate-50 p-3 space-y-2.5">
-              <input value={ep.episodeTitle} onChange={(e) => patchEpisode({ episodeTitle: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-black" placeholder="Tên tập..." />
-              <div className="flex flex-wrap items-center gap-2">
-                <select value={ep.ambientEffect} onChange={(e) => patchEpisode({ ambientEffect: e.target.value as AmbientEffectType })} className="flex-1 rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-bold">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <div className="lg:col-span-7">
+              <KidsDynamicStageCanvas scene={sc} editable selectedEntityId={selectedEntId} onSelectEntity={setSelectedEntId} onMoveEntity={(id, x, y) => patchEntity(id, { x, y })} />
+            </div>
+            <div className="lg:col-span-5 rounded-2xl border-2 border-slate-200 bg-slate-50 p-3 space-y-2">
+              <div className="flex gap-1.5">
+                <select value={sc.ambientEffect} onChange={(e) => patchScene({ ambientEffect: e.target.value as AmbientEffectType })} className="flex-1 rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-bold">
                   <option value="none">Hoạt cảnh: Không</option>
-                  <option value="clouds">☁️ Mây trôi</option>
-                  <option value="stars">✨ Ánh sao</option>
-                  <option value="bubbles">🫧 Bọt biển</option>
-                  <option value="petals">🌸 Hoa lá bay</option>
+                  <option value="clouds">☁️ Mây trôi ngang</option>
                   <option value="rain">🌧️ Mưa rơi</option>
+                  <option value="sunbeams">☀️ Mặt trời chiếu</option>
+                  <option value="bubbles">🫧 Bọt biển nổi</option>
+                  <option value="petals">🌸 Hoa lá bay</option>
+                  <option value="stars">✨ Sao lấp lánh</option>
                 </select>
                 <button onClick={() => void toggleRecord()} className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-xl font-black text-white ${recording ? 'bg-rose-600 animate-pulse' : 'bg-indigo-600'}`}>
                   {recording ? <Square className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />} {recording ? 'Dừng' : 'Thu Audio'}
                 </button>
               </div>
-              <textarea rows={2} value={ep.narration} onChange={(e) => patchEpisode({ narration: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white p-2 font-semibold" placeholder="Lời dẫn chuyện của tập..." />
-              <input value={ep.challengeQuestion || ''} onChange={(e) => patchEpisode({ challengeQuestion: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-semibold" placeholder="Câu hỏi thử thách qua tập (tùy chọn)..." />
+              <textarea rows={2} value={sc.narration} onChange={(e) => patchScene({ narration: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white p-2 font-semibold" placeholder="Lời dẫn cảnh này..." />
+              <input value={ep.challengeQuestion || ''} onChange={(e) => patchEpisode({ challengeQuestion: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-semibold" placeholder="Câu hỏi thử thách cuối tập..." />
 
               {selectedEnt && (
-                <div className="rounded-xl bg-amber-50 border border-amber-300 p-2.5 space-y-1.5">
+                <div className="rounded-xl bg-amber-50 border border-amber-300 p-2 space-y-1.5">
                   <div className="flex items-center justify-between font-black text-amber-900">
-                    <span>Đang chọn: {selectedEnt.emoji} {selectedEnt.name}</span>
-                    <button onClick={() => { patchEpisode({ entities: ep.entities.filter((x) => x.id !== selectedEnt.id) }); setSelectedEntId(null); }} className="text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <span>{selectedEnt.emoji} {selectedEnt.name}</span>
+                    <div className="flex gap-1.5">
+                      <button onClick={duplicateSelectedEntity} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-sky-100 text-sky-800" title="Nhân bản"><Copy className="w-3 h-3" /> Nhân bản</button>
+                      <button onClick={() => { patchScene({ entities: sc.entities.filter((x) => x.id !== selectedEnt.id) }); setSelectedEntId(null); }} className="text-rose-600" title="Xóa"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <select value={selectedEnt.role} onChange={(e) => patchEntity(selectedEnt.id, { role: e.target.value as StageEntityItem['role'] })} className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold">
-                      <option value="LEAD">Nhân vật Chính (Hero)</option>
+                      <option value="LEAD">Nhân vật Chính</option>
                       <option value="SUPPORT">Nhân vật Phụ</option>
-                      <option value="HELPER">Nhân vật Bổ trợ</option>
+                      <option value="HELPER">Bổ trợ</option>
                       <option value="PROP">Phụ cảnh</option>
                     </select>
                     <select value={selectedEnt.animation} onChange={(e) => patchEntity(selectedEnt.id, { animation: e.target.value as CharAnimationType })} className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold">
                       <option value="idle">Đứng yên</option>
                       <option value="bounce">Nhún nhảy</option>
-                      <option value="fly">Bay lượn</option>
+                      <option value="fly">Bay lơ lửng</option>
                       <option value="wave">Vẫy chào</option>
                     </select>
                   </div>
-                  <input value={selectedEnt.speech || ''} onChange={(e) => patchEntity(selectedEnt.id, { speech: e.target.value })} placeholder="Bong bóng thoại của nhân vật..." className="w-full rounded-lg border border-amber-200 bg-white px-2 py-1 font-semibold" />
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap justify-end gap-2 text-xs">
-          {onPlayGameNow && (
-            <button onClick={() => { const c = buildCourseObj(); saveDynamicCourse(c); onPlayGameNow(c); onClose(); }} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black shadow">
-              <Play className="w-4 h-4 fill-current" /> Lưu & Hóa Thân Chơi Thử
-            </button>
-          )}
-          <button onClick={() => { const c = buildCourseObj(); saveDynamicCourse(c); onSaved(c); onClose(); }} className="inline-flex items-center gap-1.5 px-5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black shadow">
-            <Save className="w-4 h-4" /> Lưu Khóa Học / Game (Offline)
-          </button>
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end gap-2 text-xs">
+          {onPlayGameNow && <button onClick={() => { const c = buildCourse(); saveDynamicCourse(c); onPlayGameNow(c); onClose(); }} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-indigo-600 text-white font-black"><Play className="w-4 h-4 fill-current" /> Hóa Thân Chơi Thử</button>}
+          <button onClick={() => { const c = buildCourse(); saveDynamicCourse(c); onSaved(c); onClose(); }} className="inline-flex items-center gap-1.5 px-5 py-2 rounded-2xl bg-emerald-600 text-white font-black"><Save className="w-4 h-4" /> Lưu Khóa Học / Game</button>
         </div>
       </div>
-
       <KidsAssetDrawer open={assetDrawerOpen} onClose={() => setAssetDrawerOpen(false)} onApplyAsset={handleApplyAsset} />
     </div>
   );

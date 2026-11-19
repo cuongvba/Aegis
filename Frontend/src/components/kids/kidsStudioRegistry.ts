@@ -1,7 +1,7 @@
 import type { KidAgeBand } from './kidsOfflineVault';
 
 export type DynamicDomainCode = 'LANGUAGE' | 'NATURE_STEM' | 'SOCIAL_CULTURE' | 'SKILLS_CREATIVITY';
-export type AmbientEffectType = 'none' | 'clouds' | 'stars' | 'bubbles' | 'petals' | 'rain';
+export type AmbientEffectType = 'none' | 'clouds' | 'rain' | 'sunbeams' | 'stars' | 'bubbles' | 'petals';
 export type CharAnimationType = 'idle' | 'bounce' | 'fly' | 'walk' | 'wave';
 export type AssetKind = 'BACKDROP' | 'CHARACTER' | 'PROP' | 'VIDEO' | 'MUSIC' | 'AUDIO';
 
@@ -17,8 +17,8 @@ export interface StudioAssetItem {
   kind: AssetKind;
   name: string;
   emoji?: string;
-  dataUrl?: string; // Image, SVG, Video, Audio, or Music base64
-  notes?: number[]; // For 8-note synth music presets
+  dataUrl?: string;
+  notes?: number[];
   gradient?: string;
   createdAt: string;
 }
@@ -29,15 +29,15 @@ export interface StageEntityItem {
   name: string;
   emoji: string;
   imageUrl?: string;
-  x: number; // 10..90 %
-  y: number; // 15..85 %
+  x: number;
+  y: number;
   animation: CharAnimationType;
   speech?: string;
 }
 
-export interface DynamicEpisodeScene {
+export interface DynamicStageScene {
   id: string;
-  episodeTitle: string;
+  sceneTitle: string;
   backdropGradient: string;
   backdropImageUrl?: string;
   backdropVideoUrl?: string;
@@ -46,6 +46,12 @@ export interface DynamicEpisodeScene {
   audioDataUrl?: string;
   narration: string;
   entities: StageEntityItem[];
+}
+
+export interface DynamicEpisode {
+  id: string;
+  episodeTitle: string;
+  scenes: DynamicStageScene[];
   challengeQuestion?: string;
   challengeOptions?: string[];
   challengeCorrectIndex?: number;
@@ -58,7 +64,7 @@ export interface DynamicKidsCourseGame {
   ageBand: KidAgeBand;
   isGameMode: boolean;
   heroBadgeTitle: string;
-  episodes: DynamicEpisodeScene[];
+  episodes: DynamicEpisode[];
   createdAt: string;
 }
 
@@ -73,7 +79,7 @@ export interface HeroBadgeRecord {
   completedAt: string;
 }
 
-const COURSES_KEY = 'aegis-kids-dynamic-courses-v1';
+const COURSES_KEY = 'aegis-kids-dynamic-courses-v2';
 const ASSETS_KEY = 'aegis-kids-dynamic-assets-v1';
 const HEROES_KEY = 'aegis-kids-hall-of-heroes-v1';
 
@@ -116,15 +122,32 @@ const DEFAULT_COURSES: DynamicKidsCourseGame[] = [
       {
         id: 'ep-1',
         episodeTitle: 'Tập 1: Bí Mật Của Hạt Mầm',
-        backdropGradient: 'from-emerald-400 via-lime-500 to-teal-600',
-        ambientEffect: 'petals',
-        musicAssetId: 'mu-twinkle',
-        narration: 'Chào mừng người hùng nhỏ! Cây xanh cần ánh nắng và nước sạch để quang hợp và lớn lên.',
-        entities: [
-          { id: 'e-lead', role: 'LEAD', name: 'Bạn Nhỏ Hero', emoji: '🦉', x: 38, y: 62, animation: 'bounce', speech: 'Mình sẽ chăm sóc khu rừng!' },
-          { id: 'e-sup', role: 'SUPPORT', name: 'Thỏ Con', emoji: '🐰', x: 68, y: 66, animation: 'wave', speech: 'Cảm ơn bạn đã tưới nước!' },
-          { id: 'e-prop', role: 'PROP', name: 'Cây Cổ Thụ', emoji: '🌳', x: 18, y: 55, animation: 'idle' },
-          { id: 'e-help', role: 'HELPER', name: 'Mặt Trời', emoji: '☀️', x: 82, y: 22, animation: 'fly', speech: 'Quang hợp = Nắng + Nước!' },
+        scenes: [
+          {
+            id: 'sc-1-1',
+            sceneTitle: 'Cảnh 1: Khu rừng buổi sáng',
+            backdropGradient: 'from-emerald-400 via-lime-500 to-teal-600',
+            ambientEffect: 'sunbeams',
+            musicAssetId: 'mu-twinkle',
+            narration: 'Buổi sáng nắng ấm chan hòa, bạn nhỏ Hero bước vào khu rừng để đánh thức những hạt mầm!',
+            entities: [
+              { id: 'e-lead', role: 'LEAD', name: 'Bạn Nhỏ Hero', emoji: '🦉', x: 35, y: 65, animation: 'bounce', speech: 'Chào buổi sáng khu rừng!' },
+              { id: 'e-prop', role: 'PROP', name: 'Cây Cổ Thụ', emoji: '🌳', x: 16, y: 58, animation: 'idle' },
+              { id: 'e-help', role: 'HELPER', name: 'Mặt Trời', emoji: '☀️', x: 84, y: 20, animation: 'fly', speech: 'Nắng ấm giúp cây lớn!' },
+            ],
+          },
+          {
+            id: 'sc-1-2',
+            sceneTitle: 'Cảnh 2: Cơn mưa tưới mát',
+            backdropGradient: 'from-sky-500 via-cyan-600 to-slate-700',
+            ambientEffect: 'rain',
+            narration: 'Mưa rơi tí tách tưới mát cho đất, giúp cây xanh quang hợp và nở hoa rực rỡ!',
+            entities: [
+              { id: 'e-lead-12', role: 'LEAD', name: 'Bạn Nhỏ Hero', emoji: '🦉', x: 45, y: 65, animation: 'wave', speech: 'Cơn mưa thật mát lành!' },
+              { id: 'e-sup-12', role: 'SUPPORT', name: 'Thỏ Con', emoji: '🐰', x: 72, y: 68, animation: 'bounce', speech: 'Cây đang mọc mầm kìa!' },
+              { id: 'e-prop-12', role: 'PROP', name: 'Mầm Xanh', emoji: '🌱', x: 24, y: 74, animation: 'idle' },
+            ],
+          },
         ],
         challengeQuestion: 'Cây xanh cần gì để tạo ra thức ăn (quang hợp)?',
         challengeOptions: ['Ánh nắng, nước và không khí', 'Chỉ cần bóng tối', 'Kẹo ngọt'],
@@ -133,14 +156,20 @@ const DEFAULT_COURSES: DynamicKidsCourseGame[] = [
       {
         id: 'ep-2',
         episodeTitle: 'Tập 2: Ngọn Đuốc Anh Hùng',
-        backdropGradient: 'from-sky-400 via-cyan-300 to-indigo-500',
-        ambientEffect: 'stars',
-        musicAssetId: 'mu-hero',
-        narration: 'Tuyệt vời! Bạn đã bảo vệ dòng suối mát lành cho muôn thú. Trả lời thử thách cuối để trở thành Hero!',
-        entities: [
-          { id: 'e-lead-2', role: 'LEAD', name: 'Bạn Nhỏ Hero', emoji: '🦉', x: 50, y: 55, animation: 'fly', speech: 'Cùng bảo vệ Trái Đất nhé!' },
-          { id: 'e-prop-2', role: 'PROP', name: 'Lâu Đài Xanh', emoji: '🏰', x: 20, y: 58, animation: 'idle' },
-          { id: 'e-sup-2', role: 'SUPPORT', name: 'Rồng Nhí', emoji: '🐉', x: 78, y: 54, animation: 'bounce' },
+        scenes: [
+          {
+            id: 'sc-2-1',
+            sceneTitle: 'Cảnh 1: Bầu trời bình yên',
+            backdropGradient: 'from-sky-400 via-cyan-300 to-indigo-500',
+            ambientEffect: 'clouds',
+            musicAssetId: 'mu-hero',
+            narration: 'Mây trắng bồng bềnh trôi, muôn thú cùng chung tay bảo vệ dòng suối xanh!',
+            entities: [
+              { id: 'e-lead-2', role: 'LEAD', name: 'Bạn Nhỏ Hero', emoji: '🦉', x: 50, y: 55, animation: 'fly', speech: 'Cùng bảo vệ Trái Đất nhé!' },
+              { id: 'e-prop-2', role: 'PROP', name: 'Lâu Đài Xanh', emoji: '🏰', x: 20, y: 58, animation: 'idle' },
+              { id: 'e-sup-2', role: 'SUPPORT', name: 'Rồng Nhí', emoji: '🐉', x: 78, y: 54, animation: 'bounce' },
+            ],
+          },
         ],
         challengeQuestion: 'Hành động nào giúp bảo vệ môi trường?',
         challengeOptions: ['Trồng cây và bỏ rác đúng nơi quy định', 'Xả rác xuống sông'],
