@@ -10,11 +10,16 @@ import {
   Palette,
   Settings2,
   ShieldCheck,
+  Sparkles,
+  Award,
   Wand2,
   Feather,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 import type { KidsLocaleProfile } from '@/services/kidsCurriculum.service';
 import type { KidsVoiceProfile } from './kidsSpeech';
+import type { KidProfile } from './kidsOfflineVault';
 
 interface Props {
   isVi: boolean;
@@ -23,10 +28,14 @@ interface Props {
   voices: KidsVoiceProfile[];
   selectedVoiceId: string;
   voiceRate: number;
+  isOnline: boolean;
+  activeProfile: KidProfile;
   onGoHome: () => void;
   onGoOffice: () => void;
   onPlayMusic: () => void;
   onOpenTheater: () => void;
+  onOpenMakerStudio: () => void;
+  onOpenMuseum: () => void;
   onOpenYouthCreator: () => void;
   onOpenStages: () => void;
   onOpenReview: () => void;
@@ -44,10 +53,14 @@ export const KidsHeaderBar: React.FC<Props> = ({
   voices,
   selectedVoiceId,
   voiceRate,
+  isOnline,
+  activeProfile,
   onGoHome,
   onGoOffice,
   onPlayMusic,
   onOpenTheater,
+  onOpenMakerStudio,
+  onOpenMuseum,
   onOpenYouthCreator,
   onOpenStages,
   onOpenReview,
@@ -82,28 +95,44 @@ export const KidsHeaderBar: React.FC<Props> = ({
       </div>
 
       {/* Playful Kids Primary Actions */}
-      <div className="flex items-center gap-1.5 bg-amber-50/90 border border-amber-200/80 rounded-2xl p-1">
+      <div className="flex flex-wrap items-center gap-1.5 bg-amber-50/90 border border-amber-200/80 rounded-2xl p-1">
+        <button
+          type="button"
+          onClick={onOpenMakerStudio}
+          className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-400 to-rose-400 text-white px-3 py-1.5 text-xs font-black shadow-sm hover:brightness-105 transition"
+        >
+          <Sparkles size={14} /> {isVi ? 'Xưởng Sáng Tạo' : 'Maker Studio'}
+        </button>
+        <button
+          type="button"
+          onClick={onOpenMuseum}
+          className="inline-flex items-center gap-1 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-800 px-3 py-1.5 text-xs font-black transition"
+          title={isVi ? 'Đổi hồ sơ bé & Xem bảo tàng tác phẩm' : 'Kid Profiles & Museum'}
+        >
+          <Award size={14} /> {activeProfile.avatar} {activeProfile.name}
+        </button>
         <button
           type="button"
           onClick={onPlayMusic}
-          className="inline-flex items-center gap-1 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1.5 text-xs font-black transition"
+          className="inline-flex items-center gap-1 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 px-2.5 py-1.5 text-xs font-black transition"
         >
           <Music size={14} /> {isVi ? 'Nhạc' : 'Music'}
         </button>
         <button
           type="button"
           onClick={onOpenTheater}
-          className="inline-flex items-center gap-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1.5 text-xs font-black transition"
+          className="inline-flex items-center gap-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 px-2.5 py-1.5 text-xs font-black transition"
         >
           <Film size={14} /> {isVi ? 'Rạp Phim' : 'Theater'}
         </button>
-        <button
-          type="button"
-          onClick={onOpenYouthCreator}
-          className="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-400 to-rose-400 text-white px-3 py-1.5 text-xs font-black shadow-sm hover:brightness-105 transition"
+        <span
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-black ${
+            isOnline ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-200 text-amber-900'
+          }`}
+          title={isOnline ? 'Đang kết nối mạng' : 'Chế độ Offline-First đang hoạt động'}
         >
-          <Feather size={14} /> {isVi ? 'Sáng Tác' : 'Create'}
-        </button>
+          {isOnline ? <Wifi size={12} /> : <WifiOff size={12} />} {isOnline ? 'Online' : 'Offline'}
+        </span>
       </div>
 
       {/* Teacher / Parent Studio Menu + Locale */}
@@ -119,6 +148,9 @@ export const KidsHeaderBar: React.FC<Props> = ({
 
           {studioMenuOpen && (
             <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border-2 border-slate-200 shadow-2xl p-2 z-50 space-y-1 text-xs text-slate-800">
+              <button onClick={() => { onOpenYouthCreator(); setStudioMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-rose-50 font-bold text-left">
+                <Feather size={14} className="text-rose-500" /> {isVi ? 'Sáng Tác Cho Em Nhỏ' : 'Youth Storyteller'}
+              </button>
               <button onClick={() => { onOpenAiBuilder(); setStudioMenuOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-amber-50 font-bold text-left">
                 <Wand2 size={14} className="text-amber-600" /> {isVi ? 'AI Tạo Bài Học Mới' : 'AI Lesson Builder'}
               </button>

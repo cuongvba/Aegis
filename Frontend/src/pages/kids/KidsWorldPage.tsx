@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, Star, Sparkles, Play, Wand2, Loader2, Music, Film, Lock, Palette, Feather, ShieldCheck, Globe } from 'lucide-react';
+import { Volume2, Star, Sparkles, Play, Loader2 } from 'lucide-react';
 import { kidsCurriculumService, KidsLessonPlan, KidsLocaleProfile } from '@/services/kidsCurriculum.service';
 import { useLearnerI18n } from '@/lib/i18n';
 import { KidsMagicalBackdrop } from '@/components/kids/KidsMagicalBackdrop';
@@ -14,6 +14,21 @@ import { KidsReviewModal } from '@/components/kids/KidsReviewModal';
 import { KidsGlobalLocaleModal } from '@/components/kids/KidsGlobalLocaleModal';
 import { KidsHeaderBar } from '@/components/kids/KidsHeaderBar';
 import { playKidMelody } from '@/components/kids/kidsMusicEngine';
+import {
+  getActiveKidProfile,
+  getOfflineFallbackLesson,
+  isLowSpecDevice,
+  saveOfflineLessonCartridge,
+  type KidAgeBand,
+  type KidProfile,
+} from '@/components/kids/kidsOfflineVault';
+
+const KidsMakerStudioModal = lazy(() =>
+  import('@/components/kids/KidsMakerStudioModal').then((m) => ({ default: m.KidsMakerStudioModal })),
+);
+const KidsCreativeMuseumModal = lazy(() =>
+  import('@/components/kids/KidsCreativeMuseumModal').then((m) => ({ default: m.KidsCreativeMuseumModal })),
+);
 import {
   speakKidText,
   fetchKidsVoices,
@@ -116,6 +131,22 @@ export const KidsWorldPage: React.FC = () => {
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>(() => getSelectedKidVoiceId());
   const [voiceRate, setVoiceRate] = useState<number>(() => getSelectedKidVoiceRate());
   const [isGateOpen, setIsGateOpen] = useState(false);
+  const [isMakerOpen, setIsMakerOpen] = useState(false);
+  const [isMuseumOpen, setIsMuseumOpen] = useState(false);
+  const [activeProfile, setActiveProfile] = useState<KidProfile>(() => getActiveKidProfile());
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
+  const lowSpec = isLowSpecDevice();
+
+  useEffect(() => {
+    const onUp = () => setIsOnline(true);
+    const onDown = () => setIsOnline(false);
+    window.addEventListener('online', onUp);
+    window.addEventListener('offline', onDown);
+    return () => {
+      window.removeEventListener('online', onUp);
+      window.removeEventListener('offline', onDown);
+    };
+  }, []);
 
   useEffect(() => {
     kidsCurriculumService.getLocaleProfiles().then(setLocales).catch(() => {});
@@ -152,7 +183,10 @@ export const KidsWorldPage: React.FC = () => {
     playKidMelody(kingdomId === 'music' ? 'twinkle' : 'happy');
     try {
       const plan = await kidsCurriculumService.generateDailyAdventure(kingdomId, band, 3, stageCode, activeLocale?.regionCode);
+      saveOfflineLessonCartridge(kingdomId, plan);
       setActivePlan(plan);
+    } catch {
+      setActivePlan(getOfflineFallbackLesson(kingdomId, band));
     } finally {
       setLoadingId(null);
     }
@@ -160,7 +194,7 @@ export const KidsWorldPage: React.FC = () => {
 
   return (
     <div dir={activeLocale?.direction || 'ltr'} className="relative min-h-screen overflow-x-hidden bg-gradient-to-b from-sky-200 via-amber-100/70 to-rose-100 text-slate-900">
-      <KidsMagicalBackdrop particleMode={activePlan?.stageTheme?.particleMode || 'sky'} />
+      {!lowSpec && <KidsMagicalBackdrop particleMode={activePlan?.stageTheme?.particleMode || 'sky'} />}
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-4 sm:py-6 space-y-6">
         <KidsHeaderBar
@@ -170,10 +204,14 @@ export const KidsWorldPage: React.FC = () => {
           voices={voices}
           selectedVoiceId={selectedVoiceId}
           voiceRate={voiceRate}
+          isOnline={isOnline}
+          activeProfile={activeProfile}
           onGoHome={() => navigate('/')}
           onGoOffice={() => navigate('/office-studio')}
           onPlayMusic={() => playKidMelody('twinkle')}
           onOpenTheater={() => setIsTheaterOpen(true)}
+          onOpenMakerStudio={() => setIsMakerOpen(true)}
+          onOpenMuseum={() => setIsMuseumOpen(true)}
           onOpenYouthCreator={() => setIsYouthCreatorOpen(true)}
           onOpenStages={() => setIsStageModalOpen(true)}
           onOpenReview={() => setIsReviewOpen(true)}
@@ -332,6 +370,33 @@ export const KidsWorldPage: React.FC = () => {
         regionCode={activeLocale?.regionCode}
         languageCode={activeLocale?.langCode}
       />
+      {isMakerOpen && (
+        <Suspense fallback={null}>
+          <KidsMakerStudioModal
+            open={isMakerOpen}
+            profileId={activeProfile.id}
+            ageBand={(ageBand === '3-5' || ageBand === '6-8' || ageBand === '9-11' ? ageBand : activeProfile.ageBand) as KidAgeBand}
+            lang={speechLang}
+            onClose={() => setIsMakerOpen(false)}
+            onSaved={() => earnStars(2)}
+            onExportToOffice={(docTitle, md) => {
+              localStorage.setItem('aegis-office-studio-draft-v1', JSON.stringify({ docKind: 'DOCX', title: docTitle, markdown: md, sheets: [] }));
+              navigate('/office-studio');
+            }}
+          />
+        </Suspense>
+      )}
+      {isMuseumOpen && (
+        <Suspense fallback={null}>
+          <KidsCreativeMuseumModal
+            open={isMuseumOpen}
+            lang={speechLang}
+            activeProfile={activeProfile}
+            onProfileChanged={(p) => { setActiveProfile(p); setAgeBand(p.ageBand); }}
+            onClose={() => setIsMuseumOpen(false)}
+          />
+        </Suspense>
+      )}
       <KidsParentGateModal
         isOpen={isGateOpen}
         onClose={() => setIsGateOpen(false)}
