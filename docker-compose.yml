@@ -39,6 +39,8 @@ services:
       # [Dual-Local AI] Ollama Sovereign Engine (Qwen 2.5 + DeepSeek-R1)
       - OLLAMA_ENDPOINT=http://ollama:11434/v1/chat/completions
       - OLLAMA_HOST=http://ollama:11434
+      # [Pro Document OCR] IBM Docling (Layout + TableFormer + Embedded Picture Crop)
+      - AEGIS_DOCLING_URL=${AEGIS_DOCLING_URL:-http://docling-ocr:8002/ocr}
     depends_on:
       postgres:
         condition: service_healthy
@@ -146,6 +148,21 @@ services:
       - ollama_models:/root/.ollama
     environment:
       - OLLAMA_KEEP_ALIVE=24h
+    restart: unless-stopped
+
+  # ===== PRO DOCUMENT OCR (IBM Docling: Layout + Images + Tables + Unicode) =====
+  docling-ocr:
+    image: aegis-docling-ocr:latest
+    container_name: aegis-docling-ocr
+    build: ./docling-ocr
+    profiles: ["ocr-pro"]
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:

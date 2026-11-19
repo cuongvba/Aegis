@@ -2,8 +2,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Aegis.Application.Interfaces;
@@ -16,9 +19,12 @@ namespace Aegis.Infrastructure.Services
     public sealed class ImageOcrService : IImageOcrService
     {
         private static readonly ConcurrentDictionary<string, ImageOcrResultDto> OcrCache = new(StringComparer.Ordinal);
+        private static readonly HttpClient DefaultHttp = new() { Timeout = TimeSpan.FromSeconds(15) };
         private readonly IUniversalAiRouter? _aiRouter;
         private readonly IVietnameseTextCorrectionService? _vnCorrector;
         private readonly ILogger<ImageOcrService> _logger;
+        private readonly HttpClient _http;
+        private readonly string? _doclingUrl;
 
         private const string DocumentOcrPrompt =
             "You are an ABBYY-grade Document OCR & STEM LaTeX Transpiler. " +
@@ -29,11 +35,15 @@ namespace Aegis.Infrastructure.Services
         public ImageOcrService(
             ILogger<ImageOcrService> logger,
             IUniversalAiRouter? aiRouter = null,
-            IVietnameseTextCorrectionService? vnCorrector = null)
+            IVietnameseTextCorrectionService? vnCorrector = null,
+            HttpClient? httpClient = null,
+            string? doclingUrlOverride = null)
         {
             _logger = logger;
             _aiRouter = aiRouter;
             _vnCorrector = vnCorrector;
+            _http = httpClient ?? DefaultHttp;
+            _doclingUrl = doclingUrlOverride ?? Environment.GetEnvironmentVariable("AEGIS_DOCLING_URL");
         }
 
         public async Task<ImageOcrResultDto> RecognizeDocumentAsync(
@@ -47,6 +57,19 @@ namespace Aegis.Infrastructure.Services
             string sha = Convert.ToHexString(SHA256.HashData(imageBytes));
             if (OcrCache.TryGetValue(sha, out var cached))
                 return cached;
+
+            // Tier 0: IBM Docling Layout + TableFormer + Embedded Picture Cropper (if configured & running)
+            if (!string.IsNullOrWhiteSpace(_doclingUrl))
+            {
+                string? doclingMd = await TryDoclingOcrAsync(_doclingUrl, imageBytes, mimeType, ct);
+                if (!string.IsNullOrWhiteSpace(doclingMd))
+                {
+                    var normalized = NormalizeOcrUnicode(doclingMd);
+                    var dto = new ImageOcrResultDto { MarkdownText = normalized, Provider = "ibm-docling" };
+                    CacheResult(sha, dto);
+                    return dto;
+                }
+            }
 
             // Tier 1: Multimodal Vision AI (best for math LaTeX, multi-column & handwriting)
             if (_aiRouter != null)
@@ -130,6 +153,36 @@ namespace Aegis.Infrastructure.Services
             using var img = surface.Snapshot();
             using var data = img.Encode(SKEncodedImageFormat.Png, 100);
             return data.ToArray();
+        }
+
+        private async Task<string?> TryDoclingOcrAsync(
+            string url,
+            byte[] fileBytes,
+            string mimeType,
+            CancellationToken ct)
+        {
+            try
+            {
+                string ext = mimeType.Contains("pdf", StringComparison.OrdinalIgnoreCase) ? ".pdf" : ".png";
+                using var form = new MultipartFormDataContent();
+                var fileContent = new ByteArrayContent(fileBytes);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(string.IsNullOrWhiteSpace(mimeType) ? "image/png" : mimeType);
+                form.Add(fileContent, "file", $"document{ext}");
+
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(15));
+                using var res = await _http.PostAsync(url, form, timeoutCts.Token);
+                if (!res.IsSuccessStatusCode) return null;
+
+                string json = await res.Content.ReadAsStringAsync(timeoutCts.Token);
+                using var doc = JsonDocument.Parse(json);
+                return doc.RootElement.TryGetProperty("markdown", out var md) ? md.GetString() : null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "[ImageOcr] Docling service unreachable at {Url}, falling back.", url);
+                return null;
+            }
         }
 
         private async Task<string?> TryTesseractLocalAsync(byte[] imageBytes, CancellationToken ct)

@@ -1,4 +1,7 @@
-using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Aegis.Infrastructure.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -9,6 +12,18 @@ namespace Aegis.UnitTests
 {
     public class ImageOcrServiceTests
     {
+        private sealed class FakeDoclingHandler : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var payload = "{\"markdown\":\"# Đề Toán THPT\\n\\n![Hình 1](data:image/png;base64,iVBORw0KGgo=)\\n\\n| Câu | Đáp án |\\n|---|---|\\n| 1 | A |\",\"engine\":\"ibm-docling\"}";
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                });
+            }
+        }
+
         [Fact]
         public void PreprocessImageForOcr_Upscales_Small_Image_And_Produces_Valid_Png()
         {
@@ -27,7 +42,7 @@ namespace Aegis.UnitTests
             using var decoded = SKBitmap.Decode(processed);
 
             Assert.NotNull(decoded);
-            Assert.True(decoded!.Width > 300); // Auto-upscaled for sharp Tesseract recognition
+            Assert.True(decoded!.Width > 300);
         }
 
         [Fact]
@@ -38,6 +53,28 @@ namespace Aegis.UnitTests
 
             Assert.False(res.Success);
             Assert.Equal("none", res.Provider);
+        }
+
+        [Fact]
+        public async Task RecognizeDocumentAsync_Uses_Docling_Tier0_Preserving_Unicode_Tables_And_Images()
+        {
+            using var http = new HttpClient(new FakeDoclingHandler());
+            var service = new ImageOcrService(
+                NullLogger<ImageOcrService>.Instance,
+                httpClient: http,
+                doclingUrlOverride: "http://docling-ocr:8002/ocr");
+
+            byte[] fakeImg = new byte[64];
+            fakeImg[0] = 0x89;
+            fakeImg[1] = 0x50;
+
+            var res = await service.RecognizeDocumentAsync(fakeImg, "image/png");
+
+            Assert.True(res.Success);
+            Assert.Equal("ibm-docling", res.Provider);
+            Assert.Contains("Đề Toán THPT", res.MarkdownText);
+            Assert.Contains("data:image/png;base64", res.MarkdownText);
+            Assert.Contains("| Câu | Đáp án |", res.MarkdownText);
         }
     }
 }
