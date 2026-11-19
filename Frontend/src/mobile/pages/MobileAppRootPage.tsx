@@ -6,6 +6,7 @@ import { MobileHomePage } from './MobileHomePage';
 import { MobilePracticeRoom } from '../components/MobilePracticeRoom';
 import { MobileOfflineManager } from '../components/MobileOfflineManager';
 import { MobileProfileView } from '../components/MobileProfileView';
+import { MobileItVaultPmcPage } from './MobileItVaultPmcPage';
 import { OfflineExamPackage } from '@/services/offline-exam.service';
 
 const MobileAppContent: React.FC = () => {
@@ -51,6 +52,10 @@ const MobileAppContent: React.FC = () => {
 
 export const MobileAppRootPage: React.FC = () => {
   const { appVariant } = useParams<{ appVariant?: string }>();
+
+  if (appVariant === 'it-ops' || appVariant === 'vault-pmc') {
+    return <MobileItVaultPmcPage />;
+  }
 
   return (
     <MobileAppProvider initialVariantId={appVariant}>

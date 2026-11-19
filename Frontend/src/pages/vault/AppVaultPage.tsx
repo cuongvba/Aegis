@@ -108,6 +108,7 @@ export const AppVaultPage: React.FC = () => {
             <button onClick={() => setTotpModalOpen(true)} className={`inline-flex items-center gap-1 rounded-xl px-3 py-2 font-bold border ${totpEnabled ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-300' : 'bg-amber-600/20 border-amber-500/40 text-amber-300'}`}>
               <ShieldCheck className="w-4 h-4" /> {totpEnabled ? '2FA: Đã bật' : 'Cài 2FA (Bắt buộc)'}
             </button>
+            <button onClick={() => navigate('/m/it-ops')} className="px-3 py-2 rounded-xl bg-sky-600/20 border border-sky-500/40 text-sky-300 font-bold">App Mobile (/m/it-ops)</button>
             <button onClick={() => navigate('/isms')} className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 font-bold">ISMS 27001</button>
           </div>
         </header>
