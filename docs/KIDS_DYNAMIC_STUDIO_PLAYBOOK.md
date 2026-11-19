@@ -98,7 +98,38 @@ flowchart LR
 
 ---
 
-## IV. LIÊN KẾT MÃ NGUỒN SỐNG (ALDS v1.0)
+## IV. HƯỚNG DẪN TẠO BÀI HỌC NGÔN NGỮ: *"NGÔI NHÀ CỦA BÉ (MY SWEET HOME)"* & BỘ QUIZ ĐỒ VẬT
+
+### 1. Hướng dẫn dàn dựng bài học Ngôn ngữ song ngữ Việt–Anh (3 Tập)
+1. Mở **✨ Xưởng Sáng Tạo** $\rightarrow$ Chọn lĩnh vực **`🗣️ Học Ngôn Ngữ`**.
+2. Đặt tên khóa học/game: **`Ngôi Nhà Của Bé (My Sweet Home)`** • Danh hiệu Hero: **`Đại Sứ Ngôn Ngữ Nhí`**.
+3. Tạo **3 Tập** tương ứng với 3 căn phòng quen thuộc:
+   * **Tập 1 — Phòng Khách Ấm Áp (`Living Room`)**:
+     * *Phông nền*: Chọn nền sáng hoặc upload ảnh phòng khách từ **Kho Tài Nguyên**.
+     * *Nhân vật Chính*: `🦉 Bé Na` (đặt lời thoại: *"Welcome to my living room!"*).
+     * *Nhân vật Phụ*: `👩 Mẹ` (bấm **Gương ↔** để mẹ và bé quay mặt đối thoại).
+     * *Phụ cảnh (đặt tên song ngữ trực tiếp)*: `🛋️ Ghế Sofa (Sofa)` (`1.3x`), `📺 Tivi (Television)` (`1.2x`), `🕰️ Đồng Hồ (Clock)` (`0.8x`), `🪴 Chậu Cây (Plant)` (`0.9x`).
+     * *Audio*: Bấm **Thu Audio** đọc chậm rõ từng cặp từ (*"Sofa — Ghế sô pha, Clock — Đồng hồ"*).
+   * **Tập 2 — Phòng Ngủ & Góc Học Tập (`Bedroom & Study`)**:
+     * Thêm **2 Cảnh**: *Cảnh 1 (Ban ngày học bài)* chọn hoạt cảnh `☀️ Mặt trời chiếu` với `🪑 Bàn Ghế (Desk)` + `📖 Quyển Sách (Book)`; *Cảnh 2 (Ban đêm đi ngủ)* chọn hoạt cảnh `✨ Sao lấp lánh` với `🛏️ Giường Ngủ (Bed)` + `💡 Đèn Bàn (Lamp)`.
+   * **Tập 3 — Gian Bếp Yêu Thương (`Kitchen`)**:
+     * Thêm phụ cảnh: `🍽️ Bàn Ăn (Table)`, `🧊 Tủ Lạnh (Fridge)`, `☕ Tách Trà (Cup)`.
+
+### 2. Bộ Bài Quiz Tương Tác Về Tên Các Đồ Vật Trong Nhà (Dán trực tiếp vào Câu hỏi Thử Thách)
+
+Thầy cô hoặc phụ huynh có thể dán từng câu dưới đây vào ô **Câu hỏi thử thách cuối tập** trong Studio (hoặc dùng **AI Tạo Bài** tại `/kids` / **Office Studio** để tự động sinh thêm biến thể):
+
+| Câu | Câu hỏi (Tiếng Việt / Song ngữ) | Các lựa chọn | Đáp án đúng & Gợi ý giải thích |
+| :---: | :--- | :--- | :--- |
+| **1** | Đồ vật nào trong phòng khách giúp cả nhà ngồi xem phim cùng nhau (`Sofa`)? | A. `🛋️ Ghế Sofa (Sofa)`<br/>B. `🧊 Tủ Lạnh (Fridge)`<br/>C. `🛏️ Giường Ngủ (Bed)` | **Đáp án A (`Sofa`)** — Chiếc ghế dài êm ái đặt ở phòng khách. |
+| **2** | Đồ vật nào treo trên tường giúp bé xem giờ (`Clock`)? | A. `📺 Tivi (TV)`<br/>B. `🕰️ Đồng Hồ (Clock)`<br/>C. `💡 Đèn Bàn (Lamp)` | **Đáp án B (`Clock`)** — Đồng hồ có kim giờ và kim phút chỉ thời gian. |
+| **3** | Khi học bài buổi tối, bé bật đồ vật nào để chiếu sáng trang sách (`Lamp`)? | A. `💡 Đèn Bàn (Lamp)`<br/>B. `🪴 Chậu Cây (Plant)`<br/>C. `🍽️ Bàn Ăn (Table)` | **Đáp án A (`Lamp`)** — Đèn bàn giúp bảo vệ đôi mắt khi đọc sách. |
+| **4** | Trong phòng ngủ, bé nằm nghỉ ngơi trên đồ vật nào (`Bed`)? | A. `🪑 Ghế Tựa (Chair)`<br/>B. `🛏️ Giường Ngủ (Bed)`<br/>C. `📖 Quyển Sách (Book)` | **Đáp án B (`Bed`)** — Giường ngủ êm ấm giúp bé ngủ ngon mỗi tối. |
+| **5** | Trong gian bếp, thiết bị nào giữ cho hoa quả và sữa luôn mát lạnh (`Fridge`)? | A. `☕ Tách Trà (Cup)`<br/>B. `📺 Tivi (TV)`<br/>C. `🧊 Tủ Lạnh (Fridge)` | **Đáp án C (`Fridge`)** — Tủ lạnh bảo quản thực phẩm tươi ngon cho cả nhà. |
+
+---
+
+## V. LIÊN KẾT MÃ NGUỒN SỐNG (ALDS v1.0)
 
 | Thành phần | Chức năng | Mã nguồn |
 | :--- | :--- | :--- |
