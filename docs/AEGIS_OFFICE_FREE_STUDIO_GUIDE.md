@@ -99,4 +99,57 @@ Ngoài ra, nút **🌈 Tạo bài Kids World** (`POST /api/office-workspace/send
 | **Render Toán & Ảnh Kích Thước Thật** | Render LaTeX/KaTeX + mhchem, giữ nguyên kích thước thật của ảnh minh họa raster (`PNG`/`JPEG`) | [MathRenderer.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/MathRenderer.tsx), [mathHtmlCompiler.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/shared/lib/quiz/mathHtmlCompiler.ts), [MathFormulaStudioModal.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/common/math-studio/MathFormulaStudioModal.tsx) |
 | **Thanh AI Co-Pilot & Bảng Tính** | 6 hành động AI (render KaTeX trực tiếp), Send to Kids & Lưới Excel trực quan | [OfficeAiCopilotBar.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/OfficeAiCopilotBar.tsx), [SpreadsheetGridEditor.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/SpreadsheetGridEditor.tsx) |
 | **Service Client & Routing** | Gọi API tải Blob & đăng ký route lazy `/office-studio` | [officeWorkspace.service.ts](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/services/officeWorkspace.service.ts), [App.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/App.tsx), [NavMenu.tsx](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/widgets/app-header/NavMenu.tsx) |
-| **Unit Tests Khoanh Vùng** | 3/3 test cases Passed (Round-trip DOCX, XLSX & AI Assist) | [OfficeDocumentWorkspaceServiceTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/OfficeDocumentWorkspaceServiceTests.cs) |
+| **Unit Tests Khoanh Vùng** | 4/4 test cases Passed (Round-trip DOCX, XLSX, AI Assist, Watermark & Protection) & 6/6 test cases Passed (`ArchiveSecurityServiceTests` Zip-Slip & 7z Metadata) | [OfficeDocumentWorkspaceServiceTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/OfficeDocumentWorkspaceServiceTests.cs), [ArchiveSecurityServiceTests.cs](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/ArchiveSecurityServiceTests.cs) |
+
+---
+
+## VI. BẢN NÂNG CẤP TOÀN DIỆN (19/11/2026): OCR CHUẨN ABBYY, PDF STUDIO PRO, STAMP/MẬT KHẨU & 7Z VAULT ATTT
+
+Từ ngày 19/11/2026, `/office-studio` được nâng cấp vượt bậc thành **Trung tâm Xử lý Tài liệu Đa phương thức & Bảo mật Chủ quyền (Zero-Install Multimodal & Sovereign Document Suite)** với 6 trụ cột mới:
+
+```mermaid
+flowchart LR
+    IN["Đầu vào đa nguồn<br/>(PDF Scan / Nhiều Ảnh FB-Zalo / .7z / .zip / .docx / .xlsx)"] --> R{"Phân luồng thông minh"}
+    R -->|"File nén .7z / .zip"| VAULT["7z Vault (ArchiveSecurityService)<br/>Chống Zip-Slip & Zip-Bomb (60 tệp/100MB)"]
+    VAULT -->|"Đọc trực tiếp trong RAM"| OCR
+    R -->|"Ảnh rời / PDF Scan"| OCR["Thác OCR 3 Lớp Chuẩn ABBYY<br/>Docling Layout+TableFormer -> Vision AI -> Tesseract 5"]
+    OCR -->|"Xuất đa định dạng"| STUDIO["Office Studio Editor + 8-Language Focus Reader"]
+    R -->|"Tối ưu & Đóng gói PDF"| PDFPRO["PDF Studio Pro (Browser-Native)<br/>Nén 60-85% / Cắt-Ghép-Xoay / Stamp Unicode"]
+    PDFPRO -->|"Khóa mật khẩu AES-256"| QPDF["qpdf --encrypt 256"]
+    STUDIO -->|"Đóng Stamp / Khóa DOCX"| DOCXSEC["NPOI Header Stamp + SHA-256 Readonly"]
+    STUDIO -->|"Nén bảo mật .7z"| PACK7Z["7z -t7z -mhe=on (AES-256 + Ẩn tên file)"]
+```
+
+### 1. Chế độ Đọc Tập Trung 8 Ngôn Ngữ & Tổng Quan Tài Liệu (`DocumentOverviewAndReaderModal.tsx`)
+* **Ý nghĩa**: Giải phóng giáo viên và người học khỏi giao diện soạn thảo rối mắt khi cần đọc sâu, đồng thời hỗ trợ **Math-to-Speech** (đọc thành tiếng cả công thức Toán học bằng 8 ngôn ngữ: Việt, Anh, Pháp, Nhật, Hàn, Trung, Đức, Tây Ban Nha).
+* **Tài liệu Tổng quan Thông minh**: Tự động thống kê số từ, thời gian đọc ước tính, mục lục cấu trúc H1–H3 và bảng tổng quan nội dung ngay trước khi chỉnh sửa.
+
+### 2. Thác OCR 3 Lớp Chuẩn ABBYY & Chuyển Đổi PDF/Ảnh $\rightarrow$ Markdown (`.md`)
+* **Giải quyết triệt để lỗi font PDF & mất hình ảnh**: Chuẩn hóa tọa độ không gian từ `PdfPig`, tự động nhận diện bảng biểu (**TableFormer**) và cắt tách hình ảnh minh họa nhúng trong PDF/Ảnh (**Embedded Picture Crop**) qua microservice [`docling-ocr/main.py`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docling-ocr/main.py).
+* **Cơ chế tự phục hồi 3 tầng** trong [`ImageOcrService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ImageOcrService.cs): `IBM Docling Pro` $\rightarrow$ `Vision AI (UAR)` $\rightarrow$ `Tesseract 5 (vie+eng) + tiền xử lý SkiaSharp`. Hỗ trợ xuất 1 chạm ra tệp `.md` chuẩn Unicode.
+
+### 3. Ghép Nhiều Ảnh Thành 1 Tài Liệu Duy Nhất (`ImageBatchMergerModal.tsx` & `smartImageSort.ts`)
+* **Giải quyết bài toán thực tế Facebook/Zalo**: Khi tài liệu bị chia thành hàng chục ảnh rời rạc, công cụ tự động **sắp xếp thứ tự trang 3 tầng** (theo số trang trong tên file $\rightarrow$ thời gian chụp EXIF/LastModified $\rightarrow$ thứ tự tự nhiên), cho phép bật OCR nhận diện chữ hàng loạt và xuất thành 1 tệp `.docx` (nhúng ảnh thật kích thước chuẩn), `.md`, `.pdf`, hoặc `.xlsx`.
+
+### 4. PDF Studio Pro — Nén Dung Lượng & Chèn/Cắt/Ghép/Đổi Vị Trí Trang (`PdfToolboxModal.tsx` & `pdfStudioEngine.ts`)
+* **Xử lý 100% trên trình duyệt**: Không tốn băng thông upload file scan nặng hàng chục MB lên máy chủ. Hỗ trợ 4 mức nén (`BALANCED ~150 DPI` giảm 60–80% dung lượng, `MAX_COMPRESS ~100 DPI`, `HIGH_QUALITY ~200 DPI`, `LOSSLESS` giữ nguyên vector), chọn/bỏ trang (cắt trang), chèn thêm ảnh hoặc PDF khác, xoay $90^\circ$ và đảo vị trí trang tức thì.
+
+### 5. Chèn / Bỏ Chèn Stamp & Watermark + Đặt Mật Khẩu Chủ Quyền
+* **PDF**: Đóng dấu Unicode tiếng Việt (dạng chữ chìm chéo toàn trang hoặc con dấu góc trên) bằng Canvas PNG nhúng qua `pdf-lib` (bật/tắt dễ dàng chỉ với 1 checkbox) và mã hóa mật khẩu **AES-256** qua `POST /api/office-workspace/protect-pdf` (`qpdf`).
+* **DOCX**: Nút **Stamp / Khóa** ngay trên [`OfficeWorkspacePage.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/pages/office/OfficeWorkspacePage.tsx) cho phép chèn hoặc xóa nhanh Header/Footer Stamp và khóa bảo vệ chỉ đọc SHA-256 khi tải `.docx`.
+
+### 6. 7z Vault — Nén/Giải Nén `.7z` Mã Hóa & Đọc Trực Tiếp Tài Liệu Trong File Nén (`Archive7zModal.tsx` & `ArchiveSecurityService.cs`)
+* **Độ an toàn ATTT tối đa**:
+  * Nén nhiều tệp thành `.7z` với mật khẩu **AES-256 + mã hóa luôn cả danh sách tên tệp (`-mhe=on`)**.
+  * Mở file `.7z`, `.zip`, `.tar`, `.gz` trực tiếp từ nút **Mở File** hoặc **Nén / Đọc .7z**: nhập mật khẩu mở khóa (nếu có), bấm **Đọc Trực Tiếp** để đưa thẳng tài liệu (`.docx`, `.pdf`, `.xlsx`, `.md`, ảnh...) vào Studio mà không cần giải nén rác ra máy tính cá nhân.
+  * **Hàng rào phòng thủ server**: Chặn **Zip-Slip** (`ValidateAndNormalizeEntryPath` + xác minh `safeRoot`), chặn **Zip-Bomb** (tối đa 60 tệp / 100 MB), chống Command Injection (`ArgumentList`), timeout 25s và xóa sạch thư mục tạm ngay sau khi xử lý.
+
+### Bảng Liên Kết Mã Nguồn Mở Rộng (19/11/2026)
+
+| Phân hệ mới | Thành phần & Liên kết mã nguồn |
+| :--- | :--- |
+| **Docling Microservice** | [`docling-ocr/main.py`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docling-ocr/main.py), [`docling-ocr/Dockerfile`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docling-ocr/Dockerfile), [`docker-compose.yml`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/docker-compose.yml) |
+| **Hybrid OCR Engine** | [`IImageOcrService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IImageOcrService.cs), [`ImageOcrService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ImageOcrService.cs), [`ImageOcrServiceTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/ImageOcrServiceTests.cs) |
+| **Focus Reader & Batch Merger** | [`DocumentOverviewAndReaderModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/DocumentOverviewAndReaderModal.tsx), [`ImageBatchMergerModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/ImageBatchMergerModal.tsx), [`smartImageSort.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/smartImageSort.ts) |
+| **PDF Studio Pro & Stamp/Lock** | [`pdfStudioEngine.ts`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/pdfStudioEngine.ts), [`PdfToolboxModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/PdfToolboxModal.tsx), [`OfficeWorkspaceController.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.API/Controllers/OfficeWorkspaceController.cs) |
+| **7z Vault InfoSec** | [`IArchiveSecurityService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Application/Interfaces/IArchiveSecurityService.cs), [`ArchiveSecurityService.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/src/Aegis.Infrastructure/Services/ArchiveSecurityService.cs), [`Archive7zModal.tsx`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Frontend/src/components/office/Archive7zModal.tsx), [`ArchiveSecurityServiceTests.cs`](file:///d:/Cuong/DuAn/mybank/AegisGlobal/Backend/tests/Aegis.UnitTests/ArchiveSecurityServiceTests.cs) |
