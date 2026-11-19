@@ -1,3 +1,5 @@
+import { latexToSpeech } from './mathToSpeech';
+
 const LANG_VOICE_MAP: Record<string, string> = {
   vi: 'vi-VN',
   en: 'en-US',
@@ -106,11 +108,10 @@ export async function fetchKidsVoices(locale?: string): Promise<KidsVoiceProfile
   return [...serverVoices, ...browserVoices];
 }
 
-export function cleanTextForSpeech(raw: string): string {
+export function cleanTextForSpeech(raw: string, langOrBcp47 = 'vi'): string {
   if (!raw) return '';
-  return raw
-    .replace(/\$\$[\s\S]*?\$\$/g, ' ')
-    .replace(/\$[^$]*\$/g, ' ')
+  const spokenMath = latexToSpeech(raw, langOrBcp47);
+  return spokenMath
     .replace(/<[^>]+>/g, ' ')
     .replace(/[_*#`~]/g, ' ')
     .replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F]/gu, ' ')
@@ -196,6 +197,7 @@ function applyAudioPlaybackSettings(
 }
 
 export function stopKidSpeech(): void {
+  activeQueueToken++;
   if (activeFetchController) {
     activeFetchController.abort();
     activeFetchController = null;
@@ -224,10 +226,10 @@ export function speakKidText(
   explicitVoiceId?: string,
   explicitRate?: number
 ): void {
-  const text = cleanTextForSpeech(rawText);
+  const targetBcp47 = normalizeBcp47(langOrBcp47);
+  const text = cleanTextForSpeech(rawText, targetBcp47);
   if (!text) return;
 
-  const targetBcp47 = normalizeBcp47(langOrBcp47);
   const voiceId = explicitVoiceId ?? getSelectedKidVoiceId();
   const rate = explicitRate ?? getSelectedKidVoiceRate();
 
@@ -289,4 +291,83 @@ export function speakKidText(
       if (err?.name === 'AbortError') return;
       speakWithBrowserVoice(text, targetBcp47, rate);
     });
+}
+
+let activeQueueToken = 0;
+
+export async function speakExamSegments(
+  segments: string[],
+  langOrBcp47 = 'vi-VN',
+  onEnd?: () => void,
+): Promise<void> {
+  const targetBcp47 = normalizeBcp47(langOrBcp47);
+  const cleaned = segments.map((s) => cleanTextForSpeech(s, targetBcp47)).filter(Boolean);
+  if (cleaned.length === 0) {
+    onEnd?.();
+    return;
+  }
+
+  stopKidSpeech();
+  const token = ++activeQueueToken;
+  const voiceId = getSelectedKidVoiceId();
+  const rate = getSelectedKidVoiceRate();
+
+  const playOne = async (text: string): Promise<void> => {
+    if (token !== activeQueueToken) return;
+    if (voiceId.startsWith('browser:')) {
+      await new Promise<void>((resolve) => {
+        if (!('speechSynthesis' in window)) return resolve();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = targetBcp47;
+        utt.rate = rate;
+        utt.onend = () => resolve();
+        utt.onerror = () => resolve();
+        window.speechSynthesis.speak(utt);
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/kids/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, localeCode: targetBcp47, voiceId: voiceId || undefined }),
+      });
+      if (token !== activeQueueToken) return;
+      if (res.status === 200) {
+        const provider = res.headers.get('X-Aegis-Voice-Provider') || 'google-tts';
+        const blob = await res.blob();
+        if (blob.size > 0 && token === activeQueueToken) {
+          const url = URL.createObjectURL(blob);
+          await new Promise<void>((resolve) => {
+            const audio = new Audio(url);
+            applyAudioPlaybackSettings(audio, rate, voiceId, provider);
+            activeAudio = audio;
+            audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+            audio.play().catch(() => { URL.revokeObjectURL(url); resolve(); });
+          });
+          return;
+        }
+      }
+    } catch {
+      // Fallback below
+    }
+    if (token === activeQueueToken && 'speechSynthesis' in window) {
+      await new Promise<void>((resolve) => {
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.lang = targetBcp47;
+        utt.rate = rate;
+        utt.onend = () => resolve();
+        utt.onerror = () => resolve();
+        window.speechSynthesis.speak(utt);
+      });
+    }
+  };
+
+  for (const chunk of cleaned) {
+    if (token !== activeQueueToken) break;
+    await playOne(chunk);
+  }
+  if (token === activeQueueToken) onEnd?.();
 }

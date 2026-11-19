@@ -11,12 +11,13 @@ import {
   ChevronDown, 
   ChevronUp 
 } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { getDisplayOptions } from '@/lib/quiz-helpers';
 import type { LearnerAnswer, LearnerQuestion } from '@/types/quiz';
 import { MediaRenderer } from './MediaRenderer';
 import { MathRenderer } from '@/components/common/MathRenderer';
 import { resolveQuestionWidget } from './widgets/QuestionWidgetRegistry';
+import { speakExamSegments, stopKidSpeech } from '@/components/kids/kidsSpeech';
 
 type Props = {
   question: LearnerQuestion;
@@ -44,9 +45,32 @@ export function QuestionCard({
 }: Props) {
   const options = getDisplayOptions(question);
   const [isContextCollapsed, setIsContextCollapsed] = useState(false);
+  const [readingAloud, setReadingAloud] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem('aegis_sound_enabled') !== 'false';
   });
+
+  useEffect(() => {
+    setReadingAloud(false);
+    stopKidSpeech();
+    return () => stopKidSpeech();
+  }, [question.id]);
+
+  const toggleReadAloud = () => {
+    if (readingAloud) {
+      stopKidSpeech();
+      setReadingAloud(false);
+      return;
+    }
+    const segments: string[] = [];
+    if (question.contextContent) segments.push(question.contextContent);
+    segments.push(question.content);
+    options.forEach((opt) => {
+      if (!opt.isMedia && opt.value) segments.push(`Đáp án ${opt.label}: ${opt.value}`);
+    });
+    setReadingAloud(true);
+    void speakExamSegments(segments, 'vi-VN', () => setReadingAloud(false));
+  };
 
   const toggleSound = () => {
     setSoundEnabled((prev) => {
@@ -119,25 +143,42 @@ export function QuestionCard({
           )}
         </div>
 
-        {/* Audio Sound FX Toggle */}
-        <button
-          type="button"
-          onClick={toggleSound}
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-          title={soundEnabled ? 'Tắt âm thanh hiệu ứng game' : 'Bật âm thanh hiệu ứng game'}
-        >
-          {soundEnabled ? (
-            <>
-              <Volume2 className="h-3.5 w-3.5 text-teal-600" />
-              <span className="hidden sm:inline">Âm thanh: Bật</span>
-            </>
-          ) : (
-            <>
-              <VolumeX className="h-3.5 w-3.5 text-slate-400" />
-              <span className="hidden sm:inline">Âm thanh: Tắt</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Exam Accessibility Neural TTS Read-Aloud */}
+          <button
+            type="button"
+            onClick={toggleReadAloud}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+              readingAloud
+                ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
+                : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+            }`}
+            title="Đọc câu hỏi, công thức toán và đáp án bằng giọng Neural AI"
+          >
+            <Volume2 className={`h-3.5 w-3.5 ${readingAloud ? 'text-indigo-600 animate-pulse' : 'text-indigo-500'}`} />
+            <span>{readingAloud ? 'Dừng đọc' : 'Đọc đề'}</span>
+          </button>
+
+          {/* Audio Sound FX Toggle */}
+          <button
+            type="button"
+            onClick={toggleSound}
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+            title={soundEnabled ? 'Tắt âm thanh hiệu ứng game' : 'Bật âm thanh hiệu ứng game'}
+          >
+            {soundEnabled ? (
+              <>
+                <Volume2 className="h-3.5 w-3.5 text-teal-600" />
+                <span className="hidden sm:inline">Âm thanh: Bật</span>
+              </>
+            ) : (
+              <>
+                <VolumeX className="h-3.5 w-3.5 text-slate-400" />
+                <span className="hidden sm:inline">Âm thanh: Tắt</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {disabled && (

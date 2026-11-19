@@ -113,8 +113,8 @@ namespace Aegis.Infrastructure.Services
             cleanText = Regex.Replace(cleanText, @"\s+", " ");
             if (string.IsNullOrWhiteSpace(cleanText))
                 return null;
-            if (cleanText.Length > 600)
-                cleanText = cleanText.Substring(0, 600);
+            if (cleanText.Length > 1200)
+                cleanText = cleanText.Substring(0, 1200);
 
             string locale = NormalizeLocale(request.LocaleCode);
             (string voiceId, string presetPitch, string presetRate) = ResolveVoicePreset(request.VoiceId, locale);
