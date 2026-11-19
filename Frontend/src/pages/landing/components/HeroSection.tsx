@@ -50,6 +50,14 @@ export function HeroSection() {
           >
             {t('hero.ctaPrimary')} <ArrowRight size={16} aria-hidden="true" />
           </button>
+          <button
+            onClick={() => navigate('/mission-hub')}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-full font-bold text-sm text-amber-200
+                       bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25
+                       transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <Sparkles size={16} aria-hidden="true" /> Trung tâm Sứ mệnh Lạc Hồng
+          </button>
           <a
             href="#segments"
             className="w-full sm:w-auto px-6 py-3.5 rounded-full font-bold text-sm text-slate-200

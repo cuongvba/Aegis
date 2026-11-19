@@ -1,25 +1,45 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, CalendarCheck2, FileCheck2, Shield, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarCheck2, FileCheck2, Film, Shield, ShieldCheck, Sparkles } from 'lucide-react';
 
 const PORTALS = [
   {
-    id: 'enterprise',
-    badge: 'B2B • Khảo thí & AI',
-    title: 'Aegis Exam & AI Symposium',
-    desc: 'Thi thích ứng IRT 3-PL, Hội đồng AI biện chứng 6 pha, bóc tách đề Word/MathType & bảo mật đa khách thuê.',
-    to: '/dashboard',
-    cta: 'Vào Không Gian Doanh Nghiệp',
+    id: 'stem-exam',
+    badge: 'MathType WMF • IRT 3-PL • QTI 3.0',
+    title: 'STEM Exam & Knowledge AI',
+    desc: 'Giải mã Word/PDF công thức Toán–Lý–Hóa phức tạp (MathType nhị phân) thành kho khảo thí KaTeX & thi thích ứng IRT/CAT.',
+    to: '/creator/studio',
+    cta: 'Mở Creator Zen Studio',
     accent: 'from-sky-500/20 to-indigo-500/10 border-sky-500/40 text-sky-300',
     icon: Shield,
   },
   {
-    id: 'office',
-    badge: 'Văn phòng • OCR • ATTT',
-    title: 'Aegis Office & 7z Vault',
-    desc: 'Soạn thảo Word/Excel không cần cài MS Office, OCR chuẩn ABBYY, nén PDF, đóng Stamp, khóa AES-256 & Google Drive.',
-    to: '/office-studio',
-    cta: 'Mở Office Studio',
-    accent: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/40 text-emerald-300',
+    id: 'visual-lab',
+    badge: '60fps Canvas • Video Export',
+    title: 'Visual Learning Lab',
+    desc: 'Công xưởng bài giảng trực quan sinh động, xuất Video tái sử dụng giúp giáo viên vùng khó khăn giảng dạy không cần Internet.',
+    to: '/visual-lab',
+    cta: 'Mở Visual Learning Lab',
+    accent: 'from-cyan-500/20 to-blue-500/10 border-cyan-500/40 text-cyan-300',
+    icon: Film,
+  },
+  {
+    id: 'kids',
+    badge: '3–11 tuổi • Offline-First',
+    title: 'Aegis Kids Creative Factory',
+    desc: 'Sân khấu động 6 lớp, sáng tạo truyện di sản & game đa tập hóa thân Hero, hoạt động 100% không cần Internet.',
+    to: '/kids',
+    cta: 'Vào Kids Wonderland',
+    accent: 'from-amber-500/20 to-rose-500/10 border-amber-500/40 text-amber-300',
+    icon: Sparkles,
+  },
+  {
+    id: 'dispatches',
+    badge: 'E-Office • AI Auto-Pilot • 2FA',
+    title: 'Công Văn 7 Pha & Phê Duyệt',
+    desc: 'OCR văn bản → Trình → Bút phê → Phân công tự động → Báo cáo & Chấm KPI, bảo vệ từng công đoạn bằng TOTP 2FA.',
+    to: '/dispatches',
+    cta: 'Mở Luồng Công Văn',
+    accent: 'from-indigo-500/20 to-purple-500/10 border-indigo-500/40 text-indigo-300',
     icon: FileCheck2,
   },
   {
@@ -33,14 +53,14 @@ const PORTALS = [
     icon: CalendarCheck2,
   },
   {
-    id: 'kids',
-    badge: '3–11 tuổi • Offline-First',
-    title: 'Aegis Kids Creative Factory',
-    desc: 'Sân khấu động 6 lớp, sáng tạo truyện & game đa tập hóa thân Hero, hoạt động 100% không cần Internet.',
-    to: '/kids',
-    cta: 'Vào Kids Wonderland',
-    accent: 'from-amber-500/20 to-rose-500/10 border-amber-500/40 text-amber-300',
-    icon: Sparkles,
+    id: 'isms',
+    badge: 'ISO/IEC 27001:2022 • 93 Controls',
+    title: 'Aegis ISMS Security Shield',
+    desc: 'Quản trị An toàn Thông tin chuẩn quốc tế: 93 Controls Live Auto-Evidence, Ma trận Rủi ro 5x5, AI CAPA & Niêm phong SHA-256.',
+    to: '/isms',
+    cta: 'Mở ISMS Cockpit',
+    accent: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/40 text-emerald-300',
+    icon: ShieldCheck,
   },
 ];
 
@@ -48,10 +68,10 @@ export function PersonaEntryPortals() {
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
       <div className="text-center mb-6">
-        <span className="text-xs font-black uppercase tracking-widest text-sky-400">4 Cổng Sản Phẩm Chuyên Biệt</span>
-        <h2 className="mt-1 text-xl sm:text-2xl font-black text-white">Chọn Không Gian Phù Hợp Với Vai Trò Của Bạn</h2>
+        <span className="text-xs font-black uppercase tracking-widest text-sky-400">6 Kiệt tác Công nghệ Hợp nhất • Phụng sự Nhân loại</span>
+        <h2 className="mt-1 text-xl sm:text-2xl font-black text-white">Chọn Không Gian Phù Hợp Với Sứ Mệnh Của Bạn</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {PORTALS.map((p) => {
           const Icon = p.icon;
           return (
