@@ -114,7 +114,15 @@ namespace Aegis.UnitTests
                 Title = "Tai Lieu Chu Quyen",
                 MarkdownContent = "# Noi dung mat\n\nChi danh cho noi bo.",
                 WatermarkText = "AEGIS SOVEREIGNTY",
-                ProtectionPassword = "Aegis@2026"
+                ProtectionPassword = "Aegis@2026",
+                Properties = new OfficeDocumentPropertiesDto
+                {
+                    Author = "Nguyen Viet Cuong",
+                    Subject = "Tai lieu Nghiep vu",
+                    Keywords = "aegis, security, ocr",
+                    Company = "AegisGlobal",
+                    Classification = "Mat"
+                }
             });
 
             Assert.True(protectedBytes.Length > 1000);
@@ -122,6 +130,8 @@ namespace Aegis.UnitTests
             var doc = new NPOI.XWPF.UserModel.XWPFDocument(ms);
             Assert.True(doc.IsEnforcedReadonlyProtection());
             Assert.Contains(doc.HeaderList, h => h.Text.Contains("AEGIS SOVEREIGNTY"));
+            Assert.Equal("Nguyen Viet Cuong", doc.GetProperties().CoreProperties.Creator);
+            Assert.Equal("AegisGlobal", doc.GetProperties().ExtendedProperties.GetUnderlyingProperties().Company);
         }
     }
 }

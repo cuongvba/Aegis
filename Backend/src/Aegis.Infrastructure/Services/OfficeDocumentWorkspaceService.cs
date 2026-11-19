@@ -524,9 +524,30 @@ namespace Aegis.Infrastructure.Services
                 doc.EnforceReadonlyProtection(request.ProtectionPassword.Trim(), NPOI.POIFS.Crypt.HashAlgorithm.sha256);
             }
 
+            ApplyDocxProperties(doc, request.Title, request.Properties);
+
             using var outMs = new MemoryStream();
             doc.Write(outMs);
             return outMs.ToArray();
+        }
+
+        private static void ApplyDocxProperties(XWPFDocument doc, string? title, OfficeDocumentPropertiesDto? props)
+        {
+            var poixmlProps = doc.GetProperties();
+            var core = poixmlProps.CoreProperties;
+            if (!string.IsNullOrWhiteSpace(title)) core.Title = title.Trim();
+            if (props == null) return;
+
+            if (!string.IsNullOrWhiteSpace(props.Author)) core.Creator = props.Author.Trim();
+            if (!string.IsNullOrWhiteSpace(props.Subject)) core.Subject = props.Subject.Trim();
+            if (!string.IsNullOrWhiteSpace(props.Keywords)) core.Keywords = props.Keywords.Trim();
+            if (!string.IsNullOrWhiteSpace(props.Classification)) core.Category = props.Classification.Trim();
+            if (!string.IsNullOrWhiteSpace(props.Description)) core.Description = props.Description.Trim();
+            if (!string.IsNullOrWhiteSpace(props.Company))
+            {
+                var ext = poixmlProps.ExtendedProperties.GetUnderlyingProperties();
+                ext.Company = props.Company.Trim();
+            }
         }
 
         private static void TryAddPictureToDocx(XWPFDocument doc, string format, string base64)

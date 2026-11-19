@@ -51,6 +51,15 @@ export interface ArchiveInspectResult {
   entries: ArchiveEntryInfo[];
 }
 
+export interface OfficeDocumentProperties {
+  author?: string;
+  subject?: string;
+  keywords?: string;
+  company?: string;
+  classification?: string;
+  description?: string;
+}
+
 export const officeWorkspaceService = {
   async parseFile(file: File): Promise<OfficeParsedDocument> {
     const form = new FormData();
@@ -61,18 +70,39 @@ export const officeWorkspaceService = {
     return res.data;
   },
 
+  async buildDocxBlob(
+    title: string,
+    markdownContent: string,
+    watermarkText?: string,
+    protectionPassword?: string,
+    properties?: OfficeDocumentProperties,
+  ): Promise<Blob> {
+    const res = await api.post(
+      '/api/office-workspace/export-docx',
+      { title, markdownContent, watermarkText, protectionPassword, properties },
+      { responseType: 'blob' }
+    );
+    return res.data as Blob;
+  },
+
   async downloadDocx(
     title: string,
     markdownContent: string,
     watermarkText?: string,
     protectionPassword?: string,
+    properties?: OfficeDocumentProperties,
   ): Promise<void> {
+    const blob = await this.buildDocxBlob(title, markdownContent, watermarkText, protectionPassword, properties);
+    triggerBlobDownload(blob, `${(title || 'aegis-document').trim()}.docx`);
+  },
+
+  async buildXlsxBlob(title: string, sheets: OfficeSheet[]): Promise<Blob> {
     const res = await api.post(
-      '/api/office-workspace/export-docx',
-      { title, markdownContent, watermarkText, protectionPassword },
+      '/api/office-workspace/export-xlsx',
+      { title, sheets },
       { responseType: 'blob' }
     );
-    triggerBlobDownload(res.data as Blob, `${(title || 'aegis-document').trim()}.docx`);
+    return res.data as Blob;
   },
 
   async downloadXlsx(title: string, sheets: OfficeSheet[]): Promise<void> {

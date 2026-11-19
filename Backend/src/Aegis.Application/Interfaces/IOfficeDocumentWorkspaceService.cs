@@ -23,12 +23,23 @@ namespace Aegis.Application.Interfaces
         public List<string> Warnings { get; set; } = new();
     }
 
+    public class OfficeDocumentPropertiesDto
+    {
+        public string? Author { get; set; }
+        public string? Subject { get; set; }
+        public string? Keywords { get; set; }
+        public string? Company { get; set; }
+        public string? Classification { get; set; }
+        public string? Description { get; set; }
+    }
+
     public class OfficeExportDocxRequestDto
     {
         public string Title { get; set; } = "Aegis Document";
         public string MarkdownContent { get; set; } = string.Empty;
         public string? WatermarkText { get; set; }
         public string? ProtectionPassword { get; set; }
+        public OfficeDocumentPropertiesDto? Properties { get; set; }
     }
 
     public class OfficeExportXlsxRequestDto
