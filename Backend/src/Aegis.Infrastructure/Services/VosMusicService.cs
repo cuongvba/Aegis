@@ -54,13 +54,13 @@ namespace Aegis.Infrastructure.Services
             // Build deterministic V-OS baseline first (100% reliable)
             BuildDeterministicOutputs(input, mode, tuningHz, request.CustomTitle, telemetry, synth, result);
 
-            // Enhance with AI Router grounded on the 3 V-OS .md kernel docs (fast 8s guard)
+            // Enhance with AI Router grounded on the 3 V-OS .md kernel docs (fast 3.5s guard)
             if (_aiRouter != null && !string.IsNullOrWhiteSpace(input))
             {
                 try
                 {
                     var aiTask = TryEnhanceWithAiAsync(input, mode, tuningHz, request.Language, result, ct);
-                    var completed = await Task.WhenAny(aiTask, Task.Delay(8000, ct));
+                    var completed = await Task.WhenAny(aiTask, Task.Delay(3500, ct));
                     if (completed == aiTask) await aiTask;
                 }
                 catch (Exception ex)

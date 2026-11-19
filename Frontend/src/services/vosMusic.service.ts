@@ -77,12 +77,12 @@ export interface VosMusicCompilationResultDto {
 
 export const vosMusicService = {
   async getKernelDocs(): Promise<VosKernelDocInfoDto[]> {
-    const res = await api.get<VosKernelDocInfoDto[]>('/music-studio/kernel');
+    const res = await api.get<VosKernelDocInfoDto[]>('/api/music-studio/kernel');
     return res.data;
   },
 
   async compile(req: VosCompileRequestDto): Promise<VosMusicCompilationResultDto> {
-    const res = await api.post<VosMusicCompilationResultDto>('/music-studio/compile', req);
+    const res = await api.post<VosMusicCompilationResultDto>('/api/music-studio/compile', req);
     return res.data;
   },
 };

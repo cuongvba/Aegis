@@ -19,12 +19,13 @@ export const VosSonicStudioPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'SUNO' | 'LYRIA' | 'OMNI' | 'EXPORT'>('SUNO');
   const [playing, setPlaying] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState<{ type: 'info' | 'success' | 'error'; text: string } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const synthRef = useRef<VosQuantumSynthEngine | null>(null);
 
   useEffect(() => {
-    void handleCompile();
+    void handleCompile(false);
     return () => synthRef.current?.stop();
   }, []);
 
@@ -42,15 +43,27 @@ export const VosSonicStudioPage: React.FC = () => {
     return () => cancelAnimationFrame(raf);
   }, [result, playing]);
 
-  const handleCompile = async () => {
+  const handleCompile = async (autoPlaySynth = true) => {
     if (!inputText.trim() || loading) return;
     setLoading(true);
+    setStatusMsg({ type: 'info', text: 'Đang phân tích 7 chiều V-OS & biên dịch prompt...' });
     try {
       const data = await vosMusicService.compile({ inputText, mode, tuningHz, language: 'vi' });
       setResult(data);
-      if (playing) {
+      setStatusMsg({
+        type: 'success',
+        text: `Đã biên dịch ${data.telemetry.totalSyllables} âm tiết • ${data.telemetry.dominantVibeLabel} • ${data.synthRecipe.tempoBpm} BPM (${data.tuningHz}Hz)`,
+      });
+      if (autoPlaySynth) {
+        if (!synthRef.current) synthRef.current = new VosQuantumSynthEngine();
+        synthRef.current.start(data.synthRecipe, data.telemetry);
+        setPlaying(true);
+      } else if (playing) {
         synthRef.current?.start(data.synthRecipe, data.telemetry);
       }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không kết nối được /api/music-studio/compile';
+      setStatusMsg({ type: 'error', text: `Lỗi biên dịch V-OS: ${msg}` });
     } finally {
       setLoading(false);
     }
@@ -144,13 +157,26 @@ export const VosSonicStudioPage: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={handleCompile}
+              onClick={() => void handleCompile(true)}
               disabled={loading}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-95 font-semibold text-sm flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:opacity-95 disabled:opacity-60 font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4" />
-              {loading ? 'Đang biên dịch 7 chiều V-OS...' : 'Biên dịch V-OS 7D & Sinh Nhạc'}
+              <Sparkles className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              {loading ? 'Đang biên dịch 7 chiều V-OS...' : 'Biên dịch V-OS 7D & Phát Nhạc'}
             </button>
+            {statusMsg && (
+              <div
+                className={`rounded-xl px-3 py-2 text-xs font-medium border ${
+                  statusMsg.type === 'error'
+                    ? 'bg-rose-500/15 border-rose-500/40 text-rose-200'
+                    : statusMsg.type === 'success'
+                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200'
+                      : 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200'
+                }`}
+              >
+                {statusMsg.text}
+              </div>
+            )}
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 space-y-3">
