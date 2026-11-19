@@ -34,6 +34,23 @@ export interface OfficeAiAssistResponse {
   message: string;
 }
 
+export interface ArchiveEntryInfo {
+  path: string;
+  name: string;
+  size: number;
+  isDirectory: boolean;
+  isEncrypted: boolean;
+  canReadDirectly: boolean;
+}
+
+export interface ArchiveInspectResult {
+  archiveName: string;
+  requiresPassword: boolean;
+  passwordValid: boolean;
+  error?: string;
+  entries: ArchiveEntryInfo[];
+}
+
 export const officeWorkspaceService = {
   async parseFile(file: File): Promise<OfficeParsedDocument> {
     const form = new FormData();
@@ -86,5 +103,51 @@ export const officeWorkspaceService = {
   }) {
     const res = await api.post('/api/office-workspace/send-to-kids', payload);
     return res.data;
+  },
+
+  async pack7z(files: File[], archiveName: string, password?: string): Promise<void> {
+    const form = new FormData();
+    files.forEach((f) => form.append('files', f));
+    if (archiveName.trim()) form.append('archiveName', archiveName.trim());
+    if (password?.trim()) form.append('password', password.trim());
+    const res = await api.post('/api/office-workspace/archive/pack-7z', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      responseType: 'blob',
+    });
+    const outName = (archiveName.trim() || 'aegis-secure-archive').replace(/\.7z$/i, '') + '.7z';
+    triggerBlobDownload(res.data as Blob, outName);
+  },
+
+  async inspectArchive(archive: File, password?: string): Promise<ArchiveInspectResult> {
+    const form = new FormData();
+    form.append('archive', archive);
+    if (password?.trim()) form.append('password', password.trim());
+    const res = await api.post<ArchiveInspectResult>('/api/office-workspace/archive/inspect', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
+  async readArchiveEntry(archive: File, entryPath: string, password?: string): Promise<OfficeParsedDocument> {
+    const form = new FormData();
+    form.append('archive', archive);
+    form.append('entryPath', entryPath);
+    if (password?.trim()) form.append('password', password.trim());
+    const res = await api.post<OfficeParsedDocument>('/api/office-workspace/archive/read-entry', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
+  async extractArchiveEntry(archive: File, entryPath: string, fileName: string, password?: string): Promise<void> {
+    const form = new FormData();
+    form.append('archive', archive);
+    form.append('entryPath', entryPath);
+    if (password?.trim()) form.append('password', password.trim());
+    const res = await api.post('/api/office-workspace/archive/extract-entry', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      responseType: 'blob',
+    });
+    triggerBlobDownload(res.data as Blob, fileName);
   },
 };

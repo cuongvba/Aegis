@@ -13,9 +13,11 @@ import {
   Images,
   Scissors,
   Stamp,
+  FileArchive,
 } from 'lucide-react';
 import {
   officeWorkspaceService,
+  type OfficeParsedDocument,
   type OfficeSheet,
 } from '@/services/officeWorkspace.service';
 import { RichDocEditorPane } from '@/components/office/RichDocEditorPane';
@@ -26,6 +28,9 @@ import { ImageBatchMergerModal } from '@/components/office/ImageBatchMergerModal
 const PdfToolboxModal = lazy(() =>
   import('@/components/office/PdfToolboxModal').then((m) => ({ default: m.PdfToolboxModal })),
 );
+const Archive7zModal = lazy(() =>
+  import('@/components/office/Archive7zModal').then((m) => ({ default: m.Archive7zModal })),
+);
 
 const DRAFT_STORAGE_KEY = 'aegis-office-studio-draft-v1';
 
@@ -34,6 +39,8 @@ export const OfficeWorkspacePage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMergerOpen, setIsMergerOpen] = useState(false);
   const [isPdfToolboxOpen, setIsPdfToolboxOpen] = useState(false);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const [pendingArchiveFile, setPendingArchiveFile] = useState<File | null>(null);
   const [showDocxSecurity, setShowDocxSecurity] = useState(false);
   const [docxWatermark, setDocxWatermark] = useState('');
   const [docxPassword, setDocxPassword] = useState('');
@@ -95,36 +102,45 @@ export const OfficeWorkspacePage: React.FC = () => {
     };
   }, [pdfPreviewUrl]);
 
+  const applyParsedDocument = (parsed: OfficeParsedDocument, rawFile?: File) => {
+    setDocKind(parsed.documentKind);
+    setTitle(parsed.title || parsed.fileName);
+    setWarnings(parsed.warnings || []);
+
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+      setPdfPreviewUrl(null);
+    }
+
+    if (parsed.documentKind === 'PDF' && rawFile) {
+      setPdfPreviewUrl(URL.createObjectURL(rawFile));
+      setMarkdown(parsed.markdownContent || '');
+    } else if (parsed.documentKind === 'XLSX') {
+      setSheets(
+        parsed.sheets.length > 0
+          ? parsed.sheets
+          : [{ name: 'Sheet1', rows: [['Cột 1', 'Cột 2']] }]
+      );
+    } else {
+      setMarkdown(parsed.markdownContent || '');
+    }
+  };
+
   const handleFilePick = async (file?: File) => {
     if (!file) return;
+    if (/\.(7z|zip|tar|gz)$/i.test(file.name)) {
+      setPendingArchiveFile(file);
+      setIsArchiveOpen(true);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     setWarnings([]);
     try {
       const parsed = await officeWorkspaceService.parseFile(file);
-      setDocKind(parsed.documentKind);
-      setTitle(parsed.title || file.name);
-      setWarnings(parsed.warnings || []);
-
-      if (pdfPreviewUrl) {
-        URL.revokeObjectURL(pdfPreviewUrl);
-        setPdfPreviewUrl(null);
-      }
-
-      if (parsed.documentKind === 'PDF') {
-        setPdfPreviewUrl(URL.createObjectURL(file));
-        setMarkdown(parsed.markdownContent || '');
-      } else if (parsed.documentKind === 'XLSX') {
-        setSheets(
-          parsed.sheets.length > 0
-            ? parsed.sheets
-            : [{ name: 'Sheet1', rows: [['Cột 1', 'Cột 2']] }]
-        );
-      } else {
-        setMarkdown(parsed.markdownContent || '');
-      }
+      applyParsedDocument(parsed, file);
     } catch {
-      setError('Không thể đọc tệp này. Vui lòng kiểm tra định dạng .docx, .pdf, .xlsx, .xls hoặc .md.');
+      setError('Không thể đọc tệp này. Vui lòng kiểm tra định dạng .docx, .pdf, .xlsx, .xls, .md hoặc .7z/.zip.');
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +190,7 @@ export const OfficeWorkspacePage: React.FC = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".docx,.pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.md,.txt"
+              accept=".docx,.pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.md,.txt,.7z,.zip"
               className="hidden"
               onChange={(e) => handleFilePick(e.target.files?.[0])}
             />
@@ -202,6 +218,14 @@ export const OfficeWorkspacePage: React.FC = () => {
               title="Nén dung lượng PDF scan, chèn/cắt/ghép và đổi vị trí trang PDF"
             >
               <Scissors size={14} /> Nén & Cắt/Ghép PDF
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPendingArchiveFile(null); setIsArchiveOpen(true); }}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:opacity-95 px-3.5 py-2 text-xs font-black text-white shadow-md transition"
+              title="Nén file .7z mật khẩu AES-256 & Đọc trực tiếp tài liệu trong file nén (.7z/.zip)"
+            >
+              <FileArchive size={14} /> Nén / Đọc .7z
             </button>
             <button
               type="button"
@@ -384,6 +408,16 @@ export const OfficeWorkspacePage: React.FC = () => {
       {isPdfToolboxOpen && (
         <Suspense fallback={null}>
           <PdfToolboxModal open={isPdfToolboxOpen} onClose={() => setIsPdfToolboxOpen(false)} />
+        </Suspense>
+      )}
+      {isArchiveOpen && (
+        <Suspense fallback={null}>
+          <Archive7zModal
+            open={isArchiveOpen}
+            initialArchiveFile={pendingArchiveFile}
+            onClose={() => { setIsArchiveOpen(false); setPendingArchiveFile(null); }}
+            onOpenParsedDoc={(parsed) => applyParsedDocument(parsed)}
+          />
         </Suspense>
       )}
     </div>

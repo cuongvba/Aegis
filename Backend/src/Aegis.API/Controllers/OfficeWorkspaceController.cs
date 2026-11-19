@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,15 +16,18 @@ namespace Aegis.API.Controllers
     public class OfficeWorkspaceController : ControllerBase
     {
         private readonly IOfficeDocumentWorkspaceService _workspace;
+        private readonly IArchiveSecurityService _archive;
         private readonly IKidsCurriculumService _kidsService;
         private readonly ITenantContext _tenant;
 
         public OfficeWorkspaceController(
             IOfficeDocumentWorkspaceService workspace,
+            IArchiveSecurityService archive,
             IKidsCurriculumService kidsService,
             ITenantContext tenant)
         {
             _workspace = workspace;
+            _archive = archive;
             _kidsService = kidsService;
             _tenant = tenant;
         }
@@ -167,6 +171,100 @@ namespace Aegis.API.Controllers
             }, ct);
 
             return Ok(res);
+        }
+
+        [HttpPost("archive/pack-7z")]
+        [AllowAnonymous]
+        [RequestSizeLimit(104_857_600)]
+        public async Task<IActionResult> Pack7z([FromForm] List<IFormFile> files, [FromForm] string? password, [FromForm] string? archiveName, CancellationToken ct)
+        {
+            if (files == null || files.Count == 0)
+                return BadRequest(new { error = "Cần chọn ít nhất 1 tệp để nén .7z." });
+
+            var inputs = new List<ArchiveInputFile>(files.Count);
+            foreach (var f in files)
+            {
+                await using var ms = new MemoryStream();
+                await f.CopyToAsync(ms, ct);
+                inputs.Add(new ArchiveInputFile { FileName = f.FileName, Content = ms.ToArray() });
+            }
+
+            try
+            {
+                byte[] archiveBytes = await _archive.Pack7zAsync(inputs, password, ct);
+                string safeName = SanitizeFileName(archiveName, "aegis-secure-archive");
+                if (!safeName.EndsWith(".7z", StringComparison.OrdinalIgnoreCase)) safeName += ".7z";
+                return File(archiveBytes, "application/x-7z-compressed", safeName);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("archive/inspect")]
+        [AllowAnonymous]
+        [RequestSizeLimit(104_857_600)]
+        public async Task<IActionResult> InspectArchive([FromForm] IFormFile archive, [FromForm] string? password, CancellationToken ct)
+        {
+            if (archive == null || archive.Length == 0)
+                return BadRequest(new { error = "Vui lòng chọn tệp nén (.7z, .zip)." });
+
+            await using var stream = archive.OpenReadStream();
+            var res = await _archive.InspectArchiveAsync(stream, archive.FileName, password, ct);
+            if (!res.PasswordValid && res.RequiresPassword)
+                return StatusCode(StatusCodes.Status401Unauthorized, res);
+            return Ok(res);
+        }
+
+        [HttpPost("archive/read-entry")]
+        [AllowAnonymous]
+        [RequestSizeLimit(104_857_600)]
+        public async Task<IActionResult> ReadArchiveEntry([FromForm] IFormFile archive, [FromForm] string entryPath, [FromForm] string? password, CancellationToken ct)
+        {
+            if (archive == null || archive.Length == 0)
+                return BadRequest(new { error = "Thiếu tệp nén nguồn." });
+
+            try
+            {
+                await using var stream = archive.OpenReadStream();
+                var (bytes, fileName) = await _archive.ExtractEntryAsync(stream, archive.FileName, entryPath, password, ct);
+                await using var docMs = new MemoryStream(bytes);
+                var parsed = await _workspace.ParseDocumentAsync(docMs, fileName, ct);
+                return Ok(parsed);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, new { error = ex.Message, requiresPassword = true });
+            }
+            catch (Exception ex) when (ex is NotSupportedException || ex is ArgumentException || ex is InvalidOperationException || ex is FileNotFoundException)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost("archive/extract-entry")]
+        [AllowAnonymous]
+        [RequestSizeLimit(104_857_600)]
+        public async Task<IActionResult> ExtractArchiveEntry([FromForm] IFormFile archive, [FromForm] string entryPath, [FromForm] string? password, CancellationToken ct)
+        {
+            if (archive == null || archive.Length == 0)
+                return BadRequest(new { error = "Thiếu tệp nén nguồn." });
+
+            try
+            {
+                await using var stream = archive.OpenReadStream();
+                var (bytes, fileName) = await _archive.ExtractEntryAsync(stream, archive.FileName, entryPath, password, ct);
+                return File(bytes, "application/octet-stream", SanitizeFileName(fileName, "extracted-file"));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, new { error = ex.Message, requiresPassword = true });
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is FileNotFoundException)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         private static string SanitizeFileName(string? raw, string fallback)

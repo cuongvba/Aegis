@@ -98,6 +98,7 @@ builder.Services.AddScoped<IExamMatrixGeneratorService, Aegis.Infrastructure.Ser
 builder.Services.AddScoped<IKidsCurriculumService, Aegis.Infrastructure.Services.KidsCurriculumService>();
 builder.Services.AddSingleton<IKidsVoiceService, Aegis.Infrastructure.Services.KidsVoiceService>();
 builder.Services.AddScoped<IOfficeDocumentWorkspaceService, Aegis.Infrastructure.Services.OfficeDocumentWorkspaceService>();
+builder.Services.AddScoped<IArchiveSecurityService, Aegis.Infrastructure.Services.ArchiveSecurityService>();
 builder.Services.AddScoped<IDocxParserService, DocxParserService>();
 builder.Services.AddScoped<IDocxStateMachineClassifier, Aegis.Infrastructure.Services.Docx.DocxStateMachineClassifierService>();
 builder.Services.AddScoped<IDynamicDomainContextService, DynamicDomainContextService>();
