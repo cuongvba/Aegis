@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Copy, Disc3, Music, Pause, Play, Sparkles } from 'lucide-react';
+import { BookOpen, Copy, Disc3, Download, Music, Pause, Play, Sparkles } from 'lucide-react';
 import { vosMusicService, type VosMusicCompilationResultDto } from '@/services/vosMusic.service';
-import { VosQuantumSynthEngine, drawVosSynesthesiaFrame } from '@/components/music/vosQuantumSynth';
+import { VosQuantumSynthEngine, drawVosSynesthesiaFrame, exportVosWav } from '@/components/music/vosQuantumSynth';
+import { VosTelemetryPanel } from '@/components/music/VosTelemetryPanel';
 
 const PRESETS = [
   'Đêm huyền không tĩnh mịch, ánh trăng uya tan vào sương thu...',
@@ -158,27 +159,31 @@ export const VosSonicStudioPage: React.FC = () => {
                 <Disc3 className={`w-4 h-4 ${playing ? 'animate-spin' : ''}`} />
                 Web Audio V-OS Quantum Synth ({tuningHz}Hz)
               </span>
-              <button
-                onClick={toggleSynth}
-                disabled={!result}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white"
-              >
-                {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                {playing ? 'Dừng Synth' : 'Nghe Rung Động V-OS'}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={toggleSynth}
+                  disabled={!result}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white"
+                >
+                  {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                  {playing ? 'Dừng Synth' : 'Nghe Synth'}
+                </button>
+                <button
+                  onClick={() => result && void exportVosWav(result.synthRecipe, result.telemetry, 16, result.sunoMasterPack.songTitle.slice(0, 24))}
+                  disabled={!result}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold text-white"
+                  title="Tải bản nhạc nền V-OS (.wav) 16 giây"
+                >
+                  <Download className="w-3.5 h-3.5" /> .WAV
+                </button>
+              </div>
             </div>
             <canvas ref={canvasRef} width={480} height={150} className="w-full rounded-xl border border-slate-800 bg-slate-950" />
-            {t && (
-              <div className="grid grid-cols-3 gap-2 text-[11px] text-slate-300">
-                <div className="p-2 rounded bg-slate-900">Ngang: {(t.ngangRatio * 100).toFixed(0)}%</div>
-                <div className="p-2 rounded bg-slate-900">Huyền: {(t.huyenRatio * 100).toFixed(0)}%</div>
-                <div className="p-2 rounded bg-slate-900">Sắc: {(t.sacRatio * 100).toFixed(0)}%</div>
-                <div className="p-2 rounded bg-slate-900">Nặng: {(t.nangRatio * 100).toFixed(0)}%</div>
-                <div className="p-2 rounded bg-slate-900">Hỏi: {(t.hoiRatio * 100).toFixed(0)}%</div>
-                <div className="p-2 rounded bg-slate-900">Ngã: {(t.ngaRatio * 100).toFixed(0)}%</div>
-              </div>
-            )}
           </div>
+
+          {t && result && (
+            <VosTelemetryPanel telemetry={t} accentColor={result.synthRecipe.accentColor} />
+          )}
         </div>
 
         <div className="lg:col-span-7 space-y-4">

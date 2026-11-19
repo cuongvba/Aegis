@@ -197,6 +197,21 @@ export async function exportAudioMuxedWebm(
     slides.map((s) => fetchSlideAudioBuffer(audioCtx, s, locale)),
   );
 
+  // Subtle 432Hz V-OS ambient drone bed (-22dB) underneath Neural TTS voiceover
+  const bgOsc1 = audioCtx.createOscillator();
+  const bgOsc2 = audioCtx.createOscillator();
+  const bgGain = audioCtx.createGain();
+  bgOsc1.type = 'sine';
+  bgOsc2.type = 'triangle';
+  bgOsc1.frequency.setValueAtTime(108, audioCtx.currentTime); // 432Hz / 4
+  bgOsc2.frequency.setValueAtTime(161.8, audioCtx.currentTime);
+  bgGain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+  bgOsc1.connect(bgGain);
+  bgOsc2.connect(bgGain);
+  bgGain.connect(audioDest);
+  bgOsc1.start();
+  bgOsc2.start();
+
   recorder.start();
   try {
     for (let i = 0; i < slides.length; i++) {
@@ -221,6 +236,7 @@ export async function exportAudioMuxedWebm(
       onProgress(1);
     }
   } finally {
+    try { bgOsc1.stop(); bgOsc2.stop(); } catch {}
     recorder.stop();
   }
 

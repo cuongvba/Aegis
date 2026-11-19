@@ -201,3 +201,107 @@ export function drawVosSynesthesiaFrame(
     H - 8,
   );
 }
+
+function encodeWavPcm16(buffer: AudioBuffer): Blob {
+  const numCh = buffer.numberOfChannels;
+  const len = buffer.length * numCh * 2;
+  const ab = new ArrayBuffer(44 + len);
+  const view = new DataView(ab);
+  const writeStr = (off: number, s: string) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + len, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, buffer.sampleRate, true);
+  view.setUint32(28, buffer.sampleRate * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, len, true);
+
+  let offset = 44;
+  for (let i = 0; i < buffer.length; i++) {
+    for (let ch = 0; ch < numCh; ch++) {
+      const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+
+export async function exportVosWav(
+  recipe: VosSynthRecipeDto,
+  telemetry: VosAcousticTelemetryDto,
+  durationSec = 16,
+  filePrefix = 'aegis_vos_music',
+): Promise<void> {
+  const sampleRate = 44100;
+  const offline = new OfflineAudioContext(2, sampleRate * durationSec, sampleRate);
+  const master = offline.createGain();
+  master.gain.setValueAtTime(0.001, 0);
+  master.gain.exponentialRampToValueAtTime(0.28, 1.0);
+  master.gain.setValueAtTime(0.28, durationSec - 1.5);
+  master.gain.exponentialRampToValueAtTime(0.001, durationSec);
+
+  const filter = offline.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(recipe.lowPassCutoffHz || 1500, 0);
+  filter.Q.setValueAtTime(2.2, 0);
+  filter.connect(master);
+  master.connect(offline.destination);
+
+  const rootHz = (recipe.baseFreqHz || 432) / 4;
+  const d1 = offline.createOscillator();
+  const d2 = offline.createOscillator();
+  d1.type = recipe.visualArchetype === 'CYBER_SHARD' ? 'sawtooth' : 'sine';
+  d2.type = 'triangle';
+  d1.frequency.setValueAtTime(rootHz, 0);
+  d2.frequency.setValueAtTime(rootHz * 1.498, 0);
+
+  const g1 = offline.createGain();
+  const g2 = offline.createGain();
+  g1.gain.value = 0.42;
+  g2.gain.value = 0.2;
+  d1.connect(g1);
+  d2.connect(g2);
+  g1.connect(filter);
+  g2.connect(filter);
+  d1.start(0);
+  d2.start(0);
+  d1.stop(durationSec);
+  d2.stop(durationSec);
+
+  const scale = recipe.visualArchetype === 'CYBER_SHARD'
+    ? [1, 1.189, 1.335, 1.498, 1.782, 2.0]
+    : [1, 1.122, 1.335, 1.498, 1.682, 2.0];
+  const stepSec = Math.max(0.28, 60 / Math.max(50, recipe.tempoBpm));
+  for (let t = 0.3, s = 0; t < durationSec - 1.2; t += stepSec, s++) {
+    const ratio = scale[(s + Math.round(telemetry.sacRatio * 10)) % scale.length];
+    const osc = offline.createOscillator();
+    const g = offline.createGain();
+    osc.type = recipe.visualArchetype === 'CYBER_SHARD' ? 'triangle' : 'sine';
+    osc.frequency.setValueAtTime(rootHz * 2 * ratio, t);
+    g.gain.setValueAtTime(0.001, t);
+    g.gain.exponentialRampToValueAtTime(0.15 * Math.max(0.4, recipe.brightness), t + 0.05);
+    g.gain.exponentialRampToValueAtTime(0.001, t + Math.min(2.0, stepSec * 1.8));
+    osc.connect(g);
+    g.connect(filter);
+    osc.start(t);
+    osc.stop(t + 2.1);
+  }
+
+  const rendered = await offline.startRendering();
+  const wavBlob = encodeWavPcm16(rendered);
+  const url = URL.createObjectURL(wavBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filePrefix.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${recipe.baseFreqHz}hz.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
