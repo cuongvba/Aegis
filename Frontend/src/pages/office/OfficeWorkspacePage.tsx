@@ -161,7 +161,7 @@ export const OfficeWorkspacePage: React.FC = () => {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".docx,.pdf,.xlsx,.xls,.csv,.md,.txt"
+              accept=".docx,.pdf,.png,.jpg,.jpeg,.webp,.xlsx,.xls,.csv,.md,.txt"
               className="hidden"
               onChange={(e) => handleFilePick(e.target.files?.[0])}
             />
@@ -172,7 +172,7 @@ export const OfficeWorkspacePage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 px-3.5 py-2 text-xs font-black text-white shadow-md transition"
             >
               {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-              Mở File Office / PDF
+              Mở File / PDF / Ảnh
             </button>
             <button
               type="button"
@@ -205,6 +205,22 @@ export const OfficeWorkspacePage: React.FC = () => {
                   className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-black text-white shadow-md"
                 >
                   <Download size={14} /> Tải .DOCX
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const blob = new Blob([markdown || ''], { type: 'text/markdown;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${(title || 'tai_lieu').replace(/[^a-z0-9_\-\u00C0-\u024F\u1E00-\u1EFF]/gi, '_')}.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 px-3 py-2 text-xs font-black text-white shadow-md"
+                  title="Chuyển & Tải toàn bộ tài liệu (PDF/Ảnh/Word) thành tệp Markdown (.md)"
+                >
+                  <Download size={14} /> Tải .MD
                 </button>
                 <button
                   type="button"

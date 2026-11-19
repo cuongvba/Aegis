@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using Aegis.Application.Interfaces;
 using Aegis.Application.Models.AI;
 using Aegis.Infrastructure.Services.Docx;
+using Aegis.Infrastructure.Services.Pdf;
 using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
@@ -23,15 +24,24 @@ namespace Aegis.Infrastructure.Services
         private readonly ILogger<OfficeDocumentWorkspaceService> _logger;
         private readonly IUniversalAiRouter? _aiRouter;
         private readonly IPdfToMarkdownTranspilerService? _pdfTranspiler;
+        private readonly IPdfMathSymbolGlyphNormalizer? _mathGlyphNormalizer;
+        private readonly IPdfVisionFallbackService? _visionFallback;
+        private readonly IVietnameseTextCorrectionService? _vnCorrector;
 
         public OfficeDocumentWorkspaceService(
             ILogger<OfficeDocumentWorkspaceService> logger,
             IUniversalAiRouter? aiRouter = null,
-            IPdfToMarkdownTranspilerService? pdfTranspiler = null)
+            IPdfToMarkdownTranspilerService? pdfTranspiler = null,
+            IPdfMathSymbolGlyphNormalizer? mathGlyphNormalizer = null,
+            IPdfVisionFallbackService? visionFallback = null,
+            IVietnameseTextCorrectionService? vnCorrector = null)
         {
             _logger = logger;
             _aiRouter = aiRouter;
             _pdfTranspiler = pdfTranspiler;
+            _mathGlyphNormalizer = mathGlyphNormalizer;
+            _visionFallback = visionFallback;
+            _vnCorrector = vnCorrector;
         }
 
         public async Task<OfficeParsedDocumentDto> ParseDocumentAsync(
@@ -52,9 +62,10 @@ namespace Aegis.Infrastructure.Services
             {
                 ".docx" => ParseDocx(ms, safeName, baseTitle),
                 ".pdf" => ParsePdf(ms, safeName, baseTitle),
+                ".png" or ".jpg" or ".jpeg" or ".webp" => ParseImageToMarkdown(ms, safeName, baseTitle, ext),
                 ".xlsx" or ".xls" => ParseSpreadsheet(ms, safeName, baseTitle),
                 ".md" or ".txt" or ".csv" => await ParsePlainOrMarkdownAsync(ms, safeName, baseTitle, ext, ct),
-                _ => throw new NotSupportedException($"Định dạng '{ext}' chưa được hỗ trợ. Vui lòng chọn .docx, .pdf, .xlsx, .xls, .md hoặc .txt.")
+                _ => throw new NotSupportedException($"Định dạng '{ext}' chưa được hỗ trợ. Vui lòng chọn .docx, .pdf, .png, .jpg, .xlsx, .xls, .md hoặc .txt.")
             };
         }
 
@@ -119,15 +130,49 @@ namespace Aegis.Infrastructure.Services
             var pageTexts = new List<string>();
             var warnings = new List<string>();
             int pageCount = 0;
+            int visionRecoveredPages = 0;
 
             using (var pdf = PdfDocument.Open(ms))
             {
                 pageCount = pdf.NumberOfPages;
                 foreach (var page in pdf.GetPages())
                 {
-                    string text = (page.Text ?? string.Empty).Trim();
+                    // 1. Spatial reconstruction from Letter (X, Y) coordinates preserves multi-column & superscripts
+                    var spatialLines = PdfSpatialMathReconstructor.ReconstructPage(page);
+                    string text = spatialLines.Count > 0
+                        ? string.Join("\n", spatialLines)
+                        : (page.Text ?? string.Empty).Trim();
+
+                    // 2. Clean PUA glyphs, normalize math symbols, Unicode NFC & Vietnamese diacritics
+                    text = NormalizeExtractedPdfText(text);
+
+                    // 3. Trigger Vision OCR fallback when page is scanned or font ToUnicode CMap is corrupted
+                    if (_visionFallback != null)
+                    {
+                        var imgs = page.GetImages().ToList();
+                        bool corrupted = _visionFallback.ShouldTriggerVisionFallback(page.Letters.Count, imgs.Count, text);
+                        if (corrupted && imgs.Count > 0)
+                        {
+                            var largest = imgs.OrderByDescending(i => i.RawBytes.Length).FirstOrDefault();
+                            if (largest != null && largest.RawBytes.Length > 0)
+                            {
+                                var ocrLines = _visionFallback.ReconstructPageFromScannedImage(largest.RawBytes.ToArray(), "image/png", page.Number);
+                                if (ocrLines.Count > 0)
+                                {
+                                    text = NormalizeExtractedPdfText(string.Join("\n", ocrLines));
+                                    visionRecoveredPages++;
+                                }
+                            }
+                        }
+                    }
+
                     pageTexts.Add(text);
                 }
+            }
+
+            if (visionRecoveredPages > 0)
+            {
+                warnings.Add($"Đã tự động phục hồi OCR thị giác cho {visionRecoveredPages} trang PDF scan/lỗi font.");
             }
 
             string rawJoined = string.Join("\n\n", pageTexts.Where(t => !string.IsNullOrWhiteSpace(t)));
@@ -137,7 +182,7 @@ namespace Aegis.Infrastructure.Services
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                warnings.Add("PDF này có thể là bản scan dạng ảnh; bạn vẫn có thể xem trực tiếp ở khung bên trái và ghi chú ở khung bên phải.");
+                warnings.Add("PDF này là bản scan dạng ảnh thuần; bạn vẫn có thể xem bản gốc bên trái hoặc dùng nút Tải .MD.");
             }
 
             return new OfficeParsedDocumentDto
@@ -149,6 +194,67 @@ namespace Aegis.Infrastructure.Services
                 PageCount = pageCount,
                 Warnings = warnings
             };
+        }
+
+        private OfficeParsedDocumentDto ParseImageToMarkdown(MemoryStream ms, string fileName, string title, string ext)
+        {
+            byte[] bytes = ms.ToArray();
+            string mime = ext switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".webp" => "image/webp",
+                _ => "image/png"
+            };
+
+            var ocrLines = _visionFallback?.ReconstructPageFromScannedImage(bytes, mime, 1) ?? new List<string>();
+            string extracted = ocrLines.Count > 0
+                ? NormalizeExtractedPdfText(string.Join("\n\n", ocrLines))
+                : string.Empty;
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"# {title}");
+            sb.AppendLine();
+            sb.AppendLine($"![{fileName}](data:{mime};base64,{Convert.ToBase64String(bytes)})");
+            if (!string.IsNullOrWhiteSpace(extracted))
+            {
+                sb.AppendLine();
+                sb.AppendLine("---");
+                sb.AppendLine();
+                sb.AppendLine(extracted);
+            }
+
+            var warnings = new List<string>();
+            if (string.IsNullOrWhiteSpace(extracted))
+            {
+                warnings.Add("Đã chèn ảnh vào trình soạn thảo Markdown; cấu hình Vision AI Key để tự động OCR chữ & công thức từ ảnh.");
+            }
+
+            return new OfficeParsedDocumentDto
+            {
+                FileName = fileName,
+                DocumentKind = "MARKDOWN",
+                Title = title,
+                MarkdownContent = sb.ToString().Trim(),
+                PageCount = 1,
+                Warnings = warnings
+            };
+        }
+
+        private string NormalizeExtractedPdfText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+            string s = text.Normalize(NormalizationForm.FormC);
+            if (_mathGlyphNormalizer != null)
+            {
+                s = _mathGlyphNormalizer.CleanPuaCharacters(s);
+                s = _mathGlyphNormalizer.NormalizeMathGlyphs(s);
+                s = _mathGlyphNormalizer.ReconstructDegreeSymbols(s);
+            }
+            if (_vnCorrector != null)
+            {
+                s = _vnCorrector.CorrectText(s);
+            }
+            return s.Normalize(NormalizationForm.FormC).Trim();
         }
 
         private OfficeParsedDocumentDto ParseSpreadsheet(MemoryStream ms, string fileName, string title)
