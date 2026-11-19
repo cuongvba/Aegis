@@ -175,8 +175,8 @@ export const OfficeWorkspacePage: React.FC = () => {
             title={title}
             markdownContent={markdown}
             sheets={sheets}
-            onReplaceMarkdown={(nextMd) => setMarkdown(nextMd)}
-            onAppendMarkdown={(addMd) => setMarkdown((prev) => `${prev.trim()}\n\n---\n\n${addMd}`)}
+            onReplaceMarkdown={(nextMd: string) => setMarkdown(nextMd)}
+            onAppendMarkdown={(addMd: string) => setMarkdown((prev: string) => `${prev.trim()}\n\n---\n\n${addMd}`)}
             onKidsCreated={() => navigate('/kids')}
           />
         )}
