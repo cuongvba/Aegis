@@ -44,7 +44,11 @@ flowchart LR
 3. **Chiếu Bảng Khổ Rộng, Chụp Ảnh PNG & Kết nối Office Studio**:
    - Bấm **`Chiếu bảng`** để mở rộng đồ thị (`fullWidth`) sắc nét trên máy chiếu, hoặc bấm **`📸 PNG`** ngay trên góc đồ thị để tải ảnh chất lượng cao.
    - Bấm **`Chia sẻ Link lớp`** gửi cho học sinh, hoặc bấm **`📄 Mở Office Studio`** để chuyển thẳng bài giảng cùng toàn bộ công thức KaTeX sang trang soạn thảo A4.
-   - Kho bài giảng mẫu đa dạng: Sóng cơ, Ném xiên, Hàm bậc ba & Đạo hàm, Họ Parabol tham số $m$, **Đường tròn Lượng giác $(\cos t, \sin t)$**, **Dao động điều hòa**, **Hình chóp & Hình trụ 3D xoay 360°** (hỗ trợ tìm kiếm nhanh).
+   - Kho bài giảng mẫu đa dạng: Sóng cơ, Ném xiên, Hàm bậc ba & Đạo hàm, Họ Parabol tham số $m$, **Đường tròn Lượng giác $(\cos t, \sin t)$**, **Dao động điều hòa**, **Hình chóp & Hình trụ 3D xoay 360°** (hỗ trợ **Mặt cắt 3D**, **Hình chiếu trực giao xuống mặt đáy**), và **Lab Va chạm Vật lý 2D**.
+4. **🎬 Xuất Video Bài Giảng Dọc YouTube Shorts / TikTok (`9:16`) — 3 Bước Làm Phim Khoa Học**:
+   - Bấm nút **`🎬 Xuất Video Shorts 9:16`** ngay trên thanh công cụ đầu trang `/visual-lab`.
+   - Chọn **Kịch bản**: *"Cát tuyến $\rightarrow$ Tiếp tuyến ($\Delta x \to 0$)"* hoặc *"Bài giảng đang chọn"*, rồi chọn **1 trong 6 ngôn ngữ thuyết minh** (*Tiếng Việt, English, 日本語, 한국어, 中文, Français*).
+   - Bấm **`Xem thử 9:16`** để kiểm tra, sau đó bấm **`Tải Shorts (.mp4)`** — hệ thống tự động ghép đồ thị biến thiên 60fps + giọng đọc AI + nhạc nền 432Hz thành file video hoàn chỉnh!
 
 ---
 
@@ -96,14 +100,37 @@ flowchart LR
 
 ---
 
+## 7️⃣ AEGIS NOTEBOOK STUDIO — BIẾN GIÁO TRÌNH THÀNH PODCAST & VIDEO TỔNG QUAN
+
+- **Cách thực hiện 3 bước**:
+  1. Mở **Notebooks** (`/admin/notebooks`) $\rightarrow$ Tải lên các file Word, PDF hoặc giáo trình của môn học.
+  2. Tại bảng **Studio** bên phải, chọn loại học liệu muốn sinh:
+     - **🎙️ Podcast 2 MC**: Tự động tạo hội thoại 2 MC (*Cô Hoài Mỹ & Chú Nam Minh*) thảo luận sâu sắc nội dung bài học.
+     - **🎬 Video Tổng quan**: Sinh bộ slide hoạt họa 60fps kèm thuyết minh Neural TTS và nhạc nền 432Hz dịu nhẹ. Bấm **`Tải Video Có Tiếng (.mp4 / .webm)`** để lưu về máy gửi cho học sinh ôn bài.
+     - **🧠 Sơ đồ Tư duy, Cẩm nang Ôn tập, FAQ, Dòng thời gian, Flashcards**: Tạo trong 1 chạm và chuyển thẳng sang **Office Studio** để in ấn.
+
+---
+
+## 8️⃣ NHẠC NỀN V-OS (`/music-studio`) & ĐỌC ĐỀ THI KỂ CẢ CÔNG THỨC TOÁN
+
+- **Tạo nhạc nền bài giảng chuẩn 432Hz / 528Hz ([`/music-studio`](https://daotao.dehoc.vn/music-studio))**:
+  1. Dán 1 đoạn thơ, lời giảng hoặc ý niệm tiếng Việt vào ô nhập.
+  2. Chọn tần số **`432Hz`** (thư giãn, tập trung) hoặc **`528Hz`** $\rightarrow$ Bấm **`Biên dịch V-OS 7D & Phát Nhạc`**.
+  3. Bấm **`.WAV`** để tải file nhạc nền không lời về ghép vào bài giảng, hoặc copy Prompt sang **Suno v5.5/v6+**, **Google Lyria**, **Omni Veo**.
+- **Đọc Đề Thi Hỗ Trợ Học Sinh (Accessibility & Tiểu học)**:
+  - Trong phòng thi/luyện tập, bấm nút **`🔊 Đọc đề`** ở góc trên bên phải mỗi câu hỏi: hệ thống tự động đọc tuần tự *Ngữ cảnh $\rightarrow$ Câu hỏi $\rightarrow$ Đáp án A, B, C, D*, **kể cả công thức Toán học LaTeX** ($\frac{a}{b}$, $x^2$, $\sqrt{x}$, $\int_0^1$) bằng **6 giọng Nam/Nữ theo độ tuổi** (*Bé Bảo Ngọc, Bé Minh Khang, Chị Linh Chi, Anh Tuấn Kiệt, Cô Hoài Mỹ, Chú Nam Minh*).
+
+---
+
 ## 📋 BẢNG TRA CỨU NHANH 1 CHẠM
 
 | Mục tiêu của bạn | Truy cập nhanh |
 |---|---|
 | Đọc/Sửa Word, Excel, PDF không cần MS Office + AI Co-Pilot | [`/office-studio`](https://daotao.dehoc.vn/office-studio) |
-| Thế Giới Tuổi Thơ 5 Vương quốc & AI Huyền tích | [`/kids`](https://daotao.dehoc.vn/kids) |
+| Thế Giới Tuổi Thơ 5 Vương quốc & AI Huyền tích (6 giọng đọc) | [`/kids`](https://daotao.dehoc.vn/kids) |
+| Trình chiếu 60fps (3D Mặt cắt, Va chạm 2D) & **Xuất Video Shorts 9:16** | [`/visual-lab`](https://daotao.dehoc.vn/visual-lab) |
+| Tạo **Nhạc nền 432Hz/528Hz (.WAV)** & Prompt Suno v6 / Lyria / Veo | [`/music-studio`](https://daotao.dehoc.vn/music-studio) |
 | Soạn & nạp đề Word/PDF/Excel trong 10 giây | [`/creator/studio`](https://daotao.dehoc.vn/creator/studio) |
-| Trình chiếu đồ thị biến đổi 60fps & Nạp bài toán thành Visual | [`/visual-lab`](https://daotao.dehoc.vn/visual-lab) |
 | Quản lý kho câu hỏi, lọc Cây Phả Hệ & Ma trận | [`/admin/questions`](https://daotao.dehoc.vn/admin/questions) |
-| Học sinh tự luyện đa giác quan, Flashcard, SpeakOut | [`/practice`](https://daotao.dehoc.vn/practice) |
+| Học sinh tự luyện đa giác quan, Flashcard, SpeakOut & **Đọc đề Toán** | [`/practice`](https://daotao.dehoc.vn/practice) |
 | Tổ chức Gameshow thi đấu trực tiếp cả lớp | [`/arena`](https://daotao.dehoc.vn/arena) |
