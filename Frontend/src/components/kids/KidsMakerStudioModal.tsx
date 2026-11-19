@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { Copy, FolderPlus, Mic, Play, Plus, Save, Sparkles, Square, Trash2, Wand2, X } from 'lucide-react';
+import { FolderPlus, Mic, Play, Plus, Save, Sparkles, Square, Trash2, Wand2, X } from 'lucide-react';
 import { KidsDynamicStageCanvas } from './KidsDynamicStageCanvas';
 import { KidsAssetDrawer } from './KidsAssetDrawer';
+import { KidsEntityTransformBar } from './KidsEntityTransformBar';
 import {
   DYNAMIC_DOMAINS,
   saveDynamicCourse,
   type AmbientEffectType,
-  type CharAnimationType,
   type DynamicDomainCode,
   type DynamicEpisode,
   type DynamicKidsCourseGame,
@@ -217,6 +217,10 @@ export const KidsMakerStudioModal: React.FC<Props> = ({ open, ageBand, onClose, 
               <KidsDynamicStageCanvas scene={sc} editable selectedEntityId={selectedEntId} onSelectEntity={setSelectedEntId} onMoveEntity={(id, x, y) => patchEntity(id, { x, y })} />
             </div>
             <div className="lg:col-span-5 rounded-2xl border-2 border-slate-200 bg-slate-50 p-3 space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <input value={ep.episodeTitle} onChange={(e) => patchEpisode({ episodeTitle: e.target.value })} className="rounded-xl border border-slate-300 bg-white px-2.5 py-1 font-bold" placeholder="Tên tập..." />
+                <input value={sc.sceneTitle} onChange={(e) => patchScene({ sceneTitle: e.target.value })} className="rounded-xl border border-slate-300 bg-white px-2.5 py-1 font-bold" placeholder="Tên cảnh..." />
+              </div>
               <div className="flex gap-1.5">
                 <select value={sc.ambientEffect} onChange={(e) => patchScene({ ambientEffect: e.target.value as AmbientEffectType })} className="flex-1 rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-bold">
                   <option value="none">Hoạt cảnh: Không</option>
@@ -235,29 +239,12 @@ export const KidsMakerStudioModal: React.FC<Props> = ({ open, ageBand, onClose, 
               <input value={ep.challengeQuestion || ''} onChange={(e) => patchEpisode({ challengeQuestion: e.target.value })} className="w-full rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 font-semibold" placeholder="Câu hỏi thử thách cuối tập..." />
 
               {selectedEnt && (
-                <div className="rounded-xl bg-amber-50 border border-amber-300 p-2 space-y-1.5">
-                  <div className="flex items-center justify-between font-black text-amber-900">
-                    <span>{selectedEnt.emoji} {selectedEnt.name}</span>
-                    <div className="flex gap-1.5">
-                      <button onClick={duplicateSelectedEntity} className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded bg-sky-100 text-sky-800" title="Nhân bản"><Copy className="w-3 h-3" /> Nhân bản</button>
-                      <button onClick={() => { patchScene({ entities: sc.entities.filter((x) => x.id !== selectedEnt.id) }); setSelectedEntId(null); }} className="text-rose-600" title="Xóa"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <select value={selectedEnt.role} onChange={(e) => patchEntity(selectedEnt.id, { role: e.target.value as StageEntityItem['role'] })} className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold">
-                      <option value="LEAD">Nhân vật Chính</option>
-                      <option value="SUPPORT">Nhân vật Phụ</option>
-                      <option value="HELPER">Bổ trợ</option>
-                      <option value="PROP">Phụ cảnh</option>
-                    </select>
-                    <select value={selectedEnt.animation} onChange={(e) => patchEntity(selectedEnt.id, { animation: e.target.value as CharAnimationType })} className="rounded-lg border border-amber-200 bg-white px-2 py-1 font-bold">
-                      <option value="idle">Đứng yên</option>
-                      <option value="bounce">Nhún nhảy</option>
-                      <option value="fly">Bay lơ lửng</option>
-                      <option value="wave">Vẫy chào</option>
-                    </select>
-                  </div>
-                </div>
+                <KidsEntityTransformBar
+                  entity={selectedEnt}
+                  onPatch={(patch) => patchEntity(selectedEnt.id, patch)}
+                  onDuplicate={duplicateSelectedEntity}
+                  onDelete={() => { patchScene({ entities: sc.entities.filter((x) => x.id !== selectedEnt.id) }); setSelectedEntId(null); }}
+                />
               )}
             </div>
           </div>

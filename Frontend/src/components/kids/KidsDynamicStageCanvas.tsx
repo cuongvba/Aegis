@@ -159,16 +159,20 @@ export const KidsDynamicStageCanvas: React.FC<Props> = ({
             type="button"
             onClick={(ev) => { ev.stopPropagation(); onSelectEntity?.(ent.id); }}
             style={{ left: `${ent.x}%`, top: `${ent.y}%` }}
-            className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center focus:outline-none ${
-              ent.role === 'PROP' ? 'z-10' : ent.role === 'SUPPORT' ? 'z-20' : ent.role === 'LEAD' ? 'z-30' : 'z-40'
-            }`}
+            className={`absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center focus:outline-none ${ent.role === 'PROP' ? 'z-10' : ent.role === 'SUPPORT' ? 'z-20' : ent.role === 'LEAD' ? 'z-30' : 'z-40'
+              }`}
           >
             {ent.speech && (
               <span className="mb-1 max-w-[140px] truncate rounded-xl bg-white/95 text-slate-900 px-2 py-0.5 text-[10px] font-black shadow-md">
                 {ent.speech}
               </span>
             )}
-            <div className={`rounded-2xl p-1 transition ${ANIM_CLASS[ent.animation]} ${isSelected ? 'ring-4 ring-amber-400 bg-white/25 scale-110' : ''} ${isLeadHero ? 'drop-shadow-[0_0_12px_rgba(251,191,36,0.9)]' : ''}`}>
+            <div
+              style={{
+                transform: `scale(${ent.scale ?? 1}) rotate(${ent.rotation ?? 0}deg) scaleX(${ent.flipX ? -1 : 1})`,
+              }}
+              className={`rounded-2xl p-1 transition ${ANIM_CLASS[ent.animation]} ${isSelected ? 'ring-4 ring-amber-400 bg-white/25' : ''} ${isLeadHero ? 'drop-shadow-[0_0_12px_rgba(251,191,36,0.9)]' : ''}`}
+            >
               {displayImg ? (
                 <img src={displayImg} alt={displayName} className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover border-2 border-white shadow" />
               ) : (

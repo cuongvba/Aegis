@@ -31,6 +31,9 @@ export interface StageEntityItem {
   imageUrl?: string;
   x: number;
   y: number;
+  scale?: number; // 0.4 .. 2.2 (near/far depth)
+  rotation?: number; // -180 .. 180 deg
+  flipX?: boolean; // mirror horizontally
   animation: CharAnimationType;
   speech?: string;
 }
