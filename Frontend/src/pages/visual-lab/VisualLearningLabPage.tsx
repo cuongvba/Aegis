@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass, Wand2, Search, FileText } from 'lucide-react';
+import { BookOpen, Copy, Check, Maximize2, Minimize2, Plus, Sparkles, Compass, Wand2, Search, FileText, Film } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DynamicVisualWidget } from '@/components/common/visual/DynamicVisualWidget';
 import { InteractiveVisualStudioModal } from '@/components/common/visual/InteractiveVisualStudioModal';
@@ -9,6 +9,7 @@ import {
   type InteractiveVisualLesson,
 } from '@/components/common/visual/visualLessonPresets';
 import { ProblemVisualImporterModal } from './ProblemVisualImporterModal';
+import { VisualShortsModal } from './VisualShortsModal';
 
 function tryParseUrlSpec(): InteractiveVisualLesson | null {
   try {
@@ -40,6 +41,7 @@ export default function VisualLearningLabPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [studioOpen, setStudioOpen] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
+  const [shortsOpen, setShortsOpen] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
   const [copiedType, setCopiedType] = useState<'link' | 'embed' | null>(null);
 
@@ -121,6 +123,13 @@ export default function VisualLearningLabPage() {
               className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 px-4 py-2 text-xs font-extrabold text-white shadow-lg transition"
             >
               <Plus className="h-4 w-4" /> Thiết kế Bài giảng Động
+            </button>
+            <button
+              type="button"
+              onClick={() => setShortsOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:opacity-95 px-4 py-2 text-xs font-extrabold text-white shadow-lg transition"
+            >
+              <Film className="h-4 w-4" /> Xuất Video Shorts 9:16
             </button>
             <button
               type="button"
@@ -257,6 +266,11 @@ export default function VisualLearningLabPage() {
           setLessons((prev) => [...generated, ...prev]);
           if (generated[0]) setSelectedId(generated[0].id);
         }}
+      />
+      <VisualShortsModal
+        open={shortsOpen}
+        onClose={() => setShortsOpen(false)}
+        activeLesson={activeLesson}
       />
     </div>
   );
