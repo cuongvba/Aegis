@@ -7,7 +7,7 @@
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Trophy, Gamepad2, Zap, Sparkles, FileText, Music } from 'lucide-react';
+import { BookOpen, Trophy, Gamepad2, Zap, Sparkles } from 'lucide-react';
 
 interface NavItem {
   name:  string;
@@ -24,12 +24,9 @@ export function useNavItems(): NavItem[] {
   return [
     { name: t('nav.dashboard', 'Tổng quan'), path: '/dashboard',   icon: <BookOpen className="w-4 h-4 text-cyan-400" aria-hidden="true" /> },
     { name: t('nav.practice', 'Luyện thi'),  path: '/practice',    icon: <Gamepad2 className="w-4 h-4 text-indigo-400" aria-hidden="true" /> },
-    { name: t('nav.kidsWorld', 'Kids World'), path: '/kids',       icon: <Sparkles className="w-4 h-4 text-rose-400" aria-hidden="true" /> },
-    { name: t('nav.officeStudio', 'Office Studio'), path: '/office-studio', icon: <FileText className="w-4 h-4 text-sky-400" aria-hidden="true" /> },
     { name: t('nav.arena', 'Đấu trường'),    path: '/arena',       icon: <Zap      className="w-4 h-4 text-amber-400" aria-hidden="true" /> },
-    { name: t('nav.visualLab', 'Phòng Lab 60fps'), path: '/visual-lab', icon: <Sparkles className="w-4 h-4 text-sky-400" aria-hidden="true" /> },
-    { name: t('nav.musicStudio', 'Nhạc V-OS'), path: '/music-studio', icon: <Music className="w-4 h-4 text-violet-400" aria-hidden="true" /> },
-    { name: t('nav.leaderboard', 'Bảng vàng'), path: '/leaderboard', icon: <Trophy   className="w-4 h-4 text-yellow-400" aria-hidden="true" /> },
+    { name: t('nav.missionHub', 'Sứ mệnh'),  path: '/mission-hub', icon: <Sparkles className="w-4 h-4 text-emerald-400" aria-hidden="true" /> },
+    { name: t('nav.leaderboard', 'Bảng vàng'), path: '/leaderboard', icon: <Trophy className="w-4 h-4 text-yellow-400" aria-hidden="true" /> },
   ];
 }
 

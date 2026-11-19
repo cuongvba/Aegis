@@ -89,27 +89,27 @@ export function AppHeader() {
           <button
             type="button"
             onClick={() => setIsUserVoiceModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                        bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 hover:text-indigo-200
                        border border-indigo-500/40 hover:border-indigo-400
                        text-xs font-black transition-all shadow-sm cursor-pointer select-none group"
             title={t('nav.userVoiceTitle', 'Đóng góp ý tưởng & xem bảng nguyện vọng cộng đồng')}
           >
             <Sparkles size={13} className="text-amber-400 group-hover:scale-110 transition-transform" />
-            <span className="hidden sm:inline">{t('nav.userVoice', 'Ý Tưởng & Góp Ý')}</span>
+            <span className="hidden 2xl:inline">{t('nav.userVoice', 'Ý Tưởng & Góp Ý')}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsMobileModalOpen(true)}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full
                        bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-cyan-300
                        border border-slate-700/80 hover:border-cyan-500/50
                        text-xs font-bold transition-all shadow-sm cursor-pointer select-none group"
             title={t('nav.mobileAppTitle', 'Cài đặt Ứng dụng Di động & Quét mã QR')}
           >
             <Smartphone size={14} className="text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span className="hidden xl:inline">{t('nav.mobileApp', 'App Di Động')}</span>
+            <span className="hidden 2xl:inline">{t('nav.mobileApp', 'App Di Động')}</span>
           </button>
 
           <LanguageSwitcher />
