@@ -34,10 +34,24 @@ namespace Aegis.Infrastructure.Services
         private static readonly Regex EmojiStripRegex = new(@"[\p{Cs}\u2600-\u27BF\uFE0F]", RegexOptions.Compiled);
         private static readonly HttpClient SharedHttp = new() { Timeout = TimeSpan.FromSeconds(12) };
 
+        private static readonly Dictionary<string, (string BaseVoiceId, string DefaultPitch, string DefaultRate)> VoiceProsodyPresets = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["vi-VN-HoaiMyNeural#kid-girl"]     = ("vi-VN-HoaiMyNeural", "+28Hz", "+4%"),
+            ["vi-VN-NamMinhNeural#kid-boy"]     = ("vi-VN-NamMinhNeural", "+34Hz", "+5%"),
+            ["vi-VN-HoaiMyNeural#youth-female"] = ("vi-VN-HoaiMyNeural", "+10Hz", "+2%"),
+            ["vi-VN-NamMinhNeural#youth-male"]  = ("vi-VN-NamMinhNeural", "+12Hz", "+2%"),
+            ["vi-VN-HoaiMyNeural"]              = ("vi-VN-HoaiMyNeural", "-6Hz", "-5%"),
+            ["vi-VN-NamMinhNeural"]             = ("vi-VN-NamMinhNeural", "-10Hz", "-6%"),
+        };
+
         private static readonly List<KidsVoiceProfileDto> CuratedVoices = new()
         {
-            new() { VoiceId = "vi-VN-HoaiMyNeural", DisplayName = "Cô Hoài Mỹ (Ấm áp kể chuyện)", LocaleCode = "vi-VN", Gender = "Female", Persona = "Storyteller", Provider = "edge-neural" },
-            new() { VoiceId = "vi-VN-NamMinhNeural", DisplayName = "Chú Nam Minh (Sử thi hào hùng)", LocaleCode = "vi-VN", Gender = "Male", Persona = "Heroic", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-HoaiMyNeural#kid-girl", DisplayName = "Bé Bảo Ngọc (Nữ trẻ em · Trong trẻo)", LocaleCode = "vi-VN", Gender = "Female", Persona = "Kid", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-NamMinhNeural#kid-boy", DisplayName = "Bé Minh Khang (Nam trẻ em · Hồn nhiên)", LocaleCode = "vi-VN", Gender = "Male", Persona = "Kid", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-HoaiMyNeural#youth-female", DisplayName = "Chị Linh Chi (Nữ thanh niên · Tươi sáng)", LocaleCode = "vi-VN", Gender = "Female", Persona = "Youth", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-NamMinhNeural#youth-male", DisplayName = "Anh Tuấn Kiệt (Nam thanh niên · Năng động)", LocaleCode = "vi-VN", Gender = "Male", Persona = "Youth", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-HoaiMyNeural", DisplayName = "Cô Hoài Mỹ (Nữ trung niên · Ấm áp kể chuyện)", LocaleCode = "vi-VN", Gender = "Female", Persona = "Storyteller", Provider = "edge-neural" },
+            new() { VoiceId = "vi-VN-NamMinhNeural", DisplayName = "Chú Nam Minh (Nam trung niên · Trầm ấm sử thi)", LocaleCode = "vi-VN", Gender = "Male", Persona = "Heroic", Provider = "edge-neural" },
             new() { VoiceId = "en-US-AnaNeural", DisplayName = "Ana (Cute Kid Storyteller)", LocaleCode = "en-US", Gender = "Female", Persona = "Kid", Provider = "edge-neural" },
             new() { VoiceId = "en-US-JennyNeural", DisplayName = "Ms. Jenny (Warm Teacher)", LocaleCode = "en-US", Gender = "Female", Persona = "Teacher", Provider = "edge-neural" },
             new() { VoiceId = "en-US-AndrewNeural", DisplayName = "Mr. Andrew (Heroic Narrator)", LocaleCode = "en-US", Gender = "Male", Persona = "Heroic", Provider = "edge-neural" },
@@ -103,9 +117,9 @@ namespace Aegis.Infrastructure.Services
                 cleanText = cleanText.Substring(0, 600);
 
             string locale = NormalizeLocale(request.LocaleCode);
-            string voiceId = ResolveVoiceId(request.VoiceId, locale);
-            string rate = string.IsNullOrWhiteSpace(request.Rate) ? "-4%" : request.Rate.Trim();
-            string pitch = string.IsNullOrWhiteSpace(request.Pitch) ? "+2Hz" : request.Pitch.Trim();
+            (string voiceId, string presetPitch, string presetRate) = ResolveVoicePreset(request.VoiceId, locale);
+            string rate = string.IsNullOrWhiteSpace(request.Rate) ? presetRate : request.Rate.Trim();
+            string pitch = string.IsNullOrWhiteSpace(request.Pitch) ? presetPitch : request.Pitch.Trim();
 
             string cacheKey = ComputeCacheKey($"{voiceId}|{rate}|{pitch}|{cleanText}");
             if (AudioCache.TryGetValue(cacheKey, out var cached))
@@ -308,6 +322,20 @@ namespace Aegis.Infrastructure.Services
 
             byte[] hash = SHA256.HashData(Encoding.ASCII.GetBytes($"{ticks100ns}{TrustedClientToken}"));
             return Convert.ToHexString(hash);
+        }
+
+        public static (string BaseVoiceId, string DefaultPitch, string DefaultRate) ResolveVoicePreset(string? requestedVoiceId, string locale)
+        {
+            string rawId = !string.IsNullOrWhiteSpace(requestedVoiceId)
+                ? requestedVoiceId.Trim()
+                : ResolveVoiceId(null, locale);
+
+            if (VoiceProsodyPresets.TryGetValue(rawId, out var preset))
+                return preset;
+
+            int hashIdx = rawId.IndexOf('#');
+            string cleanBase = hashIdx > 0 ? rawId[..hashIdx] : rawId;
+            return (cleanBase, "+2Hz", "-4%");
         }
 
         private static string ResolveVoiceId(string? requestedVoiceId, string locale)

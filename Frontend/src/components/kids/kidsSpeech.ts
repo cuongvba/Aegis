@@ -16,8 +16,8 @@ const LANG_VOICE_MAP: Record<string, string> = {
 
 const VOICE_PREF_KEY = 'aegis-kids-voice-id';
 const VOICE_RATE_KEY = 'aegis-kids-voice-rate';
-const MALE_VOICE_HINTS = ['namminh', 'andrew', 'ryan', 'keita', 'injoon', 'yunxi', 'henri', 'alvaro', 'conrad', 'niwat', 'ardi', 'antonio', 'dmitry', 'hamed'];
-const KID_VOICE_HINTS = ['ana'];
+const MALE_VOICE_HINTS = ['namminh', 'youth-male', 'kid-boy', 'andrew', 'ryan', 'keita', 'injoon', 'yunxi', 'henri', 'alvaro', 'conrad', 'niwat', 'ardi', 'antonio', 'dmitry', 'hamed'];
+const KID_VOICE_HINTS = ['ana', 'kid-girl', 'kid-boy'];
 
 const neuralAudioCache = new Map<string, { url: string; provider: string }>();
 let activeAudio: HTMLAudioElement | null = null;
