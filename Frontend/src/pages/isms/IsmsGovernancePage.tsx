@@ -10,6 +10,8 @@ export const IsmsGovernancePage: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<IsmsOverviewResponse | null>(null);
   const [tab, setTab] = useState<TabKey>('SOA');
+  const [soaTheme, setSoaTheme] = useState('ALL');
+  const [soaQuery, setSoaQuery] = useState('');
   const [totpCode, setTotpCode] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -111,6 +113,8 @@ export const IsmsGovernancePage: React.FC = () => {
               maxLength={6}
               className="w-40 rounded-xl bg-slate-950 border border-emerald-500/40 px-2.5 py-1.5 text-center font-mono font-bold tracking-widest text-white"
             />
+            <button onClick={() => navigate('/mission-hub')} className="px-3 py-2 rounded-xl bg-amber-600/20 border border-amber-500/40 text-amber-300 font-bold">Mission Hub</button>
+            <button onClick={async () => { const r = await ismsApi.publishPolicy(); setNotice(r.message); await load(); }} className="px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold">Ban hành Chính sách (A.5.1)</button>
             <button onClick={() => navigate('/dispatches')} className="px-3 py-2 rounded-xl bg-slate-800 text-slate-200 font-bold">Công văn (/dispatches)</button>
             <button onClick={() => navigate('/work-ledger')} className="px-3 py-2 rounded-xl bg-indigo-600 text-white font-bold">Sổ Việc (/work-ledger)</button>
           </div>
@@ -134,7 +138,21 @@ export const IsmsGovernancePage: React.FC = () => {
         </div>
 
         <div className="rounded-2xl bg-slate-900 border border-slate-800 p-4 text-xs space-y-3">
-          {tab === 'SOA' && data?.controls.map((c) => (
+          {tab === 'SOA' && (
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+              <div className="flex flex-wrap gap-1.5">
+                {['ALL', 'A.5', 'A.6', 'A.7', 'A.8'].map((t) => (
+                  <button key={t} onClick={() => setSoaTheme(t)} className={`px-2.5 py-1 rounded-lg font-bold ${soaTheme === t ? 'bg-sky-600 text-white' : 'bg-slate-950 text-slate-400'}`}>
+                    {t === 'ALL' ? `Tất cả (${data?.controls.length ?? 93})` : t}
+                  </button>
+                ))}
+              </div>
+              <input value={soaQuery} onChange={(e) => setSoaQuery(e.target.value)} placeholder="Tìm control (VD: A.8.5, backup, privacy)..." className="w-64 rounded-xl bg-slate-950 border border-slate-700 px-3 py-1.5 text-white" />
+            </div>
+          )}
+          {tab === 'SOA' && data?.controls
+            .filter((c) => (soaTheme === 'ALL' || c.theme.startsWith(soaTheme)) && (!soaQuery.trim() || `${c.controlId} ${c.title} ${c.evidenceSource}`.toLowerCase().includes(soaQuery.toLowerCase())))
+            .map((c) => (
             <div key={c.controlId} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-950/70 border border-slate-800 px-3 py-2.5">
               <div>
                 <div className="font-black text-white">{c.controlId} — {c.title}</div>

@@ -99,4 +99,8 @@ export const ismsApi = {
     const res = await api.get('/api/isms/audit-export');
     return res.data;
   },
+  async publishPolicy() {
+    const res = await api.post('/api/isms/publish-policy');
+    return res.data;
+  },
 };

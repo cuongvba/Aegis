@@ -53,23 +53,36 @@ namespace Aegis.Infrastructure.Services
             int dispatchCount,
             int ledgerCount)
         {
-            return new List<IsmsControlCatalogItem>
+            var autoMap = new Dictionary<string, (string Status, bool Auto, string Evidence)>(StringComparer.OrdinalIgnoreCase)
             {
-                new() { ControlId = "A.5.1", Theme = "A.5 Organizational", Title = "Policies for information security (Chính sách ATTT)", Status = dispatchCount > 0 ? "VERIFIED_AUTO" : "PLANNED", AutoEvidence = dispatchCount > 0, EvidenceSource = dispatchCount > 0 ? $"OfficialDispatch ({dispatchCount} hồ sơ)" : "Chờ ban hành qua /dispatches" },
-                new() { ControlId = "A.5.15", Theme = "A.5 Organizational", Title = "Access control & CRUDAP governance (Kiểm soát truy cập)", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = "CrudapAccessControlService (4-tier)" },
-                new() { ControlId = "A.5.24", Theme = "A.5 Organizational", Title = "Information security incident management planning", Status = "IN_PROGRESS", EvidenceSource = "Aegis ISMS Incident & CAPA" },
-                new() { ControlId = "A.5.29", Theme = "A.5 Organizational", Title = "Information security during disruption (BCP)", Status = "PLANNED", EvidenceSource = "Docker + PostgreSQL Backup" },
-                new() { ControlId = "A.6.1", Theme = "A.6 People", Title = "Screening & role responsibility", Status = "IN_PROGRESS", EvidenceSource = "Tenant RBAC + OrgUnits" },
-                new() { ControlId = "A.6.3", Theme = "A.6 People", Title = "Information security awareness, education & training", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = "Aegis LMS & Quiz Assessment" },
-                new() { ControlId = "A.6.7", Theme = "A.6 People", Title = "Remote working security", Status = totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", AutoEvidence = totpEnabledCount > 0, EvidenceSource = "HTTPS + TOTP 2FA Step-Up" },
-                new() { ControlId = "A.7.1", Theme = "A.7 Physical", Title = "Physical security perimeters", Status = "PLANNED", EvidenceSource = "Hồ sơ văn phòng / Data Center" },
-                new() { ControlId = "A.7.7", Theme = "A.7 Physical", Title = "Clear desk and clear screen policy", Status = "PLANNED", EvidenceSource = "Kiểm tra định kỳ /work-ledger" },
-                new() { ControlId = "A.8.2", Theme = "A.8 Technological", Title = "Privileged access rights (PAM)", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = "Scoped RBAC Privilege Ceiling" },
-                new() { ControlId = "A.8.5", Theme = "A.8 Technological", Title = "Secure authentication (TOTP RFC 6238 MFA)", Status = totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", AutoEvidence = totpEnabledCount > 0, EvidenceSource = $"TotpSecurityHelper ({totpEnabledCount} tài khoản bật 2FA)" },
-                new() { ControlId = "A.8.15", Theme = "A.8 Technological", Title = "Logging & immutable audit trails", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = "AuditHistory + SHA-256 Seal" },
-                new() { ControlId = "A.8.24", Theme = "A.8 Technological", Title = "Use of cryptography (AES-256-GCM)", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = "ApiKeyEncryptionHelper (AES-256-GCM)" },
-                new() { ControlId = "A.8.25", Theme = "A.8 Technological", Title = "Secure development life cycle (SDLC)", Status = "VERIFIED_AUTO", AutoEvidence = true, EvidenceSource = $"Aegis Unit Tests & Ledger ({ledgerCount} sổ)" },
+                ["A.5.1"] = (dispatchCount > 0 ? "VERIFIED_AUTO" : "PLANNED", dispatchCount > 0, dispatchCount > 0 ? $"OfficialDispatch ({dispatchCount} hồ sơ)" : "Ban hành qua /dispatches"),
+                ["A.5.15"] = ("VERIFIED_AUTO", true, "CrudapAccessControlService (4-tier)"),
+                ["A.5.24"] = ("IN_PROGRESS", false, "Aegis ISMS Incident & CAPA"),
+                ["A.5.28"] = ("VERIFIED_AUTO", true, "SHA-256 Audit Evidence Seal"),
+                ["A.5.33"] = ("VERIFIED_AUTO", true, "PostgreSQL + Immutable AuditHistory"),
+                ["A.6.3"] = ("VERIFIED_AUTO", true, "Aegis LMS & Security Awareness Quiz"),
+                ["A.6.7"] = (totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", totpEnabledCount > 0, "HTTPS + TOTP 2FA Step-Up"),
+                ["A.8.2"] = ("VERIFIED_AUTO", true, "Scoped RBAC Privilege Ceiling"),
+                ["A.8.5"] = (totpEnabledCount > 0 ? "VERIFIED_AUTO" : "IN_PROGRESS", totpEnabledCount > 0, $"TotpSecurityHelper ({totpEnabledCount} khóa 2FA)"),
+                ["A.8.15"] = ("VERIFIED_AUTO", true, "AuditHistory + SHA-256 Seal"),
+                ["A.8.24"] = ("VERIFIED_AUTO", true, "ApiKeyEncryptionHelper (AES-256-GCM)"),
+                ["A.8.25"] = ("VERIFIED_AUTO", true, $"Aegis Unit Tests & Ledger ({ledgerCount} sổ)")
             };
+
+            return Iso27001AnnexACatalog.All93Controls.Select(c =>
+            {
+                bool hasAuto = autoMap.TryGetValue(c.Id, out var meta);
+                return new IsmsControlCatalogItem
+                {
+                    ControlId = c.Id,
+                    Theme = c.Theme,
+                    Title = c.Title,
+                    Applicable = true,
+                    Status = hasAuto ? meta.Status : "PLANNED",
+                    AutoEvidence = hasAuto && meta.Auto,
+                    EvidenceSource = hasAuto ? meta.Evidence : "Chờ đính kèm bằng chứng /work-ledger"
+                };
+            }).ToList();
         }
 
         public static IsmsCopilotSuggestion AnalyzeIncidentOrRisk(string description, DateTimeOffset? referenceNow = null)

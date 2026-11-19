@@ -25,9 +25,10 @@ namespace Aegis.UnitTests
         public void GetDefaultIso27001Controls_ReflectsLiveAutoEvidence()
         {
             var controls = IsmsGovernanceHelper.GetDefaultIso27001Controls(totpEnabledCount: 2, dispatchCount: 3, ledgerCount: 4);
+            Assert.Equal(93, controls.Count);
             Assert.Contains(controls, c => c.ControlId == "A.8.5" && c.Status == "VERIFIED_AUTO" && c.AutoEvidence);
             Assert.Contains(controls, c => c.ControlId == "A.5.1" && c.Status == "VERIFIED_AUTO");
-            Assert.True(IsmsGovernanceHelper.ComputeCompliancePercent(controls) > 50.0);
+            Assert.True(IsmsGovernanceHelper.ComputeCompliancePercent(controls) > 10.0);
         }
 
         [Fact]

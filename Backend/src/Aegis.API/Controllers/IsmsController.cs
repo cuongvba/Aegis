@@ -274,6 +274,30 @@ namespace Aegis.API.Controllers
         public IActionResult Copilot([FromBody] IsmsCopilotRequestDto req)
             => Ok(IsmsGovernanceHelper.AnalyzeIncidentOrRisk(req?.Description ?? string.Empty));
 
+        [HttpPost("publish-policy")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PublishPolicyToDispatch(CancellationToken ct)
+        {
+            string id = $"doc-isms-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            string due = DispatchWorkflowHelper.ComputeSmartDueDate("KHAN");
+            var dispatchPayload = new OfficialDispatchDto
+            {
+                Id = id,
+                DispatchNumber = $"ISMS-{DateTimeOffset.UtcNow:yyyyMMdd}",
+                Direction = "INTERNAL_DOC",
+                Urgency = "KHAN",
+                Title = "Ban hành Chính sách An toàn Thông tin theo chuẩn ISO/IEC 27001:2022 (Clause 5 / A.5.1)",
+                ContentMarkdown = "## Chính sách An toàn Thông tin AegisGlobal\n- Áp dụng cho toàn bộ nhân sự, hệ thống và dữ liệu.\n- Bắt buộc xác thực 2FA (RFC 6238) khi phê duyệt và tuân thủ kiểm soát truy cập CRUDAP.",
+                Status = "SUBMITTED_TRIAGE",
+                DueDate = due,
+                AuditHistory = new List<string> { $"[{DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm}] Tự động khởi tạo từ ISMS (Clause 5 / A.5.1)" },
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            await UpsertPresetAsync("AEGIS_OFFICIAL_DISPATCH", "DISPATCH", id, dispatchPayload.Title, dispatchPayload, ct);
+            await SyncIsmsTaskToLedgerAsync($"isms-policy-{id}", "[ISO 27001 A.5.1] Phổ biến & xác nhận Chính sách ATTT", "Toàn thể nhân sự", due, "Đọc & ký xác nhận Chính sách ATTT", ct);
+            return Ok(new { dispatchId = id, dueDate = due, message = "Đã phát hành dự thảo Chính sách ATTT sang /dispatches & tạo đầu việc /work-ledger." });
+        }
+
         [HttpGet("audit-export")]
         [AllowAnonymous]
         public async Task<IActionResult> ExportAuditPackage(CancellationToken ct)
