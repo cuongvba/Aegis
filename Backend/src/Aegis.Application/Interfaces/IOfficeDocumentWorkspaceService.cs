@@ -27,6 +27,8 @@ namespace Aegis.Application.Interfaces
     {
         public string Title { get; set; } = "Aegis Document";
         public string MarkdownContent { get; set; } = string.Empty;
+        public string? WatermarkText { get; set; }
+        public string? ProtectionPassword { get; set; }
     }
 
     public class OfficeExportXlsxRequestDto

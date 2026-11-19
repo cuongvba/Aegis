@@ -6,9 +6,11 @@ import {
   Download,
   FilePlus2,
   ImagePlus,
+  Lock,
   RotateCw,
   Scissors,
   Square,
+  Stamp,
   Trash2,
   X,
 } from 'lucide-react';
@@ -17,6 +19,7 @@ import {
   formatFileSize,
   loadImageAsPdfPage,
   loadPdfFilePages,
+  protectPdfWithPassword,
   type PdfCompressionPreset,
   type PdfStudioPageItem,
 } from './pdfStudioEngine';
@@ -35,6 +38,10 @@ export const PdfToolboxModal: React.FC<Props> = ({ open, onClose }) => {
   const [originalBytes, setOriginalBytes] = useState(0);
   const [progress, setProgress] = useState<number | null>(null);
   const [resultInfo, setResultInfo] = useState<string | null>(null);
+  const [wmEnabled, setWmEnabled] = useState(false);
+  const [wmText, setWmText] = useState('BẢN QUYỀN AEGIS — LƯU HÀNH NỘI BỘ');
+  const [wmPosition, setWmPosition] = useState<'DIAGONAL' | 'STAMP_CORNER'>('DIAGONAL');
+  const [pdfPassword, setPdfPassword] = useState('');
 
   if (!open) return null;
 
@@ -87,14 +94,27 @@ export const PdfToolboxModal: React.FC<Props> = ({ open, onClose }) => {
     setProgress(5);
     setResultInfo(null);
     try {
-      const { blob, outputBytes } = await buildOrCompressPdf(pages, preset, setProgress);
-      const savedPct = originalBytes > 0 ? Math.round(((originalBytes - outputBytes) / originalBytes) * 100) : 0;
-      setResultInfo(
-        savedPct > 0
-          ? `Đã xuất: ${formatFileSize(originalBytes)} → ${formatFileSize(outputBytes)} (Giảm ${savedPct}%)`
-          : `Đã xuất thành công (${formatFileSize(outputBytes)})`,
+      const built = await buildOrCompressPdf(
+        pages,
+        preset,
+        setProgress,
+        wmEnabled ? { enabled: true, text: wmText, position: wmPosition } : undefined,
       );
-      const url = URL.createObjectURL(blob);
+      let finalBlob = built.blob;
+      const pwd = pdfPassword.trim();
+      if (pwd) {
+        finalBlob = await protectPdfWithPassword(built.blob, outputName || 'pdf_toi_uu', pwd);
+      }
+      const outBytes = finalBlob.size;
+      const savedPct = originalBytes > 0 ? Math.round(((originalBytes - outBytes) / originalBytes) * 100) : 0;
+      const pwdTag = pwd ? ' • Đã khóa mật khẩu AES-256' : '';
+      const wmTag = wmEnabled && wmText.trim() ? ' • Đã đóng Stamp/Watermark' : '';
+      setResultInfo(
+        (savedPct > 0
+          ? `Đã xuất: ${formatFileSize(originalBytes)} → ${formatFileSize(outBytes)} (Giảm ${savedPct}%)`
+          : `Đã xuất thành công (${formatFileSize(outBytes)})`) + wmTag + pwdTag,
+      );
+      const url = URL.createObjectURL(finalBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${(outputName || 'pdf_toi_uu').replace(/[^a-z0-9_\-]/gi, '_')}.pdf`;
@@ -136,6 +156,41 @@ export const PdfToolboxModal: React.FC<Props> = ({ open, onClose }) => {
           {originalBytes > 0 && (
             <span className="text-xs text-slate-400 font-semibold">Gốc: {formatFileSize(originalBytes)} • {pages.length} trang</span>
           )}
+        </div>
+
+        <div className="px-4 py-2.5 border-b border-slate-800 bg-slate-950/40 flex flex-wrap items-center gap-3 text-xs">
+          <label className="inline-flex items-center gap-1.5 font-bold text-amber-300 cursor-pointer">
+            <input type="checkbox" checked={wmEnabled} onChange={(e) => setWmEnabled(e.target.checked)} className="accent-amber-500" />
+            <Stamp className="w-3.5 h-3.5" /> Chèn Stamp / Watermark
+          </label>
+          {wmEnabled && (
+            <>
+              <input
+                value={wmText}
+                onChange={(e) => setWmText(e.target.value)}
+                placeholder="Nội dung đóng dấu / watermark..."
+                className="flex-1 min-w-[190px] rounded-lg bg-slate-900 border border-slate-700 px-2.5 py-1 text-xs text-white"
+              />
+              <select
+                value={wmPosition}
+                onChange={(e) => setWmPosition(e.target.value as 'DIAGONAL' | 'STAMP_CORNER')}
+                className="rounded-lg bg-slate-900 border border-slate-700 px-2 py-1 text-xs text-white"
+              >
+                <option value="DIAGONAL">Chữ chìm chéo toàn trang</option>
+                <option value="STAMP_CORNER">Con dấu Stamp góc trên</option>
+              </select>
+            </>
+          )}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <input
+              type="password"
+              value={pdfPassword}
+              onChange={(e) => setPdfPassword(e.target.value)}
+              placeholder="Mật khẩu bảo vệ PDF (để trống = không khóa)"
+              className="w-60 rounded-lg bg-slate-900 border border-slate-700 px-2.5 py-1 text-xs text-white"
+            />
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">

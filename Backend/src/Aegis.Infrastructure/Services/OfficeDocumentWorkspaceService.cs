@@ -496,6 +496,34 @@ namespace Aegis.Infrastructure.Services
                 i++;
             }
 
+            if (!string.IsNullOrWhiteSpace(request.WatermarkText))
+            {
+                string stamp = request.WatermarkText.Trim();
+                var policy = doc.CreateHeaderFooterPolicy();
+                var header = policy.CreateHeader(NPOI.XWPF.Model.XWPFHeaderFooterPolicy.DEFAULT);
+                var hp = header.CreateParagraph();
+                hp.Alignment = NPOI.XWPF.UserModel.ParagraphAlignment.RIGHT;
+                var hRun = hp.CreateRun();
+                hRun.SetText($"[STAMP: {stamp}]");
+                hRun.FontSize = 9;
+                hRun.SetColor("94A3B8");
+                hRun.IsItalic = true;
+
+                var footer = policy.CreateFooter(NPOI.XWPF.Model.XWPFHeaderFooterPolicy.DEFAULT);
+                var fp = footer.CreateParagraph();
+                fp.Alignment = NPOI.XWPF.UserModel.ParagraphAlignment.CENTER;
+                var fRun = fp.CreateRun();
+                fRun.SetText($"CONFIDENTIAL / SOVEREIGNTY STAMP — {stamp}");
+                fRun.FontSize = 9;
+                fRun.SetColor("94A3B8");
+                fRun.IsItalic = true;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.ProtectionPassword))
+            {
+                doc.EnforceReadonlyProtection(request.ProtectionPassword.Trim(), NPOI.POIFS.Crypt.HashAlgorithm.sha256);
+            }
+
             using var outMs = new MemoryStream();
             doc.Write(outMs);
             return outMs.ToArray();

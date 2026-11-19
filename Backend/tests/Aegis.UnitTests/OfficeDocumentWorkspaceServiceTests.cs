@@ -103,5 +103,25 @@ namespace Aegis.UnitTests
             Assert.True(quizRes.Success);
             Assert.Contains("Câu 1", quizRes.ResultMarkdown);
         }
+
+        [Fact]
+        public void ExportDocx_WithWatermarkAndPassword_AppliesSovereigntyStampAndReadonlyProtection()
+        {
+            var svc = new OfficeDocumentWorkspaceService(NullLogger<OfficeDocumentWorkspaceService>.Instance);
+
+            byte[] protectedBytes = svc.ExportDocx(new OfficeExportDocxRequestDto
+            {
+                Title = "Tai Lieu Chu Quyen",
+                MarkdownContent = "# Noi dung mat\n\nChi danh cho noi bo.",
+                WatermarkText = "AEGIS SOVEREIGNTY",
+                ProtectionPassword = "Aegis@2026"
+            });
+
+            Assert.True(protectedBytes.Length > 1000);
+            using var ms = new MemoryStream(protectedBytes);
+            var doc = new NPOI.XWPF.UserModel.XWPFDocument(ms);
+            Assert.True(doc.IsEnforcedReadonlyProtection());
+            Assert.Contains(doc.HeaderList, h => h.Text.Contains("AEGIS SOVEREIGNTY"));
+        }
     }
 }

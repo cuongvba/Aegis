@@ -44,10 +44,15 @@ export const officeWorkspaceService = {
     return res.data;
   },
 
-  async downloadDocx(title: string, markdownContent: string): Promise<void> {
+  async downloadDocx(
+    title: string,
+    markdownContent: string,
+    watermarkText?: string,
+    protectionPassword?: string,
+  ): Promise<void> {
     const res = await api.post(
       '/api/office-workspace/export-docx',
-      { title, markdownContent },
+      { title, markdownContent, watermarkText, protectionPassword },
       { responseType: 'blob' }
     );
     triggerBlobDownload(res.data as Blob, `${(title || 'aegis-document').trim()}.docx`);

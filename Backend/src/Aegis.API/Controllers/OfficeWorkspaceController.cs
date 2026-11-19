@@ -60,6 +60,65 @@ namespace Aegis.API.Controllers
             return File(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", safeName);
         }
 
+        [HttpPost("protect-pdf")]
+        [AllowAnonymous]
+        [RequestSizeLimit(52_428_800)]
+        public async Task<IActionResult> ProtectPdf([FromForm] IFormFile file, [FromForm] string password, CancellationToken ct)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { error = "PDF file is required." });
+            if (string.IsNullOrWhiteSpace(password))
+                return BadRequest(new { error = "Password is required." });
+
+            string workDir = Path.Combine(Path.GetTempPath(), $"aegis_qpdf_{Guid.NewGuid():N}");
+            Directory.CreateDirectory(workDir);
+            string inPath = Path.Combine(workDir, "input.pdf");
+            string outPath = Path.Combine(workDir, "protected.pdf");
+
+            try
+            {
+                await using (var fs = System.IO.File.Create(inPath))
+                {
+                    await file.CopyToAsync(fs, ct);
+                }
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "qpdf",
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+                psi.ArgumentList.Add("--encrypt");
+                psi.ArgumentList.Add(password);
+                psi.ArgumentList.Add(password);
+                psi.ArgumentList.Add("256");
+                psi.ArgumentList.Add("--");
+                psi.ArgumentList.Add(inPath);
+                psi.ArgumentList.Add(outPath);
+
+                using var proc = System.Diagnostics.Process.Start(psi);
+                if (proc == null)
+                    return StatusCode(500, new { error = "Failed to launch qpdf process." });
+
+                string stderr = await proc.StandardError.ReadToEndAsync(ct);
+                await proc.WaitForExitAsync(ct);
+
+                if (proc.ExitCode != 0 || !System.IO.File.Exists(outPath))
+                    return StatusCode(500, new { error = $"PDF encryption failed: {stderr}" });
+
+                byte[] protectedBytes = await System.IO.File.ReadAllBytesAsync(outPath, ct);
+                string baseName = Path.GetFileNameWithoutExtension(file.FileName);
+                string safeName = SanitizeFileName(baseName, "aegis-protected") + "-protected.pdf";
+                return File(protectedBytes, "application/pdf", safeName);
+            }
+            finally
+            {
+                try { if (Directory.Exists(workDir)) Directory.Delete(workDir, recursive: true); } catch { }
+            }
+        }
+
         [HttpPost("export-xlsx")]
         [AllowAnonymous]
         public IActionResult ExportXlsx([FromBody] OfficeExportXlsxRequestDto request)

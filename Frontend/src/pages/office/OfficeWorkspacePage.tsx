@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Images,
   Scissors,
+  Stamp,
 } from 'lucide-react';
 import {
   officeWorkspaceService,
@@ -33,6 +34,9 @@ export const OfficeWorkspacePage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isMergerOpen, setIsMergerOpen] = useState(false);
   const [isPdfToolboxOpen, setIsPdfToolboxOpen] = useState(false);
+  const [showDocxSecurity, setShowDocxSecurity] = useState(false);
+  const [docxWatermark, setDocxWatermark] = useState('');
+  const [docxPassword, setDocxPassword] = useState('');
 
   const [docKind, setDocKind] = useState<'DOCX' | 'PDF' | 'XLSX' | 'MARKDOWN'>(() => {
     try {
@@ -226,7 +230,26 @@ export const OfficeWorkspacePage: React.FC = () => {
               <>
                 <button
                   type="button"
-                  onClick={() => officeWorkspaceService.downloadDocx(title, markdown)}
+                  onClick={() => setShowDocxSecurity((s) => !s)}
+                  className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold border transition ${
+                    docxWatermark.trim() || docxPassword.trim()
+                      ? 'bg-amber-600/20 border-amber-500/60 text-amber-300'
+                      : 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                  }`}
+                  title="Chèn / Bỏ chèn Stamp & Đặt Mật Khẩu chủ quyền khi xuất DOCX"
+                >
+                  <Stamp size={14} /> Stamp / Khóa
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    officeWorkspaceService.downloadDocx(
+                      title,
+                      markdown,
+                      docxWatermark.trim() || undefined,
+                      docxPassword.trim() || undefined,
+                    )
+                  }
                   className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-black text-white shadow-md"
                 >
                   <Download size={14} /> Tải .DOCX
@@ -266,6 +289,34 @@ export const OfficeWorkspacePage: React.FC = () => {
             </button>
           </div>
         </header>
+
+        {showDocxSecurity && docKind !== 'XLSX' && (
+          <div className="rounded-2xl bg-slate-900/90 border border-amber-500/40 px-4 py-2.5 flex flex-wrap items-center gap-2 text-xs print:hidden">
+            <span className="font-bold text-amber-300">Chủ quyền DOCX:</span>
+            <input
+              value={docxWatermark}
+              onChange={(e) => setDocxWatermark(e.target.value)}
+              placeholder="Nội dung Stamp / Watermark (để trống = bỏ chèn)"
+              className="flex-1 min-w-[210px] rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-xs text-white"
+            />
+            <input
+              type="password"
+              value={docxPassword}
+              onChange={(e) => setDocxPassword(e.target.value)}
+              placeholder="Mật khẩu khóa sửa DOCX (để trống = không khóa)"
+              className="w-64 rounded-lg bg-slate-950 border border-slate-700 px-2.5 py-1.5 text-xs text-white"
+            />
+            {(docxWatermark || docxPassword) && (
+              <button
+                type="button"
+                onClick={() => { setDocxWatermark(''); setDocxPassword(''); }}
+                className="px-2.5 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 font-bold"
+              >
+                Bỏ Stamp & Khóa
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="rounded-2xl bg-slate-900/70 border border-slate-800 p-3 flex items-center gap-3 print:hidden">
           <span className="text-xs font-bold text-slate-400 shrink-0">Tên tài liệu:</span>

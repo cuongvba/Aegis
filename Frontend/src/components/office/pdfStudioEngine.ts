@@ -1,5 +1,6 @@
 import { PDFDocument, degrees } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import api from '../../services/api';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -7,6 +8,13 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 export type PdfCompressionPreset = 'LOSSLESS' | 'HIGH_QUALITY' | 'BALANCED' | 'MAX_COMPRESS';
+
+export interface PdfWatermarkOptions {
+  enabled: boolean;
+  text: string;
+  position: 'DIAGONAL' | 'STAMP_CORNER';
+  opacity?: number;
+}
 
 export interface PdfStudioPageItem {
   id: string;
@@ -67,10 +75,42 @@ export async function loadImageAsPdfPage(file: File): Promise<PdfStudioPageItem>
   };
 }
 
+function renderUnicodeWatermarkPng(text: string, position: 'DIAGONAL' | 'STAMP_CORNER', opacity: number): Uint8Array {
+  const canvas = document.createElement('canvas');
+  canvas.width = position === 'DIAGONAL' ? 900 : 520;
+  canvas.height = position === 'DIAGONAL' ? 900 : 180;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = Math.max(0.08, Math.min(0.85, opacity));
+    ctx.fillStyle = position === 'DIAGONAL' ? '#dc2626' : '#0f172a';
+    ctx.strokeStyle = '#dc2626';
+    if (position === 'DIAGONAL') {
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(-Math.PI / 5);
+      ctx.font = 'bold 46px "Segoe UI", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 0, 0);
+    } else {
+      ctx.lineWidth = 4;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+      ctx.font = 'bold 24px "Segoe UI", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#dc2626';
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    }
+  }
+  const dataUrl = canvas.toDataURL('image/png');
+  return Uint8Array.from(atob(dataUrl.split(',')[1]), (c) => c.charCodeAt(0));
+}
+
 export async function buildOrCompressPdf(
   pages: PdfStudioPageItem[],
   preset: PdfCompressionPreset,
   onProgress?: (pct: number) => void,
+  watermark?: PdfWatermarkOptions,
 ): Promise<{ blob: Blob; outputBytes: number }> {
   const activePages = pages.filter((p) => p.selected);
   if (activePages.length === 0) throw new Error('Chưa chọn trang nào để xuất.');
@@ -156,9 +196,54 @@ export async function buildOrCompressPdf(
     }
   }
 
+  if (watermark?.enabled && watermark.text.trim()) {
+    const pngBytes = renderUnicodeWatermarkPng(
+      watermark.text.trim(),
+      watermark.position,
+      watermark.opacity ?? (watermark.position === 'DIAGONAL' ? 0.22 : 0.72),
+    );
+    const wmImg = await outPdf.embedPng(pngBytes);
+    for (const p of outPdf.getPages()) {
+      const { width, height } = p.getSize();
+      if (watermark.position === 'DIAGONAL') {
+        const dim = Math.min(width, height) * 0.85;
+        p.drawImage(wmImg, {
+          x: (width - dim) / 2,
+          y: (height - dim) / 2,
+          width: dim,
+          height: dim,
+        });
+      } else {
+        const w = Math.min(180, width * 0.34);
+        const h = (w * 180) / 520;
+        p.drawImage(wmImg, {
+          x: width - w - 20,
+          y: height - h - 20,
+          width: w,
+          height: h,
+        });
+      }
+    }
+  }
+
   const bytes = await outPdf.save({ useObjectStreams: true });
   const blob = new Blob([bytes.buffer as ArrayBuffer], { type: 'application/pdf' });
   return { blob, outputBytes: bytes.byteLength };
+}
+
+export async function protectPdfWithPassword(
+  pdfBlob: Blob,
+  fileName: string,
+  password: string,
+): Promise<Blob> {
+  const form = new FormData();
+  form.append('file', pdfBlob, `${fileName || 'document'}.pdf`);
+  form.append('password', password);
+  const res = await api.post('/api/office-workspace/protect-pdf', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    responseType: 'blob',
+  });
+  return res.data as Blob;
 }
 
 export function formatFileSize(bytes: number): string {
